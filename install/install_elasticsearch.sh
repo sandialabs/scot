@@ -11,7 +11,8 @@ function ensure_elastic_entry {
     fi
 
     if [[ "$ES_GPG" == "" ]]; then
-        ES_GPG="https://packages.elastic.co/GPG-KEY-elasticsearch"
+        # ES_GPG="https://packages.elastic.co/GPG-KEY-elasticsearch"
+        ES_GPG="https://artifacts.elastic.co/GPG-KEY-elasticsearch"
     fi
 
     if [[ "$ES_YUM_REPO" == "" ]]; then
@@ -35,22 +36,36 @@ function ensure_elastic_entry {
                 fi
             fi
             echo "-- grabbed ElasticSearch GPG key"
-            echo "deb http://packages.elastic.co/elasticsearch/2.x/debian stable main" | sudo tee $ES_APT_LIST
+            # echo "deb http://packages.elastic.co/elasticsearch/2.x/debian stable main" | sudo tee $ES_APT_LIST
+            echo "deb https://artifacts.elastic.co/packages/5.x/apt stable main" | sudo tee $ES_APT_LIST
         else
             echo "-- $ES_APT_LIST exists"
         fi
     else
+        echo "-importing signing key"
+        rpm --import https::/artifacts.elastic.co/GPG-KEY-elasticsearch
         if grep --quiet elastic $ES_YUM_REPO; then
             echo "-- $ES_YUM_REPO exists"
         else
             echo "-- creating $ES_YUM_REPO"
+# 2.x series
+#            cat <<-EOF > $ES_YUM_REPO
+#[elasticsearch-2.x]
+#name=Elasticsearch repository for 2.x packages
+#baseurl=https://packages.elastic.co/elasticsearch/2.x/centos
+#gpgcheck=1
+#gpgkey=$ES_GPG
+#enabled=1
+#EOF
             cat <<-EOF > $ES_YUM_REPO
-[elasticsearch-2.x]
-name=Elasticsearch repository for 2.x packages
-baseurl=https://packages.elastic.co/elasticsearch/2.x/centos
+[elasticsearch-5.x]
+name=Elasticsearch repository for 5.x packages
+baseurl=https://artifacts.elastic.co/packages/5.x/yum
 gpgcheck=1
-gpgkey=$ES_GPG
+gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
 enabled=1
+autorefresh=1
+type=rpm-md
 EOF
         fi
     fi
@@ -104,6 +119,7 @@ function install_elasticsearch {
 
     if [[ $OS == "Ubuntu" ]]; then
         apt-get-update
+        apt-get install -y apt-transport-https
         apt-get install -y elasticsearch
     else 
         yum -y install elasticsearch
@@ -137,6 +153,8 @@ function install_elasticsearch {
     echo "~~~ pausing for a few seconds to allow ES to spin up"
     sleep 5
 
+
+
     if curl -i -XHEAD http://localhost:9200/scot | grep -q 404; then
         echo "-- need to init elastic search DB"
         ES_RESET_DB="yes"
@@ -150,3 +168,5 @@ function install_elasticsearch {
     fi
 
 }
+
+
