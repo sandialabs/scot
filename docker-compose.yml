@@ -56,15 +56,15 @@ services:
     - scot-docker-net
    container_name: elastic
  
-  mapping:
-    build:
-      dockerfile: Dockerfile-Mapping
-      context: ./
-    depends_on:
-     - elastic
-    networks:
-     - scot-docker-net
-    container_name: mapping
+  #mapping:
+  #  build:
+  #    dockerfile: Dockerfile-Mapping
+  #    context: ./
+  #  depends_on:
+  #   - elastic
+  #  networks:
+  #   - scot-docker-net
+  #  container_name: mapping
     
   scot:
     build:
@@ -78,7 +78,6 @@ services:
      - "/opt/scot/public/cached_images:/opt/scot/public/cached_images/"
     depends_on:
      - perl
-     - mapping
      - mongodb
      - activemq
     networks:

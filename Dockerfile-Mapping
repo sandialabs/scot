@@ -1,8 +1,0 @@
-FROM ubuntu:16.04
-
-COPY docker-configs/mapping/mapping.sh /usr/bin/mapping.sh
-
-RUN apt-get -qq update && \ 
-    apt-get -qq -y install curl
-
-CMD ["/bin/sh", "/usr/bin/mapping.sh"]
