@@ -1,24 +1,46 @@
 var React               = require('react');
 var ReactDateTime       = require('react-datetime');
 
-var IncidentTable = React.createClass({
+var CustomTypeTable = React.createClass({
     getInitialState: function() {
         
         return {
-            dropdownOptions: dropdown,
-            title_to_data_name: title_to_data_name,
-            date_types: date_types,
-            report_types: report_types,
-            occurred: 0,
-            discovered: 0,
-            reported: 0,
-            closed: 0,
-            reportId: 0,
-            reportValue: reportValue,
-            reportTypeShort: reportTypeShort,
-            reportType: reportType,
+            data: [
+                {
+                    type: 'dropdown',
+                    key: 'sensitivity',
+                    value: [{value: 'FYI', selected: 1}, {value: 'none', selected: 0}],
+                    label: 'DOE Information Sensitivity'
+                },
+                {
+                    type: 'input',
+                    key: 'doe_report_id',
+                    value: 'default string',
+                    label: 'DOE Report Category',
+                },
+                {
+                    type: 'calendar',
+                    key: 'occurred',
+                    value: 1494018000,
+                    label: 'Occurred'
+                }
+            ],
         }
     },
+
+    componentWillMount: function() {
+        /*$.ajax({
+            type: 'get',
+            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/',
+            success: function(data) {
+                this.setState({data: data.table});
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('Failed to get custom table data', data);
+            }.bind(this),
+        })*/
+    },
+
     onChange: function(event) {
         var k  = event.target.id;
         var v = event.target.value;
@@ -30,57 +52,124 @@ var IncidentTable = React.createClass({
             data: JSON.stringify(json),
             contentType: 'application/json; charset=UTF-8',
             success: function(data) {
-                console.log('successfully changed incident data');
+                console.log('successfully changed custom table data');
             }.bind(this),
             error: function(data) {
-                this.props.errorToggle('Failed to updated incident data', data) 
+                this.props.errorToggle('Failed to updated custom table data', data) 
             }.bind(this)
         })
     },
 
-    inputOnChange: function(event) {
-        this.setState({reportValue:event.target.value});
-    },
-
     render: function() {
-        var incidentData = this.props.headerData;
-        var wholeTable = [];
         var dropdownArr = [];
         var datesArr = [];
-        var reportingArr = [];
-        var incidentProps = Object.getOwnPropertyNames(incidentData);
-        $(Object.getOwnPropertyNames(this.state.dropdownOptions)).each(function(index, dropdown_name) {
-            var arr = [];
-            for (var i=0; i < this.state.dropdownOptions[dropdown_name].length; i++){
-                var item = this.state.dropdownOptions[dropdown_name][i];
-                arr.push(<option>{item}</option>)
+        var inputArr = [];
+         
+        for ( let i=0; i < this.state.data.length; i++ )  {
+            switch ( this.state.data[i]['type'] ) {
+                case 'dropdown':
+                    dropdownArr.push(<DropdownComponent onChange={this.onChange} label={this.state.data[i].label} id={this.state.data[i].key} value={this.state.data[i].value}/>)
+                    break;
+
+                case 'input':
+                    inputArr.push(<InputComponent onBlur={this.onChange} value={this.state.data[i].value} id={this.state.data[i].key} label={this.state.data[i].label} />)
+                    break;
+
+                case 'calendar':
+                    let value = this.state.data[i].value * 1000
+                    datesArr.push(<Calendar typeTitle={this.state.data[i].label} value={value} typeLower={this.state.data[i].key} type={this.props.type} id={this.props.id}/>);
+                    break;
+
+                case 'textarea':
+                    break;
+                
+                case 'input_multi':
+                    break;
             }
-            var datetype = this.state.title_to_data_name[dropdown_name];
-            var selectValue = this.props.headerData[datetype];
-            var dropdownTitle = dropdown_name+':'
-            dropdownArr.push(<div><span className='incidentTableWidth'>{dropdownTitle}</span><span><select id={datetype} value={selectValue} onChange={this.onChange}>{arr}</select></span></div>)
-        }.bind(this))
-        for (var i=0; i < this.state.date_types.length; i++) {
-            var datetype = this.state.date_types[i];
-            var typeLower = this.state.date_types[i].toLowerCase();
-            var typeTitle = datetype + ':';
-            var value = this.props.headerData[typeLower] * 1000;
-            datesArr.push(<Dates typeTitle={typeTitle} value={value} typeLower={typeLower} type={this.props.type} id={this.props.id}/>);
         }
-        var arr = [];
-        arr.push(<input onBlur={this.onChange} onChange={this.inputOnChange} value={this.state.reportValue} id={this.state.reportTypeShort}/>);
-        reportingArr.push(<div><span className='incidentTableWidth'>{this.state.reportType}</span><span>{arr}</span></div>);
+
         return (
             <div className='incidentTable'>
                 {dropdownArr}
                 {datesArr}
-                {reportingArr}
+                {inputArr}
             </div>
         )
     }
 });
 
-var Dates = React.createClass({
+let DropdownComponent = React.createClass({
+    getInitialState: function() {
+        return {
+            selected: null,
+            options: [],
+        }
+    },
+    
+    componentWillMount: function() {
+        var arr = [];
+        let selected = '';
+        for (var j=0; j < this.props.value.length; j++){
+            if ( this.props.value[j].selected == 1 ) {
+                selected = this.props.value[j].value;
+            }
+
+            arr.push(<option>{this.props.value[j].value}</option>)
+        }
+        this.setState({ selected: selected, options: arr });
+    
+    },
+
+    onChange: function( event ) {
+        console.log( 'selected id: ' + event.target.id + '. selected value: ' + event.target.value);
+        this.setState({ selected: event.target.value });
+    },
+
+    render: function() {
+         
+        return (
+            <div>
+                <span className='incidentTableWidth'>
+                    { this.props.label }
+                </span>
+                <span>
+                    <select id={ this.props.id } value={ this.state.selected } onChange={ this.onChange }>
+                        { this.state.options }
+                    </select>
+                </span>
+            </div>
+
+        )
+    }
+});
+
+let InputComponent = React.createClass({
+    getInitialState: function() {
+        return {
+            value: this.props.value
+        }
+    },
+    
+    inputOnChange: function(event) {
+        this.setState({value:event.target.value});
+    },
+
+    render: function() {
+        
+        return (
+            <div>
+                <span className='incidentTableWidth'>
+                    {this.props.label}
+                </span>
+                <span>
+                    <input id={this.props.id} onBlur={this.props.onBlur} onChange={this.inputOnChange} value={this.state.value} />
+                </span>
+            </div>
+        )
+    }
+});
+
+var Calendar = React.createClass({
     getInitialState: function() {
         return {
             showCalendar: false,
@@ -97,10 +186,10 @@ var Dates = React.createClass({
             data: JSON.stringify(json),
             contentType: 'application/json; charset=UTF-8',
             success: function(data) {
-                console.log('successfully changed incident data');
+                console.log('successfully changed custom table data');
             }.bind(this),
             error: function(data) {
-                this.props.errorToggle('Failed to updated incident data', data) 
+                this.props.errorToggle('Failed to updated custom table data', data) 
             }.bind(this)
         })
 
@@ -116,7 +205,7 @@ var Dates = React.createClass({
         return(
             <div style={{display:'flex',flexFlow:'row'}}>
                 <span className='incidentTableWidth'>
-                    {this.props.typeTitle}
+                    {this.props.typeTitle}:
                 </span>
                 <ReactDateTime value={this.props.value} onChange={this.onChange}/> 
             </div>
@@ -125,4 +214,4 @@ var Dates = React.createClass({
 });
 
 
-module.exports = IncidentTable;
+module.exports = CustomTypeTable;
