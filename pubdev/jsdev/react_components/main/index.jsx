@@ -301,6 +301,8 @@ var App = React.createClass({
                                 <MenuItem href='/admin/index.html'>Administration</MenuItem>
                                 <MenuItem href='/docs/index.html'>Documentation</MenuItem>
                                 <MenuItem divider />
+                                <MenuItem href='/cyberchef.htm'>Cyber Chef</MenuItem>
+                                <MenuItem divider />
                                 <MenuItem href='/#/' onClick={this.LogOut} >Log Out</MenuItem>
                             </NavDropdown>
                             <NavItem href='/incident_handler.html'>{IH}</NavItem>
