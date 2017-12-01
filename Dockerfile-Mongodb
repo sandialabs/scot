@@ -18,15 +18,14 @@ EXPOSE 27017
 
 ADD docker-configs/mongodb/mongod.conf /etc/mongod.conf
 ADD docker-configs/scot/scot.cfg.pl /opt/scot/etc/
-ADD docker-configs/mongodb/run.sh /run.sh
-ADD docker-configs/mongodb/set_mongodb_config.sh /set_mongodb_config.sh
+ADD docker-configs/mongodb/ /
 
 #Create /var/lib/mongodb directory
 RUN mkdir -p /var/lib/mongodb/
 
-
 RUN chmod +x /run.sh
 RUN chmod +x /set_mongodb_config.sh
+RUN chmod +x /mapping.sh
 # Set /usr/bin/mongod as the dockerized entry-point application
 
 CMD ["/run.sh"]
