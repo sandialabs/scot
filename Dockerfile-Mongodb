@@ -1,4 +1,4 @@
-FROM ubuntu:16.04 
+FROM scot_perl 
 
 # Installation:
 # Import MongoDB public GPG key AND create a MongoDB list file
@@ -17,8 +17,7 @@ RUN mkdir -p /data/db && \
 EXPOSE 27017
 
 ADD docker-configs/mongodb/mongod.conf /etc/mongod.conf
-ADD install/src/mongodb/ /opt/scot/install/src/mongodb/
-
+ADD docker-configs/scot/scot.cfg.pl /opt/scot/etc/
 ADD docker-configs/mongodb/run.sh /run.sh
 ADD docker-configs/mongodb/set_mongodb_config.sh /set_mongodb_config.sh
 
