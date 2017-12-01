@@ -22,6 +22,7 @@ var SignatureTable          = require('../components/signature_table.jsx');
 var TrafficLightProtocol    = require('../components/traffic_light_protocol.jsx');
 var Marker                  = require('../components/marker.jsx').default;
 var EntityCreateModal       = require('../modal/entity_create.jsx').default;
+var CustomTypeTable         = require('../components/custom_type_table.jsx');
 
 var SelectedEntry = React.createClass({
     getInitialState: function() {
@@ -311,7 +312,8 @@ var SelectedEntry = React.createClass({
         }
         return (
             <div id={divid} key={id} className={divClass} style={{height:height}}> 
-                {(type == 'incident' && this.props.headerData != null) ? <IncidentTable type={type} id={id} headerData={this.props.headerData} errorToggle={this.props.errorToggle}/> : null}
+                <CustomTypeTable type={type} id={id} errorToggle={this.props.errorToggle} />
+                {/*{(type == 'incident' && this.props.headerData != null) ? <IncidentTable type={type} id={id} headerData={this.props.headerData} errorToggle={this.props.errorToggle}/> : null}*/}
                 {(type == 'signature' && this.props.headerData != null) ? <SignatureTable type={type} id={id} headerData={this.props.headerData} errorToggle={this.props.errorToggle} showSignatureOptions={this.props.showSignatureOptions} /> : null}
                 {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId} isPopUp={this.props.isPopUp} entryToggle={this.props.entryToggle} updated={this.updatedCB} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar} errorToggle={this.props.errorToggle} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar} flairOff={this.props.flairOff}/> : <span>Loading...</span>} 
                 {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntry entryAction={'Add'} type={this.props.type} targetid={this.props.id} id={null} addedentry={this.props.entryToggle} updated={this.updatedCB} errorToggle={this.props.errorToggle}/> : null}</div> : null}
