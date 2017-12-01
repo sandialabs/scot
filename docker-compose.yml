@@ -56,16 +56,6 @@ services:
     - scot-docker-net
    container_name: elastic
  
-  #mapping:
-  #  build:
-  #    dockerfile: Dockerfile-Mapping
-  #    context: ./
-  #  depends_on:
-  #   - elastic
-  #  networks:
-  #   - scot-docker-net
-  #  container_name: mapping
-    
   scot:
     build:
       dockerfile: Dockerfile-Scot
