@@ -19,10 +19,10 @@ Docker-SCOT is comprised of the following services:
 * **Game Engine** - Used for homepage statistics
 * **Stretch** - Used for adding data to ElasticSearch
 * **Mail** - Used as a reslient mechanism for importing data to SCOT (not enabled by default - See configuration section)
+* **Reflair** Similar to flair
 
 Docker-SCOT also runs the following ephemeral containers on demand or on startup:
 
-* Mapping - Creates index mapping for Elastic
 * Docker-Utilities - A container that can be built and run on demand for executing scripts against Mongo, Scot, Elastic, etc. For instance, if a user wants to run the restore_remote_db.pl script to restore the database for MongoDB from a remote source, they can do so by: 
 
 sudo docker build --build-arg SCRIPT=restore_remote_scotdb.pl  -t util -f Dockerfile-Utilities .
