@@ -217,6 +217,8 @@ class Actions extends Component {
         this.EntryAjax = this.EntryAjax.bind(this);
         this.Link = this.Link.bind(this);
         this.LinkAjax = this.LinkAjax.bind(this);
+		this.Reparse = this.Reparse.bind(this);
+		this.ReparseAjax = this.ReparseAjax.bind(this);
         this.ToggleActionSuccess = this.ToggleActionSuccess.bind(this);
         this.ExpandLinkToggle = this.ExpandLinkToggle.bind(this);
         this.LinkContextChange = this.LinkContextChange.bind(this);
@@ -260,6 +262,7 @@ class Actions extends Component {
                                 {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.MoveEntry}>Move to {this.props.type} {this.props.id}</Button> : null }
                                 {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.CopyEntry}>Copy to {this.props.type} {this.props.id}</Button> : null }
                                 {thing || entry ? <Button onClick={this.ExpandLinkToggle} >Link to {this.props.type} {this.props.id}</Button> : null }
+								{(thing || entry) && <Button onClick={this.Reparse} >Reparse Flair</Button> }
                                 {thing || entry ? <Button bsStyle='danger' onClick={this.RemoveSelected} >Unmark</Button> : null }
                             </ButtonGroup>
                         </div>
@@ -374,6 +377,28 @@ class Actions extends Component {
 
         
     }
+
+	Reparse() {
+		this.props.data.filter( ( thing ) => thing.selected )
+			.forEach( ( thing ) => {
+				this.ReparseAjax( thing );
+			} );
+	}
+
+	ReparseAjax( thing ) {
+        $.ajax({
+            type: 'put',
+            url: '/scot/api/v2/'+ thing.type+'/'+ thing.id,
+            data: JSON.stringify({parsed:0}),
+            contentType: 'application/json; charset=UTF-8',
+            success: function(response){
+                console.log('reparsing started');
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to reparse flair', data);
+            }.bind(this)
+        })
+	}
 
     LinkAjax( arrayToLink ) {
         let data = {};
