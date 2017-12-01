@@ -39,6 +39,7 @@ services:
      - "/etc/localtime:/etc/localtime:ro"
      - "/var/lib/mongodb:/var/lib/mongodb/"
      - "/opt/scotbackup/mongo/scot-prod:/opt/scotbackup/mongo/scot-prod/"
+     - "/var/log/scot:/var/log/scot/"
     networks:
      - scot-docker-net
     container_name: mongodb
