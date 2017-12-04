@@ -52,6 +52,7 @@ services:
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
      - "/opt/scotbackup/elastic:/opt/scotbackup/elastic/"
+     - "/var/lib/elasticsearch:/var/lib/elasticsearch/"
    networks:
     - scot-docker-net
    container_name: elastic

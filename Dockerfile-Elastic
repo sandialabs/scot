@@ -10,6 +10,8 @@ RUN chown -R elasticsearch:elasticsearch /opt/scotbackup/elastic
 USER elasticsearch
 
 ADD docker-configs/elastic/elasticsearch.yml /usr/share/elasticsearch/config/
+ADD docker-configs/elastic/ /
 
 EXPOSE 9200 9300
 
+CMD /run.sh
