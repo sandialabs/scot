@@ -16,9 +16,9 @@ COPY install/src/scot /opt/scot/etc/
 COPY docker-scripts/ /opt/scot/etc/
 
 
-#COPY docker-configs/backup.cfg.pl /opt/scot/etc
-#COPY docker-configs/restore.cfg.pl /opt/scot/etc
-#COPY docker-configs/mapping/mapping.sh /opt/scot/install/src/elasticsearch/mapping.sh
+COPY docker-configs/backup.cfg.pl /opt/scot/etc
+COPY docker-configs/restore.cfg.pl /opt/scot/etc
+COPY docker-configs/stretch/stretch.cfg.pl /opt/scot/etc
 
 RUN mkdir -p /tmp/foo/
 RUN mkdir -p /opt/scot/public/
