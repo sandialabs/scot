@@ -4,6 +4,25 @@ import { Modal, Button, ButtonGroup, Panel, FormControl, Form, Col } from 'react
 import ReactTable from 'react-table';
 import { removeMarkedItems } from '../components/marker';
 
+const ACTION_BUTTONS = {
+	READY: {
+		style: "default",
+	},
+	LOADING: {
+		text: "Processing...",
+		style: "default",
+		disabled: true,
+	},
+	SUCCESS: {
+		text: "Success!",
+		style: "success",
+	},
+	ERROR: {
+		text: "Error!",
+		style: "danger",
+	},
+};
+
 class Mark extends Component {
     constructor( props ) { 
         super( props );
@@ -209,6 +228,8 @@ class Actions extends Component {
             actionSuccess: false,
             linkContextString: null,
             linkPanel: false,
+
+			reparseButton: ACTION_BUTTONS.READY,
         }
         
         this.RemoveSelected = this.RemoveSelected.bind(this);
@@ -246,6 +267,8 @@ class Actions extends Component {
                 }
             }
         }
+
+		const reparseButton = this.state.reparseButton;
          
         return (
             <div>
@@ -262,7 +285,7 @@ class Actions extends Component {
                                 {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.MoveEntry}>Move to {this.props.type} {this.props.id}</Button> : null }
                                 {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.CopyEntry}>Copy to {this.props.type} {this.props.id}</Button> : null }
                                 {thing || entry ? <Button onClick={this.ExpandLinkToggle} >Link to {this.props.type} {this.props.id}</Button> : null }
-								{(thing || entry) && <Button onClick={this.Reparse} >Reparse Flair</Button> }
+								{(thing || entry) && <Button bsStyle={reparseButton.style} onClick={this.Reparse} disabled={reparseButton.disabled} >{reparseButton.text ? reparseButton.text : "Reparse Flair"}</Button> }
                                 {thing || entry ? <Button bsStyle='danger' onClick={this.RemoveSelected} >Unmark</Button> : null }
                             </ButtonGroup>
                         </div>
@@ -379,25 +402,40 @@ class Actions extends Component {
     }
 
 	Reparse() {
-		this.props.data.filter( ( thing ) => thing.selected )
-			.forEach( ( thing ) => {
-				this.ReparseAjax( thing );
-			} );
+		this.setState({
+			reparseButton: ACTION_BUTTONS.LOADING,
+		});
+
+		$.when( ...this.props.data.filter( ( thing ) => thing.selected )
+			.map( ( thing ) => {
+				return this.ReparseAjax( thing );
+			} )
+		).then( () => {
+			this.setState({
+				reparseButton: ACTION_BUTTONS.SUCCESS,
+			});
+		}, ( error ) => {
+			console.err( error );
+			this.setState({
+				reparseButton: ACTION_BUTTONS.ERROR,
+			});
+			this.props.errorToggle( 'error reparsing', error );
+		} ).always( () => {
+			setTimeout( () => {
+				this.setState({
+					reparseButton: ACTION_BUTTONS.READY,
+				});
+			}, 2000 );
+		} );
 	}
 
 	ReparseAjax( thing ) {
-        $.ajax({
+        return $.ajax({
             type: 'put',
-            url: '/scot/api/v2/'+ thing.type+'/'+ thing.id,
+            url: '/scot/api/v2/'+ thing.type +'/'+ thing.id,
             data: JSON.stringify({parsed:0}),
             contentType: 'application/json; charset=UTF-8',
-            success: function(response){
-                console.log('reparsing started');
-            }.bind(this),
-            error: function(data) {
-                this.props.errorToggle('failed to reparse flair', data);
-            }.bind(this)
-        })
+        });
 	}
 
     LinkAjax( arrayToLink ) {
