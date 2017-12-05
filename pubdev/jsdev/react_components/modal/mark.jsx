@@ -230,6 +230,7 @@ class Actions extends Component {
             linkPanel: false,
 
 			reparseButton: ACTION_BUTTONS.READY,
+			deleteButton: ACTION_BUTTONS.READY,
         }
         
         this.RemoveSelected = this.RemoveSelected.bind(this);
@@ -269,6 +270,7 @@ class Actions extends Component {
         }
 
 		const reparseButton = this.state.reparseButton;
+		const deleteButton = this.state.deleteButton;
          
         return (
             <div>
@@ -286,6 +288,7 @@ class Actions extends Component {
                                 {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.CopyEntry}>Copy to {this.props.type} {this.props.id}</Button> : null }
                                 {thing || entry ? <Button onClick={this.ExpandLinkToggle} >Link to {this.props.type} {this.props.id}</Button> : null }
 								{(thing || entry) && <Button bsStyle={reparseButton.style} onClick={this.Reparse} disabled={reparseButton.disabled} >{reparseButton.text ? reparseButton.text : "Reparse Flair"}</Button> }
+								{(thing || entry) && <Button bsStyle='danger' onClick={this.Delete} disabled={deleteButton.disabled} >{deleteButton.text ? deleteButton.text : "Delete"}</Button> }
                                 {thing || entry ? <Button bsStyle='danger' onClick={this.RemoveSelected} >Unmark</Button> : null }
                             </ButtonGroup>
                         </div>
@@ -410,17 +413,22 @@ class Actions extends Component {
 			.map( ( thing ) => {
 				return this.ReparseAjax( thing );
 			} )
-		).then( () => {
-			this.setState({
-				reparseButton: ACTION_BUTTONS.SUCCESS,
-			});
-		}, ( error ) => {
-			console.err( error );
-			this.setState({
-				reparseButton: ACTION_BUTTONS.ERROR,
-			});
-			this.props.errorToggle( 'error reparsing', error );
-		} ).always( () => {
+		).then(
+			// Success
+			() => {
+				this.setState({
+					reparseButton: ACTION_BUTTONS.SUCCESS,
+				});
+			},
+			// Failure
+			( error ) => {
+				console.err( error );
+				this.setState({
+					reparseButton: ACTION_BUTTONS.ERROR,
+				});
+				this.props.errorToggle( 'error reparsing', error );
+			}
+		).always( () => {
 			setTimeout( () => {
 				this.setState({
 					reparseButton: ACTION_BUTTONS.READY,
