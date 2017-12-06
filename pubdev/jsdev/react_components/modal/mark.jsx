@@ -288,8 +288,8 @@ class Actions extends Component {
                                 {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.CopyEntry}>Copy to {this.props.type} {this.props.id}</Button> : null }
                                 {thing || entry ? <Button onClick={this.ExpandLinkToggle} >Link to {this.props.type} {this.props.id}</Button> : null }
 								{(thing || entry) && <Button bsStyle={reparseButton.style} onClick={this.Reparse} disabled={reparseButton.disabled} >{reparseButton.text ? reparseButton.text : "Reparse Flair"}</Button> }
+                                {(thing || entry) && <Button bsStyle='warning' onClick={this.RemoveSelected} >Unmark</Button> }
 								{(thing || entry) && <Button bsStyle='danger' onClick={this.Delete} disabled={deleteButton.disabled} >{deleteButton.text ? deleteButton.text : "Delete"}</Button> }
-                                {thing || entry ? <Button bsStyle='danger' onClick={this.RemoveSelected} >Unmark</Button> : null }
                             </ButtonGroup>
                         </div>
                         { this.state.linkPanel && ( thing || entry ) ? 
