@@ -169,8 +169,8 @@ const columnDefinitions = {
 	},
 
 	TaskStatus: {
-		Header: 'Status',
-		accessor: d => d.metadata.status,
+		Header: 'Task Status',
+		accessor: d => d.metadata.task.status,
 		id: 'status',
 		column: 'metadata',
 		Cell: customCellRenderers.textStatus,
@@ -178,8 +178,8 @@ const columnDefinitions = {
 	},
 
 	TaskSummary: {
-		Header: 'Summary',
-		accessor: d => d.body_plain.length > 50 ? d.body_plain.substr(0, 50) +'...' : d.body_plain,
+		Header: 'Task Summary',
+		accessor: d => d.body_plain.length > 200 ? d.body_plain.substr(0, 200) +'...' : d.body_plain,
 		id: 'summary',
 		minWidth: 400,
 		maxWidth: 5000,
