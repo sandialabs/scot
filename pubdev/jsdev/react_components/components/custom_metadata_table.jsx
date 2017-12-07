@@ -1,7 +1,8 @@
 var React               = require('react');
 var ReactDateTime       = require('react-datetime');
+import Button from 'react-bootstrap/lib/Button.js';
 
-var CustomTypeTable = React.createClass({
+var CustomMetaDataTable = React.createClass({
     getInitialState: function() {
         
         return {
@@ -23,7 +24,19 @@ var CustomTypeTable = React.createClass({
                     key: 'occurred',
                     value: 1494018000,
                     label: 'Occurred'
-                }
+                },
+                {
+                    type: 'textarea',
+                    key: 'description',
+                    value: 'string here',
+                    label: 'Description',
+                },
+                {
+                    type: 'input_multi',
+                    key: 'signature_group',
+                    value: ['string1', 'string2'],
+                    label: 'Signature Group',
+                },
             ],
         }
     },
@@ -64,7 +77,9 @@ var CustomTypeTable = React.createClass({
         var dropdownArr = [];
         var datesArr = [];
         var inputArr = [];
-         
+        var textAreaArr = [];
+        var inputMultiArr = [];
+
         for ( let i=0; i < this.state.data.length; i++ )  {
             switch ( this.state.data[i]['type'] ) {
                 case 'dropdown':
@@ -81,9 +96,11 @@ var CustomTypeTable = React.createClass({
                     break;
 
                 case 'textarea':
-                    break;
+                   textAreaArr.push(<TextAreaComponent id={this.state.data[i].key} value={this.state.data[i].value} onBlur={this.onChange} label={this.state.data[i].label} />)
+                   break;
                 
                 case 'input_multi':
+                    inputMultiArr.push(<InputMultiComponent id={this.state.data[i].key} value={this.state.data[i].value} errorToggle={this.props.errorToggle} mainType={this.props.type} mainId={this.props.id} />)
                     break;
             }
         }
@@ -93,6 +110,8 @@ var CustomTypeTable = React.createClass({
                 {dropdownArr}
                 {datesArr}
                 {inputArr}
+                {textAreaArr}
+                {inputMultiArr}
             </div>
         )
     }
@@ -213,5 +232,141 @@ var Calendar = React.createClass({
     }
 });
 
+let TextAreaComponent = React.createClass({
+    getInitialState: function() {
+        return {
+            value: this.props.value
+        }
+    },
+    
+    inputOnChange: function(event) {
+        this.setState({value:event.target.value});
+    },
 
-module.exports = CustomTypeTable;
+    render: function() {
+        
+        return (
+            <div>
+                <span className='incidentTableWidth'>
+                    {this.props.label}
+                </span>
+                <span>
+                    <textarea id={this.props.id} onBlur={this.props.onBlur} onChange={this.inputOnChange} value={this.state.value} className='signatureMetaTextArea'/>
+                </span>
+            </div>
+        )
+    }
+});
+
+let InputMultiComponent = React.createClass({
+    getInitialState: function() {
+        return {
+            inputValue: '',
+        }
+    },
+
+    handleAddition: function(group) {
+        var groupArr = [];
+        var data = this.props.value;
+        for (var i=0; i < data.length; i++) {
+            if (data[i] != undefined) {
+                if (typeof(data[i]) == 'string') {
+                    groupArr.push(data[i]);
+                } else {
+                    groupArr.push(data[i].value);
+                }
+            }
+        }
+        groupArr.push(group.target.value);
+        
+        let newData = {};
+        newData[this.props.id] = groupArr;
+        
+        $.ajax({
+            type: 'put',
+            url: 'scot/api/v2/'+ this.props.mainType + '/' + this.props.mainId,
+            data: JSON.stringify(newData),
+            contentType: 'application/json; charset=UTF-8',
+            success: function(data) {
+                console.log('success: group added');
+                this.setState({inputValue: ''});
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('Failed to add group', data);
+            }.bind(this)
+        });
+    },
+    
+    InputChange: function(event) {
+        this.setState({inputValue: event.target.value});
+    },
+    
+    handleDelete: function(event) {
+        var data = this.props.value;
+        var clickedThing = event.target.id;
+        var groupArr= [];
+        for (var i=0; i < data.length; i++) {
+            if (data[i] != undefined) {
+                if (typeof(data[i]) == 'string') {
+                    if (data[i] != clickedThing) {
+                        groupArr.push(data[i]);
+                    }
+                } else {
+                    if (data[i].value != clickedThing) {
+                        groupArr.push(data[i].value);
+                    }
+                }
+            }
+        }
+
+        let newData = {};
+        newData[this.props.id] = groupArr;
+
+        $.ajax({
+            type: 'put',
+            url: 'scot/api/v2/'+ this.props.mainType + '/' + this.props.mainId,
+            data: JSON.stringify(newData),
+            contentType: 'application/json; charset=UTF-8',
+            success: function(data) {
+                console.log('deleted group success: ' + data);
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('Failed to delete group', data);
+            }.bind(this)
+        });
+    },
+
+    render: function() {
+        var data = this.props.value;
+        var groupArr = [];
+        var value;
+        for (var i=0; i < data.length; i++) {
+            if (typeof(data[i]) == 'string') {
+                value = data[i];
+            } else if (typeof(data[i]) == 'object') {
+                if (data[i] != undefined) {
+                    value = data[i].value;
+                }
+            }
+            groupArr.push(<span id="event_signature" className='tagButton'>{value} <i id={value} onClick={this.handleDelete} className="fa fa-times tagButtonClose"/></span>);
+        }
+        return (
+            <div>
+                <span className='incidentTableWidth'>
+                    Signature Group:
+                </span>
+                <span className='signatureTableWidth'>
+                    <input id={this.props.id} onChange={this.InputChange} value={this.state.inputValue} />
+                    {this.state.inputValue != '' ? <Button bsSize='xsmall' bsStyle='success' onClick={this.handleAddition} value={this.state.inputValue}>Submit</Button> : <Button bsSize='xsmall' bsType='submit' disabled>Submit</Button>}
+                </span>
+                <span className='custom-metadata-multi-input-tags'>
+                    {groupArr}
+                </span>
+            </div>
+        )
+    }
+
+})
+
+
+module.exports = CustomMetaDataTable;
