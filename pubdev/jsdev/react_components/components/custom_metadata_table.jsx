@@ -37,6 +37,12 @@ var CustomMetaDataTable = React.createClass({
                     value: ['string1', 'string2'],
                     label: 'Signature Group',
                 },
+                {
+                    type: 'boolean',
+                    key: 'active',
+                    value: true,
+                    label: 'Active',
+                },
             ],
         }
     },
@@ -79,6 +85,7 @@ var CustomMetaDataTable = React.createClass({
         var inputArr = [];
         var textAreaArr = [];
         var inputMultiArr = [];
+        var booleanArr = [];
 
         for ( let i=0; i < this.state.data.length; i++ )  {
             switch ( this.state.data[i]['type'] ) {
@@ -100,7 +107,11 @@ var CustomMetaDataTable = React.createClass({
                    break;
                 
                 case 'input_multi':
-                    inputMultiArr.push(<InputMultiComponent id={this.state.data[i].key} value={this.state.data[i].value} errorToggle={this.props.errorToggle} mainType={this.props.type} mainId={this.props.id} />)
+                    inputMultiArr.push(<InputMultiComponent id={this.state.data[i].key} value={this.state.data[i].value} errorToggle={this.props.errorToggle} mainType={this.props.type} mainId={this.props.id} label={this.state.data[i].label} />)
+                    break;
+                
+                case 'boolean':
+                    booleanArr.push(<BooleanComponent id={this.state.data[i].key} value={this.state.data[i].value} onChange={this.onChange} label={this.state.data[i].label} />)
                     break;
             }
         }
@@ -112,6 +123,7 @@ var CustomMetaDataTable = React.createClass({
                 {inputArr}
                 {textAreaArr}
                 {inputMultiArr}
+                {booleanArr}
             </div>
         )
     }
@@ -353,7 +365,7 @@ let InputMultiComponent = React.createClass({
         return (
             <div>
                 <span className='incidentTableWidth'>
-                    Signature Group:
+                    {this.props.label}
                 </span>
                 <span className='signatureTableWidth'>
                     <input id={this.props.id} onChange={this.InputChange} value={this.state.inputValue} />
@@ -365,7 +377,39 @@ let InputMultiComponent = React.createClass({
             </div>
         )
     }
+})
 
+let BooleanComponent = React.createClass({    
+    
+    
+    onChange: function(e) {
+        let value;
+        if (e.target.value == 'true') {
+            value = 1;
+        } else {
+            value = 0;
+        }
+
+        let obj = {};
+        obj['target'] = {}
+        obj['target']['id'] = this.props.id;
+        obj['target']['value'] = value;
+
+        this.props.onChange(obj); 
+    },
+    
+    render: function() {
+        return (
+            <div>
+                <span className='incidentTableWidth'>
+                    {this.props.label}
+                </span>
+                <span>
+                    <input type='checkbox' id={this.props.id} name={this.props.id} value={this.props.value} onClick={this.onChange}/>
+                </span>
+            </div>
+        )
+    },
 })
 
 
