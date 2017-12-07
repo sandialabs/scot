@@ -170,11 +170,20 @@ const columnDefinitions = {
 
 	TaskStatus: {
 		Header: 'Status',
-		accessor: d => d.metadata.task.status,
+		accessor: d => d.metadata.status,
 		id: 'status',
 		column: 'metadata',
 		Cell: customCellRenderers.textStatus,
-		Filter: customFilters.dropdownFilter(),
+		Filter: customFilters.dropdownFilter( [ 'open', 'closed' ] ),
+	},
+
+	TaskSummary: {
+		Header: 'Summary',
+		accessor: d => d.body_plain.length > 50 ? d.body_plain.substr(0, 50) +'...' : d.body_plain,
+		id: 'summary',
+		minWidth: 400,
+		maxWidth: 5000,
+		Filter: customFilters.stringFilter,
 	},
 
 	Subject: {
@@ -388,7 +397,7 @@ const typeColumns = {
 			title: 'Tags',
 			options: { minWidth: 200, maxWidth: 250 },
 		}, 'Owner', 'Entries', 'Views', ],
-	task: [ 'Id', 'TargetType', 'TargetId', 'TaskStatus', 
+	task: [ 'Id', 'TargetType', 'TargetId', 'TaskStatus', 'TaskSummary',
 		{
 			title: 'Owner',
 			options: { minWidth: 150, maxWidth: 500 },
