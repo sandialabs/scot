@@ -117,13 +117,15 @@ var CustomMetaDataTable = React.createClass({
         }
 
         return (
-            <div className='incidentTable'>
-                {dropdownArr}
-                {datesArr}
-                {inputArr}
-                {textAreaArr}
-                {inputMultiArr}
-                {booleanArr}
+            <div className='custom-metadata-table container'>
+                <div className='row'>
+                    {dropdownArr}
+                    {datesArr}
+                    {inputArr}
+                    {textAreaArr}
+                    {inputMultiArr}
+                    {booleanArr}
+                </div>
             </div>
         )
     }
@@ -159,8 +161,8 @@ let DropdownComponent = React.createClass({
     render: function() {
          
         return (
-            <div>
-                <span className='incidentTableWidth'>
+            <div className='custom-metadata-table-component-div'>
+                <span className='custom-metadata-tableWidth'>
                     { this.props.label }
                 </span>
                 <span>
@@ -188,12 +190,12 @@ let InputComponent = React.createClass({
     render: function() {
         
         return (
-            <div>
-                <span className='incidentTableWidth'>
+            <div className='custom-metadata-table-component-div'>
+                <span className='custom-metadata-tableWidth'>
                     {this.props.label}
                 </span>
                 <span>
-                    <input id={this.props.id} onBlur={this.props.onBlur} onChange={this.inputOnChange} value={this.state.value} />
+                    <input className='custom-metadata-input-width' id={this.props.id} onBlur={this.props.onBlur} onChange={this.inputOnChange} value={this.state.value} />
                 </span>
             </div>
         )
@@ -234,11 +236,11 @@ var Calendar = React.createClass({
     },
     render: function() {
         return(
-            <div style={{display:'flex',flexFlow:'row'}}>
-                <span className='incidentTableWidth'>
+            <div className='custom-metadata-table-component-div' style={{display:'flex',flexFlow:'row'}}>
+                <span className='custom-metadata-tableWidth'>
                     {this.props.typeTitle}:
                 </span>
-                <ReactDateTime value={this.props.value} onChange={this.onChange}/> 
+                <ReactDateTime className='custom-metadata-input-width' value={this.props.value} onChange={this.onChange}/> 
             </div>
         )
     }
@@ -258,12 +260,12 @@ let TextAreaComponent = React.createClass({
     render: function() {
         
         return (
-            <div>
-                <span className='incidentTableWidth'>
+            <div className='custom-metadata-table-component-div'>
+                <span className='custom-metadata-tableWidth'>
                     {this.props.label}
                 </span>
                 <span>
-                    <textarea id={this.props.id} onBlur={this.props.onBlur} onChange={this.inputOnChange} value={this.state.value} className='signatureMetaTextArea'/>
+                    <textarea id={this.props.id} onBlur={this.props.onBlur} onChange={this.inputOnChange} value={this.state.value} className='custom-metadata-textarea-width'/>
                 </span>
             </div>
         )
@@ -363,12 +365,12 @@ let InputMultiComponent = React.createClass({
             groupArr.push(<span id="event_signature" className='tagButton'>{value} <i id={value} onClick={this.handleDelete} className="fa fa-times tagButtonClose"/></span>);
         }
         return (
-            <div>
-                <span className='incidentTableWidth'>
+            <div className='custom-metadata-table-component-div'>
+                <span className='custom-metadata-tableWidth'>
                     {this.props.label}
                 </span>
-                <span className='signatureTableWidth'>
-                    <input id={this.props.id} onChange={this.InputChange} value={this.state.inputValue} />
+                <span>
+                    <input className='custom-metadata-input-width' id={this.props.id} onChange={this.InputChange} value={this.state.inputValue} />
                     {this.state.inputValue != '' ? <Button bsSize='xsmall' bsStyle='success' onClick={this.handleAddition} value={this.state.inputValue}>Submit</Button> : <Button bsSize='xsmall' bsType='submit' disabled>Submit</Button>}
                 </span>
                 <span className='custom-metadata-multi-input-tags'>
@@ -400,12 +402,12 @@ let BooleanComponent = React.createClass({
     
     render: function() {
         return (
-            <div>
-                <span className='incidentTableWidth'>
+            <div className='custom-metadata-table-component-div'>
+                <span className='custom-metadata-tableWidth'>
                     {this.props.label}
                 </span>
                 <span>
-                    <input type='checkbox' id={this.props.id} name={this.props.id} value={this.props.value} onClick={this.onChange}/>
+                    <input type='checkbox' className='custom-metadata-input-width' id={this.props.id} name={this.props.id} value={this.props.value} onClick={this.onChange}/>
                 </span>
             </div>
         )
