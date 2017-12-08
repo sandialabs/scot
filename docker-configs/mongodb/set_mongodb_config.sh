@@ -16,13 +16,16 @@ while [[ RET -ne 0 ]]; do
 done
 
 set='$set'
-mongo --host mongodb scot-prod /opt/scot/install/src/mongodb/admin_user.js
-mongo --host mongodb scot-prod --eval "db.user.update({username:'admin'}, {$set:{pwhash:'$HASH'}}, {multi:true})"
-
-sleep 3
 
 # If everything went well, add a file as a flag so we know in the future to not re-create the
 # users if we're recreating the container (provided we're using some persistent storage)
-echo "hello" > /var/lib/mongodb/.mongodb_password_set
+
+if [ ! -f /var/lib/mongodb/.mongodb_password_set ]; then
+    mongo --host mongodb scot-prod /opt/scot/install/src/mongodb/admin_user.js
+    mongo --host mongodb scot-prod --eval "db.user.update({username:'admin'}, {$set:{pwhash:'$HASH'}}, {multi:true})"
+    echo "hello" > /var/lib/mongodb/.mongodb_password_set
+fi
+
+sleep 3
 
 echo "MongoDB configured successfully. You may now connect to the DB."

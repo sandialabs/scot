@@ -19,7 +19,7 @@ EXPOSE 27017
 ADD docker-configs/mongodb/mongod.conf /etc/mongod.conf
 ADD docker-configs/scot/scot.cfg.pl /opt/scot/etc/
 ADD docker-configs/mongodb/ /
-
+ADD install/src/mongodb /opt/scot/install/src/mongodb
 #Create /var/lib/mongodb directory
 RUN mkdir -p /var/lib/mongodb/
 

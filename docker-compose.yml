@@ -53,6 +53,7 @@ services:
      - "/etc/localtime:/etc/localtime:ro"
      - "/opt/scotbackup/elastic:/opt/scotbackup/elastic/"
      - "/var/lib/elasticsearch:/var/lib/elasticsearch/"
+     - "/home/bemonta/workspace:/var/lib/elasticsearch/maping/"
    networks:
     - scot-docker-net
    container_name: elastic
