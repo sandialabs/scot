@@ -18,6 +18,25 @@ const customStyles = {
     }
 }
 
+const ACTION_BUTTONS = {
+	READY: {
+		style: "default",
+	},
+	LOADING: {
+		text: "Processing...",
+		style: "default",
+		disabled: true,
+	},
+	SUCCESS: {
+		text: "Success!",
+		style: "success",
+	},
+	ERROR: {
+		text: "Error!",
+		style: "danger",
+	},
+};
+
 export class DeleteEvent extends PureComponent {
 	constructor( props ) {
 		super( props );
@@ -103,7 +122,7 @@ export class DeleteEntry extends PureComponent {
 	}
 }
 
-const deleteObjectType = 
+const thingType = 
 			PropTypes.shape([
 				type: PropTypes.string,
 				id: PropTypes.number,
@@ -114,6 +133,7 @@ export class DeleteModal extends PureComponent {
 		super( props );
 
 		this.state = {
+			deleteButton: ACTION_BUTTONS.READY,
 		};
 
 		this.deleteAll = this.deleteAll.bind(this);
@@ -121,14 +141,70 @@ export class DeleteModal extends PureComponent {
 
 	static propTypes = {
 		things: PropTypes.oneOfType([
-			deleteObjectType,
-			PropTypes.arrayOf(deleteObjectType),
+			thingType,
+			PropTypes.arrayOf(thingType),
 		]).isRequired,
 		errorToggle: PropTypes.func.isRequired,
+		successCallback: PropTypes.func,
 	}
 
 	deleteAll() {
+		this.setState({
+			deleteButton: ACTION_BUTTONS.LOADING,
+		});
+
+		$.when( ...this.props.data.filter( ( thing ) => thing.selected )
+			.map( ( thing ) => {
+				return this.ReparseAjax( thing );
+			} )
+		).then(
+			// Success
+			() => {
+				this.setState({
+					deleteButton: ACTION_BUTTONS.SUCCESS,
+				});
+			},
+			// Failure
+			( error ) => {
+				console.err( error );
+				this.setState({
+					deleteButton: ACTION_BUTTONS.ERROR,
+				});
+				this.props.errorToggle( 'error deleting', error );
+			}
+		).always( () => {
+			setTimeout( () => {
+				this.setState({
+					deleteButton: ACTION_BUTTONS.READY,
+				});
+
+				if ( this.props.successCallback ) {
+					this.props.successCallback();
+				}
+			}, 2000 );
+		} );
 	}
 
-	render() {}
+	deleteAjax( thing ) {
+        return $.ajax({
+            type: 'delete',
+            url: '/scot/api/v2/'+ thing.type +'/'+ thing.id,
+            contentType: 'application/json; charset=UTF-8',
+        });
+	}
+
+	render() {
+		return (
+			<Modal isOpen={true} onRequestClose={this.props.deleteToggle} style={customStyles}>
+				<div className='modal-header'>
+					<img src='images/close_toolbar.png' className='close_toolbar' onClick={this.props.deleteToggle} />
+					<h3 id='myModalLabel'>Are you sure you want to delete Entry: {this.props.entryid}?</h3>
+				</div>
+				<div className='modal-footer'>
+					<Button id='cancel-delete' onClick={this.props.deleteToggle}>Cancel</Button>
+					<Button bsStyle='danger' id='delete' onClick={this.toggle}>Delete</Button>
+				</div>
+			</Modal>
+		)
+	}
 }
