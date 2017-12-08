@@ -241,6 +241,13 @@ const columnDefinitions = {
 		Filter: customFilters.tagFilter( 'tag' ),
 	},
 
+    TaskOwner: {
+		Header: 'Task Owner',
+		accessor: 'owner',
+		maxWidth: 80,
+		Filter: customFilters.stringFilter,
+	},
+    
 	Owner: {
 		Header: 'Owner',
 		accessor: 'owner',
@@ -397,11 +404,12 @@ const typeColumns = {
 			title: 'Tags',
 			options: { minWidth: 200, maxWidth: 250 },
 		}, 'Owner', 'Entries', 'Views', ],
-	task: [ 'Id', 'TargetType', 'TargetId', 'TaskStatus', 'TaskSummary',
-		{
-			title: 'Owner',
+	task: [ 'Id', 'TargetType', 'TargetId', 
+        {
+			title: 'TaskOwner',
 			options: { minWidth: 150, maxWidth: 500 },
-		}, 
+		},
+        'TaskStatus', 'TaskSummary',
 		{
 			title: 'Updated',
 			options: { minWidth: 150, maxWidth: 500 },
