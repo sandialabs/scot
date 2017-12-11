@@ -359,6 +359,7 @@ function install_perl_modules {
         CGI::Compile
         HTTP::Server::Simple::PSGI
         JSON
+        JSON::XS
         DBI
         Parallel::ForkManager
         AnyEvent
