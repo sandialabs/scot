@@ -90,7 +90,7 @@ var AddFlair = {
                                             if (entityEntryCount != undefined) {
                                                 if (entityEntryCount != 0) {
                                                     var entityEntry = entityMatched.entries[0].body_plain
-                                                    $(entity).append($('<img class="extras" title="'+ entityEntry +'">').attr('src', '/images/flair/note.gif'));
+                                                    $(entity).append($('<img class="extras" title="'+ entityEntry +'">').attr('src', '/images/flair/note.png'));
                                                 }
                                             }
                                         }
@@ -180,7 +180,7 @@ var AddFlair = {
                                 if (entityEntryCount != undefined) {
                                     if (entityEntryCount != 0) {
                                         var entityEntry = entityMatched.entries[0].body_plain
-                                        $(entity).append($('<img class="extras" title="'+ entityEntry +'">').attr('src', '/images/flair/note.gif'));
+                                        $(entity).append($('<img class="extras" title="'+ entityEntry +'">').attr('src', '/images/flair/note.png'));
                                     }
                                 }
                             }

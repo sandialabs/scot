@@ -4,6 +4,7 @@ use lib '../../../lib';
 use Moose 2;
 use Data::Dumper;
 use HTML::Element;
+use JSON::XS;
 
 extends 'Scot::Collection';
 
