@@ -1,5 +1,5 @@
 var gulp = require('gulp');
-let rename = require('gulp-rename');
+var rename = require('gulp-rename');
 var browserify = require('browserify');
 var babelify = require('babelify');
 var source = require('vinyl-source-stream');
