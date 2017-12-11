@@ -362,4 +362,22 @@ the /opt/scot/etc/ldap.cfg file.  The line::
 
 can be changed to whatever naming convention you decide upon.
 
+HotKeys
+-------
 
+The following hotkeys are supported:
+
+f: Toggle full screen mode when a detail section is open
+t: Toggle flair on/off
+o: This will open all alerts within the alertgroup when in the alertgroup list view as your focus. 
+c: This will close all alerts within the alertgroup when in the alertgroup list view as your focus. 
+j: This will select one row down within the list view.
+k: This will select one row up within the list view.
+esc: This will close the entity pop-up window. 
+
+Posting a global notificaton:
+-----------------------------
+
+A global notification can be posted to all users by navigating to <scot instance>/#/wall
+
+Note that only raw text will be displayed.
