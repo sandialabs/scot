@@ -11,3 +11,7 @@
 
 #node_modules
 node_modules
+
+#compiled scot.js
+scot.js
+scot-debug.js
