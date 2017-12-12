@@ -8,3 +8,9 @@
 [._]*.sw[a-p]
 [._]s[a-v][a-z]
 [._]sw[a-p]
+
+#node_modules
+node_modules
+
+#npm
+package-lock.json
