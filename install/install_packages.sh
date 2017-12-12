@@ -143,7 +143,7 @@ function install_cent_packages {
         GeoIP
         libmaxminddb.x86_64
         libmaxminddb-devel.x86_64
-        libgmp3-dev
+        libgmp3-devel
     '
 
     for pkg in $YUMPACKAGES; do

@@ -31,7 +31,7 @@ my $log         = $env->log;
 my $extractor   = $env->extractor;
 my $etcur       = $etcol->find({});
 
-is ($etcur->count, 2, "Found correct number of entitytypes");
+is ($etcur->count, 3, "Found correct number of entitytypes");
 
 while ( my $et = $etcur->next ) {
     say ref($et);

@@ -695,9 +695,9 @@ module.exports = React.createClass({
             keys.push(value);
 	    });
 	    var csv = ''
-    	$('.list-view-table-data').find('.table-row').each(function(key, value){
+    	$('.rt-tbody').find('.rt-tr').each(function(key, value){
 	        var storearray = []
-            $(value).find('td').each(function(x,y) {
+            $(value).find('.rt-td').each(function(x,y) {
                 var obj = $(y).text()
 		        obj = obj.replace(/,/g,'|')
 		        storearray.push(obj)

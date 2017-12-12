@@ -754,5 +754,27 @@ EOF
         userdef => [
         ],
     },
+    {
+        testname    => "cidr1",
+        testgroup   => "cidr",
+        testnumber  => 31,
+        source      => <<'EOF',
+10.10.10.0/30
+EOF
+        plain       => <<'EOF',
+10.10.10.0/30
+EOF
+        flair       => <<'EOF',
+<div><span class="entity cidr" data-entity-type="cidr" data-entity-value="10.10.10.0/30">10.10.10.0/30</span></div>
+EOF
+        entities    => [
+            {
+                value   => '10.10.10.0/30',
+                type    => 'cidr',
+            }
+        ],
+        userdef => [
+        ],
+    },
 
 );

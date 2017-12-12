@@ -243,6 +243,42 @@ sub _build_CVE {
     };
 }
 
+=item B<cidr>
+
+This regex will detect CIDR blocks of the formate a.b.c.d/e
+
+=cut
+
+has regex_CIDR  => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_CIDR',
+);
+
+sub _build_CIDR {
+    my $self    = shift;
+    my $regex   = qr{
+        \b                                      # word boundary
+        (?<!\.)
+        (
+            # first 3 octets with optional [.],{.},(.) obsfucation
+            (?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\(*\[*\{*\.\)*\]*\}*){3}   
+            # last octet
+            (?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)
+            (/([0-9]|[1-2][0-9]|3[0-2]))   # the /32
+        )
+        \b
+    }xims;
+    return {
+        regex   => $regex,
+        type    => "cidr",
+        order   => 1,
+        options => { multiword => "yes" },
+    };
+}
+
 =item B<md5>
 
 The regex will pull out md5 out of text
@@ -441,7 +477,7 @@ sub _build_IPADDR {
     return {
         regex   => $regex,
         type    => 'ipaddr',
-        order   => 10,
+        order   => 10, # needs to after the cidr match
         options => { multiword => "no" },
     };
 }
