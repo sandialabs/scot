@@ -1,0 +1,138 @@
+version: '3'
+services:
+  apache:
+    build:
+      dockerfile: sandialabs/SCOT-apache 
+    volumes: 
+     - "/etc/timezone:/etc/timezone:ro"
+     - "/etc/localtime:/etc/localtime:ro"
+     - "/var/log/apache2:/var/log/apache2/"
+    ports:
+     - "443:443"
+     - "80:80"
+    networks:
+     - scot-docker-net
+    container_name: apache  
+
+  activemq:
+    volumes:
+     - "/var/log/activemq:/var/log/activemq/log/"
+    build:
+      dockerfile: sandialabs/SCOT-activemq
+      args:
+       proxy: " " 
+    ports:
+     - "8161:8161"
+    networks:
+     - scot-docker-net
+    container_name: activemq
+  
+  mongodb:
+    build:
+      dockerfile: sandialabs/SCOT-mongodb 
+    volumes:
+     - "/var/log/mongodb/mongod.log:/var/log/mongodb/mongod.log"
+     - "/etc/timezone:/etc/timezone:ro"
+     - "/etc/localtime:/etc/localtime:ro"
+     - "/var/lib/mongodb:/var/lib/mongodb/"
+     - "/opt/scotbackup/mongo/scot-prod:/opt/scotbackup/mongo/scot-prod/"
+     - "/var/log/scot:/var/log/scot/"
+    networks:
+     - scot-docker-net
+    container_name: mongodb
+
+  elastic:
+   build:
+     dockerfile: sandia/SCOT-elastic 
+   volumes:
+     - "/etc/timezone:/etc/timezone:ro"
+     - "/etc/localtime:/etc/localtime:ro"
+     - "/opt/scotbackup/elastic:/opt/scotbackup/elastic/"
+     - "/var/lib/elasticsearch:/var/lib/elasticsearch/"
+     - "/home/bemonta/workspace:/var/lib/elasticsearch/maping/"
+   networks:
+    - scot-docker-net
+   container_name: elastic
+ 
+  scot:
+    build:
+      dockerfile: sandialabs/scot
+    volumes:
+     - "/var/log/scot:/var/log/scot/"
+     - "/etc/timezone:/etc/timezone:ro"
+     - "/etc/localtime:/etc/localtime:ro"
+     - "/opt/scotfiles:/opt/scotfiles/"
+     - "/opt/scot/public/cached_images:/opt/scot/public/cached_images/"
+    depends_on:
+     - perl
+     - mongodb
+     - activemq
+    networks:
+     - scot-docker-net
+    container_name: scot
+  
+  perl:
+    build: 
+      dockerfile: sandialabs/SCOT-Perl
+    image: scot_perl
+  
+  flair:
+   build:
+     dockerfile: sandialabs/SCOT-Flair 
+   volumes:
+    - "/var/log/scot:/var/log/scot/"
+    - "/etc/localtime:/etc/localtime:ro"
+   depends_on:
+    - mongodb
+    - activemq
+    - scot
+   networks:
+     - scot-docker-net
+   container_name: flair
+  
+  reflair:
+   build:
+     dockerfile: sandialabs/SCOT-Reflair
+   volumes:
+    - "/var/log/scot:/var/log/scot/"
+    - "/etc/localtime:/etc/localtime:ro"
+   depends_on:
+    - mongodb
+    - activemq
+    - scot
+   networks:
+     - scot-docker-net
+   container_name: reflair
+     
+
+  stretch:
+   build:
+     dockerfile: sandialabs/SCOT-Stretch
+   image: scot_stretch
+   volumes:
+    - "/var/log/scot:/var/log/scot/"
+    - "/etc/localtime:/etc/localtime:ro"
+   depends_on:
+    - mongodb
+    - activemq
+    - scot
+   networks:
+    - scot-docker-net
+   container_name: stretch
+  
+  game:
+   build:
+     dockerfile: sandialabs/SCOT-Game 
+   volumes:
+    - "/var/log/scot:/var/log/scot/"
+    - "/etc/localtime:/etc/localtime:ro"
+   depends_on:
+    - mongodb
+    - scot
+   networks:
+     - scot-docker-net
+   container_name: game
+
+networks:
+  scot-docker-net:
+    driver: bridge
