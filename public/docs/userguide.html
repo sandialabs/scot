@@ -17,7 +17,8 @@
         VERSION:     '3.5.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
@@ -25,7 +26,6 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
     <link rel="next" title="Administration Guide" href="adminguide.html" />
     <link rel="prev" title="Overview" href="overview.html" /> 
   </head>
@@ -89,7 +89,7 @@ and addes to SCOT.  The sections below describe how to use each section.</p>
 </tbody>
 </table>
 <div class="figure">
-<a class="reference internal image-reference" href="_static/images/alertfilters.png"><img alt="Filters in alert grid" src="_static/images/alertfilters.png" style="width: 100%;" /></a>
+<a class="reference internal image-reference" href="_images/alertfilters.png"><img alt="Filters in alert grid" src="_images/alertfilters.png" style="width: 100%;" /></a>
 </div>
 <p>Each column contains a textbox to filter the grid results.  Just enter in a filter and press &#8216;Enter&#8217; on your keyboard to activate the filter.  You can also click on a column above the filter textbox to sort by that column.  We can see the default sort order is by &#8216;created&#8217; which is indicated by the chevron next to the column name.</p>
 <p>A summary of alert status within an alertgroup can be quickly determined by glancing at the status column.  The legend below explains the shapes/colors used.</p>
@@ -405,6 +405,27 @@ the /opt/scot/etc/ldap.cfg file.  The line:</p>
 <p>can be changed to whatever naming convention you decide upon.</p>
 </div>
 </div>
+<div class="section" id="hotkeys">
+<h2>HotKeys<a class="headerlink" href="#hotkeys" title="Permalink to this headline">¶</a></h2>
+<p>The following hotkeys are supported:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">f</span><span class="p">:</span> <span class="n">Toggle</span> <span class="n">full</span> <span class="n">screen</span> <span class="n">mode</span> <span class="n">when</span> <span class="n">a</span> <span class="n">detail</span> <span class="n">section</span> <span class="ow">is</span> <span class="nb">open</span>
+<span class="n">t</span><span class="p">:</span> <span class="n">Toggle</span> <span class="n">flair</span> <span class="n">on</span><span class="o">/</span><span class="n">off</span>
+<span class="n">o</span><span class="p">:</span> <span class="n">This</span> <span class="n">will</span> <span class="nb">open</span> <span class="nb">all</span> <span class="n">alerts</span> <span class="n">within</span> <span class="n">the</span> <span class="n">alertgroup</span> <span class="n">when</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">alertgroup</span> <span class="nb">list</span> <span class="n">view</span> <span class="k">as</span> <span class="n">your</span> <span class="n">focus</span><span class="o">.</span>
+<span class="n">c</span><span class="p">:</span> <span class="n">This</span> <span class="n">will</span> <span class="n">close</span> <span class="nb">all</span> <span class="n">alerts</span> <span class="n">within</span> <span class="n">the</span> <span class="n">alertgroup</span> <span class="n">when</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">alertgroup</span> <span class="nb">list</span> <span class="n">view</span> <span class="k">as</span> <span class="n">your</span> <span class="n">focus</span><span class="o">.</span>
+<span class="n">j</span><span class="p">:</span> <span class="n">This</span> <span class="n">will</span> <span class="n">select</span> <span class="n">one</span> <span class="n">row</span> <span class="n">down</span> <span class="n">within</span> <span class="n">the</span> <span class="nb">list</span> <span class="n">view</span><span class="o">.</span>
+<span class="n">k</span><span class="p">:</span> <span class="n">This</span> <span class="n">will</span> <span class="n">select</span> <span class="n">one</span> <span class="n">row</span> <span class="n">up</span> <span class="n">within</span> <span class="n">the</span> <span class="nb">list</span> <span class="n">view</span><span class="o">.</span>
+<span class="n">esc</span><span class="p">:</span> <span class="n">This</span> <span class="n">will</span> <span class="n">close</span> <span class="n">the</span> <span class="n">entity</span> <span class="n">pop</span><span class="o">-</span><span class="n">up</span> <span class="n">window</span><span class="o">.</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="posting-a-global-notificaton">
+<h2>Posting a global notificaton:<a class="headerlink" href="#posting-a-global-notificaton" title="Permalink to this headline">¶</a></h2>
+<p>A global notification can be posted to all users by navigating to:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">https</span><span class="p">:</span><span class="o">//&lt;</span><span class="n">scot</span> <span class="n">instance</span><span class="o">&gt;/</span><span class="c1">#/wall</span>
+</pre></div>
+</div>
+<p>Note that only raw text will be displayed.</p>
+</div>
 </div>
 
 
@@ -450,6 +471,8 @@ the /opt/scot/etc/ldap.cfg file.  The line:</p>
 <li><a class="reference internal" href="#note-about-group-names">Note about Group Names</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#hotkeys">HotKeys</a></li>
+<li><a class="reference internal" href="#posting-a-global-notificaton">Posting a global notificaton:</a></li>
 </ul>
 </li>
 </ul>
@@ -463,7 +486,7 @@ the /opt/scot/etc/ldap.cfg file.  The line:</p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/userguide.txt"
+      <li><a href="_sources/userguide.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>

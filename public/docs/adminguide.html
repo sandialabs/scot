@@ -17,7 +17,8 @@
         VERSION:     '3.5.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
@@ -25,7 +26,6 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
     <link rel="next" title="Developing For SCOT" href="devguide.html" />
     <link rel="prev" title="User Guide" href="userguide.html" /> 
   </head>
@@ -79,17 +79,17 @@ $ tar czvf /another/dir/scot-prod.tgz ./dump</p>
 <dl class="docutils">
 <dt>##.  if you have never backed up elastic, you will need to create</dt>
 <dd><p class="first">a repo:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -XPUT localhost:9200/_snapshot/scot_backup -d &#39;{
+<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="o">|</span> <span class="n">curl</span> <span class="o">-</span><span class="n">XPUT</span> <span class="n">localhost</span><span class="p">:</span><span class="mi">9200</span><span class="o">/</span><span class="n">_snapshot</span><span class="o">/</span><span class="n">scot_backup</span> <span class="o">-</span><span class="n">d</span> <span class="s1">&#39;{</span>
+<span class="o">|</span>    <span class="s2">&quot;scot_backup&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="o">|</span>        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;fs&quot;</span><span class="p">,</span>
+<span class="o">|</span>        <span class="s2">&quot;settings: {</span>
+<span class="o">|</span>            <span class="s2">&quot;compress&quot;</span><span class="p">:</span> <span class="s2">&quot;true&quot;</span><span class="p">,</span>
+<span class="o">|</span>            <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/esback&quot;</span>
+<span class="o">|</span>        <span class="p">}</span>
+<span class="o">|</span>    <span class="p">}</span>
+<span class="o">|</span> <span class="p">}</span><span class="s1">&#39;</span>
 </pre></div>
 </div>
-<p class="last">&gt;    &#8220;scot_backup&#8221;: {
-&gt;         &#8220;type&#8221;: &#8220;fs&#8221;,
-&gt;         &#8220;settings: {
-&gt;             &#8220;compress&#8221;: &#8220;true&#8221;,
-&gt;             &#8220;location&#8221;: &#8220;/opt/esback&#8221;
-&gt;         }
-&gt;     }
-&gt; }&#8217;</p>
 </dd>
 <dt>##.  if you have already backup up once before, remove any conflicting</dt>
 <dd><p class="first">snapshot (or use different snapshot name):</p>
@@ -222,7 +222,44 @@ downloaded directory, run:</p>
 <div class="section" id="logging">
 <h2>Logging<a class="headerlink" href="#logging" title="Permalink to this headline">¶</a></h2>
 <p>SCOT is a prolific logger.  All logs are stored in /var/log/scot.  It is highly recommended to set
-up logrotate to avoid filling you disk.  Create a /etc/logrotate.d/scot like</p>
+up logrotate to avoid filling you disk.  Create a /etc/logrotate.d/scot like:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">scot</span><span class="o">.*.</span><span class="n">log</span> <span class="p">{</span>
+    <span class="n">daily</span>
+    <span class="n">missingok</span>
+    <span class="n">rotate</span> <span class="mi">5</span>
+    <span class="n">compress</span>
+    <span class="n">notifempty</span>
+    <span class="n">copytruncate</span>
+<span class="p">}</span>
+<span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">error</span><span class="o">.*.</span><span class="n">log</span> <span class="p">{</span>
+    <span class="n">daily</span>
+    <span class="n">missingok</span>
+    <span class="n">rotate</span> <span class="mi">5</span>
+    <span class="n">compress</span>
+    <span class="n">notifempty</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="manual-password-reset-for-local-auth">
+<h2>Manual Password Reset for Local Auth<a class="headerlink" href="#manual-password-reset-for-local-auth" title="Permalink to this headline">¶</a></h2>
+<p>Let&#8217;s say you forgot the admin password, what to do?</p>
+<ol class="arabic">
+<li><p class="first">Run /opt/scot/bin/passwd.pl</p>
+<p>$ /opt/scot/bin/passwd.pl
+Enter New Admin Password : <strong>*
+Reenter Admin Password   : *</strong>
+{X-PBKDF2}HMACSHA2+512:AAAnEA:2/oQYlnzjibzWoCs2aPv:KAZIhhNUgPBw4M7ZOVU1/2yT/P07FRe2bhacBw6J6ru4jwFRM9dMpxOARc9IfxrQs7ltxSn1ceW76dgJ4kL0Ng==</p>
+</li>
+<li><p class="first">Enter mongodb shell and issue the following:</p>
+</li>
+</ol>
+<blockquote>
+<div>$ mongo scot-prod
+&gt; db.user.update({username:&#8221;admin&#8221;},{$set:{hash:&#8217;{X-PBKDF2}HMACSHA2+512:AAAnEA:2/oQYlnzjibzWoCs2aPv:KAZIhhNUgPBw4M7ZOVU1/2yT/P07FRe2bhacBw6J6ru4jwFRM9dMpxOARc9IfxrQs7ltxSn1ceW76dgJ4kL0Ng==&#8217;}});</div></blockquote>
+<ol class="arabic simple" start="3">
+<li>Now you (admin) will be able to log in via Local Auth using the password you entered.</li>
+</ol>
 </div>
 </div>
 
@@ -249,6 +286,7 @@ up logrotate to avoid filling you disk.  Create a /etc/logrotate.d/scot like</p>
 <li><a class="reference internal" href="#cron-entries">CRON Entries</a></li>
 <li><a class="reference internal" href="#daemons">Daemons</a></li>
 <li><a class="reference internal" href="#logging">Logging</a></li>
+<li><a class="reference internal" href="#manual-password-reset-for-local-auth">Manual Password Reset for Local Auth</a></li>
 </ul>
 </li>
 </ul>
@@ -262,7 +300,7 @@ up logrotate to avoid filling you disk.  Create a /etc/logrotate.d/scot like</p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/adminguide.txt"
+      <li><a href="_sources/adminguide.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
