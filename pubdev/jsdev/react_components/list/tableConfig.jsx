@@ -103,7 +103,7 @@ const customCellRenderers = {
 	},
 	textStatus: row => {
 		let color = 'green';
-		if ( row.value === 'open' || row.value === 'disabled' ) {
+		if ( row.value === 'open' || row.value === 'disabled' || row.value === 'assigned' ) {
 			color = 'red';
 		} else if ( row.value === 'promoted' ) {
 			color = 'orange';
@@ -174,7 +174,7 @@ const columnDefinitions = {
 		id: 'status',
 		column: 'metadata',
 		Cell: customCellRenderers.textStatus,
-		Filter: customFilters.dropdownFilter( [ 'open', 'closed' ] ),
+		Filter: customFilters.dropdownFilter( [ 'open', 'assigned', 'closed' ] ),
 	},
 
 	TaskSummary: {
