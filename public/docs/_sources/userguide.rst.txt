@@ -1,10 +1,10 @@
 User Guide
 ==========
 
-SCOT is divided into several main section.  Alerts flow into SCOT and are processed in the
+SCOT is divided into several main sections.  Alerts flow into SCOT and are processed in the
 Alert tab.  Some subject of those Alerts will be promoted into Events, where the team 
-records the results of their investigations.  A subset of those Events, will be important
-enough to promote them into Incidents.  All the while, new Intel reports will be created
+records the results of their investigations.  A subset of those Events will be important
+enough to be promoted into Incidents.  Simultaneously, new Intel reports will be created
 and addes to SCOT.  The sections below describe how to use each section.
 
 Views
@@ -31,18 +31,24 @@ To access the Alert Grid, click on the “Alert” button in the Navigation Bar 
 :Tags: Tags are seen as a catchall and are useful in subsequent searches for alerts with a specific set of tags.
 :Views: You can also filter by the number of times a particular alert has been viewed to know if anyone else on your team has looked at it.
 
-.. figure:: _static/images/alertfilters.png
+.. figure:: _static/alertfilters.png
    :width: 100 %
    :alt: Filters in alert grid
 
 Each column contains a textbox to filter the grid results.  Just enter in a filter and press 'Enter' on your keyboard to activate the filter.  You can also click on a column above the filter textbox to sort by that column.  We can see the default sort order is by 'created' which is indicated by the chevron next to the column name.
+
+A summary of alert status within an alertgroup can be quickly determined by glancing at the status column.  The legend below explains the shapes/colors used.
+
+.. figure:: _static/ag_status.gif
+   :width: 100%
+   :alt: Alertgroup status
 
 Alert Details
 -------------
 
 Let's look at the contents of an alert by clicking on one of the rows in the Alert Grid.  Note: 
 
-.. figure:: _static/images/alert_details.png
+.. figure:: _static/alert_details.png
    :width: 100 %
    :alt: Screen capture of alert details
 
@@ -52,7 +58,7 @@ To change the subject, click in the black subject box and edit like you would an
 
 Now let's look at the context sensitive command bar located directly below the header.
 
-.. figure:: _static/images/AlertMenuContextUnselected.png
+.. figure:: _static/AlertMenuContextUnselected.png
    :alt: Alert Context Menu with no selected alerts
 
 :Toggle Flair:  Toggle the display of Flair.
@@ -66,7 +72,7 @@ Now let's look at the context sensitive command bar located directly below the h
 After clicking on one or more Alerts in the detail view, the 
 alertgroup context menu changes to
 
-.. figure:: _static/images/AlertMenuContextSelected.png
+.. figure:: _static/AlertMenuContextSelected.png
    :alt: Alert Context Menu with alert selected
 
 :Open Selected: Change status of selected alerts to "open"
@@ -79,7 +85,7 @@ alertgroup context menu changes to
 
 Let's look at the actual alerts in this alertgroup now.  Each row in the table represents an alert, which may or may not be related to the other alerts. You can select one or more rows by clicking on them and utilizing the Shift and Ctrl keys as you would when selecting files in Windows Explorer.  Selected row(s) are highlighted in green.
 
-.. image:: _static/images/alert_rows.png
+.. image:: _static/alert_rows.png
    :width: 100 %
 
 For each alert, we want to answer the following:
@@ -94,9 +100,9 @@ If there is not **enough information** to continue, but there is some informatio
 
 If we need to **investigate further**, select the row(s) in question and click 'Promote Selected'.  This will create a new Event where you can document your findings and collaborate with other analysts on your team.  This event is linked back to the original alert, so no data is lost.
 
-.. |x| image:: _static/images/remove_x.png
+.. |x| image:: _static/remove_x.png
 
-.. |add| image:: _static/images/add.png
+.. |add| image:: _static/add.png
 
 Events
 ------
@@ -111,7 +117,7 @@ Event Grid View
 
 The Event grid allows you to view sets of Events and to filter those sets in various ways.
 
-.. figure:: _static/images/EventListView.png
+.. figure:: _static/EventListView.png
    :width: 100 %
    :alt: Sample Event List View
 
@@ -119,7 +125,7 @@ The Event grid allows you to view sets of Events and to filter those sets in var
 Event Detail View
 ^^^^^^^^^^^^^^^^^
 
-.. figure:: _static/images/EventDetailView.png
+.. figure:: _static/EventDetailView.png
    :width: 100 %
    :alt: Sample Event Detail View
 
@@ -170,7 +176,7 @@ sources.  Once input, the Flair engine will detect and cross correlate all Entit
 with the Intel record.  This can be very powerful and easy way to find threat actors withing
 you existing SCOT data as well as flagging it in new incoming alerts.
 
-.. figure:: _static/images/intelDetailView.png
+.. figure:: _static/intel_details.png
    :width: 100 %
    :alt: Sample Intel Detail View
 
@@ -199,7 +205,7 @@ This prevents tasks being pushed onto someone who may be on vacation.  If you wa
 take the task.  If someone whats it back, they can take ownership again.
 
 Signature
-----
+---------
 
 Signatures are used to integrate the version control of signatures within 3rd party mitigation tools (firewalls, IDS, etc.) while being managed by SCOT as a central repository. Signature's have the same list view as other "things" within SCOT, but they have a slightly modified detail view. 
 
@@ -272,7 +278,7 @@ SCOT can automatically detect and extract the following Entities:
 .. glossary::
 
     Domain Names
-        SCOT extracts domain names in form of host.sub.domain.tld, where tld is 2 to 6 characters in lenght.  Secondary validation against Mozilla's TLD database (effective_tld_names.dat)
+        SCOT extracts domain names in form of host.sub.domain.tld, where tld is 2 to 6 characters in length.  Secondary validation against Mozilla's TLD database (effective_tld_names.dat)
 
     File Names
         Common filename extensions such as exe, pdf, and so on are detected by SCOT.
@@ -345,7 +351,7 @@ Note about Group Names
 
 If you are using LDAP to manage group membership, and your team members 
 have large sets of groups they belong to, you can run into a limit in the 
-number of characters returned from LDAP.  This somethimes truncates the 
+number of characters returned from LDAP.  This sometimes truncates the 
 grouplist in such a way that the SCOT group may not be returned.
 
 To help avoid this, SCOT filters the LDAP query looking for a common string
@@ -356,4 +362,24 @@ the /opt/scot/etc/ldap.cfg file.  The line::
 
 can be changed to whatever naming convention you decide upon.
 
+HotKeys
+-------
 
+The following hotkeys are supported::
+
+    f: Toggle full screen mode when a detail section is open
+    t: Toggle flair on/off
+    o: This will open all alerts within the alertgroup when in the alertgroup list view as your focus. 
+    c: This will close all alerts within the alertgroup when in the alertgroup list view as your focus. 
+    j: This will select one row down within the list view.
+    k: This will select one row up within the list view.
+    esc: This will close the entity pop-up window. 
+
+Posting a global notificaton:
+-----------------------------
+
+A global notification can be posted to all users by navigating to::
+    
+    https://<scot instance>/#/wall
+
+Note that only raw text will be displayed.
