@@ -32,15 +32,15 @@ scenes.
     ##.  if you have never backed up elastic, you will need to create
         a repo::
 
-        $ curl -XPUT localhost:9200/_snapshot/scot_backup -d '{
-        >    "scot_backup": {
-        >         "type": "fs",
-        >         "settings: {
-        >             "compress": "true",
-        >             "location": "/opt/esback"
-        >         }
-        >     }
-        > }'
+        | curl -XPUT localhost:9200/_snapshot/scot_backup -d '{
+        |    "scot_backup": {
+        |        "type": "fs",
+        |        "settings: {
+        |            "compress": "true",
+        |            "location": "/opt/esback"
+        |        }
+        |    }
+        | }'
 
     ##.  if you have already backup up once before, remove any conflicting
         snapshot (or use different snapshot name)::
@@ -171,11 +171,23 @@ Logging
 -------
 
 SCOT is a prolific logger.  All logs are stored in /var/log/scot.  It is highly recommended to set 
-up logrotate to avoid filling you disk.  Create a /etc/logrotate.d/scot like 
+up logrotate to avoid filling you disk.  Create a /etc/logrotate.d/scot like:: 
 
-.. literalinclude:: ../../etcsrc/logrotate.scot
-   :linenos:
-
+    /var/log/scot.*.log {
+        daily
+        missingok
+        rotate 5
+        compress
+        notifempty
+        copytruncate
+    }
+    /var/log/error.*.log {
+        daily
+        missingok
+        rotate 5
+        compress
+        notifempty
+    } 
 
 Manual Password Reset for Local Auth
 ------------------------------------
