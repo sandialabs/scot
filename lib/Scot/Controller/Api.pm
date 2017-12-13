@@ -418,6 +418,7 @@ sub post_get_one_process {
     my $self    = shift;
     my $object  = shift;
     my $req     = shift;
+    my $env     = $self->env;
 
     # handle special get_one cases and convert object into hash
 
@@ -470,6 +471,19 @@ sub post_get_one_process {
         my $signaturecol = $self->env->mongo->collection('Signature');
         $href->{version} = $signaturecol->get_sigbodies($object);
     }
+
+    #if ( defined $env->forms->{$object->get_collection_name} ) {
+    #    my @elements = $env->forms->{$object->get_collecton_name};
+    #    my @form     = ();
+    #    foreach my $fhref (@elements) {
+    #        my $compute = $href->{computed};
+    #        if ( defined $compute ) {
+    #            $fhref->{value} = &compute($env, $object);
+    #        }
+    #        push @form, $fhref;
+    #    }
+    #    $href->{form} = \@form;
+    #}
 
     $self->filter_unrequested_columns($alertcol, $href, $req);
     return $href;
