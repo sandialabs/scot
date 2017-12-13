@@ -210,4 +210,127 @@
         }, # end ldap
     ],
     entity_regexes  => [],
+    #
+    # form contain directions on how to build the custom incident form fields
+    # and signatures (and others later?)
+    # 
+    forms   => {
+        signatures  => [
+            {
+                type    => "textarea",
+                key     => "description",
+                value   => "",
+                label   => "Description",
+                help    => "Enter a short description of the signature's purpose",
+            },
+            {
+                type    => "input",
+                key     => "type",
+                value   => '',
+                label   => "Type",
+                help    => "Enter the signature type, e.g. yara, snort, etc.",
+            },
+            {
+                type    => "dropdown",
+                key     => "prod_sigbody_id",
+                value   => sub {
+                    my @versions = map {
+                        { 
+                            text     => $_->{text}, 
+                            value    => $_->{value}, 
+                            selected => $_->{selected},
+                        }
+                    } @_;
+                    return \@versions;
+                },
+                label   => "Production Signature Body Version",
+                help    => "Select the version of the signature body you wish to be used in production",
+            },
+            {
+                type    => "dropdown",
+                key     => "qual_sigbody_id",
+                value   => sub {
+                    my @versions = map {
+                        { 
+                            text     => $_->{text}, 
+                            value    => $_->{value}, 
+                            selected => $_->{selected},
+                        }
+                    } @_;
+                    return \@versions;
+                },
+                label   => "Quality Signature Body Version",
+                help    => "Select the version of the signature body you wish to be used in quality",
+            },
+            {
+                type    => "input_multi",
+                key     => 'signature_group',
+                value   => sub {
+                    my @strings = @_;
+                    return \@strings;
+                },
+                label   => "Signature Group",
+                help    => "Group signatures under common names",
+            },
+            {
+                type    => 'input',
+                key     => 'target.type',
+                value   => '',
+                label   => "Reference Type",
+                help    => "The SCOT datatype that originated this signature",
+                value   => '',
+            },
+            {
+                type    => 'input',
+                key     => 'target.id',
+                value   => '',
+                help    => 'The id of the SCOT datatype that originated this sig',
+                label   => "Reference ID",
+            },
+        ],
+        incident    => [
+            # substitue your text and values here to match your
+            # incident types
+            {
+                type    => "dropdown",
+                key     => 'type',
+                value   => [
+                    { text  => 'n/a', value => 'none', selected => 1 },
+                    { text  => 'Type1', value => 'none', selected => 0 },
+                    { text  => 'Type2', value => 'type2', selected => 0 },
+                    { text  => 'Type3', value => 'type3', selected => 0 },
+                ],
+                label   => 'Incident Type',
+                help    => "Select best match for incident type",
+            },
+            # substitute your text and values to match your incident cats
+            {
+                type    => "dropdown",
+                key     => "category",
+                value   => [
+                    {text   => "Cat1", value => 'cat1', selected => 1},
+                    {text   => "Cat2", value => 'cat2', selected => 0},
+                ],
+                label   => 'Incident Category',
+                help    => "Select best match for incident category",
+            },
+            # date field for tracking when incident occurred 
+            {
+                type    => "calendar",
+                key     => "occurred",
+                value   => "",
+                label   => "Date/Time Occurred",
+                help    => "Select Date/Time Incident Occurred",
+            },
+        ],
+        guide   => [
+            {
+                type    => "input",
+                key     => "applies_to",
+                value   => '',
+                label   => 'Guide applies to',
+                help    => 'Enter string matching subject that this guide applies to',
+            },
+        ],
+    },
 );
