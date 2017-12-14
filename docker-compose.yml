@@ -67,9 +67,9 @@ services:
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
      - "/opt/scotfiles:/opt/scotfiles/"
-     - "/opt/scot/public/cached_images:/opt/scot/public/cached_images/"
+     - "./public/:/opt/scot/public/"
+     - "./pubdev/:/opt/scot/pubdev"
     depends_on:
-     - npm
      - perl
      - mongodb
      - activemq
@@ -83,11 +83,14 @@ services:
       context: ./
     image: scot_perl
 
-  npm:
-    build:
-      dockerfile: Dockerfile-NPM
-      context: ./
-    image: scot_npm
+  #npm:
+  #  build:
+  #    dockerfile: Dockerfile-NPM
+  #    context: ./
+  #  image: scot_npm
+  #  volumes:
+  #    - "./public:/opt/scot/pubdev"
+  #    - "./pubdev:/opt/scot/public"
   
   flair:
    build:
