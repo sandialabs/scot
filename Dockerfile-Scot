@@ -1,20 +1,37 @@
 FROM scot_perl
 
-ENV no_proxy "elastic,mongodb,activemq"
-ENV no_proxy "elastic,mongodb,activemq"
 
-#Create log directory
+ENV DEBIAN_FRONTEND="noninteractive" \
+    http_proxy=" " \
+    https_proxy=" " \
+    HTTP_PROXY=" " \
+    HTTPS_PROXY=" " \
+    NO_PROXY="elastic,mongodb,activemq"
+
+RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
+
+RUN apt-get update && \
+    apt-get install apt-utils ca-certificates curl git nodejs -y -f  && \
+    update-ca-certificates && \ 
+    apt-get autoclean && \
+    apt-get --purge -y autoremove && \ 
+    rm -rf /var/lib/apt/lists* /tmp/* /var/tmp/*
+    
+
 RUN mkdir -p /var/log/scot
 RUN mkdir -p /opt/scot
 
 #copy config files
 COPY install/src/scot/ /opt/scot/etc/  
 COPY script/ /opt/scot/script/
-COPY public/ /opt/scot/public
 COPY t/ /opt/scot/t/
 COPY templates/ /opt/scot/templates/ 
 COPY docker-configs/scot/scot.cfg.pl /opt/scot/etc/
+COPY docker-configs/scot/run.sh /tmp/
+
+
+WORKDIR /tmp/
 
 EXPOSE 3000 
-
-ENTRYPOINT /usr/local/bin/hypnotoad -f /opt/scot/script/Scot
+CMD /tmp/run.sh
+#CMD /bin/bash
