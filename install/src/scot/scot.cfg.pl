@@ -233,42 +233,27 @@
             {
                 type    => "dropdown",
                 key     => "prod_sigbody_id",
-                value   => sub {
-                    my @versions = map {
-                        { 
-                            text     => $_->{text}, 
-                            value    => $_->{value}, 
-                            selected => $_->{selected},
-                        }
-                    } @_;
-                    return \@versions;
-                },
+                value_type  => "dynamic",
+                value_key   => "sigbody",
+                value   => [],
                 label   => "Production Signature Body Version",
                 help    => "Select the version of the signature body you wish to be used in production",
             },
             {
                 type    => "dropdown",
                 key     => "qual_sigbody_id",
-                value   => sub {
-                    my @versions = map {
-                        { 
-                            text     => $_->{text}, 
-                            value    => $_->{value}, 
-                            selected => $_->{selected},
-                        }
-                    } @_;
-                    return \@versions;
-                },
+                value_type  => "dynamic",
+                value_key   => "sigbody",
+                value   => [],
                 label   => "Quality Signature Body Version",
                 help    => "Select the version of the signature body you wish to be used in quality",
             },
             {
                 type    => "input_multi",
                 key     => 'signature_group',
-                value   => sub {
-                    my @strings = @_;
-                    return \@strings;
-                },
+                value_type  => 'dynamic',
+                value_key   => 'signature_group',
+                value   => [],
                 label   => "Signature Group",
                 help    => "Group signatures under common names",
             },
