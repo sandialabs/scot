@@ -1,4 +1,4 @@
-cd ../../SCOT/
+cd ../
 #replace all open-source FROM lines with Sandia internal
 HOSTNAME=`hostname`
 find . -type f \( -iname "Dockerfile-*" ! -iname "" \) -exec sed -i 's/ubuntu:16.04/gitlab.sandia.gov:3434\/docker\/ubuntu/g' {} +
