@@ -1,0 +1,341 @@
+
+<!DOCTYPE html>
+<meta charset='utf-8'>
+<style>
+    body {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        position: relative;
+    }
+    text{
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+    .toolTip {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        position: absolute;
+        display: none;
+        width: auto;
+        height: auto;
+        background: none repeat scroll 0 0 white;
+        border: 0 none;
+        border-radius: 8px 8px 8px 8px;
+        box-shadow: -3px 3px 15px #888888;
+        color: black;
+        font: 12px sans-serif;
+        padding: 5px;
+        text-align: center;
+    }
+    .legend {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        font-size: 60%;
+    }
+    text {
+        font: 10px sans-serif;
+    }
+	#container {
+		max-height: 90vh;
+		overflow: auto;
+	}
+</style>
+<body>
+	<div id='container'>
+		<form>
+			<label><input type="radio" name="mode" value="grouped"> Grouped</label>
+			<label><input type="radio" name="mode" value="stacked" checked> Stacked</label>
+		</form>
+	</div>
+<script src='https://d3js.org/d3.v4.min.js'></script>
+<script>
+	const wrapText = ( text, width ) => {
+        text.each( function( value, i ) {
+			if ( this.getComputedTextLength() < width ) {
+				return;
+			}
+
+            let text = d3.select(this),
+				words = text.text().split(/\s+/).reverse(),
+				word = null,
+				line = [],
+				lineCount = 1,
+				lineHeight = 0.8, // ems
+				x = text.attr( 'x' ),
+				y = text.attr( 'y' ),
+				dy = parseFloat( text.attr( 'dy' ) ),
+				row = text
+					.text( null )
+					.append( 'tspan' )
+					.attr( 'x', x )
+					.attr( 'y', y )
+					.attr( 'dy', dy + 'em' );
+
+            while ( word = words.pop() ) {
+                line.push( word );
+                row.text( line.join( ' ' ) );
+                if ( row.node().getComputedTextLength() > width ) {
+					lineCount++;
+                    line.pop();
+                    row.text( line.join( ' ' ) );
+                    line = [ word ];
+					row = text
+						.append( 'tspan' )
+						.attr( 'x', x )
+						.attr( 'y', y )
+						.attr( 'dy', lineHeight + dy +'em' )
+						.text( word );
+                }
+            }
+
+			let yOffset = this.getBBox().height / ( 2 * lineCount ) * ( lineCount - 1 );
+			text.attr( 'transform', `translate( 0, -${yOffset} )` );
+        });
+    }
+
+    let url = '/scot/api/v2/metric/alert_power';
+    let opts = '?type=all';
+    
+    const margin = {
+			top: 5, left: 200, right: 20, bottom: 60,
+        },
+        width = 1000 - margin.left - margin.right,
+		legendHeight = 20, legendSpacing = 15, legendTextSpacing = 5;
+
+	// Height is initially 0, is calculated after we have data
+	let height = 0;
+
+	let xScale = d3.scaleLinear()
+		.rangeRound( [0, width] );
+	let yScale = d3.scaleBand()
+		.rangeRound( [0, height] )
+		.padding( .3 );
+
+    let colors = d3.scaleOrdinal( d3.schemeCategory20 );
+
+    let xAxis = d3.axisBottom()
+		.scale( xScale );
+
+    let yAxis = d3.axisLeft()
+		.scale( yScale );
+
+    let svg = d3.select( '#container' )
+		.append( 'svg' )
+		.attr( 'viewBox', `0 0 1000 ${height + margin.top + margin.bottom}` )
+			.append( 'g' )
+				.attr( 'transform', `translate( ${margin.left}, ${margin.top} )` );
+
+	let yAxisEl = svg.append( 'g' )
+		.attr( 'class', 'y axis' )
+
+	let xAxisEl = svg.append( 'g' )
+		.attr( 'class', 'x axis' )
+		.attr( 'transform', `translate( 0, ${height} )` )
+
+	xAxisEl.append( 'text' )
+		.attr( 'text-anchor', 'middle' )
+		.attr( 'x', width / 2 )
+		.attr( 'y', 30 )
+		.style( 'fill', 'black' )
+		.style( 'font-size', '12px' )
+		.text( 'Alert Count' );
+
+	let LegendHolder = svg.append( 'g' )
+			.attr( 'class', 'legend-holder' );
+
+	let cachedData, dataTypes, stackedMax, groupedMax;
+
+	const update = ( dataset ) => {
+		if ( !dataset ) {
+			dataset = cachedData;
+		}
+		cachedData = dataset;
+
+		// Calculate height
+		height = 32 * dataset.length;
+		d3.select( 'svg' ).transition().attr( 'viewBox', `0 0 1000 ${height + margin.top + margin.bottom}` )
+
+		dataTypes = d3.keys( dataset[0] )
+				.filter( key => ![ 'date', 'values', 'total' ].includes( key ) );
+
+		// Build color domain from keys except name
+        colors.domain( dataTypes );
+
+		dataset.forEach( d => {
+			// Remove number at the end
+			d.date = d.date.replace( / \([0-9]+\)/, '' );
+
+			/**/ // False Data
+			dataTypes.forEach( type => {
+				d[ type ] = Math.round( Math.random() * 5 );
+			} );
+			/**/
+
+			// Calculate bar start/end points
+            let start = 0;
+			d.values = dataTypes.map( name => {
+				let curStart = start,
+					curEnd = start + d[ name ];
+
+				start += d[ name ];
+				return {
+					name: name,
+					count: d[ name ],
+					start: curStart,
+					end: curEnd,
+				}
+			} );
+
+            d.total = d.values[ d.values.length - 1 ].end;
+        } );
+
+		stackedMax = d3.max( dataset, d => d.total );
+		groupedMax = d3.max( dataset, d => {
+			return d3.max( dataTypes, b => d[ b ] );
+		} );
+
+		yScale.rangeRound( [0, height] )
+			.domain( dataset.map( d => d.date ) );
+
+		/*
+		// Animated, but multiline flashes
+		yAxisEl.transition().call( g => {
+			g.call( yAxis )
+			setTimeout( () => {
+				g.selectAll( '.tick text' ).call( wrapText, margin.left - 20 );
+			}, 50 )
+		} )
+		/**/
+		/**/
+		// Not animated
+		yAxisEl.call( yAxis )
+        svg.selectAll( '.y.axis .tick text' ).call( wrapText, margin.left - 20 ); // Wrap axis labels
+		/**/
+
+        let alerts = svg.selectAll( '.alert' )
+			.data( dataset, d => d.date )
+
+		alerts.exit()
+			.transition()
+				.attr( 'height', 0 )
+				.style( 'opacity', 0 )
+			.remove()
+
+		alerts = alerts.enter().append( 'g' )
+				.attr( 'class', 'alert' )
+				.attr( 'transform', d => `translate( 1, ${yScale( d.date )} )` )
+				.merge( alerts )
+
+		alerts.transition()
+			.attr( 'transform', d => `translate( 1, ${yScale( d.date )} )` )
+
+		let alertTypes = alerts.selectAll( 'rect' )
+			.data( d => d.values )
+
+		let bars = alertTypes.enter().append( 'rect' )
+				.attr( 'x', 0 )
+				.attr( 'y', 0 )
+				.attr( 'width', 0 )
+				.attr( 'height', yScale.bandwidth() )
+		bars.merge( alertTypes )
+				.style( 'fill', d => colors( d.name ) )
+
+		bars.append( 'title' )
+			.merge( alertTypes.select( 'title' ) )
+			.text( d => `${d.name}: ${d.count}` );
+
+		// Legend
+		let legend = LegendHolder.selectAll( '.legend' )
+			.data( dataTypes )
+
+		legend.exit().remove()
+
+		legend = legend.enter().append( 'g' )
+				.attr( 'class', 'legend' )
+
+		// Legend Boxes
+		legend.append( 'rect' )
+			.attr( 'width', legendHeight )
+			.attr( 'x', 0 )
+			.attr( 'y', 0 )
+			.attr( 'height', legendHeight )
+			.style( 'fill', d => colors( d ) );
+
+		// Legend Text
+		legend.append( 'text' )
+			.attr( 'x', legendHeight + legendTextSpacing )
+			.attr( 'y', legendHeight / 2 )
+			.attr( 'dy', '.35em' )
+			.style( 'text-anchor', 'start' )
+			.style( 'text-transform', 'capitalize' )
+			.text( d => d );
+
+		// Legend Position
+		let widthSums = 0
+		LegendHolder.selectAll( '.legend' )
+			.attr( 'transform', function( d, i ) {
+				let value = widthSums;
+				widthSums += this.getBBox().width + legendSpacing;
+				return `translate( ${value}, 0 )`;
+			} );
+		let legendWidth = LegendHolder.node().getBBox().width;
+		LegendHolder.transition().attr( 'transform', `translate( ${width / 2 - legendWidth / 2}, ${ height + margin.bottom - legendHeight } )` );
+		
+		if ( d3.select( 'input[name="mode"]:checked' ).attr( 'value' ) === 'grouped' ) {
+			transitionGrouped();
+		} else {
+			transitionStacked();
+		}
+	}
+
+	const removeTop = () => {
+		cachedData.shift();
+		update();
+	}
+
+	function changed( event ) {
+		if ( this.value === 'grouped' ) {
+			transitionGrouped();
+		} else {
+			transitionStacked();
+		}
+	}
+
+	const transitionStacked = () => {
+		xScale.domain( [0, stackedMax] ).nice();
+		xAxisEl.transition().call( xAxis )
+			.attr( 'transform', `translate( 0, ${height} )` )
+
+		svg.selectAll( '.alert rect' )
+			.transition()
+				.delay( ( d, i ) => i * 5 )
+				.duration( 500 )
+				.attr( 'width', d => xScale( d.end ) - xScale( d.start ) )
+				.attr( 'x', d => xScale( d.start ) )
+			.transition()
+				.attr( 'height', yScale.bandwidth() )
+				.attr( 'y', 0 )
+	}
+
+	const transitionGrouped = () => {
+		xScale.domain( [0, groupedMax] ).nice();
+		xAxisEl.transition().call( xAxis )
+			.attr( 'transform', `translate( 0, ${height} )` )
+
+		svg.selectAll( '.alert' ).selectAll( 'rect' )
+			.transition()
+				.delay( ( d, i ) => i * 5 )
+				.duration( 500 )
+				.attr( 'height', yScale.bandwidth() / dataTypes.length )
+				.attr( 'y', ( d, i ) => ( yScale.bandwidth() / dataTypes.length ) * i )
+			.transition()
+				.attr( 'x', 0 )
+				.attr( 'width', d => xScale( d.end ) - xScale( d.start ) )
+	}
+
+	d3.selectAll( 'input[name=mode]' ).on( 'change', changed );
+
+	const getData = () => {
+		d3.json( url+opts, dataset => {
+			update( dataset );
+		} );
+	}
+	getData();
+</script>
+</body>
