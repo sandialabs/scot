@@ -43,7 +43,8 @@ services:
     networks:
      - scot-docker-net
     container_name: mongodb
-
+    depends_on: 
+     - perl
   elastic:
    build:
      dockerfile: Dockerfile-Elastic
