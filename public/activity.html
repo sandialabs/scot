@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<meta charset='utf-8'>
+<style>
+	#container {
+	}
+</style>
+<body>
+	<div id='container'>
+	</div>
+<script src='https://d3js.org/d3.v4.min.js'></script>
+<script>
+    let url = '/scot/api/v2/metric/alert_power';
+    let opts = '?type=all';
+    
+    const margin = {
+			top: 5, left: 40, right: 20, bottom: 60,
+        },
+        width = 1000 - margin.left - margin.right,
+		height = 500 - margin.top - margin.bottom,
+		timeWindow = 30 * 1000, startWindow = 10 * 1000,
+		updateInterval = 1000,
+		legendHeight = 20, legendSpacing = 15, legendTextSpacing = 5;
+
+	let now = new Date(),
+		startTime = now,
+		initialWindowEnd = new Date( now.getTime() + startWindow );
+
+	let xScale = d3.scaleTime()
+		.rangeRound( [0, width] )
+		.domain( [startTime, initialWindowEnd] )
+	let yScale = d3.scaleLinear()
+		.rangeRound( [height, 0] )
+		.domain( [0, 0] )
+
+    let colors = d3.scaleOrdinal( d3.schemeCategory10 )
+		//.domain( dataTypes )
+
+    let xAxis = d3.axisBottom()
+		.scale( xScale );
+
+    let yAxis = d3.axisLeft()
+		.scale( yScale );
+
+    let svg = d3.select( '#container' )
+		.append( 'svg' )
+		.attr( 'viewBox', `0 0 1000 ${height + margin.top + margin.bottom}` )
+			.append( 'g' )
+				.attr( 'transform', `translate( ${margin.left}, ${margin.top} )` );
+
+	let clip = svg.append( 'defs' ).append( 'clipPath' )
+        .attr( 'id', 'bounds' )
+        .append( 'rect' )
+			.attr( 'id', 'clip-rect' )
+			.attr( 'x', 1 )
+			.attr( 'y', 0 )
+			.attr( 'width', width )
+			.attr( 'height', height )
+
+	let yAxisEl = svg.append( 'g' )
+		.attr( 'class', 'y axis' )
+
+	yAxisEl.call( yAxis )
+
+	let xAxisEl = svg.append( 'g' )
+		.attr( 'class', 'x axis' )
+		.attr( 'transform', `translate( 0, ${height} )` )
+
+	xAxisEl.call( xAxis )
+
+	const tick = () => {
+		now = new Date();
+
+		// Update time window
+		if ( startTime > now - timeWindow ) {
+			xScale.domain( [startTime, now < initialWindowEnd ? initialWindowEnd : now] )
+		} else {
+			xScale.domain( [now - timeWindow, now] )
+		}
+
+		xAxisEl.transition()
+			.ease( d3.easeLinear )
+			.duration( updateInterval )
+			.call( xAxis )
+	}
+
+	let timer = d3.timer( tick, 0, updateInterval )
+</script>
+</body>
