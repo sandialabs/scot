@@ -197,26 +197,26 @@
                 }, # end enrichment module enrichers
             }, # end ennrichmenst config stanza
         }, # end enrichments stanza
-        {
-            attr    => 'ldap',
-            class   => 'Scot::Util::Ldap',
-            config  => {
-                servername  => 'ldap.domain.tld',
-                dn          => 'cn=cn_name,ou=local config,dc=tld',
-                password    => 'changemenow',
-                scheme      => 'ldap',
-                group_search    => {
-                    base    => 'ou=groups,ou=orgname1,dc=dcname1,dc=dcname2,dc=dcname3',
-                    filter  => '(| (cn=wg-scot*))',
-                    attrs   => [ 'cn' ],
-                },
-                user_groups => {
-                    base    => 'ou=accounts,ou=ouname,dc=dcname1,dc=dcname1,dc=dcname1',
-                    filter  => 'uid=%s',
-                    attrs   => ['memberOf'],
-                }
-            }, # end ldap config
-        }, # end ldap
+#        {
+#            attr    => 'ldap',
+#            class   => 'Scot::Util::Ldap',
+#            config  => {
+#                servername  => 'ldap.domain.tld',
+#                dn          => 'cn=cn_name,ou=local config,dc=tld',
+#                password    => 'changemenow',
+#                scheme      => 'ldap',
+#                group_search    => {
+#                    base    => 'ou=groups,ou=orgname1,dc=dcname1,dc=dcname2,dc=dcname3',
+#                    filter  => '(| (cn=wg-scot*))',
+#                    attrs   => [ 'cn' ],
+#                },
+#                user_groups => {
+#                    base    => 'ou=accounts,ou=ouname,dc=dcname1,dc=dcname1,dc=dcname1',
+#                    filter  => 'uid=%s',
+#                    attrs   => ['memberOf'],
+#                }
+#            }, # end ldap config
+#        }, # end ldap
     ],
     entity_regexes  => [],
 );
