@@ -23,7 +23,7 @@ Docker-SCOT is comprised of the following services:
 
 Docker-SCOT also runs the following ephemeral containers on demand or on startup:
 
-* Docker-Utilities - A container that can be built and run on demand for executing scripts against Mongo, Scot, Elastic, etc. For instance, if a user wants to run the restore_remote_db.pl script to restore the database for MongoDB from a remote source, they can do so by: 
+* **Docker-Utilities** - A container that can be built and run on demand for executing scripts against Mongo, Scot, Elastic, etc. For instance, if a user wants to run the restore_remote_db.pl script to restore the database for MongoDB from a remote source, they can do so by: 
 
 sudo docker build --build-arg SCRIPT=restore_remote_scotdb.pl  -t util -f Dockerfile-Utilities .
 
