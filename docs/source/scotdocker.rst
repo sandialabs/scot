@@ -21,7 +21,7 @@ Docker-SCOT is comprised of the following services:
 * **Mail** - Used as a reslient mechanism for importing data to SCOT (not enabled by default - See configuration section)
 * **Reflair** Similar to flair
 
-Docker-SCOT also runs the following ephemeral containers on demand or on startup:
+Docker-SCOT also includes the following ephemeral containers on demand:
 
 * **Docker-Utilities** - A container that can be built and run on demand for executing scripts against Mongo, Scot, Elastic, etc. For instance, if a user wants to run the restore_remote_db.pl script to restore the database for MongoDB from a remote source, they can do so by: 
 
