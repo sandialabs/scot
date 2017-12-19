@@ -24,6 +24,9 @@ Read our [documentation](http://scot.readthedocs.org/en/latest/install.html) at 
 Install It!
 -----------
 
+** 12/19/2017 THIS BRANCH IS IN ACTIVE DEVELOPMENT AND IS NOT CURRENTLY SUPPORTED. THIS NOTE WILL BE DELETED WHEN THIS BRANCH IS PUSHED INTO MASTER**
+
+
 SCOT has an installer that will work with Ubuntu 16.04 and CentOS 7.3.  While there should be nothing preventing SCOT to work on other Linux's, you will have to do a lot more work by hand to get SCOT installed.  (Please post your successes for others)
 
 To install on Ubuntu 16.04 or CentOS 7:
