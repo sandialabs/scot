@@ -21,13 +21,9 @@ Docker-SCOT is comprised of the following services:
 * **Mail** - Used as a reslient mechanism for importing data to SCOT (not enabled by default - See configuration section)
 * **Reflair** Similar to flair
 
-Docker-SCOT also runs the following ephemeral containers on demand or on startup:
+Docker-SCOT also includes the following ephemeral containers on demand:
 
-* Docker-Utilities - A container that can be built and run on demand for executing scripts against Mongo, Scot, Elastic, etc. For instance, if a user wants to run the restore_remote_db.pl script to restore the database for MongoDB from a remote source, they can do so by: 
-
-sudo docker build --build-arg SCRIPT=restore_remote_scotdb.pl  -t util -f Dockerfile-Utilities .
-
-Passing in the name of the script they would like to execute. More on this, in the 'Configuration - Docker-scripts' section. 
+* **Docker-Utilities** - A container that can be built and run on demand for executing scripts against Mongo, Scot, Elastic, etc. More on this, in the 'Configuration - Docker-scripts' section. 
 
 Installation
 ------------
@@ -109,6 +105,10 @@ You can view which data is being persisted by viewing the docker-compose.yml scr
 
 To begin using mail, you will need to uncomment the 'mail' service in the docker-compose.yml file and also add any of your organization's mail configurations into the 
 docker-configs/mail/alert.cfg.pl file. 
+
+**LDAP**
+
+By default, LDAP configuration is not enabled in docker-configs/scot/scot.cfg.pl. To enable, simply uncomment the LDAP configuration lines in docker-configs/scot/scot.cfg.pl and edit the necessary information to begin checking LDAP for group membership / auth. 
 
 
 
