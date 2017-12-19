@@ -37,7 +37,7 @@ gulp.task( 'scripts', function() {
         this.emit('end');
     })
     .pipe(source('scot.js'))
-    .pipe(gulp.dest( paths.build ),{overwrite:true})
+    //.pipe(gulp.dest( paths.build ),{overwrite:true})
     .pipe(gulp.dest( paths.buildFinal), {overwrite: true});
 
 } );
@@ -91,7 +91,7 @@ gulp.task( 'set-prod', function() {
 gulp.task( 'minify', ['scripts'], function() {
     console.log('minification started... wait for the auto copy to complete. Two output files will be preset when complete. scot.js and scot-debug.js')
     
-    return gulp.src('./build/scot.js')
+    return gulp.src('../public/scot.js')
         .pipe(minify({
             ext: {
                 src: '-debug.js',

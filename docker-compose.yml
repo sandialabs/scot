@@ -1,0 +1,168 @@
+version: '3'
+services:
+  apache:
+    build:
+      dockerfile: Dockerfile-Apache
+      context: ./
+    volumes: 
+     - "/etc/timezone:/etc/timezone:ro"
+     - "/etc/localtime:/etc/localtime:ro"
+     - "/var/log/apache2:/var/log/apache2/"
+    ports:
+     - "443:443"
+     - "80:80"
+    networks:
+     - scot-docker-net
+    container_name: apache  
+
+  activemq:
+    volumes:
+     - "/var/log/activemq:/var/log/activemq/log/"
+    build:
+      dockerfile: Dockerfile-Activemq
+      context: ./
+      args:
+       proxy: " " 
+    ports:
+     - "8161:8161"
+    networks:
+     - scot-docker-net
+    container_name: activemq
+  
+  mongodb:
+    build:
+      dockerfile: Dockerfile-Mongodb
+      context: ./
+    volumes:
+     - "/var/log/mongodb/mongod.log:/var/log/mongodb/mongod.log"
+     - "/etc/timezone:/etc/timezone:ro"
+     - "/etc/localtime:/etc/localtime:ro"
+     - "/var/lib/mongodb:/var/lib/mongodb/"
+     - "/opt/scotbackup/mongo/scot-prod:/opt/scotbackup/mongo/scot-prod/"
+     - "/var/log/scot:/var/log/scot/"
+    networks:
+     - scot-docker-net
+    container_name: mongodb
+    depends_on: 
+     - perl
+  elastic:
+   build:
+     dockerfile: Dockerfile-Elastic
+     context: ./
+   volumes:
+     - "/etc/timezone:/etc/timezone:ro"
+     - "/etc/localtime:/etc/localtime:ro"
+     - "/opt/scotbackup/elastic:/opt/scotbackup/elastic/"
+     - "/var/lib/elasticsearch:/var/lib/elasticsearch/"
+     - "/home/bemonta/workspace:/var/lib/elasticsearch/maping/"
+   networks:
+    - scot-docker-net
+   container_name: elastic
+ 
+  scot:
+    build:
+      dockerfile: Dockerfile-Scot
+      context: ./
+    volumes:
+     - "/var/log/scot:/var/log/scot/"
+     - "/etc/timezone:/etc/timezone:ro"
+     - "/etc/localtime:/etc/localtime:ro"
+     - "/opt/scotfiles:/opt/scotfiles/"
+     - "./public/:/opt/scot/public/"
+     - "./pubdev/:/opt/scot/pubdev"
+    depends_on:
+     - perl
+     - mongodb
+     - activemq
+    networks:
+     - scot-docker-net
+    container_name: scot
+  
+  perl:
+    build: 
+      dockerfile: Dockerfile-Perl
+      context: ./
+    image: scot_perl
+
+  #npm:
+  #  build:
+  #    dockerfile: Dockerfile-NPM
+  #    context: ./
+  #  image: scot_npm
+  #  volumes:
+  #    - "./public:/opt/scot/pubdev"
+  #    - "./pubdev:/opt/scot/public"
+  
+  flair:
+   build:
+     dockerfile: Dockerfile-Flair
+     context: ./
+   volumes:
+    - "/var/log/scot:/var/log/scot/"
+    - "/etc/localtime:/etc/localtime:ro"
+   depends_on:
+    - mongodb
+    - activemq
+    - scot
+   networks:
+     - scot-docker-net
+   container_name: flair
+  
+  reflair:
+   build:
+     dockerfile: Dockerfile-Reflair
+     context: ./
+   volumes:
+    - "/var/log/scot:/var/log/scot/"
+    - "/etc/localtime:/etc/localtime:ro"
+   depends_on:
+    - mongodb
+    - activemq
+    - scot
+   networks:
+     - scot-docker-net
+   container_name: reflair
+     
+
+  stretch:
+   build:
+     dockerfile: Dockerfile-Stretch
+     context: ./
+   image: scot_stretch
+   volumes:
+    - "/var/log/scot:/var/log/scot/"
+    - "/etc/localtime:/etc/localtime:ro"
+   depends_on:
+    - mongodb
+    - activemq
+    - scot
+   networks:
+    - scot-docker-net
+   container_name: stretch
+  
+  game:
+   build:
+     dockerfile: Dockerfile-Game
+     context: ./
+   volumes:
+    - "/var/log/scot:/var/log/scot/"
+    - "/etc/localtime:/etc/localtime:ro"
+   depends_on:
+    - mongodb
+    - scot
+   networks:
+     - scot-docker-net
+   container_name: game
+# mail: 
+#   build:
+#     dockerfile: Dockerfile-Mail
+#     context: ./
+#   volumes: 
+#     - "/var/log/scot:/var/log/scot/"
+#   depends_on:
+#    - mongodb
+#    - scot
+
+networks:
+  scot-docker-net:
+    driver: bridge

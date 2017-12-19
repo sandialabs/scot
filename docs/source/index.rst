@@ -31,7 +31,7 @@ Contents:
     Developer Guide <devguide>
     Signature Guide <signatures>
     REVL Visualization Framework <visualization>
-
+    Docker-Scot <scotdocker>
 Indicies and Tables
 ===================
 

@@ -1,0 +1,31 @@
+FROM scot_perl
+
+ENV DEBIAN_FRONTEND="noninteractive" \
+    http_proxy=" " \
+    https_proxy=" " \
+    HTTP_PROXY=" " \
+    HTTPS_PROXY=" " \
+    NO_PROXY="elastic,mongodb,activemq"
+
+RUN apt-get update && \
+    apt-get install apt-utils ca-certificates curl vim  -y -f  && \
+    update-ca-certificates && \ 
+    apt-get autoclean && \
+    apt-get --purge -y autoremove && \ 
+    rm -rf /var/lib/apt/lists* /tmp/* /var/tmp/*
+    
+
+RUN mkdir -p /var/log/scot
+RUN mkdir -p /opt/scot
+
+#copy config files
+COPY install/src/scot/ /opt/scot/etc/  
+COPY script/ /opt/scot/script/
+COPY t/ /opt/scot/t/
+COPY templates/ /opt/scot/templates/ 
+COPY docker-configs/scot/scot.cfg.pl /opt/scot/etc/
+
+
+EXPOSE 3000 
+CMD /usr/local/bin/hypnotoad -f /opt/scot/script/Scot
+#CMD /bin/bash

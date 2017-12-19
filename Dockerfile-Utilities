@@ -1,0 +1,28 @@
+FROM scot_perl 
+
+# Import MongoDB public GPG key AND create a MongoDB list file
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
+RUN echo "deb http://repo.mongodb.org/apt/ubuntu $(cat /etc/lsb-release | grep DISTRIB_CODENAME | cut -d= -f2)/mongodb-org/3.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.2.list
+
+RUN apt-get update && \
+    apt-get --allow-unauthenticated install -qy mongodb-org
+
+ENV no_proxy elastic
+ENV SCRIPT = ${SCRIPT} 
+
+RUN mkdir -p /opt/scot/etc
+
+COPY install/src/scot /opt/scot/etc/
+COPY docker-scripts/ /opt/scot/etc/
+
+
+COPY docker-configs/backup.cfg.pl /opt/scot/etc
+COPY docker-configs/restore.cfg.pl /opt/scot/etc
+COPY docker-configs/stretch/stretch.cfg.pl /opt/scot/etc
+
+RUN mkdir -p /tmp/foo/
+RUN mkdir -p /opt/scot/public/
+RUN mkdir -p /opt/scotbackup/mongo/scot-prod 
+
+WORKDIR /opt/scot/etc/
+CMD perl $SCRIPT
