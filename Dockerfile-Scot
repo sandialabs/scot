@@ -1,6 +1,5 @@
 FROM scot_perl
 
-
 ENV DEBIAN_FRONTEND="noninteractive" \
     http_proxy=" " \
     https_proxy=" " \
@@ -8,10 +7,8 @@ ENV DEBIAN_FRONTEND="noninteractive" \
     HTTPS_PROXY=" " \
     NO_PROXY="elastic,mongodb,activemq"
 
-RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
-
 RUN apt-get update && \
-    apt-get install apt-utils ca-certificates curl git nodejs -y -f  && \
+    apt-get install apt-utils ca-certificates curl vim  -y -f  && \
     update-ca-certificates && \ 
     apt-get autoclean && \
     apt-get --purge -y autoremove && \ 
@@ -27,11 +24,8 @@ COPY script/ /opt/scot/script/
 COPY t/ /opt/scot/t/
 COPY templates/ /opt/scot/templates/ 
 COPY docker-configs/scot/scot.cfg.pl /opt/scot/etc/
-COPY docker-configs/scot/run.sh /tmp/
 
-
-WORKDIR /tmp/
 
 EXPOSE 3000 
-CMD /tmp/run.sh
+CMD /usr/local/bin/hypnotoad -f /opt/scot/script/Scot
 #CMD /bin/bash
