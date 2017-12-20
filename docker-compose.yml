@@ -34,7 +34,6 @@ services:
       dockerfile: Dockerfile-Mongodb
       context: ./
     volumes:
-     - "/var/log/mongodb/mongod.log:/var/log/mongodb/mongod.log"
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
      - "/var/lib/mongodb:/var/lib/mongodb/"
