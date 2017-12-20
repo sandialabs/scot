@@ -25,7 +25,6 @@ RUN mkdir -p /var/lib/mongodb/
 
 RUN chmod +x /run.sh
 RUN chmod +x /set_mongodb_config.sh
-RUN chmod +x /mapping.sh
 # Set /usr/bin/mongod as the dockerized entry-point application
 
 CMD ["/run.sh"]
