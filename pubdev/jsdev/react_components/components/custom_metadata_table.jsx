@@ -10,38 +10,50 @@ var CustomMetaDataTable = React.createClass({
                 {
                     type: 'dropdown',
                     key: 'sensitivity',
+                    value_type: { type: 'static', source: 'selected_row', url: null, key: 'sensitivity'}, 
                     value: [{value: 'FYI', selected: 1}, {value: 'none', selected: 0}],
-                    label: 'DOE Information Sensitivity'
+                    label: 'DOE Information Sensitivity',
+                    help: 'help text',
                 },
                 {
                     type: 'input',
                     key: 'doe_report_id',
+                    value_type: { type: 'static', source: 'selected_row', url: null, key: 'doe_report_id'}, 
                     value: 'default string',
                     label: 'DOE Report Category',
+                    help: 'help text',
                 },
                 {
                     type: 'calendar',
                     key: 'occurred',
+                    value_type: { type: 'static', source: 'selected_row', url: null, key: 'occurred'}, 
                     value: 1494018000,
                     label: 'Occurred'
+                    help: 'help text',
                 },
                 {
                     type: 'textarea',
                     key: 'description',
+                    value_type: { type: 'static', source: 'selected_row', url: null, key: 'description'}, 
                     value: 'string here',
                     label: 'Description',
+                    help: 'help text',
                 },
                 {
                     type: 'input_multi',
                     key: 'signature_group',
+                    value_type: { type: 'static', source: 'selected_row', url: null, key: 'signature_group'}, 
                     value: ['string1', 'string2'],
                     label: 'Signature Group',
+                    help: 'help text',
                 },
                 {
                     type: 'boolean',
                     key: 'active',
+                    value_type: { type: 'static', source: 'selected_row', url: null, key: 'active'}, 
                     value: true,
                     label: 'Active',
+                    help: 'help text',
                 },
             ],
         }
@@ -90,9 +102,16 @@ var CustomMetaDataTable = React.createClass({
         for ( let i=0; i < this.state.data.length; i++ )  {
             switch ( this.state.data[i]['type'] ) {
                 case 'dropdown':
-                    dropdownArr.push(<DropdownComponent onChange={this.onChange} label={this.state.data[i].label} id={this.state.data[i].key} value={this.state.data[i].value}/>)
-                    break;
-
+                    switch ( this.state.[i]['value_type']['type'] ) {
+                        case 'static':
+                            dropdownArr.push(<DropdownComponent onChange={this.onChange} label={this.state.data[i].label} id={this.state.data[i].key} value={this.state.data[i].value}/>)
+                            break;
+                        
+                        case 'dynamic':
+                            dropdownArr.push(DropdownComponent onChange={this.onChange} label={this.state.data[i].label} id={this.state.data[i]['value_type']['key']} fetchURL={this.state.data[i]['value_type']['url']} /> )
+                            break;
+                    
+                    }
                 case 'input':
                     inputArr.push(<InputComponent onBlur={this.onChange} value={this.state.data[i].value} id={this.state.data[i].key} label={this.state.data[i].label} />)
                     break;
