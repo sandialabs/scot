@@ -23,8 +23,6 @@ services:
       context: ./
       args:
        proxy: " " 
-    ports:
-     - "8161:8161"
     networks:
      - scot-docker-net
     container_name: activemq
