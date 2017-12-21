@@ -171,7 +171,7 @@ export class DeleteModal extends PureComponent {
 			},
 			// Failure
 			( error ) => {
-				console.err( error );
+				console.error( error );
 				this.setState({
 					deleteButton: ACTION_BUTTONS.ERROR,
 				});
