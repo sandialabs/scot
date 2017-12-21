@@ -14,13 +14,13 @@ const customStyles = {
         transform:  'translate(-50%, -50%)'
     },
     overlay: {
-        zIndex: '101'
+        zIndex: '1101'
     }
 }
 
 const ACTION_BUTTONS = {
 	READY: {
-		style: "default",
+		style: "danger",
 	},
 	LOADING: {
 		text: "Processing...",
@@ -33,7 +33,7 @@ const ACTION_BUTTONS = {
 	},
 	ERROR: {
 		text: "Error!",
-		style: "danger",
+		style: "warning",
 	},
 };
 
@@ -122,11 +122,12 @@ export class DeleteEntry extends PureComponent {
 	}
 }
 
+// The type signature for things to be deleted
 const thingType = 
-			PropTypes.shape([
-				type: PropTypes.string,
-				id: PropTypes.number,
-			])
+			PropTypes.shape({
+				type: PropTypes.string.isRequired,
+				id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+			})
 
 export class DeleteModal extends PureComponent {
 	constructor( props ) {
@@ -145,7 +146,7 @@ export class DeleteModal extends PureComponent {
 			PropTypes.arrayOf(thingType),
 		]).isRequired,
 		errorToggle: PropTypes.func.isRequired,
-		successCallback: PropTypes.func,
+		callback: PropTypes.func.isRequired,
 	}
 
 	deleteAll() {
@@ -153,11 +154,15 @@ export class DeleteModal extends PureComponent {
 			deleteButton: ACTION_BUTTONS.LOADING,
 		});
 
-		$.when( ...this.props.data.filter( ( thing ) => thing.selected )
-			.map( ( thing ) => {
-				return this.ReparseAjax( thing );
-			} )
-		).then(
+		let success = true;
+
+		let { things } = this.props;
+		if ( !Array.isArray( things ) ) {
+			things = [ things ]
+		}
+
+		$.when( ...things.map( thing => this.deleteAjax( thing ) ) )
+		.then(
 			// Success
 			() => {
 				this.setState({
@@ -171,6 +176,7 @@ export class DeleteModal extends PureComponent {
 					deleteButton: ACTION_BUTTONS.ERROR,
 				});
 				this.props.errorToggle( 'error deleting', error );
+				success = false;
 			}
 		).always( () => {
 			setTimeout( () => {
@@ -178,9 +184,7 @@ export class DeleteModal extends PureComponent {
 					deleteButton: ACTION_BUTTONS.READY,
 				});
 
-				if ( this.props.successCallback ) {
-					this.props.successCallback();
-				}
+				this.props.callback( success );
 			}, 2000 );
 		} );
 	}
@@ -194,15 +198,27 @@ export class DeleteModal extends PureComponent {
 	}
 
 	render() {
+		let { things } = this.props;
+		let confirmText = "";
+
+		if ( Array.isArray( things ) ) {
+			confirmText = things.map( thing => `${thing.type}: ${thing.id}` ).join( ', ' );
+		} else {
+			confirmText = `${things.type}: ${things.id}`;
+		}
+
+		const { deleteButton } = this.state;
+
+
 		return (
-			<Modal isOpen={true} onRequestClose={this.props.deleteToggle} style={customStyles}>
+			<Modal isOpen={true} onRequestClose={this.props.callback} style={customStyles}>
 				<div className='modal-header'>
-					<img src='images/close_toolbar.png' className='close_toolbar' onClick={this.props.deleteToggle} />
-					<h3 id='myModalLabel'>Are you sure you want to delete Entry: {this.props.entryid}?</h3>
+					<img src='images/close_toolbar.png' className='close_toolbar' onClick={this.props.callback} />
+					<h3 id='myModalLabel'>Are you sure you want to delete {confirmText}?</h3>
 				</div>
 				<div className='modal-footer'>
-					<Button id='cancel-delete' onClick={this.props.deleteToggle}>Cancel</Button>
-					<Button bsStyle='danger' id='delete' onClick={this.toggle}>Delete</Button>
+					<Button id='cancel-delete' onClick={this.props.callback}>Cancel</Button>
+					<Button bsStyle={deleteButton.style} id='delete' onClick={this.deleteAll} disabled={deleteButton.disabled}>{deleteButton.text ? deleteButton.text : 'Delete' }</Button>
 				</div>
 			</Modal>
 		)
