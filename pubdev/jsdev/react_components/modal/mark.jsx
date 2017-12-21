@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Modal, Button, ButtonGroup, Panel, FormControl, Form, Col } from 'react-bootstrap';
 import ReactTable from 'react-table';
 import { removeMarkedItems } from '../components/marker';
+import { DeleteModal } from './delete';
 
 const ACTION_BUTTONS = {
 	READY: {
@@ -228,6 +229,7 @@ class Actions extends Component {
             actionSuccess: false,
             linkContextString: null,
             linkPanel: false,
+			pendingDelete: false,
 
 			reparseButton: ACTION_BUTTONS.READY,
 			deleteButton: ACTION_BUTTONS.READY,
@@ -244,6 +246,8 @@ class Actions extends Component {
         this.ToggleActionSuccess = this.ToggleActionSuccess.bind(this);
         this.ExpandLinkToggle = this.ExpandLinkToggle.bind(this);
         this.LinkContextChange = this.LinkContextChange.bind(this);
+		this.deleteCallback = this.deleteCallback.bind(this);
+		this.StartDelete = this.StartDelete.bind(this);
     }
 
     componentWillMount() {
@@ -253,6 +257,16 @@ class Actions extends Component {
     componentWillUnmount() {
         this.mounted = false;
     }
+
+	deleteCallback( success ) {
+		if ( success === true ) {
+			this.RemoveSelected();
+		}
+
+		this.setState( {
+			pendingDelete: false,
+		} );
+	}
 
     render() {
         let buttons = [];
@@ -269,8 +283,14 @@ class Actions extends Component {
             }
         }
 
-		const reparseButton = this.state.reparseButton;
-		const deleteButton = this.state.deleteButton;
+		const { reparseButton, deleteButton, pendingDelete } = this.state;
+
+		let deleteThings = null;
+		if ( pendingDelete ) {
+			deleteThings = this.props.data.filter( thing => thing.selected )
+				.map( thing => { return { type: thing.type, id: thing.id }; } );
+		}
+
          
         return (
             <div>
@@ -289,7 +309,7 @@ class Actions extends Component {
                                 {thing || entry ? <Button onClick={this.ExpandLinkToggle} >Link to {this.props.type} {this.props.id}</Button> : null }
 								{(thing || entry) && <Button bsStyle={reparseButton.style} onClick={this.Reparse} disabled={reparseButton.disabled} >{reparseButton.text ? reparseButton.text : "Reparse Flair"}</Button> }
                                 {(thing || entry) && <Button bsStyle='warning' onClick={this.RemoveSelected} >Unmark</Button> }
-								{(thing || entry) && <Button bsStyle='danger' onClick={this.Delete} disabled={deleteButton.disabled} >{deleteButton.text ? deleteButton.text : "Delete"}</Button> }
+								{(thing || entry) && <Button bsStyle='danger' onClick={this.StartDelete} disabled={deleteButton.disabled} >{deleteButton.text ? deleteButton.text : "Delete"}</Button> }
                             </ButtonGroup>
                         </div>
                         { this.state.linkPanel && ( thing || entry ) ? 
@@ -314,6 +334,7 @@ class Actions extends Component {
                         :
                             null
                         }
+						{ pendingDelete && <DeleteModal things={deleteThings} errorToggle={this.props.errorToggle} callback={this.deleteCallback} /> }
                     </div>                
                 }   
             </div>
@@ -348,6 +369,12 @@ class Actions extends Component {
             this.setState({ actionSuccess: false });
         }
     }
+	
+	StartDelete() {
+		this.setState( {
+			pendingDelete: true,
+		} );
+	}
     
     MoveEntry() {
         for (let key of this.props.data ) {
