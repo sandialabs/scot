@@ -449,7 +449,7 @@ class Actions extends Component {
 			},
 			// Failure
 			( error ) => {
-				console.err( error );
+				console.error( error );
 				this.setState({
 					reparseButton: ACTION_BUTTONS.ERROR,
 				});
