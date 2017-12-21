@@ -487,6 +487,8 @@ class Actions extends Component {
 			promoteButton: ACTION_BUTTONS.LOADING,
 		});
 
+		let success = true;
+
 		$.when( ...this.props.data.filter( ( thing ) => thing.selected )
 			.map( ( thing ) => {
 				return this.PromoteAjax( thing );
@@ -500,6 +502,7 @@ class Actions extends Component {
 			},
 			// Failure
 			( error ) => {
+				success = false;
 				console.error( error );
 				this.setState({
 					promoteButton: ACTION_BUTTONS.ERROR,
@@ -511,6 +514,10 @@ class Actions extends Component {
 				this.setState({
 					promoteButton: ACTION_BUTTONS.READY,
 				});
+
+				if ( success ) {
+					window.location.reload();
+				}
 			}, 2000 );
 		} );
 	}
