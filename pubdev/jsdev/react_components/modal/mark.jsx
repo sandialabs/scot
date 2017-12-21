@@ -233,6 +233,7 @@ class Actions extends Component {
 
 			reparseButton: ACTION_BUTTONS.READY,
 			deleteButton: ACTION_BUTTONS.READY,
+			promoteButton: ACTION_BUTTONS.READY,
         }
         
         this.RemoveSelected = this.RemoveSelected.bind(this);
@@ -243,6 +244,8 @@ class Actions extends Component {
         this.LinkAjax = this.LinkAjax.bind(this);
 		this.Reparse = this.Reparse.bind(this);
 		this.ReparseAjax = this.ReparseAjax.bind(this);
+		this.Promote = this.Promote.bind(this);
+		this.PromoteAjax = this.PromoteAjax.bind(this);
         this.ToggleActionSuccess = this.ToggleActionSuccess.bind(this);
         this.ExpandLinkToggle = this.ExpandLinkToggle.bind(this);
         this.LinkContextChange = this.LinkContextChange.bind(this);
@@ -270,20 +273,25 @@ class Actions extends Component {
 
     render() {
         let buttons = [];
-        let entry = false;
-        let thing = false;
+        let entry = false, thing = false, alert = true;
 
         for ( let key of this.props.data ) {
             if ( key.type && key.selected ) {
-                if ( key.type == 'entry' ) { 
+                if ( key.type === 'entry' ) { 
                     entry = true;
                 } else {
                     thing = true;
                 }
+
+				if ( key.type !== 'alert' ) {
+					alert = false;
+				}
             }
         }
 
-		const { reparseButton, deleteButton, pendingDelete } = this.state;
+		const addToEvent = alert && this.props.type === 'event';
+
+		const { reparseButton, deleteButton, promoteButton, pendingDelete } = this.state;
 
 		let deleteThings = null;
 		if ( pendingDelete ) {
@@ -307,6 +315,7 @@ class Actions extends Component {
                                 {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.MoveEntry}>Move to {this.props.type} {this.props.id}</Button> : null }
                                 {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.CopyEntry}>Copy to {this.props.type} {this.props.id}</Button> : null }
                                 {thing || entry ? <Button onClick={this.ExpandLinkToggle} >Link to {this.props.type} {this.props.id}</Button> : null }
+								{addToEvent && <Button bsStyle={promoteButton.style} onClick={this.Promote} disabled={promoteButton.disabled} >{promoteButton.text ? promoteButton.text : `Add to ${this.props.type} ${this.props.id}`}</Button> }
 								{(thing || entry) && <Button bsStyle={reparseButton.style} onClick={this.Reparse} disabled={reparseButton.disabled} >{reparseButton.text ? reparseButton.text : "Reparse Flair"}</Button> }
                                 {(thing || entry) && <Button bsStyle='warning' onClick={this.RemoveSelected} >Unmark</Button> }
 								{(thing || entry) && <Button bsStyle='danger' onClick={this.StartDelete} disabled={deleteButton.disabled} >{deleteButton.text ? deleteButton.text : "Delete"}</Button> }
@@ -469,6 +478,48 @@ class Actions extends Component {
             type: 'put',
             url: '/scot/api/v2/'+ thing.type +'/'+ thing.id,
             data: JSON.stringify({parsed:0}),
+            contentType: 'application/json; charset=UTF-8',
+        });
+	}
+
+	Promote() {
+		this.setState({
+			promoteButton: ACTION_BUTTONS.LOADING,
+		});
+
+		$.when( ...this.props.data.filter( ( thing ) => thing.selected )
+			.map( ( thing ) => {
+				return this.PromoteAjax( thing );
+			} )
+		).then(
+			// Success
+			() => {
+				this.setState({
+					promoteButton: ACTION_BUTTONS.SUCCESS,
+				});
+			},
+			// Failure
+			( error ) => {
+				console.error( error );
+				this.setState({
+					promoteButton: ACTION_BUTTONS.ERROR,
+				});
+				this.props.errorToggle( 'error adding alerts to event', error );
+			}
+		).always( () => {
+			setTimeout( () => {
+				this.setState({
+					promoteButton: ACTION_BUTTONS.READY,
+				});
+			}, 2000 );
+		} );
+	}
+
+	PromoteAjax( thing ) {
+        return $.ajax({
+            type: 'put',
+            url: '/scot/api/v2/alert/'+ thing.id,
+            data: JSON.stringify({promote:parseInt(this.props.id)}),
             contentType: 'application/json; charset=UTF-8',
         });
 	}
