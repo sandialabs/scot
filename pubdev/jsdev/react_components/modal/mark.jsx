@@ -275,8 +275,11 @@ class Actions extends Component {
         let buttons = [];
         let entry = false, thing = false, alert = true;
 
+		let numSelected = 0;
         for ( let key of this.props.data ) {
             if ( key.type && key.selected ) {
+				numSelected++;
+
                 if ( key.type === 'entry' ) { 
                     entry = true;
                 } else {
@@ -289,7 +292,7 @@ class Actions extends Component {
             }
         }
 
-		const addToEvent = alert && this.props.type === 'event';
+		const addToEvent = numSelected != 0 && alert && this.props.type === 'event';
 
 		const { reparseButton, deleteButton, promoteButton, pendingDelete } = this.state;
 
