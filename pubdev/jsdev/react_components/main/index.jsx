@@ -30,6 +30,8 @@ var Notification    = require('react-notification-system');
 var Login           = require('../modal/login.jsx').default;
 import Home from './home';
 
+import { UserConfigProvider } from '../utils/userConfig';
+
 {
     window.React = React;	
     var $ = window.$;
@@ -258,7 +260,7 @@ let App = React.createClass( {
         }
 
         return (
-            <div>
+            <UserConfigProvider>
                 <Navbar inverse fixedTop={true} fluid={true}>
                     <Navbar.Header>
                         <Navbar.Brand>
@@ -316,7 +318,7 @@ let App = React.createClass( {
                     <Notification ref='notificationSystem' />
 					{/* Home Page Dashboard */}
 					<Route exact path='/' render={ props => (
-						<Home loggedIn={!this.state.login} sensitivity={this.state.sensitivity} {...props} />
+						<Home loggedIn={!this.state.login} sensitivity={this.state.sensitivity} />
 					) } />
                     { type == 'alert' ? 
                         <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={type} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
@@ -373,7 +375,7 @@ let App = React.createClass( {
                         :
                         null}
                 </div>
-            </div>
+            </UserConfigProvider>
         );
     },
 } );
