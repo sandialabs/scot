@@ -802,15 +802,17 @@ var AlertRow = React.createClass({
         //First condition is for non-flaired items, second is for flaired
         if ( Array.isArray( dataFlair[value] )) {
             for ( let i = 0; i < dataFlair[value].length; i++ ) {
-                arr.push(<div className='alert_data_cell' dangerouslySetInnerHTML={{ __html: $('<div>').text(dataFlair[value][i]).html() }}/>)
+                arr.push(<div dangerouslySetInnerHTML={{ __html: $('<div>').text(dataFlair[value][i]).html() }}/>)
                 arr.push(<br/>);
             }
         } else {
-            arr.push(<div className='alert_data_cell' dangerouslySetInnerHTML={{ __html: dataFlair[value] }}/>)
+            arr.push(<div dangerouslySetInnerHTML={{ __html: dataFlair[value] }}/>)
         }
         return (
             <td style={{marginRight:'4px'}}>
-                {arr}
+                <div className='alert_data_cell'>
+                    {arr}
+                </div>
             </td>
         )
     }
