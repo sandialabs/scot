@@ -556,7 +556,7 @@ var SelectedHeader = React.createClass({
 
     toggleFlair: function() {
         if ( this.state.flairOff ) {
-            this.setState({ flairOff: false});
+            this.setState({ flairOff: false, runWatcher: true});
             setTimeout(function(){AddFlair.entityUpdate(this.state.entityData,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
         } else {
             this.setState({ flairOff: true});
