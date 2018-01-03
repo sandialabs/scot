@@ -798,18 +798,19 @@ var AlertRow = React.createClass({
         var dataFlair = this.props.dataFlair;
         var value = this.props.value;
         let rowContent = []; 
-       
+        let arr = [];
         //First condition is for non-flaired items, second is for flaired
         if ( Array.isArray( dataFlair[value] )) {
             for ( let i = 0; i < dataFlair[value].length; i++ ) {
-                rowContent.push($('<div>').text(dataFlair[value][i]).html());
+                arr.push(<div className='alert_data_cell' dangerouslySetInnerHTML={{ __html: $('<div>').text(dataFlair[value][i]).html() }}/>)
+                arr.push(<br/>);
             }
         } else {
-            rowContent = dataFlair[value];
+            arr.push(<div className='alert_data_cell' dangerouslySetInnerHTML={{ __html: dataFlair[value] }}/>)
         }
         return (
             <td style={{marginRight:'4px'}}>
-                <div className='alert_data_cell' dangerouslySetInnerHTML={{ __html: rowContent}}/>
+                {arr}
             </td>
         )
     }
