@@ -1,6 +1,12 @@
 // Styles for Main Component
 
 .homePageDisplay {
+	.nav-tabs {
+		& > li > a {
+			padding: 5px;
+		}
+	}
+
 	.home-grid {
 		display: grid;
 		padding: 10px;

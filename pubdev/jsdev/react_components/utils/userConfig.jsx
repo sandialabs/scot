@@ -23,7 +23,9 @@ const UserConfigKeyShape = {
 export const UserConfigKeys = {
 	DASHBOARD: {
 		key: 'dashboard',
-		default: {},
+		default: {
+			tabs: [],
+		},
 	},
 }
 
