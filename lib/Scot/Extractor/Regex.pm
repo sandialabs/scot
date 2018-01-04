@@ -95,9 +95,9 @@ sub get_nonconflict_attrname {
     my $meta    = shift;
     my $suffix  = shift;
     my $prefix  = "regex_";
-    my $post    = "";
+    my $post    = 0;
 
-    my $attrname    = $prefix . $suffix . $post;
+    my $attrname    = $prefix . $suffix;
     while ( $meta->has_attribute( $attrname ) ) {
         $post       += 1;
         $attrname   = $prefix . $suffix . $post;

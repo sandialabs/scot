@@ -7,6 +7,7 @@ use Data::UUID;
 use Mojo::JSON qw(decode_json encode_json);
 use Try::Tiny;
 use Net::IP;
+use Crypt::PBKDF2;
 use strict;
 use warnings;
 use base 'Mojolicious::Controller';
@@ -785,6 +786,19 @@ sub pre_update_process {
             }
         }
         $req->{groups} = $updated_groups;
+    }
+
+    if ( ref($object) eq "Scot::Model::User" ) {
+        # del password and create pwhash
+        my $pass_input  = delete $req->{request}->{json}->{password};
+        my $pbkdf2      = Crypt::PBKDF2->new(
+            hash_class  => 'HMACSHA2',
+            hash_args   => { sha_size => 512 },
+            iterations  => 10000,
+            salt_len    => 15,
+        );
+        my $pwhash  = $pbkdf2->generate($pass_input);
+        $req->{request}->{json}->{pwhash} = $pwhash;
     }
 
     if ( ref($object) eq "Scot::Model::Alertgroup" ) {
