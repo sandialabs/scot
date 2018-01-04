@@ -611,14 +611,12 @@ var AlertBody = React.createClass({
         }
     },
     onClick: function(event) {
-        if (window.getSelection().toString() == '') {
-            if (event.shiftKey == true) {
-                this.props.rowClicked(this.props.data.id,this.props.index,'shift',null);
-            } else if (event.ctrlKey == true || event.metaKey == true) {
-                this.props.rowClicked(this.props.data.id,this.props.index,'ctrl',this.props.data.status)
-            } else {
-                this.props.rowClicked(this.props.data.id,this.props.index,'',this.props.data.status);
-            }
+        if (event.shiftKey == true) {
+            this.props.rowClicked(this.props.data.id,this.props.index,'shift',null);
+        } else if (event.ctrlKey == true || event.metaKey == true) {
+            this.props.rowClicked(this.props.data.id,this.props.index,'ctrl',this.props.data.status)
+        } else {
+            this.props.rowClicked(this.props.data.id,this.props.index,'',this.props.data.status);
         }
     },
     toggleEntry: function() {
