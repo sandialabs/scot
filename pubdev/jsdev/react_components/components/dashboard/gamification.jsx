@@ -29,7 +29,7 @@ class Gamification extends PureComponent {
             error: this.fetchError,
         });
 
-		this.categoryTimer = setInterval( this.updateCategory, CATEGORY_INTERVAL );
+		this.categoryInterval = setInterval( this.updateCategory, CATEGORY_INTERVAL );
 	}
 
 	componentWillUnmount() {
