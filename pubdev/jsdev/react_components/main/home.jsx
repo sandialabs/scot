@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { Well } from 'react-bootstrap';
+import { Well, Tabs, Tab } from 'react-bootstrap';
 
 import { withUserConfig, UserConfigPropTypes, UserConfigKeys } from '../utils/userConfig';
 
@@ -24,45 +24,8 @@ class HomeDashboard extends PureComponent {
 		...UserConfigPropTypes,
 	}
 
-	render() {
-		/*
-		return (
-			<div className="homePageDisplay">
-				<div className='col-md-4'>
-					<img src='/images/scot-600h.png' style={{maxWidth:'350px',width:'100%',marginLeft:'auto', marginRight:'auto', display: 'block'}}/>
-					<h1>Sandia Cyber Omni Tracker 3.5</h1>
-					<h1>{this.state.sensitivity}</h1>
-					{ this.props.loggedIn &&
-						<Status errorToggle={this.errorToggle} />
-					}
-				</div>
-				{ this.props.loggedIn && 
-					<div>
-						<Gamification errorToggle={this.errorToggle} />
-						<Online errorToggle={this.errorToggle} />
-						<ReportDashboard />
-					</div>
-				}
-			</div>
-		)
-		*/
-		if ( !this.props.loggedIn ) {
-			return (
-				<div className="homePageDisplay">
-					<div className="home-grid loggedOut">
-						<div className="title-area">
-							<h1>Sandia Cyber Omni Tracker
-								<br />
-								3.5
-							</h1>
-						</div>
-					</div>
-				</div>
-			)
-		}
-
-		return (
-			<div className="homePageDisplay">
+	defaultTab() {
+		const tabLayout = (
 				<div className="home-grid">
 					<div className="title-area">
 						{ this.props.sensitivity && 
@@ -85,6 +48,72 @@ class HomeDashboard extends PureComponent {
 					</div>
 					{dashboardReports}
 				</div>
+		);
+		return {
+			title: 'Default',
+			layout: tabLayout,
+			mountOnEnter: false,
+			unmountOnExit: false,
+		}
+	}
+
+	newTab() {
+		const newTabLayout = (
+			<h1>New Dashboard</h1>
+		)
+
+		return {
+			title: '+',
+			layout: newTabLayout,
+		}
+	}
+
+	buildTab( tabConfig ) {
+		return {
+			title: tabConfig,
+			layout: (<p>{tabConfig}</p>),
+		}
+	}
+
+	render() {
+		if ( !this.props.loggedIn ) {
+			return (
+				<div className="homePageDisplay">
+					<div className="home-grid loggedOut">
+						<div className="title-area">
+							<h1>Sandia Cyber Omni Tracker
+								<br />
+								3.5
+							</h1>
+						</div>
+					</div>
+				</div>
+			)
+		}
+
+		const dashboardConfig = this.props.userConfig.config;
+		const tabsConfig = dashboardConfig.tabs;
+		
+		let tabs = []
+		tabs.push( this.defaultTab() );
+
+		for ( let newTab in tabsConfig ) {
+			tabs.push( this.buildTab( newTab ) );
+		}
+
+		tabs.push( this.newTab() );
+
+		const builtTabs = tabs.map( (tab, i) => {
+			let { title, layout, ...props } = tab;
+			return <Tab eventKey={i} key={i} title={title} {...props}>{layout}</Tab>
+		} );
+
+
+		return (
+			<div className="homePageDisplay">
+				<Tabs defaultActiveKey={0} id="DashboardTabs" mountOnEnter unmountOnExit >
+					{builtTabs}
+				</Tabs>
 			</div>
 		)
 	}
