@@ -31,6 +31,7 @@ sub update_entities {
     my $env     = $self->env;
     my $log     = $env->log;
     my $mongo   = $env->mongo;
+    my $enrichments = $env->enrichments;
 
     my $thash = $target->as_hash;
     $self->env->log->debug("updating entities on target ",
@@ -83,6 +84,10 @@ sub update_entities {
             push @created_ids, $entity->id;
         }
         $self->create_entity_links($entity, $target);
+        my ($updated,$data) = $enrichments->enrich($entity);
+        if ( $updated > 0 ) {
+            $entity->update_set(data => $data);
+        }
     }
     return \@created_ids, \@updated_ids;
 }
