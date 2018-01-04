@@ -589,6 +589,7 @@ var AlertParent = React.createClass({
         )
     }
 });
+
 var AlertHeader = React.createClass({
     render: function() {
         return (
@@ -596,6 +597,7 @@ var AlertHeader = React.createClass({
         )
     }
 });
+
 var AlertBody = React.createClass({
     getInitialState: function() {
         return {
@@ -609,12 +611,14 @@ var AlertBody = React.createClass({
         }
     },
     onClick: function(event) {
-        if (event.shiftKey == true) {
-            this.props.rowClicked(this.props.data.id,this.props.index,'shift',null);
-        } else if (event.ctrlKey == true || event.metaKey == true) {
-            this.props.rowClicked(this.props.data.id,this.props.index,'ctrl',this.props.data.status)
-        } else {
-            this.props.rowClicked(this.props.data.id,this.props.index,'',this.props.data.status);
+        if (window.getSelection().toString() == '') {
+            if (event.shiftKey == true) {
+                this.props.rowClicked(this.props.data.id,this.props.index,'shift',null);
+            } else if (event.ctrlKey == true || event.metaKey == true) {
+                this.props.rowClicked(this.props.data.id,this.props.index,'ctrl',this.props.data.status)
+            } else {
+                this.props.rowClicked(this.props.data.id,this.props.index,'',this.props.data.status);
+            }
         }
     },
     toggleEntry: function() {
@@ -776,7 +780,7 @@ var AlertBody = React.createClass({
         var id = 'alert_'+data.id+'_status';
         return (
             <tbody>
-                <tr id={data.id} className={'main ' + selected} style={{cursor: 'pointer'}} onMouseDown={this.onClick}>
+                <tr id={data.id} className={'main ' + selected} style={{cursor: 'pointer'}} onMouseUp={this.onClick}>
                     <td style={{marginRight:'4px'}}>{data.id}</td>
                     <td style={{marginRight:'4px'}}>{data.status != 'promoted' ? <span style={{color:buttonStyle}}>{data.status}</span> : <Button bsSize='xsmall' bsStyle={buttonStyle} id={id} onMouseDown={this.navigateTo} style={{lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}>{data.status}</Button>}</td>
                     {data.entry_count == 0 ? <td style={{marginRight:'4px'}}>{data.entry_count}</td> : <td style={{marginRight:'4px'}}><span style={{color: 'blue', textDecoration: 'underline', cursor: 'pointer'}} onMouseDown={this.toggleEntry}>{data.entry_count}</span></td>}
@@ -787,27 +791,33 @@ var AlertBody = React.createClass({
         )
     }
 });
+
 var AlertRow = React.createClass({
     render: function() {
         var data = this.props.data;
         var dataFlair = this.props.dataFlair;
         var value = this.props.value;
-        
-        let rowContent = dataFlair[value];
-        
+        let rowContent = []; 
+        let arr = [];
+        //First condition is for non-flaired items, second is for flaired
         if ( Array.isArray( dataFlair[value] )) {
             for ( let i = 0; i < dataFlair[value].length; i++ ) {
-                rowContent = $('<div>').text(dataFlair[value][i]).html();
+                arr.push(<div dangerouslySetInnerHTML={{ __html: $('<div>').text(dataFlair[value][i]).html() }}/>)
+                arr.push(<br/>);
             }
-        };
-
+        } else {
+            arr.push(<div dangerouslySetInnerHTML={{ __html: dataFlair[value] }}/>)
+        }
         return (
             <td style={{marginRight:'4px'}}>
-                <div className='alert_data_cell' dangerouslySetInnerHTML={{ __html: rowContent}}/>
+                <div className='alert_data_cell'>
+                    {arr}
+                </div>
             </td>
         )
     }
 });
+
 var AlertRowBlank = React.createClass({
     render: function() {
         var id = this.props.id;

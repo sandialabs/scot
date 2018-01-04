@@ -3,6 +3,26 @@ import PropTypes from 'prop-types';
 import { Modal, Button, ButtonGroup, Panel, FormControl, Form, Col } from 'react-bootstrap';
 import ReactTable from 'react-table';
 import { removeMarkedItems } from '../components/marker';
+import { DeleteModal } from './delete';
+
+const ACTION_BUTTONS = {
+	READY: {
+		style: "default",
+	},
+	LOADING: {
+		text: "Processing...",
+		style: "default",
+		disabled: true,
+	},
+	SUCCESS: {
+		text: "Success!",
+		style: "success",
+	},
+	ERROR: {
+		text: "Error!",
+		style: "danger",
+	},
+};
 
 class Mark extends Component {
     constructor( props ) { 
@@ -209,6 +229,11 @@ class Actions extends Component {
             actionSuccess: false,
             linkContextString: null,
             linkPanel: false,
+			pendingDelete: false,
+
+			reparseButton: ACTION_BUTTONS.READY,
+			deleteButton: ACTION_BUTTONS.READY,
+			promoteButton: ACTION_BUTTONS.READY,
         }
         
         this.RemoveSelected = this.RemoveSelected.bind(this);
@@ -217,9 +242,15 @@ class Actions extends Component {
         this.EntryAjax = this.EntryAjax.bind(this);
         this.Link = this.Link.bind(this);
         this.LinkAjax = this.LinkAjax.bind(this);
+		this.Reparse = this.Reparse.bind(this);
+		this.ReparseAjax = this.ReparseAjax.bind(this);
+		this.Promote = this.Promote.bind(this);
+		this.PromoteAjax = this.PromoteAjax.bind(this);
         this.ToggleActionSuccess = this.ToggleActionSuccess.bind(this);
         this.ExpandLinkToggle = this.ExpandLinkToggle.bind(this);
         this.LinkContextChange = this.LinkContextChange.bind(this);
+		this.deleteCallback = this.deleteCallback.bind(this);
+		this.StartDelete = this.StartDelete.bind(this);
     }
 
     componentWillMount() {
@@ -230,20 +261,47 @@ class Actions extends Component {
         this.mounted = false;
     }
 
+	deleteCallback( success ) {
+		if ( success === true ) {
+			this.RemoveSelected();
+		}
+
+		this.setState( {
+			pendingDelete: false,
+		} );
+	}
+
     render() {
         let buttons = [];
-        let entry = false;
-        let thing = false;
+        let entry = false, thing = false, alert = true;
 
+		let numSelected = 0;
         for ( let key of this.props.data ) {
             if ( key.type && key.selected ) {
-                if ( key.type == 'entry' ) { 
+				numSelected++;
+
+                if ( key.type === 'entry' ) { 
                     entry = true;
                 } else {
                     thing = true;
                 }
+
+				if ( key.type !== 'alert' ) {
+					alert = false;
+				}
             }
         }
+
+		const addToEvent = numSelected != 0 && alert && this.props.type === 'event';
+
+		const { reparseButton, deleteButton, promoteButton, pendingDelete } = this.state;
+
+		let deleteThings = null;
+		if ( pendingDelete ) {
+			deleteThings = this.props.data.filter( thing => thing.selected )
+				.map( thing => { return { type: thing.type, id: thing.id }; } );
+		}
+
          
         return (
             <div>
@@ -260,7 +318,10 @@ class Actions extends Component {
                                 {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.MoveEntry}>Move to {this.props.type} {this.props.id}</Button> : null }
                                 {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.CopyEntry}>Copy to {this.props.type} {this.props.id}</Button> : null }
                                 {thing || entry ? <Button onClick={this.ExpandLinkToggle} >Link to {this.props.type} {this.props.id}</Button> : null }
-                                {thing || entry ? <Button bsStyle='danger' onClick={this.RemoveSelected} >Unmark</Button> : null }
+								{addToEvent && <Button bsStyle={promoteButton.style} onClick={this.Promote} disabled={promoteButton.disabled} >{promoteButton.text ? promoteButton.text : `Add to ${this.props.type} ${this.props.id}`}</Button> }
+								{(thing || entry) && <Button bsStyle={reparseButton.style} onClick={this.Reparse} disabled={reparseButton.disabled} >{reparseButton.text ? reparseButton.text : "Reparse Flair"}</Button> }
+                                {(thing || entry) && <Button bsStyle='warning' onClick={this.RemoveSelected} >Unmark</Button> }
+								{(thing || entry) && <Button bsStyle='danger' onClick={this.StartDelete} disabled={deleteButton.disabled} >{deleteButton.text ? deleteButton.text : "Delete"}</Button> }
                             </ButtonGroup>
                         </div>
                         { this.state.linkPanel && ( thing || entry ) ? 
@@ -285,6 +346,7 @@ class Actions extends Component {
                         :
                             null
                         }
+						{ pendingDelete && <DeleteModal things={deleteThings} errorToggle={this.props.errorToggle} callback={this.deleteCallback} /> }
                     </div>                
                 }   
             </div>
@@ -319,6 +381,12 @@ class Actions extends Component {
             this.setState({ actionSuccess: false });
         }
     }
+	
+	StartDelete() {
+		this.setState( {
+			pendingDelete: true,
+		} );
+	}
     
     MoveEntry() {
         for (let key of this.props.data ) {
@@ -374,6 +442,97 @@ class Actions extends Component {
 
         
     }
+
+	Reparse() {
+		this.setState({
+			reparseButton: ACTION_BUTTONS.LOADING,
+		});
+
+		$.when( ...this.props.data.filter( ( thing ) => thing.selected )
+			.map( ( thing ) => {
+				return this.ReparseAjax( thing );
+			} )
+		).then(
+			// Success
+			() => {
+				this.setState({
+					reparseButton: ACTION_BUTTONS.SUCCESS,
+				});
+			},
+			// Failure
+			( error ) => {
+				console.error( error );
+				this.setState({
+					reparseButton: ACTION_BUTTONS.ERROR,
+				});
+				this.props.errorToggle( 'error reparsing', error );
+			}
+		).always( () => {
+			setTimeout( () => {
+				this.setState({
+					reparseButton: ACTION_BUTTONS.READY,
+				});
+			}, 2000 );
+		} );
+	}
+
+	ReparseAjax( thing ) {
+        return $.ajax({
+            type: 'put',
+            url: '/scot/api/v2/'+ thing.type +'/'+ thing.id,
+            data: JSON.stringify({parsed:0}),
+            contentType: 'application/json; charset=UTF-8',
+        });
+	}
+
+	Promote() {
+		this.setState({
+			promoteButton: ACTION_BUTTONS.LOADING,
+		});
+
+		let success = true;
+
+		$.when( ...this.props.data.filter( ( thing ) => thing.selected )
+			.map( ( thing ) => {
+				return this.PromoteAjax( thing );
+			} )
+		).then(
+			// Success
+			() => {
+				this.setState({
+					promoteButton: ACTION_BUTTONS.SUCCESS,
+				});
+			},
+			// Failure
+			( error ) => {
+				success = false;
+				console.error( error );
+				this.setState({
+					promoteButton: ACTION_BUTTONS.ERROR,
+				});
+				this.props.errorToggle( 'error adding alerts to event', error );
+			}
+		).always( () => {
+			setTimeout( () => {
+				this.setState({
+					promoteButton: ACTION_BUTTONS.READY,
+				});
+
+				if ( success ) {
+					window.location.reload();
+				}
+			}, 2000 );
+		} );
+	}
+
+	PromoteAjax( thing ) {
+        return $.ajax({
+            type: 'put',
+            url: '/scot/api/v2/alert/'+ thing.id,
+            data: JSON.stringify({promote:parseInt(this.props.id)}),
+            contentType: 'application/json; charset=UTF-8',
+        });
+	}
 
     LinkAjax( arrayToLink ) {
         let data = {};
