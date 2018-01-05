@@ -24,6 +24,7 @@ export const UserConfigKeys = {
 	DASHBOARD: {
 		key: 'dashboard',
 		default: {
+			curTab: 0,
 			tabs: [],
 		},
 	},
