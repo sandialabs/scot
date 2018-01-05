@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { Well, Tabs, Tab } from 'react-bootstrap';
+import { Well, Tab, Row, Col, Nav, NavItem } from 'react-bootstrap';
 
 import { withUserConfig, UserConfigPropTypes, UserConfigKeys } from '../utils/userConfig';
 
@@ -11,11 +11,15 @@ import { ReportDashboard } from '../components/dashboard/report';
 
 const dashboardReports = ReportDashboard();
 
+const NEWTABKEY = 'new';
+
 class HomeDashboard extends PureComponent {
 	constructor( props ) {
 		super( props );
 
 		this.state = {};
+
+		this.switchTab = this.switchTab.bind(this);
 	}
 
 	static propTypes = {
@@ -26,28 +30,28 @@ class HomeDashboard extends PureComponent {
 
 	defaultTab() {
 		const tabLayout = (
-				<div className="home-grid">
-					<div className="title-area">
-						{ this.props.sensitivity && 
-							<h2 className="sensitivity">{this.props.sensitivity}</h2>
-						}
-						<h3>Sandia Cyber Omni Tracker
-							<br />
-							3.5
-						</h3>
-					</div>
-					<Status className="status-area" />
-					<div className="game-area">
-						<Gamification />
-					</div>
-					<Well bsSize="small" className="activity-area">
-						Activity
-					</Well>
-					<div className="notifications-area">
-						Notifications
-					</div>
-					{dashboardReports}
+			<div className="home-grid">
+				<div className="title-area">
+					{ this.props.sensitivity && 
+						<h2 className="sensitivity">{this.props.sensitivity}</h2>
+					}
+					<h3>Sandia Cyber Omni Tracker
+						<br />
+						3.5
+					</h3>
 				</div>
+				<Status className="status-area" />
+				<div className="game-area">
+					<Gamification />
+				</div>
+				<Well bsSize="small" className="activity-area">
+					Activity
+				</Well>
+				<div className="notifications-area">
+					Notifications
+				</div>
+				{dashboardReports}
+			</div>
 		);
 		return {
 			title: 'Default',
@@ -58,14 +62,14 @@ class HomeDashboard extends PureComponent {
 	}
 
 	newTab() {
-		const newTabLayout = (
-			<h1>New Dashboard</h1>
-		)
+		const dashboardConfig = this.props.userConfig.config;
+		let tabs = [...dashboardConfig.tabs];
+		tabs.push( `Tab ${tabs.length + 1}` )
 
-		return {
-			title: '+',
-			layout: newTabLayout,
-		}
+		this.updateDashboardConfig( {
+			curTab: tabs.length,
+			tabs: tabs,
+		} );
 	}
 
 	buildTab( tabConfig ) {
@@ -73,6 +77,26 @@ class HomeDashboard extends PureComponent {
 			title: tabConfig,
 			layout: (<p>{tabConfig}</p>),
 		}
+	}
+
+	switchTab( key ) {
+		if ( key === NEWTABKEY ) {
+			this.newTab();
+			return;
+		}
+
+		this.updateDashboardConfig({
+			curTab: key,
+		} );
+	}
+
+	updateDashboardConfig( newConfig ) {
+		const dashboardConfig = this.props.userConfig.config;
+
+		this.props.userConfig.setUserConfig( {
+			...dashboardConfig,
+			...newConfig,
+		} );
 	}
 
 	render() {
@@ -97,23 +121,40 @@ class HomeDashboard extends PureComponent {
 		let tabs = []
 		tabs.push( this.defaultTab() );
 
-		for ( let newTab in tabsConfig ) {
+		for ( let newTab of tabsConfig ) {
 			tabs.push( this.buildTab( newTab ) );
 		}
 
-		tabs.push( this.newTab() );
-
-		const builtTabs = tabs.map( (tab, i) => {
+		let tabHeaders = tabs.map( (tab, i) => {
 			let { title, layout, ...props } = tab;
-			return <Tab eventKey={i} key={i} title={title} {...props}>{layout}</Tab>
+			return <NavItem eventKey={i} key={i}>{title}</NavItem>
 		} );
+
+		tabHeaders.push( <NavItem eventKey={NEWTABKEY} key={NEWTABKEY}>+</NavItem> );
+
+		const tabContent = tabs.map( (tab, i) => {
+			let { title, layout, ...props } = tab;
+			return <Tab.Pane eventKey={i} key={i} {...props}>{layout}</Tab.Pane>
+		} );
+
 
 
 		return (
 			<div className="homePageDisplay">
-				<Tabs defaultActiveKey={0} id="DashboardTabs" mountOnEnter unmountOnExit >
-					{builtTabs}
-				</Tabs>
+				<Tab.Container id="DashboardTabs" activeKey={dashboardConfig.curTab} onSelect={this.switchTab}>
+					<Row>
+						<Col sm={12}>
+							<Nav bsStyle='tabs'>
+								{tabHeaders}
+							</Nav>
+						</Col>
+						<Col sm={12}>
+							<Tab.Content mountOnEnter unmountOnExit >
+								{tabContent}
+							</Tab.Content>
+						</Col>
+					</Row>
+				</Tab.Container>
 			</div>
 		)
 	}
