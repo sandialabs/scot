@@ -27,7 +27,7 @@ class Login extends Component {
     
     render() {
         let origurl = this.props.origurl;
-        let url = '/sso?orig_url=/#/' + origurl;
+        let url = '/sso?orig_url=/#' + origurl;
         return (
             <Modal dialogClassName='login-modal' show={ this.props.modalActive }> 
                 <Modal.Header >
