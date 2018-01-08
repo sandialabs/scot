@@ -224,11 +224,16 @@
     # and signatures (and others later?)
     # 
     forms   => {
-        signatures  => [
+        signature  => [
             {
                 type    => "textarea",
                 key     => "description",
-                value   => "",
+                value   => '',
+                value_type => {
+                    type    => 'static',
+                    url     => undef,
+                    key     => 'description',
+                },
                 label   => "Description",
                 help    => "Enter a short description of the signature's purpose",
             },
@@ -238,31 +243,45 @@
                 value   => '',
                 label   => "Type",
                 help    => "Enter the signature type, e.g. yara, snort, etc.",
+                value_type => {
+                    type    => 'static',
+                    url     => undef,
+                    key     => 'input',
+                },
             },
             {
                 type    => "dropdown",
                 key     => "prod_sigbody_id",
-                value_type  => "dynamic",
-                value_key   => "sigbody",
                 value   => [],
+                value_type  => {
+                    type    => "dynamic",
+                    url     => '/scot/api/v2/signature/%s',
+                    key     => 'prod_sigbody_id',
+                },
                 label   => "Production Signature Body Version",
                 help    => "Select the version of the signature body you wish to be used in production",
             },
             {
                 type    => "dropdown",
                 key     => "qual_sigbody_id",
-                value_type  => "dynamic",
-                value_key   => "sigbody",
                 value   => [],
+                value_type  => {
+                    type    => "dynamic",
+                    url     => '/scot/api/v2/signature/%s',
+                    key     => 'qual_sigbody_id',
+                },
                 label   => "Quality Signature Body Version",
                 help    => "Select the version of the signature body you wish to be used in quality",
             },
             {
                 type    => "input_multi",
                 key     => 'signature_group',
-                value_type  => 'dynamic',
-                value_key   => 'signature_group',
                 value   => [],
+                value_type  => {
+                    type    => "static",
+                    url     => undef,
+                    key     => 'signature_group',
+                },
                 label   => "Signature Group",
                 help    => "Group signatures under common names",
             },
@@ -270,14 +289,23 @@
                 type    => 'input',
                 key     => 'target.type',
                 value   => '',
+                value_type  => {
+                    type    => "static",
+                    url     => undef,
+                    key     => 'target.type',
+                },
                 label   => "Reference Type",
                 help    => "The SCOT datatype that originated this signature",
-                value   => '',
             },
             {
                 type    => 'input',
                 key     => 'target.id',
                 value   => '',
+                value_type  => {
+                    type    => "static",
+                    url     => undef,
+                    key     => 'target.id',
+                },
                 help    => 'The id of the SCOT datatype that originated this sig',
                 label   => "Reference ID",
             },
@@ -289,8 +317,7 @@
                 type    => "dropdown",
                 key     => 'type',
                 value   => [
-                    { text  => 'n/a', value => 'none', selected => 1 },
-                    { text  => 'Type1', value => 'none', selected => 0 },
+                    { text  => 'Type1', value => 'none',  selected => 0 },
                     { text  => 'Type2', value => 'type2', selected => 0 },
                     { text  => 'Type3', value => 'type3', selected => 0 },
                 ],
