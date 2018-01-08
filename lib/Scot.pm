@@ -56,15 +56,23 @@ sub startup {
     # connections created in Env, IF the DB client can't handle reconnections
     # after forking.  Meerkat for mongo can, but if we have any DBI connection
     # we might have problems.
-    $self->config(
-        hypnotoad   => {
+
+    # pull hypnotad config from $env if it exists
+    my $hypno_conf  = $env->mojo_defaults->{hypnotoad};
+
+    if ( ! defined $hypno_conf ) {
+        $hypno_conf = {
             listen  => ['http://localhost:3000?reuse=1'],
             workers => 75,
             clients => 1,
             proxy   => 1,
             pidfile => '/var/run/hypno.pid',
             heartbeat_timeout => 40,
-        },
+        };
+    }
+
+    $self->config(
+        hypnotoad   => $hypno_conf,
     );
 
     # capture stuff that normally would go to STDERR and put in log

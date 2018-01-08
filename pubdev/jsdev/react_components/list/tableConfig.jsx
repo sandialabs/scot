@@ -103,7 +103,7 @@ const customCellRenderers = {
 	},
 	textStatus: row => {
 		let color = 'green';
-		if ( row.value === 'open' || row.value === 'disabled' ) {
+		if ( row.value === 'open' || row.value === 'disabled' || row.value === 'assigned' ) {
 			color = 'red';
 		} else if ( row.value === 'promoted' ) {
 			color = 'orange';
@@ -169,12 +169,21 @@ const columnDefinitions = {
 	},
 
 	TaskStatus: {
-		Header: 'Status',
+		Header: 'Task Status',
 		accessor: d => d.metadata.task.status,
 		id: 'status',
 		column: 'metadata',
 		Cell: customCellRenderers.textStatus,
-		Filter: customFilters.dropdownFilter(),
+		Filter: customFilters.dropdownFilter( [ 'open', 'assigned', 'closed' ] ),
+	},
+
+	TaskSummary: {
+		Header: 'Task Summary',
+		accessor: d => d.body_plain.length > 200 ? d.body_plain.substr(0, 200) +'...' : d.body_plain,
+		id: 'summary',
+		minWidth: 400,
+		maxWidth: 5000,
+		Filter: customFilters.stringFilter,
 	},
 
 	Subject: {
@@ -232,6 +241,13 @@ const columnDefinitions = {
 		Filter: customFilters.tagFilter( 'tag' ),
 	},
 
+    TaskOwner: {
+		Header: 'Task Owner',
+		accessor: 'owner',
+		maxWidth: 80,
+		Filter: customFilters.stringFilter,
+	},
+    
 	Owner: {
 		Header: 'Owner',
 		accessor: 'owner',
@@ -388,11 +404,12 @@ const typeColumns = {
 			title: 'Tags',
 			options: { minWidth: 200, maxWidth: 250 },
 		}, 'Owner', 'Entries', 'Views', ],
-	task: [ 'Id', 'TargetType', 'TargetId', 'TaskStatus', 
-		{
-			title: 'Owner',
+	task: [ 'Id', 'TargetType', 'TargetId', 
+        {
+			title: 'TaskOwner',
 			options: { minWidth: 150, maxWidth: 500 },
-		}, 
+		},
+        'TaskStatus', 'TaskSummary',
 		{
 			title: 'Updated',
 			options: { minWidth: 150, maxWidth: 500 },

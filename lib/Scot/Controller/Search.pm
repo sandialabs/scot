@@ -133,31 +133,36 @@ sub newsearch {
 
     my $response = $esua->do_request_new(  # ... href of json returned.
         {
-            query       => {
-                filtered    => {
-                    filter  => {
-                        or  => [
-                            { term  => { _type  => { value => "alert" } } },
-                            { term  => { _type  => { value => "entry" } } },
-                            { term  => { _type  => { value => "alertgroup" } } },
-                            { term  => { _type  => { value => "event" } } },
-                            { term  => { _type  => { value => "incident" } } },
-                            { term  => { _type  => { value => "intel" } } },
-                            { term  => { _type  => { value => "guide" } } },
-                            { term  => { _type  => { value => "task" } } },
-                            { term  => { _type  => { value => "signature" } } },
-                            { term  => { _type  => { value => "entity" } } },
-                        ]
-                    },
-                    query   => {
-                        query_string    => {
-                            query   => $qstring,
-                            rewrite => "scoring_boolean", #scoring boolean can cause issues with >1024 sized query
-                            #analyzer => "scot_analyzer",
-                            analyze_wildcard => "true",
+            query   => {
+                bool    => {
+                    must   => [
+                        {
+                            query_string => {
+                                query            => $qstring,
+                                rewrite          => "scoring_boolean",
+                                #scoring boolean can cause issues with >1024 sized query
+                                #analyzer => "scot_analyzer",
+                                analyze_wildcard => "true",
+                            },
                         }
-                    }
-                }
+                    ],
+                    filter => {
+                        bool => {
+                            should => [
+                                { term => { _type => { value => "alert" } } },
+                                { term => { _type => { value => "entry" } } },
+                                { term => { _type => { value => "alertgroup" } } },
+                                { term => { _type => { value => "event" } } },
+                                { term => { _type => { value => "incident" } } },
+                                { term => { _type => { value => "intel" } } },
+                                { term => { _type => { value => "guide" } } },
+                                { term => { _type => { value => "task" } } },
+                                { term => { _type => { value => "signature" } } },
+                                { term => { _type => { value => "entity" } } },
+                            ],
+                        },
+                    },
+                },
             },
             highlight   => {
                 #pre_tags    => [ qq|<div class="search_highlight">| ],

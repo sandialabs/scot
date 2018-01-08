@@ -49,15 +49,17 @@ sub _build_es {
 
     $log->debug("Creating ES client");
 
-    my @noproxy = map { m/^(.*):\d+$/ } @{$self->config->{nodes}};
-    push @noproxy, '127.0.0.1';
+    my @nodes = @{$self->nodes};
+
+    my @noproxy = map { m/^(.*):\d+$/ } @nodes;
+    push @noproxy, '127.0.0.1', 'localhost';
     $ENV{'no_proxy'} = join ',', @noproxy;
 
-    say "NODES : ", Dumper($self->config->{nodes});
+    $log->debug("NODES : ",{filter=>\&Dumper, value=>\@nodes});
 
     my %conparams   = (
-        nodes   => $self->config->{nodes},
-        cxn_pool    => 'Sniff',
+        nodes   => $self->nodes,
+        # cxn_pool    => 'Sniff',
         trace_to  => 'Stderr',
     );
 

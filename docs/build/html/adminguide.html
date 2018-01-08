@@ -1,0 +1,338 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Administration Guide &#8212; SCOT 3.5.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '3.5.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
+    <link rel="next" title="Developing For SCOT" href="devguide.html" />
+    <link rel="prev" title="User Guide" href="userguide.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="devguide.html" title="Developing For SCOT"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="userguide.html" title="User Guide"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="administration-guide">
+<h1>Administration Guide<a class="headerlink" href="#administration-guide" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="backup">
+<h2>Backup<a class="headerlink" href="#backup" title="Permalink to this headline">¶</a></h2>
+<p>SCOT supports on-demand and scheduled backups.  The backup script is:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">backup</span><span class="o">.</span><span class="n">pl</span>
+</pre></div>
+</div>
+<p>and will back up the SCOT&#8217;s mongo database and the ElasticSearch collections.  The
+backup is a gzipped tar file and will be stored in /opt/scotbackup.  Moving these
+backups to another system is left as an exercise to the admin.  By default, the
+last 7 days of backups are kept in /opt/scotbackup and files older than 7 days are removed.</p>
+<div class="section" id="manual-backup">
+<h3>Manual Backup<a class="headerlink" href="#manual-backup" title="Permalink to this headline">¶</a></h3>
+<p>I get it, you don&#8217;t trust some fancy script to back up.  Here&#8217;s what is going on behind the scenes.</p>
+<ol class="arabic">
+<li><p class="first">Back up the mongo database with the &#8220;mongodump&#8221; command.</p>
+<p>$ cd /directory/with/space
+$ mongodump &#8211;db scot-prod
+$ tar czvf /another/dir/scot-prod.tgz ./dump</p>
+</li>
+<li><p class="first">Use unix tools to copy SCOT config in /opt/scot/etc</p>
+</li>
+<li><p class="first">ElasticSearch backup is more involved:</p>
+<dl class="docutils">
+<dt>##.  if you have never backed up elastic, you will need to create</dt>
+<dd><p class="first">a repo:</p>
+<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="o">|</span> <span class="n">curl</span> <span class="o">-</span><span class="n">XPUT</span> <span class="n">localhost</span><span class="p">:</span><span class="mi">9200</span><span class="o">/</span><span class="n">_snapshot</span><span class="o">/</span><span class="n">scot_backup</span> <span class="o">-</span><span class="n">d</span> <span class="s1">&#39;{</span>
+<span class="o">|</span>    <span class="s2">&quot;scot_backup&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="o">|</span>        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;fs&quot;</span><span class="p">,</span>
+<span class="o">|</span>        <span class="s2">&quot;settings: {</span>
+<span class="o">|</span>            <span class="s2">&quot;compress&quot;</span><span class="p">:</span> <span class="s2">&quot;true&quot;</span><span class="p">,</span>
+<span class="o">|</span>            <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/esback&quot;</span>
+<span class="o">|</span>        <span class="p">}</span>
+<span class="o">|</span>    <span class="p">}</span>
+<span class="o">|</span> <span class="p">}</span><span class="s1">&#39;</span>
+</pre></div>
+</div>
+</dd>
+<dt>##.  if you have already backup up once before, remove any conflicting</dt>
+<dd><p class="first">snapshot (or use different snapshot name):</p>
+<div class="last highlight-default"><div class="highlight"><pre><span></span>$ curl -XDELETE localhost:9200/_snapshot/scot_backub/snapshot_1
+</pre></div>
+</div>
+</dd>
+</dl>
+<p>##.  Create the Snapshot:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -XPUT localhost:9200/_snapshot/scot_backup/snapshot_1
+</pre></div>
+</div>
+<p>##.  Check on status:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -XGET localhost:9200/_snapshot/scot_backup/_all
+</pre></div>
+</div>
+<p>##.  When complete, use tar to back up /opt/esback:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ tar czvf /home/scot/esback.tgz /opt/esback
+</pre></div>
+</div>
+<p>##.  store scot-prod.tgz and esback.tgz in a safe place.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="section" id="restore">
+<h2>Restore<a class="headerlink" href="#restore" title="Permalink to this headline">¶</a></h2>
+<p>Extract the timestamped SCOT backup tar file:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">tar</span> <span class="n">xzvf</span> <span class="n">scotback</span><span class="o">.</span><span class="mf">201701211832.</span><span class="n">tgz</span>
+</pre></div>
+</div>
+<p>This will create a directory &#8221;./dump/scot-prod&#8221;.  Restore the MongoDB with:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mongorestore</span> <span class="o">--</span><span class="n">dropdatabase</span> <span class="o">--</span><span class="n">db</span> <span class="n">scot</span><span class="o">-</span><span class="n">prod</span> <span class="o">./</span><span class="n">dump</span><span class="o">/</span><span class="n">scot</span><span class="o">-</span><span class="n">prod</span>
+</pre></div>
+</div>
+<div class="section" id="manual-restore">
+<h3>Manual Restore<a class="headerlink" href="#manual-restore" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li>Restore Mongo:</li>
+</ol>
+<blockquote>
+<div><p>##.  remove existing scot-prod database:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>    $ mongo scot-prod &lt; /opt/scot/etc/database/reset.js
+
+##.  extract scot-prod.tgz::
+
+    $ cd /home/scot
+    $ tar xzvf /tmp/scot-prod.tgz
+    $ cd dump
+    $ mongorestore --db=scot-prod .
+</pre></div>
+</div>
+</div></blockquote>
+<ol class="arabic">
+<li><p class="first">Restore configs by copying backup of /opt/scot/etc/ directory</p>
+</li>
+<li><p class="first">Restore ElasticSearch</p>
+<p>##.  Close ElasticSearch indexes that are active.:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -XPOST localhost:9200/scot/_close
+</pre></div>
+</div>
+<p>##.  Remove existing contents of /opt/esback:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ rm -rf /opt/esback/*
+</pre></div>
+</div>
+<p>##.  extract esback.tgz:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ cd /opt/esback
+$ tar xzvf /tmp/esback.tgz
+</pre></div>
+</div>
+<p>##.  Make sure that /etc/elasticsearch/elasticsearch.yml has the following:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">repo</span><span class="o">.</span><span class="n">path</span><span class="p">:</span> <span class="p">[</span> <span class="s1">&#39;/opt/esback&#39;</span> <span class="p">]</span>
+<span class="p">(</span><span class="n">restart</span> <span class="n">es</span> <span class="k">if</span> <span class="n">you</span> <span class="n">have</span> <span class="n">to</span> <span class="n">make</span> <span class="n">a</span> <span class="n">change</span> <span class="n">to</span> <span class="n">the</span> <span class="n">yml</span> <span class="n">file</span>
+</pre></div>
+</div>
+<p>##.  Create the &#8220;scot_backup&#8221; repo if it doesn&#8217;t exist (see above)</p>
+<p>##.  curl -XPOST localhost:9200/_snapshot/scot_backup/snapsot_1/_restore</p>
+</li>
+<li><p class="first">Finally, restart scot.:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># service scot restart</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="section" id="ssl-certs">
+<h2>SSL Certs<a class="headerlink" href="#ssl-certs" title="Permalink to this headline">¶</a></h2>
+<p>The initial install of SCOT will use self-signed SSL Certs.  Please update these certs as soon as possible.</p>
+</div>
+<div class="section" id="geoip">
+<h2>GeoIP<a class="headerlink" href="#geoip" title="Permalink to this headline">¶</a></h2>
+<p>SCOT use the MaxMind GEOIP2 libraries and databases for geo location.  Please see the MaxMind website for details on how to update the database files.</p>
+</div>
+<div class="section" id="upgrading">
+<h2>Upgrading<a class="headerlink" href="#upgrading" title="Permalink to this headline">¶</a></h2>
+<p>Pull or Clone the latest from github (<a class="reference external" href="https://github.com/sandialabs/scot">https://github.com/sandialabs/scot</a>). CD into the
+downloaded directory, run:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">install</span><span class="o">.</span><span class="n">sh</span> <span class="o">-</span><span class="n">s</span>
+</pre></div>
+</div>
+<p>You probably want to do this when your analysts are not very busy.</p>
+</div>
+<div class="section" id="cron-entries">
+<h2>CRON Entries<a class="headerlink" href="#cron-entries" title="Permalink to this headline">¶</a></h2>
+<p>If you are using /opt/scot/bin/alert.pl to import events you will need a crontab entry like:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">*/</span><span class="mi">5</span> <span class="o">*</span> <span class="o">*</span> <span class="o">*</span> <span class="o">*</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">alert</span><span class="o">.</span><span class="n">pl</span>
+</pre></div>
+</div>
+<p>To automate your backups:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">0</span> <span class="mi">3</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">20</span> <span class="o">*</span> <span class="o">*</span> <span class="o">*</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">backup</span><span class="o">.</span><span class="n">pl</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="daemons">
+<h2>Daemons<a class="headerlink" href="#daemons" title="Permalink to this headline">¶</a></h2>
+<p>A properly functioning SCOT has the following services running:</p>
+<ul class="simple">
+<li>ActiveMQ</li>
+<li>MongoDB</li>
+<li>Apache2</li>
+<li>Scot</li>
+<li>scfd   (scot flairing daemon)</li>
+<li>scrfd  (scot reflairing daemon)</li>
+<li>scepd  (scot elastic push daemon)</li>
+</ul>
+<p>Depending on the Linux version, these will have init style startup scripts or systemd style entries.</p>
+</div>
+<div class="section" id="logging">
+<h2>Logging<a class="headerlink" href="#logging" title="Permalink to this headline">¶</a></h2>
+<p>SCOT is a prolific logger.  All logs are stored in /var/log/scot.  It is highly recommended to set
+up logrotate to avoid filling you disk.  Create a /etc/logrotate.d/scot like:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">scot</span><span class="o">.*.</span><span class="n">log</span> <span class="p">{</span>
+    <span class="n">daily</span>
+    <span class="n">missingok</span>
+    <span class="n">rotate</span> <span class="mi">5</span>
+    <span class="n">compress</span>
+    <span class="n">notifempty</span>
+    <span class="n">copytruncate</span>
+<span class="p">}</span>
+<span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">error</span><span class="o">.*.</span><span class="n">log</span> <span class="p">{</span>
+    <span class="n">daily</span>
+    <span class="n">missingok</span>
+    <span class="n">rotate</span> <span class="mi">5</span>
+    <span class="n">compress</span>
+    <span class="n">notifempty</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="manual-password-reset-for-local-auth">
+<h2>Manual Password Reset for Local Auth<a class="headerlink" href="#manual-password-reset-for-local-auth" title="Permalink to this headline">¶</a></h2>
+<p>Let&#8217;s say you forgot the admin password, what to do?</p>
+<ol class="arabic">
+<li><p class="first">Run /opt/scot/bin/passwd.pl</p>
+<p>$ /opt/scot/bin/passwd.pl
+Enter New Admin Password : <strong>*
+Reenter Admin Password   : *</strong>
+{X-PBKDF2}HMACSHA2+512:AAAnEA:2/oQYlnzjibzWoCs2aPv:KAZIhhNUgPBw4M7ZOVU1/2yT/P07FRe2bhacBw6J6ru4jwFRM9dMpxOARc9IfxrQs7ltxSn1ceW76dgJ4kL0Ng==</p>
+</li>
+<li><p class="first">Enter mongodb shell and issue the following:</p>
+</li>
+</ol>
+<blockquote>
+<div>$ mongo scot-prod
+&gt; db.user.update({username:&#8221;admin&#8221;},{$set:{hash:&#8217;{X-PBKDF2}HMACSHA2+512:AAAnEA:2/oQYlnzjibzWoCs2aPv:KAZIhhNUgPBw4M7ZOVU1/2yT/P07FRe2bhacBw6J6ru4jwFRM9dMpxOARc9IfxrQs7ltxSn1ceW76dgJ4kL0Ng==&#8217;}});</div></blockquote>
+<ol class="arabic simple" start="3">
+<li>Now you (admin) will be able to log in via Local Auth using the password you entered.</li>
+</ol>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Administration Guide</a><ul>
+<li><a class="reference internal" href="#backup">Backup</a><ul>
+<li><a class="reference internal" href="#manual-backup">Manual Backup</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#restore">Restore</a><ul>
+<li><a class="reference internal" href="#manual-restore">Manual Restore</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ssl-certs">SSL Certs</a></li>
+<li><a class="reference internal" href="#geoip">GeoIP</a></li>
+<li><a class="reference internal" href="#upgrading">Upgrading</a></li>
+<li><a class="reference internal" href="#cron-entries">CRON Entries</a></li>
+<li><a class="reference internal" href="#daemons">Daemons</a></li>
+<li><a class="reference internal" href="#logging">Logging</a></li>
+<li><a class="reference internal" href="#manual-password-reset-for-local-auth">Manual Password Reset for Local Auth</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="userguide.html"
+                        title="previous chapter">User Guide</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="devguide.html"
+                        title="next chapter">Developing For SCOT</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/adminguide.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="devguide.html" title="Developing For SCOT"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="userguide.html" title="User Guide"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2011-2016, Sandia National Laboratories.
+    </div>
+  </body>
+</html>
