@@ -2,6 +2,7 @@ package Scot::Collection::Entity;
 use lib '../../../lib';
 use Moose 2;
 use Data::Dumper;
+use Net::IP;
 extends 'Scot::Collection';
 with    qw(
     Scot::Role::GetByAttr
@@ -30,6 +31,7 @@ sub update_entities {
     my $env     = $self->env;
     my $log     = $env->log;
     my $mongo   = $env->mongo;
+    my $enrichments = $env->enrichments;
 
     my $thash = $target->as_hash;
     $self->env->log->debug("updating entities on target ",
@@ -82,6 +84,10 @@ sub update_entities {
             push @created_ids, $entity->id;
         }
         $self->create_entity_links($entity, $target);
+        my ($updated,$data) = $enrichments->enrich($entity);
+        if ( $updated > 0 ) {
+            $entity->update_set(data => $data);
+        }
     }
     return \@created_ids, \@updated_ids;
 }
@@ -138,6 +144,26 @@ sub create_entity_links {
                 id      => $target->alertgroup,
             }
         );
+    }
+
+    my $log = $self->env->log;
+
+    if ( $entity->type  eq "cidr" ) {
+        # find and create links to ipaddresses in that range
+        my $value   = $entity->value;
+        my ($cidrbase,$cidrmask) = split(/\//,$value);
+        $log->debug("Finding IPaddrs that are in $cidrbase/$cidrmask");
+        my $ipobj   = Net::IP->new($value);
+        my $mask    = substr($ipobj->binip, 0, $cidrmask);
+        my @records = $self->get_cidr_ipaddrs($mask);
+        $log->debug("Found ".scalar(@records)." ipaddresses");
+        foreach my $rec (@records) {
+            $log->debug("upserting entity ".$rec->{id});
+            $self->upsert_link($entity, {
+                id      => $rec->{id},
+                type    => "entity",
+            });
+        }
     }
 }
 

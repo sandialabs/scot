@@ -17,7 +17,8 @@
         VERSION:     '3.5.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
@@ -25,7 +26,6 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
     <link rel="next" title="Migration" href="migration.html" />
     <link rel="prev" title="Installing SCOT" href="install.html" /> 
   </head>
@@ -268,7 +268,37 @@ to resart SCOT for any changes to be recognized.</p>
 189
 190
 191
-192</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
     
     time_zone   =&gt; &#39;America/Denver&#39;,
     # scot version
@@ -322,7 +352,16 @@ to resart SCOT for any changes to be recognized.</p>
         default_expiration  =&gt; 14400,
 
         # hypnotoad workers, 50-100 heavy use, 20 - 50 light
-        hypnotoad_workers   =&gt; 75,
+        # hypnotoad_workers   =&gt; 75,
+        hypnotoad =&gt; {
+            listen  =&gt; [ &#39;http://localhost:3000?reuse=1&#39; ],
+            workers =&gt; 20,
+            clients =&gt; 1,
+            proxy   =&gt; 1,
+            pidfile =&gt; &#39;/var/run/hypno.pid&#39;,
+            heartbeat_timeout   =&gt; 40,
+        },
+
     },
 
     log_config =&gt; {
@@ -331,6 +370,11 @@ to resart SCOT for any changes to be recognized.</p>
         appender_name   =&gt; &#39;scot_log&#39;,
         logfile         =&gt; &#39;/var/log/scot/scot.log&#39;,
         log_level       =&gt; &#39;DEBUG&#39;,
+    },
+
+    cgi_ids_config  =&gt; {
+        whitelist_file  =&gt; &#39;&#39;,
+        disable_filters =&gt; [],
     },
 
     # modules to instantiate at Env.pm startup. will be done in 
@@ -347,7 +391,14 @@ to resart SCOT for any changes to be recognized.</p>
             },
         },
         {
-            attr    =&gt; &#39;es&#39;,
+            attr    =&gt; &quot;es&quot;,
+            class   =&gt; &quot;Scot::Util::ElasticSearch&quot;,
+            config  =&gt; {
+                nodes   =&gt; [qw(localhost:9200)],
+            },
+        },
+        {
+            attr    =&gt; &#39;esproxy&#39;,
             class   =&gt; &#39;Scot::Util::ESProxy&#39;,
             config  =&gt; {
                 nodes       =&gt; [ qw(localhost:9200) ],
@@ -399,6 +450,7 @@ to resart SCOT for any changes to be recognized.</p>
                 # for a entity type
                 mappings    =&gt; {
                     ipaddr      =&gt; [ qw(splunk geoip robtex_ip ) ],
+                    ipv6        =&gt; [ qw(splunk geoip robtex_ip ) ],
                     email       =&gt; [ qw(splunk ) ],
                     md5         =&gt; [ qw(splunk ) ],
                     sha1        =&gt; [ qw(splunk ) ],
@@ -408,6 +460,7 @@ to resart SCOT for any changes to be recognized.</p>
                     ganalytics  =&gt; [ qw(splunk  ) ],
                     snumber     =&gt; [ qw(splunk ) ],
                     message_id  =&gt; [ qw(splunk ) ],
+                    cve         =&gt; [ qw(cve_lookup ) ],
                 },
 
                 # foreach enrichment listed above place any 
@@ -435,6 +488,12 @@ to resart SCOT for any changes to be recognized.</p>
                         field   =&gt; &#39;value&#39;,
                         title   =&gt; &#39;Search on Splunk&#39;,
                     },
+                    cve_lookup  =&gt; {
+                        type    =&gt; &#39;external_link&#39;,
+                        url     =&gt; &quot;https://cve.mitre.org/cgi-bin/cvename.cgi?name=%s&quot;,
+                        field   =&gt; &quot;value&quot;,
+                        title   =&gt; &quot;Lookup CVE description&quot;,
+                    },
                 }, # end enrichment module enrichers
             }, # end ennrichmenst config stanza
         }, # end enrichments stanza
@@ -459,6 +518,7 @@ to resart SCOT for any changes to be recognized.</p>
             }, # end ldap config
         }, # end ldap
     ],
+    entity_regexes  =&gt; [],
 );
 </pre></div>
 </td></tr></table></div>
@@ -775,7 +835,28 @@ to resart SCOT for any changes to be recognized.</p>
 106
 107
 108
-109</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
     time_zone   =&gt; &#39;America/Denver&#39;,
     # server name of the SCOT server
     servername  =&gt; &#39;localhost&#39;,
@@ -797,6 +878,10 @@ to resart SCOT for any changes to be recognized.</p>
         logfile         =&gt; &#39;/var/log/scot/scot.flair.log&#39;,
         log_level       =&gt; &#39;DEBUG&#39;,
     },
+    stomp_host  =&gt; &quot;localhost&quot;,
+    stomp_port  =&gt; 61613,
+    topic       =&gt; &quot;/topic/scot&quot;,
+    default_owner   =&gt; &quot;scot-admin&quot;,
     # modules used by flair app
     modules =&gt; [
         {
@@ -807,7 +892,7 @@ to resart SCOT for any changes to be recognized.</p>
         },
         {
             attr    =&gt; &#39;extractor&#39;,
-            class   =&gt; &#39;Scot::Util::EntityExtractor&#39;,
+            class   =&gt; &#39;Scot::Extractor::Processor&#39;,
             config  =&gt; {
                 suffixfile  =&gt; &#39;/opt/scot/etc/effective_tld_names.dat&#39;,
             },
@@ -833,6 +918,15 @@ to resart SCOT for any changes to be recognized.</p>
                 host            =&gt; &#39;mongodb://localhost&#39;,
                 write_safety    =&gt; 1,
                 find_master     =&gt; 1,
+            },
+        },
+        {
+            attr    =&gt; &#39;mq&#39;,
+            class   =&gt; &#39;Scot::Util::Messageq&#39;,
+            config  =&gt; {
+                destination =&gt; &quot;scot&quot;,
+                stomp_host  =&gt; &quot;localhost&quot;,
+                stomp_port  =&gt; 61613,
             },
         },
         {
@@ -882,6 +976,14 @@ to resart SCOT for any changes to be recognized.</p>
                 }, # end enrichment module enrichers
             }, # end ennrichmenst config stanza
         }, # end enrichments stanza
+        {
+            attr    =&gt; &#39;regex&#39;,
+            class   =&gt; &#39;Scot::Extractor::Regex&#39;,
+            config  =&gt; {
+                entity_regexes  =&gt; [
+                ],
+            },
+        },  
     ],
 );
 </pre></div>
@@ -979,7 +1081,10 @@ to resart SCOT for any changes to be recognized.</p>
 38
 39
 40
-41</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+41
+42
+43
+44</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
     time_zone   =&gt; &#39;America/Denver&#39;,
     max_workers =&gt; 1,
     log_config  =&gt; {
@@ -989,6 +1094,9 @@ to resart SCOT for any changes to be recognized.</p>
         logfile         =&gt; &#39;/var/log/scot/scot.stretch.log&#39;,
         log_level       =&gt; &#39;DEBUG&#39;,
     },
+    max_workers     =&gt; 2,
+    stomp_host      =&gt; &#39;localhost&#39;,
+    stomp_port      =&gt; 61613,
     default_owner   =&gt; &#39;scot-admin&#39;,
     modules =&gt; [
         {
@@ -1071,7 +1179,7 @@ entry.  It is recommended to run this every 2 to 5 minutes.  Here&#8217;s the cr
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/postinstall.txt"
+      <li><a href="_sources/postinstall.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>

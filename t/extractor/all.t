@@ -22,6 +22,7 @@ my $etcol   = $mongo->collection('Entitytype');
 my @ets     = map { $etcol->create($_); } ( 
     { value => "userdef-1", match => "Testing Foo", options => { multiword => "yes" } },
     { value => "userdef-2", match => "Zoo Kachoo", options => { multiword => "yes" } },
+    { value => "jrock1",    match => "bcdedit /set", options => { multiword => "yes" } },
 );
 
 $env->regex->load_entitytypes();
@@ -30,7 +31,7 @@ my $log         = $env->log;
 my $extractor   = $env->extractor;
 my $etcur       = $etcol->find({});
 
-is ($etcur->count, 2, "Found correct number of entitytypes");
+is ($etcur->count, 3, "Found correct number of entitytypes");
 
 while ( my $et = $etcur->next ) {
     say ref($et);

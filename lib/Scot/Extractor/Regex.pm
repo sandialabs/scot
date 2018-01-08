@@ -95,9 +95,9 @@ sub get_nonconflict_attrname {
     my $meta    = shift;
     my $suffix  = shift;
     my $prefix  = "regex_";
-    my $post    = "";
+    my $post    = 0;
 
-    my $attrname    = $prefix . $suffix . $post;
+    my $attrname    = $prefix . $suffix;
     while ( $meta->has_attribute( $attrname ) ) {
         $post       += 1;
         $attrname   = $prefix . $suffix . $post;
@@ -144,13 +144,15 @@ sub build_re {
 
     $log->debug("building re from $text");
 
-    if ( $text =~ /\// ) {
-        my ($pre,$match,$post) = split(/\//,$text);
-        $re  = qr/(?$post)$match/;
-    }
-    else {
-        $re = qr/$text/i;
-    }
+    my $quoted  = quotemeta($text);
+
+#    if ( $text =~ /\// ) {
+#        my ($pre,$match,$post) = split(/\//,$text);
+#        $re  = qr/(?$post)$match/;
+#    }
+#    else {
+        $re = qr/$quoted/i;
+#    }
 
     return $re;
 }
@@ -189,7 +191,7 @@ sub list_regexes {
 
 sub list_multiword_regexes {
     my $self    = shift;
-    my @regexes = grep { 
+    my @regexes = sort { $a->{order} <=> $b->{order} } grep { 
         defined( $_->{options}->{multiword} ) and
         $_->{options}->{multiword} eq "yes" 
     } $self->list_regexes;
@@ -198,7 +200,7 @@ sub list_multiword_regexes {
 
 sub list_singleword_regexes {
     my $self    = shift;
-    my @regexes = grep { 
+    my @regexes = sort { $a->{order} <=> $b->{order} } grep { 
         (
             defined( $_->{options}->{multiword} ) 
             and
@@ -238,6 +240,42 @@ sub _build_CVE {
         type    => "cve",
         order   => 100,
         options => { multiword => "no" },
+    };
+}
+
+=item B<cidr>
+
+This regex will detect CIDR blocks of the formate a.b.c.d/e
+
+=cut
+
+has regex_CIDR  => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_CIDR',
+);
+
+sub _build_CIDR {
+    my $self    = shift;
+    my $regex   = qr{
+        \b                                      # word boundary
+        (?<!\.)
+        (
+            # first 3 octets with optional [.],{.},(.) obsfucation
+            (?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\(*\[*\{*\.\)*\]*\}*){3}   
+            # last octet
+            (?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)
+            (/([0-9]|[1-2][0-9]|3[0-2]))   # the /32
+        )
+        \b
+    }xims;
+    return {
+        regex   => $regex,
+        type    => "cidr",
+        order   => 1,
+        options => { multiword => "yes" },
     };
 }
 
@@ -439,7 +477,7 @@ sub _build_IPADDR {
     return {
         regex   => $regex,
         type    => 'ipaddr',
-        order   => 10,
+        order   => 10, # needs to after the cidr match
         options => { multiword => "no" },
     };
 }
