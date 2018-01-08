@@ -1,0 +1,1219 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>POST Install Procedures &#8212; SCOT 3.5.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '3.5.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
+    <link rel="next" title="Migration" href="migration.html" />
+    <link rel="prev" title="Installing SCOT" href="install.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="migration.html" title="Migration"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Installing SCOT"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="post-install-procedures">
+<h1>POST Install Procedures<a class="headerlink" href="#post-install-procedures" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="migration">
+<h2>Migration<a class="headerlink" href="#migration" title="Permalink to this headline">¶</a></h2>
+<p>If you backed up data from your 3.4 SCOT instance and wish to restore it,
+you will need to follow the migration procedure <span class="xref std std-ref">migration.rst</span></p>
+</div>
+<div class="section" id="ssl-certs">
+<h2>SSL Certs<a class="headerlink" href="#ssl-certs" title="Permalink to this headline">¶</a></h2>
+<p>SCOT will generate a &#8220;snake-oil&#8221; self signed certificate upon install.
+It is highly recommended to replace these certificates with real certs
+as soon as possible.</p>
+</div>
+<div class="section" id="configuration-files">
+<h2>Configuration Files<a class="headerlink" href="#configuration-files" title="Permalink to this headline">¶</a></h2>
+<p>The following sections details the parameters in the varios configuration files
+available in SCOT.  Use your favorite editor to adjust the values to your site.
+You can test your changes for syntax errors by using the following command:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ perl -wc scot.cfg.pl
+</pre></div>
+</div>
+<p>Correct any syntax errors reported before continuing.  Typically you will need
+to resart SCOT for any changes to be recognized.</p>
+<div class="section" id="scot-cfg-pl">
+<h3>scot.cfg.pl<a class="headerlink" href="#scot-cfg-pl" title="Permalink to this headline">¶</a></h3>
+<p>This config controls many aspects of the SCOT application server.</p>
+<div class="highlight-default"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+    
+    time_zone   =&gt; &#39;America/Denver&#39;,
+    # scot version
+    version     =&gt; &#39;3.5.1&#39;,
+
+    # set this to hostname of the scot server
+    servername  =&gt; &#39;127.0.0.1&#39;,
+
+    # the mode can be prod or dev
+    mode        =&gt; &#39;prod&#39;,
+
+    # authentication can be &quot;Remoteuser&quot;, &quot;Local&quot;, or &quot;Ldap&quot;
+    auth_type   =&gt; &#39;Local&#39;, 
+
+    authclass   =&gt; &#39;Controller::Auth::Local&#39;,
+
+    # group mode can be &quot;local&quot; or &quot;ldap&quot;
+    group_mode  =&gt; &#39;local&#39;,
+
+    # default owner of new stuff
+    default_owner   =&gt; &#39;scot-admin&#39;,
+
+    # default set of groups to apply to stuff
+    default_groups  =&gt; {
+        read    =&gt; [ &#39;wg-scot-ir&#39;, &#39;wg-scot-researchers&#39; ],
+        modify  =&gt; [ &#39;wg-scot-ir&#39; ],
+    },
+
+    # the group that can perform admin functions
+    admin_group =&gt; &#39;wg-scot-admin&#39;,
+
+    # filestore is where scot stores uploaded and extracted files
+    file_store_root =&gt; &#39;/opt/scotfiles&#39;,
+
+    epoch_cols  =&gt; [ qw(when updated created occurred) ],
+
+    int_cols    =&gt; [ qw(views) ],
+
+    site_identifier =&gt; &#39;Sandia&#39;,
+
+    default_share_policy =&gt; 1,
+
+    share_after_time    =&gt; 10, # minutes
+
+    # mojo defaults are values for the mojolicious startup
+    mojo_defaults   =&gt; {
+        # change this after install and restart scot
+        secrets =&gt; [qw(scot1sfun sc0t1sc00l)],
+
+        # see mojolicious docs 
+        default_expiration  =&gt; 14400,
+
+        # hypnotoad workers, 50-100 heavy use, 20 - 50 light
+        # hypnotoad_workers   =&gt; 75,
+        hypnotoad =&gt; {
+            listen  =&gt; [ &#39;http://localhost:3000?reuse=1&#39; ],
+            workers =&gt; 20,
+            clients =&gt; 1,
+            proxy   =&gt; 1,
+            pidfile =&gt; &#39;/var/run/hypno.pid&#39;,
+            heartbeat_timeout   =&gt; 40,
+        },
+
+    },
+
+    log_config =&gt; {
+        logger_name     =&gt; &#39;SCOT&#39;,
+        layout          =&gt; &#39;%d %7p [%P] %15F{1}: %4L %m%n&#39;,
+        appender_name   =&gt; &#39;scot_log&#39;,
+        logfile         =&gt; &#39;/var/log/scot/scot.log&#39;,
+        log_level       =&gt; &#39;DEBUG&#39;,
+    },
+
+    cgi_ids_config  =&gt; {
+        whitelist_file  =&gt; &#39;&#39;,
+        disable_filters =&gt; [],
+    },
+
+    # modules to instantiate at Env.pm startup. will be done in 
+    # order of the array
+    modules =&gt; [
+        {
+            attr    =&gt; &#39;mongo&#39;,
+            class   =&gt; &#39;Scot::Util::MongoFactory&#39;,
+            config  =&gt; {
+                db_name         =&gt; &#39;scot-prod&#39;,
+                host            =&gt; &#39;mongodb://localhost&#39;,
+                write_safety    =&gt; 1,
+                find_master     =&gt; 1,
+            },
+        },
+        {
+            attr    =&gt; &quot;es&quot;,
+            class   =&gt; &quot;Scot::Util::ElasticSearch&quot;,
+            config  =&gt; {
+                nodes   =&gt; [qw(localhost:9200)],
+            },
+        },
+        {
+            attr    =&gt; &#39;esproxy&#39;,
+            class   =&gt; &#39;Scot::Util::ESProxy&#39;,
+            config  =&gt; {
+                nodes       =&gt; [ qw(localhost:9200) ],
+                max_workers =&gt; 1,
+                proto       =&gt; &#39;http&#39;,
+                servername  =&gt; &#39;localhost&#39;,
+                serverport  =&gt; 9200,
+                username    =&gt; &#39; &#39;,
+                password    =&gt; &#39; &#39;,
+            },
+        },
+        {
+            attr    =&gt; &#39;mongoquerymaker&#39;,
+            class   =&gt; &#39;Scot::Util::MongoQueryMaker&#39;,
+            config  =&gt; {
+            },
+        },
+        {
+            attr    =&gt; &#39;mq&#39;,
+            class   =&gt; &#39;Scot::Util::Messageq&#39;,
+            config  =&gt; {
+                destination =&gt; &quot;scot&quot;,
+                stomp_host  =&gt; &quot;localhost&quot;,
+                stomp_port  =&gt; 61613,
+            },
+        },
+        {
+            attr    =&gt; &#39;imap&#39;,
+            class   =&gt; &#39;Scot::Util::Imap&#39;,
+            config  =&gt; {
+                mailbox     =&gt; &#39;INBOX&#39;,          # mailbox, typically INBOX
+                hostname    =&gt; &#39;mail.domain.tld&#39;,# hostname of the imap server
+                port        =&gt; 993,              # port of the imap server
+                username    =&gt; &#39;scot-alerts&#39;,    # username  of the 
+                                                 # account receiving alert email
+                password    =&gt; &#39;changemenow&#39;,    # password  
+                ssl         =&gt; [ 
+                    &#39;SSL_verify_mode&#39;, 0         # ssl options 
+                ],                               # see perldoc IO::SSL
+                uid         =&gt; 1,                # uid   IMAP config item 
+                ignore_size_errors  =&gt; 1,        # ignore_size_errors 
+            },
+        },
+        {
+            attr    =&gt; &#39;enrichments&#39;,
+            class   =&gt; &#39;Scot::Util::Enrichments&#39;,
+            config  =&gt; {
+                # mappings map the enrichments that are available 
+                # for a entity type
+                mappings    =&gt; {
+                    ipaddr      =&gt; [ qw(splunk geoip robtex_ip ) ],
+                    ipv6        =&gt; [ qw(splunk geoip robtex_ip ) ],
+                    email       =&gt; [ qw(splunk ) ],
+                    md5         =&gt; [ qw(splunk ) ],
+                    sha1        =&gt; [ qw(splunk ) ],
+                    sha256      =&gt; [ qw(splunk ) ],
+                    domain      =&gt; [ qw(splunk robtex_dns ) ],
+                    file        =&gt; [ qw(splunk  ) ],
+                    ganalytics  =&gt; [ qw(splunk  ) ],
+                    snumber     =&gt; [ qw(splunk ) ],
+                    message_id  =&gt; [ qw(splunk ) ],
+                    cve         =&gt; [ qw(cve_lookup ) ],
+                },
+
+                # foreach enrichment listed above place any 
+                # config info for it here
+                enrichers =&gt; {
+                    geoip   =&gt; {
+                        type    =&gt; &#39;native&#39;,
+                        module  =&gt; &#39;Scot::Util::Geoip&#39;,
+                    },
+                    robtex_ip   =&gt; {
+                        type    =&gt; &#39;external_link&#39;,
+                        url     =&gt; &#39;https://www.robtex.com/ip/%s.html&#39;,
+                        field   =&gt; &#39;value&#39;,
+                        title   =&gt; &#39;Lookup on Robtex (external)&#39;,
+                    },
+                    robtex_dns   =&gt; {
+                        type    =&gt; &#39;external_link&#39;,
+                        url     =&gt; &#39;https://www.robtex.com/dns/%s.html&#39;,
+                        field   =&gt; &#39;value&#39;,
+                        title   =&gt; &#39;Lookup on Robtex (external)&#39;,
+                    },
+                    splunk      =&gt; {
+                        type    =&gt; &#39;internal_link&#39;,
+                        url     =&gt; &#39;https://splunk.domain.tld/en-US/app/search/search?q=search%%20%s&#39;,
+                        field   =&gt; &#39;value&#39;,
+                        title   =&gt; &#39;Search on Splunk&#39;,
+                    },
+                    cve_lookup  =&gt; {
+                        type    =&gt; &#39;external_link&#39;,
+                        url     =&gt; &quot;https://cve.mitre.org/cgi-bin/cvename.cgi?name=%s&quot;,
+                        field   =&gt; &quot;value&quot;,
+                        title   =&gt; &quot;Lookup CVE description&quot;,
+                    },
+                }, # end enrichment module enrichers
+            }, # end ennrichmenst config stanza
+        }, # end enrichments stanza
+        {
+            attr    =&gt; &#39;ldap&#39;,
+            class   =&gt; &#39;Scot::Util::Ldap&#39;,
+            config  =&gt; {
+                servername  =&gt; &#39;ldap.domain.tld&#39;,
+                dn          =&gt; &#39;cn=cn_name,ou=local config,dc=tld&#39;,
+                password    =&gt; &#39;changemenow&#39;,
+                scheme      =&gt; &#39;ldap&#39;,
+                group_search    =&gt; {
+                    base    =&gt; &#39;ou=groups,ou=orgname1,dc=dcname1,dc=dcname2,dc=dcname3&#39;,
+                    filter  =&gt; &#39;(| (cn=wg-scot*))&#39;,
+                    attrs   =&gt; [ &#39;cn&#39; ],
+                },
+                user_groups =&gt; {
+                    base    =&gt; &#39;ou=accounts,ou=ouname,dc=dcname1,dc=dcname1,dc=dcname1&#39;,
+                    filter  =&gt; &#39;uid=%s&#39;,
+                    attrs   =&gt; [&#39;memberOf&#39;],
+                }
+            }, # end ldap config
+        }, # end ldap
+    ],
+    entity_regexes  =&gt; [],
+);
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="alert-cfg-pl">
+<h3>alert.cfg.pl<a class="headerlink" href="#alert-cfg-pl" title="Permalink to this headline">¶</a></h3>
+<p>This config file controls how alerts are received from an IMAP server.</p>
+<div class="highlight-default"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+    time_zone   =&gt; &#39;America/Denver&#39;,
+    log_config  =&gt; {
+        logger_name     =&gt; &#39;SCOT&#39;,
+        layout          =&gt; &#39;%d %7p [%P] %15F{1}: %4L %m%n&#39;,
+        appender_name   =&gt; &#39;scot_log&#39;,
+        logfile         =&gt; &#39;/var/log/scot/scot.mail.log&#39;,
+        log_level       =&gt; &#39;DEBUG&#39;,
+    },
+    modules =&gt; [
+        {
+            attr    =&gt; &#39;imap&#39;,
+            class   =&gt; &#39;Scot::Util::Imap&#39;,
+            config  =&gt; {
+                mailbox     =&gt; &#39;INBOX&#39;,          # mailbox, typically INBOX
+                hostname    =&gt; &#39;mail.domain.tld&#39;,# hostname of the imap server
+                port        =&gt; 993,              # port of the imap server
+                username    =&gt; &#39;scot-alerts&#39;,    # username  of the 
+                                                 # account receiving alert email
+                password    =&gt; &#39;changemenow&#39;,    # password  
+                ssl         =&gt; [ 
+                    &#39;SSL_verify_mode&#39;, 0         # ssl options 
+                ],                               # see perldoc IO::SSL
+                uid         =&gt; 1,                # uid   IMAP config item 
+                ignore_size_errors  =&gt; 1,        # ignore_size_errors 
+            },
+        },
+        {
+            attr    =&gt; &#39;scot&#39;,
+            class   =&gt; &#39;Scot::Util::ScotClient&#39;,
+            config  =&gt; {
+                servername  =&gt; &#39;scotserver&#39;,
+                # username with sufficient scot perms to create alert(groups)
+                username    =&gt; &#39;scot-alerts&#39;,
+                # the password for that user
+                password    =&gt; &#39;changemenow&#39;,
+                # authentication type: RemoteUser, LDAP, Local
+                authtype    =&gt; &#39;Local&#39;,
+            },
+        },
+        {
+            attr    =&gt; &#39;mongo&#39;,
+            class   =&gt; &#39;Scot::Util::MongoFactory&#39;,
+            config  =&gt; {
+                db_name         =&gt; &#39;scot-prod&#39;,
+                host            =&gt; &#39;mongodb://localhost&#39;,
+                write_safety    =&gt; 1,
+                find_master     =&gt; 1,
+            },
+        },
+        {
+            attr    =&gt; &#39;mq&#39;,
+            class   =&gt; &#39;Scot::Util::Messageq&#39;,
+            config  =&gt; {
+                destination =&gt; &quot;scot&quot;,
+                stomp_host  =&gt; &quot;localhost&quot;,
+                stomp_port  =&gt; 61613,
+            },
+        },
+        {
+            attr    =&gt; &#39;es&#39;,
+            class   =&gt; &#39;Scot::Util::ElasticSearch&#39;,
+            config  =&gt; {
+                nodes       =&gt; [ qw(localhost:9200) ],
+                max_workers =&gt; 1,
+            },
+        },
+    ],
+    parser_dir  =&gt; &#39;/opt/scot/lib/Scot/Parser&#39;,
+    get_method      =&gt; &quot;mongo&quot;,     # other value is &quot;rest&quot;
+    leave_unseen    =&gt; 1,
+    # interactive =&gt; [ yes | no ]
+    # pauses processing after each message and writes to console 
+    interactive     =&gt; &#39;no&#39;,   
+    verbose         =&gt; 1,
+    # max_processes =&gt; 0 to positive int
+    # number of child processes to fork to parse messages in parallel
+    # 0 = disable forking and do all messages sequentially
+    max_processes   =&gt; 0,       
+    # fetch_mode    =&gt; [ unseen | time ]
+    # unseen looks for unseen messages via imap protocol
+    # time gets all message since a given time
+    # both modes check unique message_id and will not reprocess something
+    # already in SCOT database
+    fetch_mode      =&gt; &#39;unseen&#39;, 
+    # since     =&gt; { unit =&gt; amount }
+    # hashref where key is the unit [ day, hour, minute ]
+    # amount is integer value
+    # used by time fetch_mode 
+    since           =&gt; { hour =&gt; 2 },
+    # approved_alert_domains =&gt; [ &#39;domain1\.org&#39;, ... ]
+    # only domains listed in this array can send email to scot
+    # periods need to be escaped by \
+    approved_alert_domains  =&gt; [ &#39;domain.tld&#39; ],
+    # approve_accounts =&gt; [ &#39;user@email.addr&#39; ];
+    # account in this domain can also send to scot
+    approved_accounts   =&gt; [ &#39;user@server.domain.tld&#39; ],
+);
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="flair-cfg-pl">
+<h3>flair.cfg.pl<a class="headerlink" href="#flair-cfg-pl" title="Permalink to this headline">¶</a></h3>
+<p>The Flair app automatically detects enties, see <span class="xref std std-ref">entities</span>.  This config file look like:</p>
+<div class="highlight-default"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+    time_zone   =&gt; &#39;America/Denver&#39;,
+    # server name of the SCOT server
+    servername  =&gt; &#39;localhost&#39;,
+    # username with sufficient scot perms to create alert(groups)
+    username    =&gt; &#39;scot-alerts&#39;,
+    # the password for that user
+    password    =&gt; &#39;changemenow&#39;,
+    # authentication type: RemoteUser, LDAP, Local
+    authtype    =&gt; &#39;Local&#39;,
+    # interactive
+    interactive =&gt; 0,
+    # max workers
+    max_workers =&gt; 20,
+    # log config
+    log_config  =&gt; {
+        logger_name     =&gt; &#39;SCOT&#39;,
+        layout          =&gt; &#39;%d %7p [%P] %15F{1}: %4L %m%n&#39;,
+        appender_name   =&gt; &#39;scot_log&#39;,
+        logfile         =&gt; &#39;/var/log/scot/scot.flair.log&#39;,
+        log_level       =&gt; &#39;DEBUG&#39;,
+    },
+    stomp_host  =&gt; &quot;localhost&quot;,
+    stomp_port  =&gt; 61613,
+    topic       =&gt; &quot;/topic/scot&quot;,
+    default_owner   =&gt; &quot;scot-admin&quot;,
+    # modules used by flair app
+    modules =&gt; [
+        {
+            attr    =&gt; &#39;img_munger&#39;,
+            class   =&gt; &#39;Scot::Util::ImgMunger&#39;,
+            config  =&gt; {
+            },
+        },
+        {
+            attr    =&gt; &#39;extractor&#39;,
+            class   =&gt; &#39;Scot::Extractor::Processor&#39;,
+            config  =&gt; {
+                suffixfile  =&gt; &#39;/opt/scot/etc/effective_tld_names.dat&#39;,
+            },
+        },
+        {
+            attr    =&gt; &#39;scot&#39;,
+            class   =&gt; &#39;Scot::Util::ScotClient&#39;,
+            config  =&gt; {
+                servername  =&gt; &#39;localhost&#39;,
+                # username with sufficient scot perms to create alert(groups)
+                username    =&gt; &#39;scot-alerts&#39;,
+                # the password for that user
+                password    =&gt; &#39;changemenow&#39;,
+                # authentication type: RemoteUser, LDAP, Local
+                authtype    =&gt; &#39;Local&#39;,
+            },
+        },
+        {
+            attr    =&gt; &#39;mongo&#39;,
+            class   =&gt; &#39;Scot::Util::MongoFactory&#39;,
+            config  =&gt; {
+                db_name         =&gt; &#39;scot-prod&#39;,
+                host            =&gt; &#39;mongodb://localhost&#39;,
+                write_safety    =&gt; 1,
+                find_master     =&gt; 1,
+            },
+        },
+        {
+            attr    =&gt; &#39;mq&#39;,
+            class   =&gt; &#39;Scot::Util::Messageq&#39;,
+            config  =&gt; {
+                destination =&gt; &quot;scot&quot;,
+                stomp_host  =&gt; &quot;localhost&quot;,
+                stomp_port  =&gt; 61613,
+            },
+        },
+        {
+            attr    =&gt; &#39;enrichments&#39;,
+            class   =&gt; &#39;Scot::Util::Enrichments&#39;,
+            config  =&gt; {
+                # mappings map the enrichments that are available 
+                # for a entity type
+                mappings    =&gt; {
+                    ipaddr      =&gt; [ qw(splunk geoip robtex_ip ) ],
+                    email       =&gt; [ qw(splunk ) ],
+                    md5         =&gt; [ qw(splunk ) ],
+                    sha1        =&gt; [ qw(splunk ) ],
+                    sha256      =&gt; [ qw(splunk ) ],
+                    domain      =&gt; [ qw(splunk robtex_dns ) ],
+                    file        =&gt; [ qw(splunk  ) ],
+                    ganalytics  =&gt; [ qw(splunk  ) ],
+                    snumber     =&gt; [ qw(splunk ) ],
+                    message_id  =&gt; [ qw(splunk ) ],
+                },
+
+                # foreach enrichment listed above place any 
+                # config info for it here
+                enrichers =&gt; {
+                    geoip   =&gt; {
+                        type    =&gt; &#39;native&#39;,
+                        module  =&gt; &#39;Scot::Util::Geoip&#39;,
+                    },
+                    robtex_ip   =&gt; {
+                        type    =&gt; &#39;external_link&#39;,
+                        url     =&gt; &#39;https://www.robtex.com/ip/%s.html&#39;,
+                        field   =&gt; &#39;value&#39;,
+                        title   =&gt; &#39;Lookup on Robtex (external)&#39;,
+                    },
+                    robtex_dns   =&gt; {
+                        type    =&gt; &#39;external_link&#39;,
+                        url     =&gt; &#39;https://www.robtex.com/dns/%s.html&#39;,
+                        field   =&gt; &#39;value&#39;,
+                        title   =&gt; &#39;Lookup on Robtex (external)&#39;,
+                    },
+                    splunk      =&gt; {
+                        type    =&gt; &#39;internal_link&#39;,
+                        url     =&gt; &#39;https://splunk.domain.tld/en-US/app/search/search?q=search%%20%s&#39;,
+                        field   =&gt; &#39;value&#39;,
+                        title   =&gt; &#39;Search on Splunk&#39;,
+                    },
+                }, # end enrichment module enrichers
+            }, # end ennrichmenst config stanza
+        }, # end enrichments stanza
+        {
+            attr    =&gt; &#39;regex&#39;,
+            class   =&gt; &#39;Scot::Extractor::Regex&#39;,
+            config  =&gt; {
+                entity_regexes  =&gt; [
+                ],
+            },
+        },  
+    ],
+);
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="game-cfg-pl">
+<h3>game.cfg.pl<a class="headerlink" href="#game-cfg-pl" title="Permalink to this headline">¶</a></h3>
+<p>This controls aspects of the gamification system.</p>
+<div class="highlight-default"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+    log_config  =&gt; {
+        logger_name     =&gt; &#39;SCOT&#39;,
+        layout          =&gt; &#39;%d %7p [%P] %15F{1}: %4L %m%n&#39;,
+        appender_name   =&gt; &#39;scot_log&#39;,
+        logfile         =&gt; &#39;/var/log/scot/scot.game.log&#39;,
+        log_level       =&gt; &#39;DEBUG&#39;,
+    },
+    days_ago    =&gt; 30,
+    modules =&gt; [
+        {
+            attr    =&gt; &#39;mongo&#39;,
+            class   =&gt; &#39;Scot::Util::MongoFactory&#39;,
+            config  =&gt; {
+                db_name         =&gt; &#39;scot-prod&#39;,
+                host            =&gt; &#39;mongodb://localhost&#39;,
+                write_safety    =&gt; 1,
+                find_master     =&gt; 1,
+            },
+        },
+    ],
+);
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="stretch-cfg-pl">
+<h3>stretch.cfg.pl<a class="headerlink" href="#stretch-cfg-pl" title="Permalink to this headline">¶</a></h3>
+<p>This controls aspects of the elastic search input system.</p>
+<div class="highlight-default"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+    time_zone   =&gt; &#39;America/Denver&#39;,
+    max_workers =&gt; 1,
+    log_config  =&gt; {
+        logger_name     =&gt; &#39;SCOT&#39;,
+        layout          =&gt; &#39;%d %7p [%P] %15F{1}: %4L %m%n&#39;,
+        appender_name   =&gt; &#39;scot_log&#39;,
+        logfile         =&gt; &#39;/var/log/scot/scot.stretch.log&#39;,
+        log_level       =&gt; &#39;DEBUG&#39;,
+    },
+    max_workers     =&gt; 2,
+    stomp_host      =&gt; &#39;localhost&#39;,
+    stomp_port      =&gt; 61613,
+    default_owner   =&gt; &#39;scot-admin&#39;,
+    modules =&gt; [
+        {
+            attr    =&gt; &#39;es&#39;,
+            class   =&gt; &#39;Scot::Util::ElasticSearch&#39;,
+            config  =&gt; {
+                nodes   =&gt; [ qw(localhost:9200) ],
+            },
+        },
+        {
+            attr    =&gt; &#39;scot&#39;,
+            class   =&gt; &#39;Scot::Util::ScotClient&#39;,
+            config  =&gt; {
+                servername  =&gt; &quot;localhost&quot;,
+                username    =&gt; &quot;scot-alerts&quot;,
+                password    =&gt; &quot;changemenow&quot;,
+                auth_type    =&gt; &quot;basic&quot;,
+            },
+        },
+        {
+            attr    =&gt; &#39;mongo&#39;,
+            class   =&gt; &#39;Scot::Util::MongoFactory&#39;,
+            config  =&gt; {
+                db_name         =&gt; &#39;scot-prod&#39;,
+                host            =&gt; &#39;mongodb://localhost&#39;,
+                write_safety    =&gt; 1,
+                find_master     =&gt; 1,
+            },
+        },
+    ],
+);
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="cron-jobs">
+<h2>CRON Jobs<a class="headerlink" href="#cron-jobs" title="Permalink to this headline">¶</a></h2>
+<p>The /opt/scot/alert.pl program that reads in alerts from the IMAP server needs a crontab
+entry.  It is recommended to run this every 2 to 5 minutes.  Here&#8217;s the crontab entry:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">*/</span><span class="mi">5</span> <span class="o">*</span> <span class="o">*</span> <span class="o">*</span> <span class="o">*</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">alert</span><span class="o">.</span><span class="n">pl</span>
+</pre></div>
+</div>
+<p>Automating SCOT backups are a good idea as well:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">0</span> <span class="mi">3</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">20</span> <span class="o">*</span> <span class="o">*</span> <span class="o">*</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">backup</span><span class="o">.</span><span class="n">pl</span>     <span class="c1"># backup scot at 3am 12 noon and 8pm</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">POST Install Procedures</a><ul>
+<li><a class="reference internal" href="#migration">Migration</a></li>
+<li><a class="reference internal" href="#ssl-certs">SSL Certs</a></li>
+<li><a class="reference internal" href="#configuration-files">Configuration Files</a><ul>
+<li><a class="reference internal" href="#scot-cfg-pl">scot.cfg.pl</a></li>
+<li><a class="reference internal" href="#alert-cfg-pl">alert.cfg.pl</a></li>
+<li><a class="reference internal" href="#flair-cfg-pl">flair.cfg.pl</a></li>
+<li><a class="reference internal" href="#game-cfg-pl">game.cfg.pl</a></li>
+<li><a class="reference internal" href="#stretch-cfg-pl">stretch.cfg.pl</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#cron-jobs">CRON Jobs</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="install.html"
+                        title="previous chapter">Installing SCOT</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="migration.html"
+                        title="next chapter">Migration</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/postinstall.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="migration.html" title="Migration"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Installing SCOT"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2011-2016, Sandia National Laboratories.
+    </div>
+  </body>
+</html>

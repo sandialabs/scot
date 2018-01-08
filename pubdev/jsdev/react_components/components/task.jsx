@@ -94,7 +94,7 @@ var Task = React.createClass({
                 onClick = this.takeTask;
             }
         } else {
-            taskDisplay = 'Mask Task';
+            taskDisplay = 'Make Task';
             onClick = this.makeTask;
         }
         return (

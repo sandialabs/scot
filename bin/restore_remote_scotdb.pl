@@ -71,6 +71,8 @@ system($cmd);
 say "Restoring Cached images...";
 system("cp -r $downdir/opt/scotbackup/cached_images/ /opt/scot/public/");
 
+say "Now fixing IDs in mongodb";
+system("perl fix_last_id.pl");
 
 
 
