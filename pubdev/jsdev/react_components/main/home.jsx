@@ -20,6 +20,7 @@ class HomeDashboard extends PureComponent {
 		this.state = {};
 
 		this.switchTab = this.switchTab.bind(this);
+		this.closeTab = this.closeTab.bind(this);
 	}
 
 	static propTypes = {
@@ -79,7 +80,25 @@ class HomeDashboard extends PureComponent {
 		}
 	}
 
+	closeTab( index ) {
+		if ( index < 1 ) {
+			return;
+		}
+
+		const dashboardConfig = this.props.userConfig.config;
+		let tabs = [...dashboardConfig.tabs];
+		tabs.splice( index - 1, 1 );
+
+		this.updateDashboardConfig( {
+			curTab: index - 1,
+			tabs: tabs,
+		} );
+	}
+
 	switchTab( key ) {
+		if ( key === this.props.userConfig.config.curTab ) {
+			return;
+		}
 		if ( key === NEWTABKEY ) {
 			this.newTab();
 			return;
@@ -127,7 +146,14 @@ class HomeDashboard extends PureComponent {
 
 		let tabHeaders = tabs.map( (tab, i) => {
 			let { title, layout, ...props } = tab;
-			return <NavItem eventKey={i} key={i}>{title}</NavItem>
+			return (
+				<NavItem eventKey={i} key={i}>
+					{title}
+					{ i === dashboardConfig.curTab && i !== 0 &&
+							<span onClick={() => this.closeTab(i)}>&nbsp;<i className="fa fa-times" style={{cursor: "pointer"}} /></span>
+					}
+				</NavItem>
+			)
 		} );
 
 		tabHeaders.push( <NavItem eventKey={NEWTABKEY} key={NEWTABKEY}>+</NavItem> );
