@@ -29,34 +29,31 @@ class HomeDashboard extends PureComponent {
 		...UserConfigPropTypes,
 	}
 
-	defaultTab() {
-		const tabLayout = (
-			<div className="home-grid">
-				<div className="title-area">
-					{ this.props.sensitivity && 
-						<h2 className="sensitivity">{this.props.sensitivity}</h2>
-					}
-					<h3>Sandia Cyber Omni Tracker
-						<br />
-						3.5
-					</h3>
-				</div>
-				<Status className="status-area" />
-				<div className="game-area">
-					<Gamification />
-				</div>
-				<Well bsSize="small" className="activity-area">
-					Activity
-				</Well>
-				<div className="notifications-area">
-					Notifications
-				</div>
-				{dashboardReports}
+	dashboardHeader = (
+		<div className="home-grid">
+			<div className="title-area">
+				{ this.props.sensitivity && 
+					<h2 className="sensitivity">{this.props.sensitivity}</h2>
+				}
+				<h3>Sandia Cyber Omni Tracker
+					<br />
+					3.5
+				</h3>
 			</div>
-		);
+			<Status className="status-area" />
+			<div className="game-area">
+				<Gamification />
+			</div>
+			<Well bsSize="small" className="activity-area">
+				Activity
+			</Well>
+		</div>
+	);
+
+	defaultTab() {
 		return {
 			title: 'Default',
-			layout: tabLayout,
+			layout: dashboardReports,
 			mountOnEnter: false,
 			unmountOnExit: false,
 		}
@@ -76,7 +73,7 @@ class HomeDashboard extends PureComponent {
 	buildTab( tabConfig ) {
 		return {
 			title: tabConfig,
-			layout: (<p>{tabConfig}</p>),
+			layout: <h1>{tabConfig}</h1>,
 		}
 	}
 
@@ -176,6 +173,7 @@ class HomeDashboard extends PureComponent {
 						</Col>
 						<Col sm={12}>
 							<Tab.Content mountOnEnter unmountOnExit >
+								{this.dashboardHeader}
 								{tabContent}
 							</Tab.Content>
 						</Col>
