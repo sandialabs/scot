@@ -53,6 +53,7 @@
     "react-datagrid": "^2.1.1",
     "react-daterange-picker": "^1.0.0",
     "react-datetime": "^2.5.0",
+    "react-dazzle": "^1.2.7",
     "react-debounce-input": "^2.4.0",
     "react-dnd": "^2.1.2",
     "react-dnd-html5-backend": "^2.1.2",
