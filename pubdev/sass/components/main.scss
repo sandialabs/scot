@@ -11,19 +11,15 @@
 		display: grid;
 		padding: 10px;
 		grid-template-columns: 1fr 1fr 1fr;
-		grid-template-rows: 200px 40px auto auto;
+		grid-template-rows: 200px 40px;
 		grid-gap: 15px;
 		
 		grid-template-areas:
 			"status title game"
-			"activity activity activity"
-			"chart chart notifications"
-			"chart chart notifications";
+			"activity activity activity";
 
 		&.loggedOut {
 			grid-template-areas:
-				"title title title"
-				"title title title"
 				"title title title"
 				"title title title";
 		}
@@ -64,14 +60,6 @@
 		.activity-area {
 			grid-area: activity;
 			margin-bottom: 0;
-		}
-
-		.charts-area {
-			grid-area: chart;
-		}
-
-		.notifications-area {
-			grid-area: notifications;
 		}
 	}
 }
