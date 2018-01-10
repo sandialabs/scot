@@ -50,7 +50,7 @@ var EntityDetail = React.createClass({
     componentDidMount: function () {
         var currentTabArray = this.state.tabs;
         var valueClicked = this.props.entityvalue;
-        if (this.props.entityid == undefined) {
+        if (this.state.entityid == undefined) {
             $.ajax({
                 type: 'GET',
                 url: 'scot/api/v2/' + this.props.entitytype + '/byname',
@@ -85,25 +85,32 @@ var EntityDetail = React.createClass({
                 }.bind(this)
             })
         } else {
-            $.ajax({
-                type: 'GET',
-                url: 'scot/api/v2/' + this.props.entitytype + '/' + this.state.entityid,
-                success: function(result) {
-                    //this.setState({entityData:result})
-                    var newTab = {data:result, entityid:result.id, entitytype:this.props.entitytype, valueClicked:result.value}
-                    currentTabArray.push(newTab);
-                    if (this.isMounted()) {
-                        var entityidsarray = [];
-                        entityidsarray.push(result.id);
-                        this.setState({tabs:currentTabArray,currentKey:result.id,initialLoad:true, processedIds:entityidsarray});
-                        Store.storeKey(this.props.entityid);
-                        Store.addChangeListener(this.updated);
-                    }
-                }.bind(this),
-                error: function(data) {
-                    this.props.errorToggle('failed to get entity detail information', data)
-                }.bind(this)
-            })
+            let id = this.state.entityid;
+            if ( !Array.isArray( id ) ) { 
+                id = [ parseInt( id ) ];       
+            }
+            
+            for (let i=0; i < id.length; i++) {
+                $.ajax({
+                    type: 'GET',
+                    url: 'scot/api/v2/' + this.props.entitytype + '/' + id[i],
+                    success: function(result) {
+                        //this.setState({entityData:result})
+                        var newTab = {data:result, entityid:result.id, entitytype:this.props.entitytype, valueClicked:result.value}
+                        currentTabArray.push(newTab);
+                        if (this.isMounted()) {
+                            var entityidsarray = [];
+                            entityidsarray.push(result.id);
+                            this.setState({tabs:currentTabArray,currentKey:result.id,initialLoad:true, processedIds:entityidsarray});
+                            Store.storeKey(id[i]);
+                            Store.addChangeListener(this.updated);
+                        }
+                    }.bind(this),
+                    error: function(data) {
+                        this.props.errorToggle('failed to get entity detail information', data)
+                    }.bind(this)
+                });
+            }
         }
         //Esc key closes popup
         function escHandler(event){
@@ -116,8 +123,6 @@ var EntityDetail = React.createClass({
                 event.preventDefault();
             }
         }
-       
-        
 
         $(document).keydown(escHandler.bind(this))
         this.containerHeightAdjust();
