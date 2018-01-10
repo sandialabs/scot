@@ -59,19 +59,6 @@ var CustomMetaDataTable = React.createClass({
         }
     },
 
-    componentWillMount: function() {
-        /*$.ajax({
-            type: 'get',
-            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/',
-            success: function(data) {
-                this.setState({data: data.table});
-            }.bind(this),
-            error: function(data) {
-                this.props.errorToggle('Failed to get custom table data', data);
-            }.bind(this),
-        })*/
-    },
-
     onChange: function(event) {
         var k  = event.target.id;
         var v = event.target.value;
@@ -84,11 +71,22 @@ var CustomMetaDataTable = React.createClass({
             contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 console.log('successfully changed custom table data');
+                this.forceUpdate();
             }.bind(this),
             error: function(data) {
                 this.props.errorToggle('Failed to updated custom table data', data) 
             }.bind(this)
         })
+    },
+    
+    shouldComponentUpdate: function(nextProps, nextState) {
+        //Only update the metadata if the headerData is different
+        if (this.props.headerData === nextProps.headerData) { 
+            return false;
+        } else { 
+            return true;
+        }
+
     },
 
     render: function() {
@@ -98,71 +96,88 @@ var CustomMetaDataTable = React.createClass({
         var textAreaArr = [];
         var inputMultiArr = [];
         var booleanArr = [];
-
-        for ( let i=0; i < this.state.data.length; i++ )  {
-            switch ( this.state.data[i]['type'] ) {
-                case 'dropdown':
-                    if ( this.state.data[i]['value_type']['type'] == 'static' ) {
-                        dropdownArr.push(<DropdownComponent onChange={this.onChange} label={this.state.data[i].label} id={this.state.data[i].key} ref={this.state.data[i]['value_type']['key']} value={this.state.data[i].value}/>)
-                    } else { 
-                        dropdownArr.push(<DropdownComponent onChange={this.onChange} label={this.state.data[i].label} id={this.state.data[i].key} ref={this.state.data[i]['value_type']['key']} fetchURL={this.state.data[i]['value_type']['url']} dynamic={true}/> )
-                    }
-                    break;
-
-                case 'input':
-                    if ( this.state.data[i]['value_type']['type'] == 'static' ) {
-                        inputArr.push(<InputComponent onBlur={this.onChange} value={this.state.data[i].value} id={this.state.data[i].key} label={this.state.data[i].label} />)
-                    } else {
-                        inputArr.push(<InputComponent onBlur={this.onChange} id={this.state.data[i].key} label={this.state.data[i].label} ref={this.state.data[i]['value_type']['key']} fetchURL={this.state.data[i]['value_type']['url']} dynamic={true}/>)
-                    }
-                    break;
-
-                case 'calendar':
-                    if ( this.state.data[i]['value_type']['type'] == 'static' ) {
-                        let value = this.state.data[i].value * 1000
-                        datesArr.push(<Calendar typeTitle={this.state.data[i].label} value={value} typeLower={this.state.data[i].key} type={this.props.type} id={this.props.id}/>);
-                    } else {
-                        datesArr.push(<Calendar typeTitle={this.state.data[i].label} typeLower={this.state.data[i].key} type={this.props.type} id={this.props.id} fetchURL={this.state.data[i]['value_type']['url']} dynamic={true}/>);
-                    }
-                    break;
-
-                case 'textarea':
-                    if ( this.state.data[i]['value_type']['type'] == 'static' ) {
-                        textAreaArr.push(<TextAreaComponent id={this.state.data[i].key} value={this.state.data[i].value} onBlur={this.onChange} label={this.state.data[i].label} />)
-                    } else {
-                        textAreaArr.push(<TextAreaComponent id={this.state.data[i].key} onBlur={this.onChange} label={this.state.data[i].label} fetchURL={this.state.data[i]['value_type']['url']} dynamic={true}/>)
-                    }
-                    break;
+        if ( this.props.form ) {
+            for ( let i=0; i < this.props.form.length; i++ )  {
+                let value = this.props.form[i]['value'];
+                let url = this.props.form[i]['value_type']['url'];
+                if (url) {
+                    url = url.replace('%s', this.props.id);
+                }
+                if (this.props.form[i]['value_type']['key'].split('.').reduce((o,i)=>o[i], this.props.headerData)) {
+                    value = this.props.form[i]['value_type']['key'].split('.').reduce((o,i)=>o[i], this.props.headerData)
+                }
                 
-                case 'input_multi':
-                    if ( this.state.data[i]['value_type']['type'] == 'static' ) {
-                        inputMultiArr.push(<InputMultiComponent id={this.state.data[i].key} value={this.state.data[i].value} errorToggle={this.props.errorToggle} mainType={this.props.type} mainId={this.props.id} label={this.state.data[i].label} />)
-                    } else {
-                        inputMultiArr.push(<InputMultiComponent id={this.state.data[i].key} errorToggle={this.props.errorToggle} mainType={this.props.type} mainId={this.props.id} label={this.state.data[i].label} fetchURL={this.state.data[i]['value_type']['url']} dynamic={true} />)
-                    }
-                    break;
-                
-                case 'boolean':
-                    if ( this.state.data[i]['value_type']['type'] == 'static' ) {
-                        booleanArr.push(<BooleanComponent id={this.state.data[i].key} value={this.state.data[i].value} onChange={this.onChange} label={this.state.data[i].label} />)
-                    } else {
-                        booleanArr.push(<BooleanComponent id={this.state.data[i].key} onChange={this.onChange} label={this.state.data[i].label} fetchURL={this.state.data[i]['value_type']['url']} dynamic={true}/>)
-                    }
-                    break;
+                switch ( this.props.form[i]['type'] ) {
+                    case 'dropdown':
+                        if ( this.props.form[i]['value_type']['type'] == 'static' ) {
+                            dropdownArr.push(<DropdownComponent onChange={this.onChange} label={this.props.form[i].label} id={this.props.form[i].key} referenceKey={this.props.form[i]['value_type']['key']} value={value} dropdownValues={this.props.form[i]['value']}/>)
+                        } else { 
+                            dropdownArr.push(<DropdownComponent onChange={this.onChange} label={this.props.form[i].label} id={this.props.form[i].key} referenceKey={this.props.form[i]['value_type']['key']} fetchURL={url} dynamic={true}/> )
+                        }
+                        break;
+
+                    case 'input':
+                        if ( this.props.form[i]['value_type']['type'] == 'static' ) {
+                            inputArr.push(<InputComponent onBlur={this.onChange} value={value} id={this.props.form[i].key} label={this.props.form[i].label} />)
+                        } else {
+                            inputArr.push(<InputComponent onBlur={this.onChange} id={this.props.form[i].key} label={this.props.form[i].label} referenceKey={this.props.form[i]['value_type']['key']} fetchURL={url} dynamic={true}/>)
+                        }
+                        break;
+
+                    case 'calendar':
+                        if ( this.props.form[i]['value_type']['type'] == 'static' ) {
+                            let calendarValue = value * 1000
+                            datesArr.push(<Calendar typeTitle={this.props.form[i].label} value={calendarValue} typeLower={this.props.form[i].key} type={this.props.type} id={this.props.id}/>);
+                        } else {
+                            datesArr.push(<Calendar typeTitle={this.props.form[i].label} typeLower={this.props.form[i].key} type={this.props.type} id={this.props.id} fetchURL={url} dynamic={true} referenceKey={this.props.form[i]['value_type']['key']}/>);
+                        }
+                        break;
+
+                    case 'textarea':
+                        if ( this.props.form[i]['value_type']['type'] == 'static' ) {
+                            textAreaArr.push(<TextAreaComponent id={this.props.form[i].key} value={value} onBlur={this.onChange} label={this.props.form[i].label} />)
+                        } else {
+                            textAreaArr.push(<TextAreaComponent id={this.props.form[i].key} onBlur={this.onChange} label={this.props.form[i].label} fetchURL={url} dynamic={true} referenceKey={this.props.form[i]['value_type']['key']}/>)
+                        }
+                        break;
+                    
+                    case 'input_multi':
+                        if ( this.props.form[i]['value_type']['type'] == 'static' ) {
+                            inputMultiArr.push(<InputMultiComponent id={this.props.form[i].key} value={value} errorToggle={this.props.errorToggle} mainType={this.props.type} mainId={this.props.id} label={this.props.form[i].label} />)
+                        } else {
+                            inputMultiArr.push(<InputMultiComponent id={this.props.form[i].key} errorToggle={this.props.errorToggle} mainType={this.props.type} mainId={this.props.id} label={this.props.form[i].label} fetchURL={url} dynamic={true} referenceKey={this.props.form[i]['value_type']['key']} />)
+                        }
+                        break;
+                    
+                    case 'boolean':
+                        if ( this.props.form[i]['value_type']['type'] == 'static' ) {
+                            booleanArr.push(<BooleanComponent id={this.props.form[i].key} value={value} onChange={this.onChange} label={this.props.form[i].label} />)
+                        } else {
+                            booleanArr.push(<BooleanComponent id={this.props.form[i].key} onChange={this.onChange} label={this.props.form[i].label} fetchURL={url} dynamic={true} referenceKey={this.props.form[i]['value_type']['key']}/>)
+                        }
+                        break;
+                }
             }
         }
-
+        
         return (
-            <div className='custom-metadata-table container'>
-                <div className='row'>
-                    {dropdownArr}
-                    {datesArr}
-                    {inputArr}
-                    {textAreaArr}
-                    {inputMultiArr}
-                    {booleanArr}
-                </div>
+            <div>
+                { this.props.form ? 
+                    <div className='custom-metadata-table container'>
+                        <div className='row'>
+                            {dropdownArr}
+                            {datesArr}
+                            {inputArr}
+                            {textAreaArr}
+                            {inputMultiArr}
+                            {booleanArr}
+                        </div>
+                    </div>
+                :
+                    null 
+                }
             </div>
+            
         )
     }
 });
@@ -177,48 +192,69 @@ let DropdownComponent = React.createClass({
     
     componentWillMount: function() {
         if ( this.props.dynamic ) {
-            $.ajax({
-                type: 'get',
-                url: this.props.fetchURL,
-                success: function ( result ) {
-                    let arr = [];
-                    let selected = '';
-                    
-                    for (var j=0; j < result[this.props.ref].length; j++){
-                        if ( result[this.props.ref][j].selected == 1 ) {
-                            selected = result[this.props.ref][j].value;
-                        }
-
-                        arr.push(<option>{result[this.props.ref][j].value}</option>)
-                    }
-                    
-                    this.setState({ selected: selected, options: arr });
-        
-                }.bind(this)
-            });
+			this.getDynamic(); 
         } else {
             let arr = [];
             let selected = '';
 
-            for (var j=0; j < this.props.value.length; j++){
-                if ( this.props.value[j].selected == 1 ) {
-                    selected = this.props.value[j].value;
+            for (var j=0; j < this.props.dropdownValues.length; j++){
+                if ( this.props.value == this.props.dropdownValues[j]['value'] ) {
+                    selected = this.props.value;
                 }
 
-                arr.push(<option>{this.props.value[j].value}</option>)
+                arr.push(<option>{this.props.dropdownValues[j]['value']}</option>)
             }
             
             this.setState({ selected: selected, options: arr });
         }
     },
+	
+	getDynamic: function() {
+		$.ajax({
+			type: 'get',
+			url: this.props.fetchURL,
+			success: function ( result ) {
+				let arr = [];
+				let selected = '';
+				let referenceKey = this.props.referenceKey;
+				if ( referenceKey == 'qual_sigbody_id' || referenceKey == 'prod_sigbody_id' ) {
+					arr.push(<option>0</option>);
+					for ( let key in result['version'] ) {
+						if ( result['version'][key]['revision'] == result[referenceKey] ) {
+							selected = result[referenceKey];
+						}
+						arr.push(<option>{result['version'][key]['revision']}</option>)
+					}
+				} else {
+					for (var j=0; j < result[this.props.referenceKey].length; j++){
+						if ( result[this.props.referenceKey][j].selected == 1 ) {
+							selected = result[this.props.referenceKey][j].value;
+						}
+
+						arr.push(<option>{result[this.props.referenceKey][j].value}</option>)
+					}
+				}
+
+				this.setState({ selected: selected, options: arr });
+
+			}.bind(this)
+		});
+	},   
+ 
+    componentWillReceiveProps: function(nextProps) {
+        if ( nextProps.dynamic ) {
+            this.getDynamic();
+        } else {
+            this.setState({selected: nextProps.value});
+        }
+	},
 
     onChange: function( event ) {
-        console.log( 'selected id: ' + event.target.id + '. selected value: ' + event.target.value);
+        this.props.onChange( event );
         this.setState({ selected: event.target.value });
     },
 
     render: function() {
-         
         return (
             <div className='custom-metadata-table-component-div'>
                 <span className='custom-metadata-tableWidth'>
@@ -244,23 +280,34 @@ let InputComponent = React.createClass({
    
     componentWillMount: function() {
         if ( this.props.dynamic ) {
-            $.ajax({
-                type: 'get',
-                url: this.props.fetchURL,
-                success: function(result) {
-                    let value = '';
-
-                    value = result[this.props.ref];
-                    this.setState({value: value});
-                }.bind(this)
-            });
+			this.getDynamic(); 
         } else {
             this.setState({ value: this.props.value});
         }
     },
     
+    getDynamic: function() {
+		$.ajax({
+			type: 'get',
+			url: this.props.fetchURL,
+			success: function(result) {
+				let value = '';
+				value = result[this.props.referenceKey];
+				this.setState({value: value});
+			}.bind(this)
+		}); 
+    },
+
     inputOnChange: function(event) {
         this.setState({value:event.target.value});
+    },
+    
+    componentWillReceiveProps: function(nextProps) {
+        if ( nextProps.dynamic ) {
+            this.getDynamic();
+        } else {
+            this.setState({value: nextProps.value});
+        }
     },
 
     render: function() {
@@ -294,19 +341,31 @@ var Calendar = React.createClass({
 	
     componentWillMount: function() {
         if ( this.props.dynamic ) {
-            $.ajax({
-                type: 'get',
-                url: this.props.fetchURL,
-                success: function(result) {
-                    let value = result[this.props.ref] * 1000;
-                    this.setState({value: value, loading: false});
-                }.bind(this)
-            });
-        } else {
+        	this.getDynamic();
+		} else {
             this.setState({ value: this.props.value});
         }
     },
-    
+	
+	getDynamic: function() {
+		$.ajax({
+			type: 'get',
+			url: this.props.fetchURL,
+			success: function(result) {
+				let value = result[this.props.referenceKey] * 1000;
+				this.setState({value: value, loading: false});
+			}.bind(this)
+		});
+	},	   
+	
+	componentWillReceiveProps: function(nextProps) {
+        if ( nextProps.dynamic ) {
+            this.getDynamic();
+        } else {
+            this.setState({value: nextProps.value});
+        }
+    },
+	 
     onChange: function(event) {
         var k  = this.props.typeLower;
         var v = event._d.getTime()/1000;
@@ -362,16 +421,28 @@ let TextAreaComponent = React.createClass({
     
     componentWillMount: function() {
 		if ( this.props.dynamic ) {
-            $.ajax({
-                type: 'get',
-                url: this.props.fetchURL,
-                success: function(result) {
-                    let value = result[this.props.ref];
-                    this.setState({value: value});
-                }.bind(this)
-            });
+           this.getDynamic(); 
         } else {
             this.setState({ value: this.props.value});
+        }
+    },
+	
+	getDynamic: function() {
+		$.ajax({
+			type: 'get',
+			url: this.props.fetchURL,
+			success: function(result) {
+				let value = result[this.props.referenceKey];
+				this.setState({value: value});
+			}.bind(this)
+		});
+	},
+
+    componentWillReceiveProps: function(nextProps) {
+        if ( nextProps.dynamic ) {
+            this.getDynamic();
+        } else {
+            this.setState({value: nextProps.value});
         }
     },
 
@@ -404,16 +475,28 @@ let InputMultiComponent = React.createClass({
 
     componentWillMount: function() {
         if ( this.props.dynamic ) {
-            $.ajax({
-                type: 'get',
-                url: this.props.fetchURL,
-                success: function(result) {
-                    let value = result[this.props.ref];
-                    this.setState({value: value});
-                }.bind(this)
-            });
-        } else {
+        	this.getDynamic();
+		} else {
             this.setState({ value: this.props.value});
+        }
+    },
+
+	getDynamic: function() {
+		$.ajax({
+			type: 'get',
+			url: this.props.fetchURL,
+			success: function(result) {
+				let value = result[this.props.referenceKey];
+				this.setState({value: value});
+			}.bind(this)
+		});
+	},
+
+	componentWillReceiveProps: function(nextProps) {
+        if ( nextProps.dynamic ) {
+            this.getDynamic();
+        } else {
+            this.setState({value: nextProps.value});
         }
     },
 
@@ -441,7 +524,7 @@ let InputMultiComponent = React.createClass({
             contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 console.log('success: group added');
-                this.setState({inputValue: ''});
+                this.setState({inputValue: '', value: newData[this.props.id]});
             }.bind(this),
             error: function(data) {
                 this.props.errorToggle('Failed to add group', data);
@@ -480,6 +563,7 @@ let InputMultiComponent = React.createClass({
             data: JSON.stringify(newData),
             contentType: 'application/json; charset=UTF-8',
             success: function(data) {
+                this.setState({value: newData[this.props.id]});
                 console.log('deleted group success: ' + data);
             }.bind(this),
             error: function(data) {
@@ -528,17 +612,29 @@ let BooleanComponent = React.createClass({
     
     componentWillMount: function() {
 		if ( this.props.dynamic ) {
-            $.ajax({
-                type: 'get',
-                url: this.props.fetchURL,
-                success: function(result) {
-                    let value = result[this.props.ref];
-                    this.setState({value: value});
-                }.bind(this)
-            });
+        	this.getDynamic(); 
         } else {
             this.setState({ value: this.props.value});
         } 
+    },
+
+	getDynamic: function() {
+		$.ajax({
+			type: 'get',
+			url: this.props.fetchURL,
+			success: function(result) {
+				let value = result[this.props.referenceKey];
+				this.setState({value: value});
+			}.bind(this)
+		});
+	},
+
+    componentWillReceiveProps: function(nextProps) {
+        if ( nextProps.dynamic ) {
+            this.getDynamic();
+        } else {
+            this.setState({value: nextProps.value});
+        }
     },
 
     onChange: function(e) {
