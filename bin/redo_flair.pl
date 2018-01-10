@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 
 use lib '/opt/scot/lib';
+use Scot::Env;
 use strict;
 use warnings;
 use v5.16;
