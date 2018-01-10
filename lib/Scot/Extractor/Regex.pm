@@ -548,6 +548,52 @@ sub _build_LBSIG {
     };
 }
 
+has regex_winregistry => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_WINREGISTRY',
+);
+
+sub _build_WINREGISTRY {
+    my $self    = shift;
+    my $regex   = qr{
+        \b((hklm|hkcu|hkey)[\\\w]+)\b
+    }xims;
+    return {
+        regex   => $regex,
+        type    => "winregistry",
+        order   => 10,
+        options => { multiword => "no" },
+    };
+}
+
+has regex_appkey => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_APPKEY',
+);
+
+sub _build_APPKEY {
+    my $self    = shift;
+    my $regex   = qr{
+        \b
+        (
+        AppKey=([0-9a-f]){28}
+        )
+        \b
+    }xims;
+    return {
+        regex   => $regex,
+        type    => "appkey",
+        order   => 10,
+        options => { multiword => "no" },
+    };
+}
+
 sub find_all_matches {
     my $self    = shift;
     my $word    = shift;
