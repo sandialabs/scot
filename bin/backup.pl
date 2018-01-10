@@ -9,6 +9,7 @@ use lib '/opt/scot/lib';
 use Scot::Env;
 use DateTime;
 use Mojo::JSON qw(decode_json);
+use Data::Dumper;
 
 my $config_file = $ENV{'scot_backup_config_file'} // '/opt/scot/etc/backup.cfg.pl';
 
@@ -52,40 +53,40 @@ unless (-d $dumpdir ) {
 }
 
 
-system("rm -rf $dumpdir/mongo");
-
-my $cmd = "/usr/bin/mongodump ";
-
-if ( defined $env->auth->{user} ) {
-    if ( $env->auth->{user} and $env->auth->{pass} ) {
-        $cmd .= "-u $env->user -p $env->pass ";
-    }
-}
-
-if ( $env->dbname ) {
-    $cmd .= "--db ". $env->dbname." ";
-}
-else {
-    $cmd .= "--db scot-prod ";
-}
-
-# $cmd .= "--oplog -o $dumpdir";
-$cmd .= "-o $dumpdir";
-
-print "Executing: $cmd\n";
-
-system($cmd);
-
-#system("rm -f $pidfile");
-#exit 0;
-
-my $tarloc = "/tmp";
-if ( $env->tarloc ) {
-    unless ( -d $env->tarloc ) {
-        system ("mkdir -p $tarloc" );
-    }
-    $tarloc = $env->tarloc;
-}
+# system("rm -rf $dumpdir/mongo");
+# 
+# my $cmd = "/usr/bin/mongodump ";
+# 
+# if ( defined $env->auth->{user} ) {
+#     if ( $env->auth->{user} and $env->auth->{pass} ) {
+#         $cmd .= "-u $env->user -p $env->pass ";
+#     }
+# }
+# 
+# if ( $env->dbname ) {
+#     $cmd .= "--db ". $env->dbname." ";
+# }
+# else {
+#     $cmd .= "--db scot-prod ";
+# }
+# 
+# # $cmd .= "--oplog -o $dumpdir";
+# $cmd .= "-o $dumpdir";
+# 
+# print "Executing: $cmd\n";
+# 
+# system($cmd);
+# 
+# #system("rm -f $pidfile");
+# #exit 0;
+# 
+ my $tarloc = "/tmp";
+# if ( $env->tarloc ) {
+#     unless ( -d $env->tarloc ) {
+#         system ("mkdir -p $tarloc" );
+#     }
+#     $tarloc = $env->tarloc;
+# }
 
 # now backup elasticsearch
 
@@ -96,6 +97,11 @@ my $curl    = "curl -s";
 my $repo_cmd        = $env->es_server . "/_snapshot/scot_backup";
 my $repo_status     = `curl -XGET $repo_cmd`;
 my $repo_loc        = "location\":\"".$env->es_backup_location;
+
+print "---------------\n";
+print "REPO STATUS:\n";
+print Dumper($repo_status);
+print "---------------\n";
 
 if ( $repo_status !~ /$repo_loc/ ) {
     print "repo status output: $repo_status";
@@ -126,17 +132,31 @@ EOF
 
     print "Creating Repo with: $create_repo_string\n";
     my $repocreatestat = `$curl -XPUT $create_repo_string`;
+
+    print "----------------\n";
+    print "CREATE REPO Result:\n";
+    print Dumper($repocreatestat);
+    print "----------------\n";
+
 }
 
 my $escmd   = $env->es_server."/_snapshot/scot_backup/snapshot_1";
 
-print "Deleting existing snapshot...\n";
+print "Deleting existing snapshot...$escmd\n";
 my $del_stat = `$curl -XDELETE $escmd`;
+
+print "-----------\n";
+print "Delete status = $del_stat\n";
+print "-----------\n";
 
 sleep 2;
 
 print "Request new snapshot...\n";
 my $snap_stat   = `$curl -XPUT $escmd`;
+
+print "===============\n";
+print "New snapshot request status = $snap_stat\n";
+print "===============\n";
 
 unless ( $snap_stat =~ /accepted\":true/ ) {
     warn "Failed to create a snapshot! $snap_stat";
@@ -172,9 +192,12 @@ if ( $env->cleanup ) {
     unless ( $status =~ /acknowledged\":true/ ) {
         die "Failed to delete repo snapshot for ES backup: $status\n";
     }
+    print "removing $esdir\n";
     system("rm -rf $esdir/*");
 }
-system("find $env->location -ctime 7 -print0 | xargs -0 /bin/rm -f");
+print "finding and removing old ".$env->location."\n";
+system("find ".$env->location." -ctime 7 -print0 | xargs -0 /bin/rm -f");
+print "done";
 system("rm -f $pidfile");
 
 END{
