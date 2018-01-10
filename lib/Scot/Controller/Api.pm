@@ -419,6 +419,7 @@ sub post_get_one_process {
     my $self    = shift;
     my $object  = shift;
     my $req     = shift;
+    my $env     = $self->env;
 
     # handle special get_one cases and convert object into hash
 
@@ -471,6 +472,19 @@ sub post_get_one_process {
         my $signaturecol = $self->env->mongo->collection('Signature');
         $href->{version} = $signaturecol->get_sigbodies($object);
     }
+
+    #if ( defined $env->forms->{$object->get_collection_name} ) {
+    #    my @elements = $env->forms->{$object->get_collecton_name};
+    #    my @form     = ();
+    #    foreach my $fhref (@elements) {
+    #        my $compute = $href->{computed};
+    #        if ( defined $compute ) {
+    #            $fhref->{value} = &compute($env, $object);
+    #        }
+    #        push @form, $fhref;
+    #    }
+    #    $href->{form} = \@form;
+    #}
 
     $self->filter_unrequested_columns($alertcol, $href, $req);
     return $href;
@@ -1801,6 +1815,29 @@ sub get_cidr_matches {
         $log->error("in API cidr, Error: $_");
         $self->render_error(400, { error_msg => $_ } );
     };
+}
+
+sub get_form {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $type    = $self->stash('type');
+
+    my $form    = $env->forms;
+
+    $log->debug("Forms is ",{filter=>\&Dumper, value=>$form});
+    $log->debug("type is $type");
+    $log->debug("form is type: ".ref($form));
+
+    my $aref    = $form->{$type};
+
+    $log->debug("aref is ".ref($aref));
+    $log->debug("aref contains ",{filter=>\&Dumper, value=>$aref});
+
+        my $return = {
+            form    => $aref,
+        };
+        $self->do_render($return);
 }
 
 1;
