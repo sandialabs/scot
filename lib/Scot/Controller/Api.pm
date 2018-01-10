@@ -1044,6 +1044,8 @@ sub post_update_process {
     my $env     = $self->env;
     my $colname = (split(/::/,ref($object)))[-1];
 
+    my $agcol   = $env->mongo->collection('Alertgroup');
+
 
     foreach my $uphref (@$updates) {
         if ( $uphref->{attribute} eq "status" ) {
@@ -1058,6 +1060,13 @@ sub post_update_process {
             }
         }
         $self->create_change_audit($object, $uphref);
+        if ( ref($object) eq "Alert" ) {
+            # need to write history to Alertgroup
+            my $agobj = $agcol->find($object->alertgroup);
+            if (defined $agobj) {
+                $self->crete_change_audit($agobj, $uphref);
+            }
+        }
     }
 
     if ( $object->meta->does_role("Scot::Role::Tags") ) {
