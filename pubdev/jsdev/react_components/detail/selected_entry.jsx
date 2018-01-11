@@ -22,6 +22,7 @@ var SignatureTable          = require('../components/signature_table.jsx');
 var TrafficLightProtocol    = require('../components/traffic_light_protocol.jsx');
 var Marker                  = require('../components/marker.jsx').default;
 var EntityCreateModal       = require('../modal/entity_create.jsx').default;
+var CustomMetaDataTable     = require('../components/custom_metadata_table.jsx');
 
 var SelectedEntry = React.createClass({
     getInitialState: function() {
@@ -311,7 +312,8 @@ var SelectedEntry = React.createClass({
         }
         return (
             <div id={divid} key={id} className={divClass} style={{height:height}}> 
-                {(type == 'incident' && this.props.headerData != null) ? <IncidentTable type={type} id={id} headerData={this.props.headerData} errorToggle={this.props.errorToggle}/> : null}
+                <CustomMetaDataTable type={type} id={id} errorToggle={this.props.errorToggle} form={this.props.form} headerData={this.props.headerData}/>
+                {/*{(type == 'incident' && this.props.headerData != null) ? <IncidentTable type={type} id={id} headerData={this.props.headerData} errorToggle={this.props.errorToggle}/> : null}*/}
                 {(type == 'signature' && this.props.headerData != null) ? <SignatureTable type={type} id={id} headerData={this.props.headerData} errorToggle={this.props.errorToggle} showSignatureOptions={this.props.showSignatureOptions} /> : null}
                 {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId} isPopUp={this.props.isPopUp} entryToggle={this.props.entryToggle} updated={this.updatedCB} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar} errorToggle={this.props.errorToggle} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar} flairOff={this.props.flairOff}/> : <span>Loading...</span>} 
                 {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntry entryAction={'Add'} type={this.props.type} targetid={this.props.id} id={null} addedentry={this.props.entryToggle} updated={this.updatedCB} errorToggle={this.props.errorToggle}/> : null}</div> : null}
@@ -982,11 +984,20 @@ var EntryParent = React.createClass({
         var createdTime = items.created;
         var updatedTime = items.updated; 
         let entryHeaderInnerId = 'entry-header-inner-' + this.props.id + ' entry-header-inner';
-
+        let tlpBorder;
+        let tlpColorCSS;
+        if ( items.tlp != 'unset' ) {
+            if ( items.tlp != 'amber' ) {
+                tlpColorCSS = items.tlp;
+            } else {
+                tlpColorCSS = 'orange';
+            }
+            tlpBorder = '3px solid ' + tlpColorCSS;
+        }
         return (
             <div> 
                 { this.state.showEntityCreateModal ? <EntityCreateModal match={this.state.highlightedText} modalActive={this.state.showEntityCreateModal} ToggleCreateEntity = {this.ToggleCreateEntity} errorToggle={this.props.errorToggle}/> : null }
-                <div className={outerClassName} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
+                <div className={outerClassName} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%', border: tlpBorder}}>
                     <span className="anchor" id={"/"+ type + '/' + id + '/' + items.id}/>
                     <div className={innerClassName}>
                         <div id={entryHeaderInnerId} className={entryHeaderInnerId}>[<Link style={{color:'black'}} to={'/' + type + '/' + id + '/' + items.id}>{items.id}</Link>] <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" /> by {items.owner} {taskOwner}(updated on <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />)
@@ -994,6 +1005,7 @@ var EntryParent = React.createClass({
                             { this.props.items.body_flair != '' && this.props.items.parsed == 0 ? <span style={{color: 'green', fontWeight: 'bold' }}> Entry awaiting flair engine. Content may be inaccurate.</span> : null }
                             <span className='pull-right' style={{display:'inline-flex',paddingRight:'3px'}}>
                                 {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={items.id} type={'entry'} permissionData={items} permissionsToggle={this.permissionsToggle} /> : null}
+                                { (items.tlp != 'unset' && items.tlp != undefined) ? <span>TLP: <span style={{color: tlpColorCSS}}>{items.tlp} </span></span> : null } 
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle} pullRight> 
                                     { type != 'entity' ? <MenuItem eventKey='1' onClick={this.fileUploadToggle}>Upload File</MenuItem> : null}
                                     {entryActions}

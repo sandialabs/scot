@@ -50,7 +50,7 @@ var EntityDetail = React.createClass({
     componentDidMount: function () {
         var currentTabArray = this.state.tabs;
         var valueClicked = this.props.entityvalue;
-        if (this.props.entityid == undefined) {
+        if (this.state.entityid == undefined) {
             $.ajax({
                 type: 'GET',
                 url: 'scot/api/v2/' + this.props.entitytype + '/byname',
@@ -85,25 +85,32 @@ var EntityDetail = React.createClass({
                 }.bind(this)
             })
         } else {
-            $.ajax({
-                type: 'GET',
-                url: 'scot/api/v2/' + this.props.entitytype + '/' + this.state.entityid,
-                success: function(result) {
-                    //this.setState({entityData:result})
-                    var newTab = {data:result, entityid:result.id, entitytype:this.props.entitytype, valueClicked:result.value}
-                    currentTabArray.push(newTab);
-                    if (this.isMounted()) {
-                        var entityidsarray = [];
-                        entityidsarray.push(result.id);
-                        this.setState({tabs:currentTabArray,currentKey:result.id,initialLoad:true, processedIds:entityidsarray});
-                        Store.storeKey(this.props.entityid);
-                        Store.addChangeListener(this.updated);
-                    }
-                }.bind(this),
-                error: function(data) {
-                    this.props.errorToggle('failed to get entity detail information', data)
-                }.bind(this)
-            })
+            let id = this.state.entityid;
+            if ( !Array.isArray( id ) ) { 
+                id = [ parseInt( id ) ];       
+            }
+            
+            for (let i=0; i < id.length; i++) {
+                $.ajax({
+                    type: 'GET',
+                    url: 'scot/api/v2/' + this.props.entitytype + '/' + id[i],
+                    success: function(result) {
+                        //this.setState({entityData:result})
+                        var newTab = {data:result, entityid:result.id, entitytype:this.props.entitytype, valueClicked:result.value}
+                        currentTabArray.push(newTab);
+                        if (this.isMounted()) {
+                            var entityidsarray = [];
+                            entityidsarray.push(result.id);
+                            this.setState({tabs:currentTabArray,currentKey:result.id,initialLoad:true, processedIds:entityidsarray});
+                            Store.storeKey(id[i]);
+                            Store.addChangeListener(this.updated);
+                        }
+                    }.bind(this),
+                    error: function(data) {
+                        this.props.errorToggle('failed to get entity detail information', data)
+                    }.bind(this)
+                });
+            }
         }
         //Esc key closes popup
         function escHandler(event){
@@ -116,8 +123,6 @@ var EntityDetail = React.createClass({
                 event.preventDefault();
             }
         }
-       
-        
 
         $(document).keydown(escHandler.bind(this))
         this.containerHeightAdjust();
@@ -368,7 +373,7 @@ var EntityDetail = React.createClass({
             return (
                 <div id='popup-flex-container' style={{height: this.state.height}} className={'entity-full-screen'}>
                     <div id="entity_detail_container" style={{flexFlow: 'column', display: 'flex', width:'100%'}}>
-                        <Tabs className='tab-content' defaultActiveKey={this.props.entityid} activeKey={this.state.currentKey} onSelect={this.handleSelectTab} bsStyle='pills'>
+                        <Tabs className='tab-content' defaultActiveKey={this.props.entityid} activeKey={this.state.currentKey} onSelect={this.handleSelectTab} bsStyle='pills' animation={false}>
                             {tabsArr}                     
                         </Tabs>
                     </div>
@@ -381,7 +386,7 @@ var EntityDetail = React.createClass({
                         <div id='popup-flex-container' style={{height: '100%', display:'flex', flexFlow:'row'}}>
                             <div id="entity_detail_container" style={{flexFlow: 'column', display: 'flex', width:'100%'}}>
                                 <div id='handle' style={{width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" aria-hidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" style={{color:'red'}}onClick={this.props.flairToolbarOff}/></span></div></div>
-                                <Tabs className='tab-content' defaultActiveKey={this.props.entityid} activeKey={this.state.currentKey} onSelect={this.handleSelectTab} bsStyle='pills'>
+                                <Tabs className='tab-content' defaultActiveKey={this.props.entityid} activeKey={this.state.currentKey} onSelect={this.handleSelectTab} bsStyle='pills' animation={false}>
                                     {tabsArr}                     
                                 </Tabs>
                             </div>
