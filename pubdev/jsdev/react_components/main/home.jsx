@@ -4,12 +4,25 @@ import { Well, Tab, Row, Col, Nav, NavItem } from 'react-bootstrap';
 
 import { withUserConfig, UserConfigPropTypes, UserConfigKeys } from '../utils/userConfig';
 
+import Dashboard from '../components/dashboard/dazzle/dashboard';
+
 import Status from '../components/dashboard/status';
 import Gamification from '../components/dashboard/gamification';
 let Online = require( '../components/dashboard/online.jsx' );
 import { ReportDashboard } from '../components/dashboard/report';
 
 const dashboardReports = ReportDashboard();
+
+const Widgets = {
+	Status: {
+		type: Status,
+		title: 'Scot Status',
+	},
+	Gamification: {
+		type: Gamification,
+		title: 'Leaders',
+	},
+};
 
 const NEWTABKEY = 'new';
 
@@ -29,32 +42,11 @@ class HomeDashboard extends PureComponent {
 		...UserConfigPropTypes,
 	}
 
-	dashboardHeader = (
-		<div className="home-grid">
-			<div className="title-area">
-				{ this.props.sensitivity && 
-					<h2 className="sensitivity">{this.props.sensitivity}</h2>
-				}
-				<h3>Sandia Cyber Omni Tracker
-					<br />
-					3.5
-				</h3>
-			</div>
-			<Status className="status-area" />
-			<div className="game-area">
-				<Gamification />
-			</div>
-			<Well bsSize="small" className="activity-area">
-				Activity
-			</Well>
-		</div>
-	);
-
 	defaultTab() {
 		return {
 			title: 'Default',
 			layout: dashboardReports,
-			mountOnEnter: false,
+			mountOnEnter: true,
 			unmountOnExit: false,
 		}
 	}
@@ -71,9 +63,36 @@ class HomeDashboard extends PureComponent {
 	}
 
 	buildTab( tabConfig ) {
+		const layout = {
+			rows: [{
+				columns: [
+					{
+						className: 'col-sm-4',
+						widgets: [{key: 'Status'}],
+					},
+					{
+						className: 'col-sm-4',
+						widgets: [{key: 'Gamification'}],
+					},
+					{
+						className: 'col-sm-4',
+						widgets: [{key: 'Status'}],
+					},
+				]
+			}],
+		};
+
+		let tabLayout = (
+			<Dashboard
+				widgets={Widgets}
+				layout={layout}
+				editMode={true}
+				updateLayout={(layout) => { console.log( layout ) }}
+			/>
+		)
 		return {
 			title: tabConfig,
-			layout: <h1>{tabConfig}</h1>,
+			layout: tabLayout,
 		}
 	}
 
@@ -131,6 +150,27 @@ class HomeDashboard extends PureComponent {
 			)
 		}
 
+		const dashboardHeader = (
+			<div className="home-grid">
+				<div className="title-area">
+					{ this.props.sensitivity && 
+						<h2 className="sensitivity">{this.props.sensitivity}</h2>
+					}
+					<h3>Sandia Cyber Omni Tracker
+						<br />
+						3.5
+					</h3>
+				</div>
+				<Status className="status-area" />
+				<div className="game-area">
+					<Gamification />
+				</div>
+				<Well bsSize="small" className="activity-area">
+					Activity
+				</Well>
+			</div>
+		);
+
 		const dashboardConfig = this.props.userConfig.config;
 		const tabsConfig = dashboardConfig.tabs;
 		
@@ -160,8 +200,6 @@ class HomeDashboard extends PureComponent {
 			return <Tab.Pane eventKey={i} key={i} {...props}>{layout}</Tab.Pane>
 		} );
 
-
-
 		return (
 			<div className="homePageDisplay">
 				<Tab.Container id="DashboardTabs" activeKey={dashboardConfig.curTab} onSelect={this.switchTab}>
@@ -173,7 +211,7 @@ class HomeDashboard extends PureComponent {
 						</Col>
 						<Col sm={12}>
 							<Tab.Content mountOnEnter unmountOnExit >
-								{this.dashboardHeader}
+								{dashboardHeader}
 								{tabContent}
 							</Tab.Content>
 						</Col>
