@@ -1,63 +1,11 @@
 var React               = require('react');
 var ReactDateTime       = require('react-datetime');
-import Button from 'react-bootstrap/lib/Button.js';
+
+import { Button, Tooltip, OverlayTrigger } from 'react-bootstrap';
+
+//Add data into this metadata field by entering in the form layout in scot.cfg.pl. 
 
 var CustomMetaDataTable = React.createClass({
-    getInitialState: function() {
-        
-        return {
-            data: [
-                {
-                    type: 'dropdown',
-                    key: 'sensitivity',
-                    value_type: { type: 'static', url: null, key: 'sensitivity'}, 
-                    value: [{value: 'FYI', selected: 1}, {value: 'none', selected: 0}],
-                    label: 'DOE Information Sensitivity',
-                    help: 'help text',
-                },
-                {
-                    type: 'input',
-                    key: 'doe_report_id',
-                    value_type: { type: 'static', url: null, key: 'doe_report_id'}, 
-                    value: 'default string',
-                    label: 'DOE Report Category',
-                    help: 'help text',
-                },
-                {
-                    type: 'calendar',
-                    key: 'occurred',
-                    value_type: { type: 'static', url: null, key: 'occurred'}, 
-                    value: 1494018000,
-                    label: 'Occurred',
-                    help: 'help text',
-                },
-                {
-                    type: 'textarea',
-                    key: 'description',
-                    value_type: { type: 'static', url: null, key: 'description'}, 
-                    value: 'string here',
-                    label: 'Description',
-                    help: 'help text',
-                },
-                {
-                    type: 'input_multi',
-                    key: 'signature_group',
-                    value_type: { type: 'static', url: null, key: 'signature_group'}, 
-                    value: ['string1', 'string2'],
-                    label: 'Signature Group',
-                    help: 'help text',
-                },
-                {
-                    type: 'boolean',
-                    key: 'active',
-                    value_type: { type: 'static', url: null, key: 'active'}, 
-                    value: true,
-                    label: 'Active',
-                    help: 'help text',
-                },
-            ],
-        }
-    },
 
     onChange: function(event) {
         var k  = event.target.id;
@@ -110,50 +58,50 @@ var CustomMetaDataTable = React.createClass({
                 switch ( this.props.form[i]['type'] ) {
                     case 'dropdown':
                         if ( this.props.form[i]['value_type']['type'] == 'static' ) {
-                            dropdownArr.push(<DropdownComponent onChange={this.onChange} label={this.props.form[i].label} id={this.props.form[i].key} referenceKey={this.props.form[i]['value_type']['key']} value={value} dropdownValues={this.props.form[i]['value']}/>)
+                            dropdownArr.push(<DropdownComponent onChange={this.onChange} label={this.props.form[i].label} id={this.props.form[i].key} referenceKey={this.props.form[i]['value_type']['key']} value={value} dropdownValues={this.props.form[i]['value']} help={this.props.form[i].help}/>)
                         } else { 
-                            dropdownArr.push(<DropdownComponent onChange={this.onChange} label={this.props.form[i].label} id={this.props.form[i].key} referenceKey={this.props.form[i]['value_type']['key']} fetchURL={url} dynamic={true}/> )
+                            dropdownArr.push(<DropdownComponent onChange={this.onChange} label={this.props.form[i].label} id={this.props.form[i].key} referenceKey={this.props.form[i]['value_type']['key']} fetchURL={url} dynamic={true} help={this.props.form[i].help}/> )
                         }
                         break;
 
                     case 'input':
                         if ( this.props.form[i]['value_type']['type'] == 'static' ) {
-                            inputArr.push(<InputComponent onBlur={this.onChange} value={value} id={this.props.form[i].key} label={this.props.form[i].label} />)
+                            inputArr.push(<InputComponent onBlur={this.onChange} value={value} id={this.props.form[i].key} label={this.props.form[i].label} help={this.props.form[i].help} />)
                         } else {
-                            inputArr.push(<InputComponent onBlur={this.onChange} id={this.props.form[i].key} label={this.props.form[i].label} referenceKey={this.props.form[i]['value_type']['key']} fetchURL={url} dynamic={true}/>)
+                            inputArr.push(<InputComponent onBlur={this.onChange} id={this.props.form[i].key} label={this.props.form[i].label} referenceKey={this.props.form[i]['value_type']['key']} fetchURL={url} dynamic={true} help={this.props.form[i].help}/>)
                         }
                         break;
 
                     case 'calendar':
                         if ( this.props.form[i]['value_type']['type'] == 'static' ) {
                             let calendarValue = value * 1000
-                            datesArr.push(<Calendar typeTitle={this.props.form[i].label} value={calendarValue} typeLower={this.props.form[i].key} type={this.props.type} id={this.props.id}/>);
+                            datesArr.push(<Calendar typeTitle={this.props.form[i].label} value={calendarValue} typeLower={this.props.form[i].key} type={this.props.type} id={this.props.id} help={this.props.form[i].help}/>);
                         } else {
-                            datesArr.push(<Calendar typeTitle={this.props.form[i].label} typeLower={this.props.form[i].key} type={this.props.type} id={this.props.id} fetchURL={url} dynamic={true} referenceKey={this.props.form[i]['value_type']['key']}/>);
+                            datesArr.push(<Calendar typeTitle={this.props.form[i].label} typeLower={this.props.form[i].key} type={this.props.type} id={this.props.id} fetchURL={url} dynamic={true} referenceKey={this.props.form[i]['value_type']['key']} help={this.props.form[i].help}/>);
                         }
                         break;
 
                     case 'textarea':
                         if ( this.props.form[i]['value_type']['type'] == 'static' ) {
-                            textAreaArr.push(<TextAreaComponent id={this.props.form[i].key} value={value} onBlur={this.onChange} label={this.props.form[i].label} />)
+                            textAreaArr.push(<TextAreaComponent id={this.props.form[i].key} value={value} onBlur={this.onChange} label={this.props.form[i].label} help={this.props.form[i].help}/>)
                         } else {
-                            textAreaArr.push(<TextAreaComponent id={this.props.form[i].key} onBlur={this.onChange} label={this.props.form[i].label} fetchURL={url} dynamic={true} referenceKey={this.props.form[i]['value_type']['key']}/>)
+                            textAreaArr.push(<TextAreaComponent id={this.props.form[i].key} onBlur={this.onChange} label={this.props.form[i].label} fetchURL={url} dynamic={true} referenceKey={this.props.form[i]['value_type']['key']} help={this.props.form[i].help}/>)
                         }
                         break;
                     
                     case 'input_multi':
                         if ( this.props.form[i]['value_type']['type'] == 'static' ) {
-                            inputMultiArr.push(<InputMultiComponent id={this.props.form[i].key} value={value} errorToggle={this.props.errorToggle} mainType={this.props.type} mainId={this.props.id} label={this.props.form[i].label} />)
+                            inputMultiArr.push(<InputMultiComponent id={this.props.form[i].key} value={value} errorToggle={this.props.errorToggle} mainType={this.props.type} mainId={this.props.id} label={this.props.form[i].label} help={this.props.form[i].help} />)
                         } else {
-                            inputMultiArr.push(<InputMultiComponent id={this.props.form[i].key} errorToggle={this.props.errorToggle} mainType={this.props.type} mainId={this.props.id} label={this.props.form[i].label} fetchURL={url} dynamic={true} referenceKey={this.props.form[i]['value_type']['key']} />)
+                            inputMultiArr.push(<InputMultiComponent id={this.props.form[i].key} errorToggle={this.props.errorToggle} mainType={this.props.type} mainId={this.props.id} label={this.props.form[i].label} fetchURL={url} dynamic={true} referenceKey={this.props.form[i]['value_type']['key']} help={this.props.form[i].help} />)
                         }
                         break;
                     
                     case 'boolean':
                         if ( this.props.form[i]['value_type']['type'] == 'static' ) {
-                            booleanArr.push(<BooleanComponent id={this.props.form[i].key} value={value} onChange={this.onChange} label={this.props.form[i].label} />)
+                            booleanArr.push(<BooleanComponent id={this.props.form[i].key} value={value} onChange={this.onChange} label={this.props.form[i].label} help={this.props.form[i].help} />)
                         } else {
-                            booleanArr.push(<BooleanComponent id={this.props.form[i].key} onChange={this.onChange} label={this.props.form[i].label} fetchURL={url} dynamic={true} referenceKey={this.props.form[i]['value_type']['key']}/>)
+                            booleanArr.push(<BooleanComponent id={this.props.form[i].key} onChange={this.onChange} label={this.props.form[i].label} fetchURL={url} dynamic={true} referenceKey={this.props.form[i]['value_type']['key']} help={this.props.form[i].help}/>)
                         }
                         break;
                 }
@@ -259,6 +207,9 @@ let DropdownComponent = React.createClass({
             <div className='custom-metadata-table-component-div'>
                 <span className='custom-metadata-tableWidth'>
                     { this.props.label }
+                    <OverlayTrigger placement='top' overlay={<Tooltip id={this.props.id}> {this.props.help}</Tooltip>}>
+                        <i className="fa fa-question-circle-o" aria-hidden="true"></i>
+                    </OverlayTrigger>
                 </span>
                 <span>
                     <select id={ this.props.id } value={ this.state.selected } onChange={ this.onChange }>
@@ -316,6 +267,9 @@ let InputComponent = React.createClass({
             <div className='custom-metadata-table-component-div'>
                 <span className='custom-metadata-tableWidth'>
                     {this.props.label}
+                    <OverlayTrigger placement='top' overlay={<Tooltip id={this.props.id}> {this.props.help}</Tooltip>}>
+                        <i className="fa fa-question-circle-o" aria-hidden="true"></i>
+                    </OverlayTrigger>
                 </span>
                 <span>
                     <input className='custom-metadata-input-width' id={this.props.id} onBlur={this.props.onBlur} onChange={this.inputOnChange} value={this.state.value} />
@@ -398,13 +352,16 @@ var Calendar = React.createClass({
         return(
             <div className='custom-metadata-table-component-div' style={{display:'flex',flexFlow:'row'}}>
                 <span className='custom-metadata-tableWidth'>
-                    {this.props.typeTitle}:
+                    {this.props.typeTitle}
+                    <OverlayTrigger placement='top' overlay={<Tooltip id={this.props.id}> {this.props.help}</Tooltip>}>
+                        <i className="fa fa-question-circle-o" aria-hidden="true"></i>
+                    </OverlayTrigger>
                 </span>
 				{ !this.state.loading ? 
 					<ReactDateTime className='custom-metadata-input-width' value={this.state.value} onChange={this.onChange}/> 
                 :
 		            <span>
-                        Loading Placeholder
+                        Loading...
                     </span>
                 }
             </div>
@@ -456,6 +413,9 @@ let TextAreaComponent = React.createClass({
             <div className='custom-metadata-table-component-div'>
                 <span className='custom-metadata-tableWidth'>
                     {this.props.label}
+                    <OverlayTrigger placement='top' overlay={<Tooltip id={this.props.id}> {this.props.help}</Tooltip>}>
+                        <i className="fa fa-question-circle-o" aria-hidden="true"></i>
+                    </OverlayTrigger>
                 </span>
                 <span>
                     <textarea id={this.props.id} onBlur={this.props.onBlur} onChange={this.inputOnChange} value={this.state.value} className='custom-metadata-textarea-width'/>
@@ -590,6 +550,9 @@ let InputMultiComponent = React.createClass({
             <div className='custom-metadata-table-component-div'>
                 <span className='custom-metadata-tableWidth'>
                     {this.props.label}
+                    <OverlayTrigger placement='top' overlay={<Tooltip id={this.props.id}> {this.props.help}</Tooltip>}>
+                        <i className="fa fa-question-circle-o" aria-hidden="true"></i>
+                    </OverlayTrigger>
                 </span>
                 <span>
                     <input className='custom-metadata-input-width' id={this.props.id} onChange={this.InputChange} value={this.state.inputValue} />
@@ -658,6 +621,9 @@ let BooleanComponent = React.createClass({
             <div className='custom-metadata-table-component-div'>
                 <span className='custom-metadata-tableWidth'>
                     {this.props.label}
+                    <OverlayTrigger placement='top' overlay={<Tooltip id={this.props.id}> {this.props.help}</Tooltip>}>
+                        <i className="fa fa-question-circle-o" aria-hidden="true"></i>
+                    </OverlayTrigger>
                 </span>
                 <span>
                     <input type='checkbox' className='custom-metadata-input-width' id={this.props.id} name={this.props.id} value={this.state.value} onClick={this.onChange}/>
