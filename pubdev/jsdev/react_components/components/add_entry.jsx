@@ -79,7 +79,7 @@ var AddEntryModal = React.createClass({
                         <div className={'row-fluid entry-header'}>
                             <div className="entry-header-inner">[<Link style={{color:'black'}} to={"not_saved_0"}>Not_Saved_0</Link>]by {this.state.whoami}
                                 <span className='pull-right' style={{display:'inline-flex',paddingRight:'3px'}}>
-                                    <Button bsSize={'xsmall'} onClick={this.submit}>Submit</Button>
+                                    <Button bsSize={'xsmall'} onClick={this.submit} bsStyle={'success'}>Submit</Button>
                                     <Button bsSize={'xsmall'} onClick={this.onCancel}>Cancel</Button>
                                 </span>
                             </div>
