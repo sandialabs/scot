@@ -3,6 +3,9 @@ FROM ubuntu:16.04
 ENV no_proxy="elastic,mongodb,scot,activemq"
 ENV NO_PROXY="elastic,mongodb,scot,activemq"
 
+RUN groupadd -g 801 scot && \
+    useradd -r -u 801 -g scot scot
+
 RUN apt-get update && \
     apt-get -qy upgrade && \
     apt-get install -qy perl build-essential cpanminus perl-doc perl-base perl-modules \ 
@@ -57,3 +60,5 @@ RUN cpanm --force Array::Split Data::Dumper Data::Dumper::HTML Data::Dumper::Con
 
 COPY lib/ /opt/scot/lib/
 COPY bin/ /opt/scot/bin/
+
+USER scot
