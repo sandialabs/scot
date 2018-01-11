@@ -6,4 +6,4 @@ network.host: elastic
 # Details: https://github.com/elastic/elasticsearch/pull/17288
 discovery.zen.minimum_master_nodes: 1
 xpack.security.enabled: false
-path.repo: [ '/opt/scotbackup/elastic']
+path.repo: [ '/opt/scotbackup/elastic', '/opt/scotbackup/']

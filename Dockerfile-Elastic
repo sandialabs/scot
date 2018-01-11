@@ -1,14 +1,22 @@
 FROM docker.elastic.co/elasticsearch/elasticsearch:5.6.3
 
+ENV no_proxy="elastic,mongodb"
+
 USER root
 
 RUN mkdir -p /opt/scotbackup/elastic
 RUN mkdir -p /opt/scot/elastic/
+
 ADD docker-configs/elastic/ /opt/scot/elastic
 RUN chown elasticsearch:elasticsearch config/elasticsearch.yml
 RUN chown elasticsearch:elasticsearch /opt/scot/elastic
 RUN chmod -R +x /opt/scot/elastic/*.sh
 RUN chown -R elasticsearch:elasticsearch /opt/scotbackup/elastic
+
+#TODO: Lock these down
+RUN chmod -R 0777 /opt/scotbackup/elastic
+
+#used for running Mapping script
 RUN mkdir -p /var/lib/elasticsearch/mapping
 RUN chown -R elasticsearch:elasticsearch /var/lib/elasticsearch/mapping
 
@@ -21,4 +29,3 @@ EXPOSE 9200 9300
 
 CMD /opt/scot/elastic/run.sh
 
-#CMD /bin/bash

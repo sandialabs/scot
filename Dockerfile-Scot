@@ -17,6 +17,7 @@ RUN apt-get update && \
 
 RUN mkdir -p /var/log/scot
 RUN mkdir -p /opt/scot
+RUN mkdir -p /opt/scot/public/cached_images
 
 #copy config files
 COPY install/src/scot/ /opt/scot/etc/  
