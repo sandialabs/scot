@@ -373,7 +373,7 @@ var EntityDetail = React.createClass({
             return (
                 <div id='popup-flex-container' style={{height: this.state.height}} className={'entity-full-screen'}>
                     <div id="entity_detail_container" style={{flexFlow: 'column', display: 'flex', width:'100%'}}>
-                        <Tabs className='tab-content' defaultActiveKey={this.props.entityid} activeKey={this.state.currentKey} onSelect={this.handleSelectTab} bsStyle='pills'>
+                        <Tabs className='tab-content' defaultActiveKey={this.props.entityid} activeKey={this.state.currentKey} onSelect={this.handleSelectTab} bsStyle='pills' animation={false}>
                             {tabsArr}                     
                         </Tabs>
                     </div>
@@ -386,7 +386,7 @@ var EntityDetail = React.createClass({
                         <div id='popup-flex-container' style={{height: '100%', display:'flex', flexFlow:'row'}}>
                             <div id="entity_detail_container" style={{flexFlow: 'column', display: 'flex', width:'100%'}}>
                                 <div id='handle' style={{width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" aria-hidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" style={{color:'red'}}onClick={this.props.flairToolbarOff}/></span></div></div>
-                                <Tabs className='tab-content' defaultActiveKey={this.props.entityid} activeKey={this.state.currentKey} onSelect={this.handleSelectTab} bsStyle='pills'>
+                                <Tabs className='tab-content' defaultActiveKey={this.props.entityid} activeKey={this.state.currentKey} onSelect={this.handleSelectTab} bsStyle='pills' animation={false}>
                                     {tabsArr}                     
                                 </Tabs>
                             </div>
