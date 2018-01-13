@@ -34,6 +34,7 @@ class HomeDashboard extends PureComponent {
 
 		this.switchTab = this.switchTab.bind(this);
 		this.closeTab = this.closeTab.bind(this);
+		this.saveTab = this.saveTab.bind(this);
 	}
 
 	static propTypes = {
@@ -54,7 +55,7 @@ class HomeDashboard extends PureComponent {
 	newTab() {
 		const dashboardConfig = this.props.userConfig.config;
 		let tabs = [...dashboardConfig.tabs];
-		tabs.push( `Tab ${tabs.length + 1}` )
+		tabs.push({});
 
 		this.updateDashboardConfig( {
 			curTab: tabs.length,
@@ -62,38 +63,35 @@ class HomeDashboard extends PureComponent {
 		} );
 	}
 
-	buildTab( tabConfig ) {
-		const layout = {
-			rows: [{
-				columns: [
-					{
-						className: 'col-sm-4',
-						widgets: [{key: 'Status'}],
-					},
-					{
-						className: 'col-sm-4',
-						widgets: [{key: 'Gamification'}],
-					},
-					{
-						className: 'col-sm-4',
-						widgets: [{key: 'Status'}],
-					},
-				]
-			}],
-		};
-
+	buildTab( tabConfig, index ) {
 		let tabLayout = (
 			<Dashboard
 				widgets={Widgets}
-				layout={layout}
-				editMode={true}
-				updateLayout={(layout) => { console.log( layout ) }}
+				title={tabConfig.title}
+				layout={tabConfig.layout}
+				saveDashboard={(title, layout) => { this.saveTab( index, title, layout ) } }
+				isNew={tabConfig.layout == null}
 			/>
 		)
 		return {
-			title: tabConfig,
+			title: tabConfig.title,
 			layout: tabLayout,
 		}
+	}
+
+	saveTab( index, title, layout ) {
+		const dashboardConfig = this.props.userConfig.config;
+		let tabs = [...dashboardConfig.tabs];
+
+		let newTabConfig = {
+			title: title,
+			layout: layout,
+		}
+
+		tabs[ index - 1 ] = newTabConfig;
+		this.updateDashboardConfig( {
+			tabs: tabs,
+		} );
 	}
 
 	closeTab( index ) {
@@ -182,7 +180,7 @@ class HomeDashboard extends PureComponent {
 		}
 
 		let tabHeaders = tabs.map( (tab, i) => {
-			let { title, layout, ...props } = tab;
+			let { title = 'New Dashboard', layout, ...props } = tab;
 			return (
 				<NavItem eventKey={i} key={i}>
 					{title}
