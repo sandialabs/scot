@@ -31,6 +31,9 @@ services:
     build:
       dockerfile: Dockerfile-Mongodb
       context: ./
+      args:
+        MONGODBUID: ${MONGODBUID}
+        MONGODBGID: ${MONGODBGID}
     volumes:
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
@@ -46,6 +49,9 @@ services:
    build:
      dockerfile: Dockerfile-Elastic
      context: ./
+     args: 
+       ELASTICUID: ${ELASTICUID}
+       ELASTICGID: ${ELASTICGID}
    volumes:
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
@@ -60,6 +66,9 @@ services:
     build:
       dockerfile: Dockerfile-Scot
       context: ./
+      args:
+        SCOTUID: ${SCOTUID}
+        SCOTGID: ${SCOTGID}
     volumes:
      - "/var/log/scot:/var/log/scot/"
      - "/etc/timezone:/etc/timezone:ro"
@@ -67,6 +76,9 @@ services:
      - "/opt/scotfiles:/opt/scotfiles/"
      - "./public/:/opt/scot/public/"
      - "./pubdev/:/opt/scot/pubdev"
+     - "/var/lib/elasticsearch:/var/lib/elasticsearch/"
+     - "/var/lib/mongodb:/var/lib/mongodb/"
+     - "/opt/scotbackup:/opt/scotbackup/"
      - "/opt/scot/public/cached_images:/opt/scot/public/cached_images/"
     depends_on:
      - perl
@@ -152,22 +164,22 @@ services:
 #    - mongodb
 #    - scot
 
-  sshcontainer:
-    build:
-      dockerfile: Dockerfile-SSH
-      context: ./
-    volumes:
-     - "/var/log/scot:/var/log/scot/"
-     - "/var/lib/elasticsearch:/var/lib/elasticsearch/"
-     - "/var/lib/mongodb:/var/lib/mongodb/"
-     - "/opt/scotbackup:/opt/scotbackup/"
-     - "/opt/scot/public/cached_images:/opt/scot/public/cached_images/"
-    depends_on:
-     - mongodb
-     - elastic
-    networks:
-     - scot-docker-net
-    container_name: sshcontainer
+#  sshcontainer:
+#    build:
+#      dockerfile: Dockerfile-SSH
+#      context: ./
+#    volumes:
+#     - "/var/log/scot:/var/log/scot/"
+#     - "/var/lib/elasticsearch:/var/lib/elasticsearch/"
+#     - "/var/lib/mongodb:/var/lib/mongodb/"
+#     - "/opt/scotbackup:/opt/scotbackup/"
+#     - "/opt/scot/public/cached_images:/opt/scot/public/cached_images/"
+#    depends_on:
+#     - mongodb
+#     - elastic
+#    networks:
+#     - scot-docker-net
+#    container_name: sshcontainer
 networks:
   scot-docker-net:
     driver: bridge

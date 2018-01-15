@@ -16,7 +16,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 #install amq
 
 RUN set -x && \
-    curl -k -s -S https://archive.apache.org/dist/activemq/$ACTIVEMQ_VERSION/$ACTIVEMQ-bin.tar.gz | tar xvz -C /opt && \
+    curl -k -x $proxy -x $proxy -x $proxy -x $proxy -x $proxy -x $proxy -x $proxy -x $proxy -x $proxy -s -S https://archive.apache.org/dist/activemq/$ACTIVEMQ_VERSION/$ACTIVEMQ-bin.tar.gz | tar xvz -C /opt && \
     ln -s /opt/$ACTIVEMQ $ACTIVEMQ_HOME && \
     useradd -r -M -d $ACTIVEMQ_HOME activemq && \
     chown -R activemq:activemq /opt/$ACTIVEMQ && \
