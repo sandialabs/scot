@@ -1,5 +1,10 @@
 FROM scot_perl
 
+ARG SCOTGID
+ARG SCOTUID
+ENV SCOTUID=${SCOTUID}
+ENV SCOTGID=${SCOTGID}
+
 ENV DEBIAN_FRONTEND="noninteractive" \
     http_proxy=" " \
     https_proxy=" " \
@@ -25,8 +30,18 @@ COPY script/ /opt/scot/script/
 COPY t/ /opt/scot/t/
 COPY templates/ /opt/scot/templates/ 
 COPY docker-configs/scot/scot.cfg.pl /opt/scot/etc/
+COPY docker-scripts/* /opt/scot/bin/
 
+
+RUN groupadd -g ${SCOTGID} scot && \
+    useradd -r -u ${SCOTUID} -g scot scot
+
+
+#scot permissions
+RUN chown -R scot:scot /opt/scot/
 
 EXPOSE 3000 
+
+USER scot
 CMD /usr/local/bin/hypnotoad -f /opt/scot/script/Scot
 #CMD /bin/bash

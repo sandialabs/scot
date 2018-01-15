@@ -10,4 +10,9 @@ COPY lib/Scot/App/Game.pm /opt/scot/lib/
 COPY install/src/scot /opt/scot/etc/
 COPY docker-configs/game/game.cfg.pl /opt/scot/etc/
 
+
+RUN groupadd -g 801 scot && \
+    useradd -r -u 801 -g scot scot
+
+USER scot
 CMD ["/usr/bin/perl", "/opt/scot/bin/game.pl"]

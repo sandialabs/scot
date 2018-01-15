@@ -1,5 +1,10 @@
 FROM scot_perl 
 
+ARG MONGODBUID
+ARG MONGODBGID
+ENV MONGODBUID=${MONGODBUID}
+ENV MONGODBGID=${MONGODBGID}
+
 # Installation:
 # Import MongoDB public GPG key AND create a MongoDB list file
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
@@ -25,8 +30,17 @@ RUN mkdir -p /var/lib/mongodb/
 
 RUN chmod +x /run.sh
 RUN chmod +x /set_mongodb_config.sh
-# Set /usr/bin/mongod as the dockerized entry-point application
 
+RUN groupadd -g ${MONGODBGID} mongodb && \
+    useradd -r -u ${MONGODBUID} -g mongodb mongodb
+
+
+#Set permissions for mongodb user
+
+RUN chown -R mongodb:mongodb /var/log/mongodb /var/lib/mongodb/
+
+# Set /usr/bin/mongod as the dockerized entry-point application
+USER mongodb
 CMD ["/run.sh"]
 
 

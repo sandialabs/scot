@@ -1,5 +1,10 @@
 FROM docker.elastic.co/elasticsearch/elasticsearch:5.6.3
 
+ARG ELASTICGID
+ARG ELASTICUID
+ENV ELASTICUID=${ELASTICUID}
+ENV ELASTICGID=${ELASTICGID}
+
 ENV no_proxy="elastic,mongodb"
 
 USER root
@@ -19,6 +24,9 @@ RUN chmod -R 0777 /opt/scotbackup/elastic
 #used for running Mapping script
 RUN mkdir -p /var/lib/elasticsearch/mapping
 RUN chown -R elasticsearch:elasticsearch /var/lib/elasticsearch/mapping
+
+RUN groupadd -g ${ELASTICGID} elasticsearch && \
+    useradd -r -u ${ELASTICUID} -g elasticsearch elasticsearch
 
 USER elasticsearch
 
