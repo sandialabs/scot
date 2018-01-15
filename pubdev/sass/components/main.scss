@@ -62,4 +62,35 @@
 			margin-bottom: 0;
 		}
 	}
+
+	.dashboard {
+		padding: 0 10px;
+
+		.titleBar {
+			text-align: start;
+
+			input {
+				width: 300px;
+			}
+
+			.edit {
+				float: right;
+
+				button ~ button {
+					margin-left: 10px;
+				}
+			}
+		}
+
+		.editable-column {
+			border: 1px dashed rgba(0, 0, 0, 0.5);
+		}
+
+		.add-widget-button {
+			margin: 5px 0;
+			padding: 15px;
+			cursor: pointer;
+			border: 1px solid black;
+		}
+	}
 }
