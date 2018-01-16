@@ -14,7 +14,8 @@ var SelectedHeaderOptions = React.createClass({
             promoteRemaining: null,
         }
     },
-    toggleFlair: function() { 
+    toggleFlair: function() {
+        let newGlobalFlairState = !this.state.globalFlairState;
         this.props.toggleFlair();
         $('iframe').each(function(index, ifr) {
             if(ifr.contentDocument != null) {
@@ -28,7 +29,6 @@ var SelectedHeaderOptions = React.createClass({
                         $(entity).addClass('entity');
                         $(entity).removeClass('entity-off');
                     });
-                    this.setState({ globalFlairState: true });
                 } else {
                     ifrContents.find('.extras').hide();
                     ifrContents.find('.flair-off').show();
@@ -36,30 +36,11 @@ var SelectedHeaderOptions = React.createClass({
                         $(entity).addClass('entity-off');
                         $(entity).removeClass('entity');
                     });
-                    this.setState({ globalFlairState: false });
                 }
-
             }
         }.bind(this));
-        /*var off = $('.entity-off');
-        var on = $('.entity');
-        if (!this.state.globalFlairState) {
-            this.setState({globalFlairState:true});
-            $('.extras').show();
-            $('.flair-off').hide();
-            off.each(function(index, entity) {
-                $(entity).addClass('entity');
-                $(entity).removeClass('entity-off');
-            });
-        } else {
-            $('.extras').hide();
-            $('.flair-off').show();
-            this.setState({globalFlairState:false});
-            on.each(function(index, entity) {
-                $(entity).addClass('entity-off');
-                $(entity).removeClass('entity');
-            });
-        }*/
+        this.setState({globalFlairState: newGlobalFlairState});
+        
     },
     //All methods containing alert are only used by selected_entry when viewing an alertgroupand interacting with an alert.
     alertOpenSelected: function() {
