@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import Dazzle, { addWidget } from 'react-dazzle';
 
-import { Button } from 'react-bootstrap';
+import { Grid, Button } from 'react-bootstrap';
 
 class Dashboard extends PureComponent {
 	constructor( props ) {
@@ -27,7 +27,8 @@ class Dashboard extends PureComponent {
 		title: PropTypes.string,
 		saveDashboard: PropTypes.func.isRequired,
 		layout: PropTypes.object,
-		newDashboard: PropTypes.bool,
+		isNew: PropTypes.bool,
+		errorToggle: PropTypes.func,
 	}
 
 	static defaultProps = {
@@ -78,7 +79,13 @@ class Dashboard extends PureComponent {
 
 	saveDashboard() {
 		// Handle upstream save
+		if ( !this.state.title ) {
+			this.props.errorToggle( "Please enter a dashboard title" );
+			return;
+		}
+
 		this.toggleEdit();
+		this.props.saveDashboard( this.state.title, this.state.layout );
 	}
 
 	reset() {
@@ -87,6 +94,16 @@ class Dashboard extends PureComponent {
 			title: this.props.title,
 			editMode: false,
 		} );
+	}
+
+	componentWillReceiveProps( nextProps ) {
+		if ( this.props.isNew && !nextProps.isNew ) {
+			this.setState( {
+				layout: nextProps.layout,
+				title: nextProps.title,
+				editMode: false,
+			} );
+		}
 	}
 
 	render() {
@@ -99,15 +116,18 @@ class Dashboard extends PureComponent {
 					onSave={this.saveDashboard}
 					onCancel={this.reset}
 					handleTitleChange={this.updateTitle}
+					isNew={this.props.isNew}
 				/>
-				<Dazzle
-					onRemove={this.updateLayout}
-					onMove={this.updateLayout}
-					onAdd={this.onAdd}
-					editable={this.state.editMode}
-					layout={this.state.layout}
-					widgets={this.props.widgets}
-				/>
+				<Grid fluid>
+					<Dazzle
+						onRemove={this.updateLayout}
+						onMove={this.updateLayout}
+						onAdd={this.onAdd}
+						editable={this.state.editMode}
+						layout={this.state.layout}
+						widgets={this.props.widgets}
+					/>
+				</Grid>
 			</div>
 		)
 	}
@@ -119,11 +139,14 @@ const TitleBar = ( {
 	onEdit,
 	onSave,
 	onCancel,
-	handleTitleChange
+	handleTitleChange,
+	isNew
 } = {} ) => (
 	<div className="titleBar clearfix">
 		{ editMode &&
-			<input type="text" className="title" value={title} placeholder="Dashboard Title" onChange={handleTitleChange} />
+			<form onSubmit={onSave}>
+				<input type="text" className="title" value={title} placeholder="Dashboard Title" onChange={handleTitleChange} />
+			</form>
 		}
 		{ !editMode ? (
 			<div className="edit">
@@ -132,7 +155,7 @@ const TitleBar = ( {
 		) : (
 			<div className="edit">
 				<Button bsStyle="primary" bsSize="small" onClick={onSave}>Save</Button>
-				<Button bsStyle="warning" bsSize="small" onClick={onCancel}>Cancel</Button>
+				<Button bsStyle="warning" bsSize="small" disabled={isNew} onClick={onCancel}>Cancel</Button>
 			</div>
 		) }
 	</div>
