@@ -25,8 +25,8 @@ RUN chmod -R 0777 /opt/scotbackup/elastic
 RUN mkdir -p /var/lib/elasticsearch/mapping
 RUN chown -R elasticsearch:elasticsearch /var/lib/elasticsearch/mapping
 
-RUN groupadd -g ${ELASTICGID} elasticsearch && \
-    useradd -r -u ${ELASTICUID} -g elasticsearch elasticsearch
+#RUN groupadd -g ${ELASTICGID} elasticsearch && \
+#    useradd -r -u ${ELASTICUID} -g elasticsearch elasticsearch
 
 USER elasticsearch
 
