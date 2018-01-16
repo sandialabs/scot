@@ -40,6 +40,7 @@ class HomeDashboard extends PureComponent {
 	static propTypes = {
 		loggedIn: PropTypes.bool.isRequired,
 		sensitivity: PropTypes.string,
+		errorToggle: PropTypes.func,
 		...UserConfigPropTypes,
 	}
 
@@ -71,6 +72,7 @@ class HomeDashboard extends PureComponent {
 				layout={tabConfig.layout}
 				saveDashboard={(title, layout) => { this.saveTab( index, title, layout ) } }
 				isNew={tabConfig.layout == null}
+				errorToggle={this.props.errorToggle}
 			/>
 		)
 		return {
@@ -88,7 +90,7 @@ class HomeDashboard extends PureComponent {
 			layout: layout,
 		}
 
-		tabs[ index - 1 ] = newTabConfig;
+		tabs[ index ] = newTabConfig;
 		this.updateDashboardConfig( {
 			tabs: tabs,
 		} );
@@ -175,8 +177,9 @@ class HomeDashboard extends PureComponent {
 		let tabs = []
 		tabs.push( this.defaultTab() );
 
+		let index = 0;
 		for ( let newTab of tabsConfig ) {
-			tabs.push( this.buildTab( newTab ) );
+			tabs.push( this.buildTab( newTab, index++ ) );
 		}
 
 		let tabHeaders = tabs.map( (tab, i) => {
