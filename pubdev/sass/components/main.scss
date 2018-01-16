@@ -77,6 +77,10 @@
 		.titleBar {
 			text-align: start;
 
+			form {
+				display: inline-block;
+			}
+
 			input {
 				width: 300px;
 			}
@@ -103,6 +107,15 @@
 
 			&:hover {
 				background: #EEEEEE;
+			}
+		}
+
+		.widget {
+			margin: 10px 0;
+
+			&.editable {
+				cursor: move;
+				margin: 0;
 			}
 		}
 	}
