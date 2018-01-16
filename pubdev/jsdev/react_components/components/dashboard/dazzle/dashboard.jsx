@@ -4,6 +4,8 @@ import Dazzle, { addWidget } from 'react-dazzle';
 
 import { Grid, Button } from 'react-bootstrap';
 
+import WidgetWrapper from './widgetWrapper';
+
 class Dashboard extends PureComponent {
 	constructor( props ) {
 		super( props );
@@ -32,6 +34,7 @@ class Dashboard extends PureComponent {
 	}
 
 	static defaultProps = {
+		title: '',
 		layout: {
 			rows: [{
 				columns: [
@@ -84,8 +87,8 @@ class Dashboard extends PureComponent {
 			return;
 		}
 
-		this.toggleEdit();
 		this.props.saveDashboard( this.state.title, this.state.layout );
+		this.toggleEdit();
 	}
 
 	reset() {
@@ -94,16 +97,6 @@ class Dashboard extends PureComponent {
 			title: this.props.title,
 			editMode: false,
 		} );
-	}
-
-	componentWillReceiveProps( nextProps ) {
-		if ( this.props.isNew && !nextProps.isNew ) {
-			this.setState( {
-				layout: nextProps.layout,
-				title: nextProps.title,
-				editMode: false,
-			} );
-		}
 	}
 
 	render() {
@@ -126,6 +119,7 @@ class Dashboard extends PureComponent {
 						editable={this.state.editMode}
 						layout={this.state.layout}
 						widgets={this.props.widgets}
+						frameComponent={WidgetWrapper}
 					/>
 				</Grid>
 			</div>
@@ -134,14 +128,14 @@ class Dashboard extends PureComponent {
 }
 
 const TitleBar = ( {
-	title = '',
+	title,
 	editMode,
 	onEdit,
 	onSave,
 	onCancel,
 	handleTitleChange,
 	isNew
-} = {} ) => (
+} ) => (
 	<div className="titleBar clearfix">
 		{ editMode &&
 			<form onSubmit={onSave}>
@@ -161,7 +155,7 @@ const TitleBar = ( {
 	</div>
 )
 TitleBar.propTypes = {
-	title: PropTypes.string,
+	title: PropTypes.string.isRequired,
 	editMode: PropTypes.bool.isRequired,
 	onEdit: PropTypes.func.isRequired,
 	onSave: PropTypes.func.isRequired,
