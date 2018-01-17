@@ -23,6 +23,7 @@ RUN apt-get update && \
 RUN mkdir -p /var/log/scot
 RUN mkdir -p /opt/scot
 RUN mkdir -p /opt/scot/public/cached_images
+RUN mkdir -p /tmp/foo
 
 #copy config files
 COPY install/src/scot/ /opt/scot/etc/  
@@ -44,4 +45,3 @@ EXPOSE 3000
 
 USER scot
 CMD /usr/local/bin/hypnotoad -f /opt/scot/script/Scot
-#CMD /bin/bash
