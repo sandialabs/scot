@@ -6,6 +6,31 @@ unset ELASTICUID
 unset ELASTICGID
 unset HOSTNAME
 
+scot_log_dir="/var/log/scot"
+scot_backup="/opt/scotbackup"
+mongodb_dir="/var/lib/mongodb"
+
+#check if scot_log_dir exists
+if [  -d $scot_log_dir ]; then
+    echo "$scot_log_dir exists!"
+else
+    sudo mkdir -p $scot_log_dir
+fi
+
+#check if scot_backup exists
+if [  -d $scot_backup ]; then
+    echo "$scot_backup exists!"
+else
+    sudo mkdir -p $scot_backup
+fi
+#check if mongodb_dir exists
+if [  -d $mongodb_dir ]; then
+    echo "$mongodb_dir exists!"
+else
+    sudo mkdir -p $mongodb_dir
+fi
+
+#set permissions
 sudo chmod -R 0755 /opt/scotbackup/
 sudo chmod -R 0777 /var/log/scot/
 sudo chmod -R 0755 /var/lib/mongodb/
@@ -35,7 +60,10 @@ function add_users {
 
 }
 
+#set ownership 
 sudo chown -R mongodb:mongodb /var/lib/mongodb/ /var/log/mongodb/
+sudo chown -R scot:scot /var/log/scot/ /opt/scot/
+
 
 #add users
 add_users
@@ -47,8 +75,7 @@ export ELASTICGID=`id elasticsearch -g`
 export MONGODBUID=`id mongodb -u`
 export MONGODBGID=`id mongodb -g`
 
-echo "MONGOUID: $MONGODBUID"
-echo "MONGOGID: $MONGODBGID"
 
+#build open-source scot
 sudo -E docker-compose up --build
 
