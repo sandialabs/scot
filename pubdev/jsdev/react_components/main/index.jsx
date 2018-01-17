@@ -198,7 +198,7 @@ var App = React.createClass({
     loginToggle: function( csrf, loggedin ) {
         //Only open modal once - if other requests come in to open the modal just bypass since the login page is active
         if ( !this.state.login && loggedin != true ) {
-            let origurl = this.props.location.pathname;;
+            let origurl = this.props.location.pathname;
             this.props.history.push( '/' );
             this.setState({login: true, origurl: origurl}); 
         } else if ( this.state.login && loggedin == true ) {

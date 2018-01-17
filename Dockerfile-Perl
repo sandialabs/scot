@@ -1,7 +1,8 @@
 FROM ubuntu:16.04
 
-ENV no_proxy="elastic,mongodb,scot,activemq"
-ENV NO_PROXY="elastic,mongodb,scot,activemq"
+ENV no_proxy="elastic,mongodb,scot,activemq,apache"
+ENV NO_PROXY="elastic,mongodb,scot,activemq,apache"
+
 
 RUN apt-get update && \
     apt-get -qy upgrade && \
@@ -55,5 +56,15 @@ RUN cpanm --force Array::Split Data::Dumper Data::Dumper::HTML Data::Dumper::Con
     Mojolicious::Plugin::TagHelpers XML::Smart Config::Auto Data::GUID File::LibMagic List::Uniq Domain::PublicSuffix Mozilla::PublicSuffix \
     Crypt::PBKDF2 Config::Crontab Test::JSON Math::Int128 GeoIP2  Search::Elasticsearch Term::ANSIColor Courriel Statistics::Descriptive Net::SSH::Perl Net::SFTP Lingua::EN::StopWords
 
+#Mongo stuff
+
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
+RUN echo "deb http://repo.mongodb.org/apt/ubuntu $(cat /etc/lsb-release | grep DISTRIB_CODENAME | cut -d= -f2)/mongodb-org/3.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.2.list
+
+RUN apt-get update && \
+    apt-get --allow-unauthenticated install -qy mongodb-org
+
+
 COPY lib/ /opt/scot/lib/
 COPY bin/ /opt/scot/bin/
+
