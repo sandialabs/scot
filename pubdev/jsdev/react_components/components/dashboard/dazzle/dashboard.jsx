@@ -5,6 +5,7 @@ import Dazzle, { addWidget } from 'react-dazzle';
 import { Grid, Button } from 'react-bootstrap';
 
 import WidgetWrapper from './widgetWrapper';
+import WidgetPicker from './widgetPicker';
 
 class Dashboard extends PureComponent {
 	constructor( props ) {
@@ -14,6 +15,8 @@ class Dashboard extends PureComponent {
 			editMode: props.isNew,
 			layout: props.layout,
 			title: props.title,
+			widgetPicker: false,
+			newWidgetOptions: {},
 		};
 
 		this.onAdd = this.onAdd.bind(this);
@@ -22,6 +25,8 @@ class Dashboard extends PureComponent {
 		this.reset = this.reset.bind(this);
 		this.saveDashboard = this.saveDashboard.bind(this);
 		this.toggleEdit = this.toggleEdit.bind(this);
+		this.togglePicker = this.togglePicker.bind(this);
+		this.selectWidget = this.selectWidget.bind(this);
 	}
 
 	static propTypes = {
@@ -57,9 +62,13 @@ class Dashboard extends PureComponent {
 	}
 
 	onAdd( layout, rowIndex, columnIndex ) {
-		this.updateLayout(
-			addWidget( layout, rowIndex, columnIndex, 'Status' )
-		);
+		this.setState( {
+			widgetPicker: true,
+			newWidgetOptions: {
+				row: rowIndex,
+				col: columnIndex,
+			},
+		} );
 	}
 
 	updateLayout( layout ) {
@@ -96,12 +105,34 @@ class Dashboard extends PureComponent {
 			layout: this.props.layout,
 			title: this.props.title,
 			editMode: false,
+			widgetPicker: false,
+			newWidgetOptions: {},
 		} );
+	}
+
+	togglePicker() {
+		this.setState({
+			widgetPicker: !this.state.widgetPicker,
+		});
+	}
+
+	selectWidget( widget ) {
+		let { row, col } = this.state.newWidgetOptions;
+		this.updateLayout(
+			addWidget( this.state.layout, row, col, widget )
+		);
+		this.togglePicker();
 	}
 
 	render() {
 		return (
 			<div className="dashboard">
+				<WidgetPicker
+					widgets={this.props.widgets}
+					isOpen={this.state.widgetPicker}
+					onClose={this.togglePicker}
+					onSelect={this.selectWidget}
+				/>
 				<TitleBar
 					title={this.state.title}
 					editMode={this.state.editMode}

@@ -17,10 +17,12 @@ const Widgets = {
 	Status: {
 		type: Status,
 		title: 'Scot Status',
+		description: 'Displays status of various SCOT components',
 	},
 	Gamification: {
 		type: Gamification,
 		title: 'Leaders',
+		description: 'Rotating leaderboard of various tasks throughout SCOT',
 	},
 };
 
