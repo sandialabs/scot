@@ -82,14 +82,14 @@ The following scripts are currently supported:
 2. /opt/scot/bin/restore_remote_scotdb.pl
 3. restore.pl
 
-To execute one of the above scripts, simply connect to the scot container via: 
+To execute one of the above scripts, simply connect to the scot container via:: 
 
 
     sudo docker exec -i -t -u 0 scot /bin/bash
 
 cd to /opt/scot/bin/
 
-and run
+and run::
 
 
     ./scriptexample.pl
