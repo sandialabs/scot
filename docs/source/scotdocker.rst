@@ -84,17 +84,16 @@ The following scripts are currently supported:
 
 To execute one of the above scripts, simply connect to the scot container via: 
 
-```
-sudo docker exec -i -t -u 0 scot /bin/bash
-```
+
+    sudo docker exec -i -t -u 0 scot /bin/bash
 
 cd to /opt/scot/bin/
 
 and run
 
-```
-./scriptexample.pl
-```
+
+    ./scriptexample.pl
+   
 
 
 
