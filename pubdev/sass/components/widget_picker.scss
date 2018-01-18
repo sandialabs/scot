@@ -1,0 +1,29 @@
+// Styles for Dashboard Widget Picker
+
+.WidgetPicker {
+	.picker-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr 1fr;
+		grid-gap: 15px;
+
+		.picker-item {
+			cursor: pointer;
+			padding: 10px;
+			border: 1px solid rgba(0, 0, 0, 0.5);
+
+			&:hover {
+				background: #EEEEEE;
+			}
+
+			h3 {
+				font-size: 1.5em;
+				text-align: center;
+				margin-top: 0;
+			}
+
+			p {
+				margin: 0;
+			}
+		}
+	}
+}
