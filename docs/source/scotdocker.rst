@@ -76,6 +76,28 @@ The docker-compose.yml simply defines the port mappings, data volumes, build con
 
 The docker-scripts directory contains scripts for backing up the data contained in MongoDB container and will eventually house other scripts that are similar.
 
+The following scripts are currently supported: 
+
+1. /opt/scot/bin/restore.pl
+2. /opt/scot/bin/restore_remote_scotdb.pl
+3. restore.pl
+
+To execute one of the above scripts, simply connect to the scot container via: 
+
+```
+sudo docker exec -i -t -u 0 scot /bin/bash
+```
+
+cd to /opt/scot/bin/
+
+and run
+
+```
+./scriptexample.pl
+```
+
+
+
 **docker-configs**
 
 The docker-configs directory contains modified config files, perl modules, scripts, etc. that allow SCOT to function properly in a containerized environment. Most changes are references to localhost in the standard SCOT codebase where we modify those addresses to reference the ip addresses on the scot_docker subnet. 
