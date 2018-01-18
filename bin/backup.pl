@@ -53,40 +53,40 @@ unless (-d $dumpdir ) {
 }
 
 
-# system("rm -rf $dumpdir/mongo");
-# 
-# my $cmd = "/usr/bin/mongodump ";
-# 
-# if ( defined $env->auth->{user} ) {
-#     if ( $env->auth->{user} and $env->auth->{pass} ) {
-#         $cmd .= "-u $env->user -p $env->pass ";
-#     }
-# }
-# 
-# if ( $env->dbname ) {
-#     $cmd .= "--db ". $env->dbname." ";
-# }
-# else {
-#     $cmd .= "--db scot-prod ";
-# }
-# 
-# # $cmd .= "--oplog -o $dumpdir";
-# $cmd .= "-o $dumpdir";
-# 
-# print "Executing: $cmd\n";
-# 
-# system($cmd);
-# 
-# #system("rm -f $pidfile");
-# #exit 0;
-# 
+system("rm -rf $dumpdir/mongo");
+
+my $cmd = "/usr/bin/mongodump ";
+
+if ( defined $env->auth->{user} ) {
+    if ( $env->auth->{user} and $env->auth->{pass} ) {
+        $cmd .= "-u $env->user -p $env->pass ";
+    }
+}
+
+if ( $env->dbname ) {
+    $cmd .= "--db ". $env->dbname." ";
+}
+else {
+    $cmd .= "--db scot-prod ";
+}
+
+# $cmd .= "--oplog -o $dumpdir";
+$cmd .= "-o $dumpdir";
+
+print "Executing: $cmd\n";
+
+system($cmd);
+
+#system("rm -f $pidfile");
+#exit 0;
+
  my $tarloc = "/tmp";
-# if ( $env->tarloc ) {
-#     unless ( -d $env->tarloc ) {
-#         system ("mkdir -p $tarloc" );
-#     }
-#     $tarloc = $env->tarloc;
-# }
+if ( $env->tarloc ) {
+    unless ( -d $env->tarloc ) {
+        system ("mkdir -p $tarloc" );
+    }
+    $tarloc = $env->tarloc;
+}
 
 # now backup elasticsearch
 
