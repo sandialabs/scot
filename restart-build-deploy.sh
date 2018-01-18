@@ -33,7 +33,6 @@ fi
 #set permissions
 sudo chmod -R 0755 /opt/scotbackup/
 sudo chmod -R 0777 /var/log/scot/
-sudo chmod -R 0755 /var/lib/mongodb/
 
 
 function add_users {
