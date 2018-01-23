@@ -9,22 +9,9 @@ import Dashboard from '../components/dashboard/dazzle/dashboard';
 import Status from '../components/dashboard/status';
 import Gamification from '../components/dashboard/gamification';
 let Online = require( '../components/dashboard/online.jsx' );
-import { ReportDashboard } from '../components/dashboard/report';
 
-const dashboardReports = ReportDashboard();
+import { Widgets } from '../components/dashboard/dazzle/widgets';
 
-const Widgets = {
-	Status: {
-		type: Status,
-		title: 'Scot Status',
-		description: 'Displays status of various SCOT components',
-	},
-	Gamification: {
-		type: Gamification,
-		title: 'Leaders',
-		description: 'Rotating leaderboard of various tasks throughout SCOT',
-	},
-};
 
 const NEWTABKEY = 'new';
 
@@ -49,7 +36,7 @@ class HomeDashboard extends PureComponent {
 	defaultTab() {
 		return {
 			title: 'Default',
-			layout: dashboardReports,
+			layout: <h1>Default</h1>,
 			mountOnEnter: true,
 			unmountOnExit: false,
 		}
