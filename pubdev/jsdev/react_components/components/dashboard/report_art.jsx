@@ -371,3 +371,4 @@ class ReportArt extends PureComponent {
 }
 
 export default ReportArt;
+export const Description = "Chart of average alert, event, and incident response time";

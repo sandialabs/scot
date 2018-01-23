@@ -325,3 +325,4 @@ class ReportCreated extends Component {
 }
 
 export default ReportCreated;
+export const Description = "Chart of newly created items";

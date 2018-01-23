@@ -487,3 +487,4 @@ class ReportAlertpower extends PureComponent {
 }
 
 export default ReportAlertpower;
+export const Description = "Chart of alerts in terms of how frequently they're promoted or become incidents";
