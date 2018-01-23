@@ -186,3 +186,4 @@ class ReportHeatmap extends PureComponent {
 }
 
 export default ReportHeatmap;
+export const Description = "Heatmap of incoming alerts, event, and incidents";
