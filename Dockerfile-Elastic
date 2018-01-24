@@ -40,7 +40,8 @@ RUN mkdir -p /var/lib/elasticsearch/mapping
 RUN chown -R elasticsearch:elasticsearch /var/lib/elasticsearch/mapping
 
 #RUN groupadd -g ${ELASTICGID} elasticsearch && \
-#    useradd -r -u ${ELASTICUID} -g elasticsearch elasticsearch
+
+RUN usermod -u ${ELASTICUID} -g elasticsearch elasticsearch
 
 USER elasticsearch
 
