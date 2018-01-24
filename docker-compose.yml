@@ -4,6 +4,11 @@ services:
     build:
       dockerfile: Dockerfile-Apache
       context: ./
+      args:
+        http_proxy: ${http_proxy}
+        https_proxy: ${https_proxy}
+        HTTP_PROXY: ${HTTP_PROXY}
+        HTTPS_PROXY: ${HTTPS_PROXY}
     volumes: 
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
@@ -20,9 +25,12 @@ services:
      - "/var/log/activemq:/var/log/activemq/log/"
     build:
       dockerfile: Dockerfile-Activemq
-      context: ./
+      context: ./ 
       args:
-       proxy: " " 
+        http_proxy: ${http_proxy}
+        https_proxy: ${https_proxy}
+        HTTP_PROXY: ${HTTP_PROXY}
+        HTTPS_PROXY: ${HTTPS_PROXY}
     networks:
      - scot-docker-net
     container_name: activemq
@@ -34,6 +42,10 @@ services:
       args:
         MONGODBUID: ${MONGODBUID}
         MONGODBGID: ${MONGODBGID}
+        http_proxy: ${http_proxy}
+        https_proxy: ${https_proxy}
+        HTTP_PROXY: ${HTTP_PROXY}
+        HTTPS_PROXY: ${HTTPS_PROXY}
     volumes:
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
@@ -51,7 +63,11 @@ services:
      context: ./
      args: 
        ELASTICUID: ${ELASTICUID}
-       ELASTICGID: ${ELASTICGID}
+       ELASTICGID: ${ELASTICGID}i
+       http_proxy: ${http_proxy}
+       https_proxy: ${https_proxy}
+       HTTP_PROXY: ${HTTP_PROXY}
+       HTTPS_PROXY: ${HTTPS_PROXY}
    volumes:
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
@@ -92,6 +108,11 @@ services:
     build: 
       dockerfile: Dockerfile-Perl
       context: ./
+      args:
+        http_proxy: ${http_proxy}
+        https_proxy: ${https_proxy}
+        HTTP_PROXY: ${HTTP_PROXY}
+        HTTPS_PROXY: ${HTTPS_PROXY}
     image: scot_perl
   
   flair:

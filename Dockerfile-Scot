@@ -6,10 +6,6 @@ ENV SCOTUID=${SCOTUID}
 ENV SCOTGID=${SCOTGID}
 
 ENV DEBIAN_FRONTEND="noninteractive" \
-    http_proxy=" " \
-    https_proxy=" " \
-    HTTP_PROXY=" " \
-    HTTPS_PROXY=" " \
     NO_PROXY="elastic,mongodb,activemq"
 
 RUN apt-get update && \
