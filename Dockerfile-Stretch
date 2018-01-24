@@ -13,6 +13,5 @@ COPY docker-configs/stretch/stretch.cfg.pl /opt/scot/etc/
 RUN groupadd -g 801 scot && \
     useradd -r -u 801 -g scot scot
 
-
 USER scot
 CMD ["/usr/bin/perl", "/opt/scot/bin/stretch.pl"]
