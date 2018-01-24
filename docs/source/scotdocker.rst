@@ -10,7 +10,7 @@ Docker-SCOT containers
 ----------------------
 Docker-SCOT is comprised of the following services: 
 
-* **SCOT API**
+* **SCOT** - SCOT Application and associated API
 * **MongoDB** - Storage for SCOT
 * **ActiveMQ** - Message broker for servies interested in SCOT data
 * **Apache** - Proxy for traffic between some services
@@ -21,9 +21,6 @@ Docker-SCOT is comprised of the following services:
 * **Mail** - Used as a reslient mechanism for importing data to SCOT (not enabled by default - See configuration section)
 * **Reflair** Similar to flair
 
-Docker-SCOT also includes the following ephemeral containers on demand:
-
-* **Docker-Utilities** - A container that can be built and run on demand for executing scripts against Mongo, Scot, Elastic, etc. More on this, in the 'Configuration - Docker-scripts' section. 
 
 Installation
 ------------
@@ -35,7 +32,12 @@ Next, Docker-SCOT relies on docker-compose to build, run and manage services. Do
 Getting Started
 ---------------
 
-Once you have Docker engine and Docker-Compose installed, cd into the root of the SCOT software directory and run::
+There are two methods for getting started with SCOT:
+
+1. Easy install - run the SCOT/restart-build-deploy.sh script (will be promopted to enter sudo credentials)
+2. Custom install - Follow below steps. 
+
+Run::
 
     sudo docker-compose up --build
 
@@ -72,15 +74,28 @@ The docker-compose.yml simply defines the port mappings, data volumes, build con
 
 **docker-scripts**
 
-The docker-scripts directory contains scripts for backing up the data contained in MongoDB container and will eventually house other scripts that are similar. These scripts are packaged into the Docker-Utilities container and are run on a manual basis. To run a particular script, simply:: 
+The docker-scripts directory contains scripts for backing up the data contained in MongoDB container and will eventually house other scripts that are similar.
 
-    sudo docker build --build-arg SCRIPT=name_of_script_that_exists_in_docker_scripts_directory  -t docker-util -f Dockerfile-Utilities .
+The following scripts are currently supported: 
 
-And then run:: 
+1. /opt/scot/bin/restore.pl
+2. /opt/scot/bin/restore_remote_scotdb.pl
+3. restore.pl
 
-    sudo docker run -it --rm --name docker-util -e SCRIPT=name_of_script_that_exists_in_docker_scripts_directory --net scot_scot-docker-net --ip 172.18.0.11  docker-util
+To execute one of the above scripts, simply connect to the scot container via:: 
 
-This will execute the script and close the container once it completes. 
+
+    sudo docker exec -i -t -u 0 scot /bin/bash
+
+cd to /opt/scot/bin/
+
+and run::
+
+
+    ./scriptexample.pl
+   
+
+
 
 **docker-configs**
 
