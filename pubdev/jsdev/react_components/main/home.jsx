@@ -60,8 +60,7 @@ class HomeDashboard extends PureComponent {
 				title="Default"
 				layout={defaultLayout}
 				errorToggle={this.props.errorToggle}
-			/>,
-			mountOnEnter: true,
+			/>
 		}
 	}
 
