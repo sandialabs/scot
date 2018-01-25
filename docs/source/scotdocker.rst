@@ -1,4 +1,4 @@
-Docker-SCOT
+Docker-SCOT v 0.01
 ***************
 
 **Overview** 
