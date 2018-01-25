@@ -103,6 +103,21 @@ and run::
     ./scriptexample.pl
    
 
+**Restoring a database**
+
+If you are upgrading to the docker version of SCOT and need to restore your database (make sure to backup your database prior to upgrading) or you are already using the docker version of SCOT and want to backup your database simply run:: 
+
+    sudo docker exec -i -t -u 0 scot /bin/bash
+
+cd to /opt/scot/bin and run::
+    ./backup.pl
+    
+To restore, once you have finished the backup::
+
+    sudo docker exec -i -t -u 0 scot /bin/bash
+
+cd to /opt/scot/bin and run::
+    ./restore.pl
 
 
 **docker-configs**
