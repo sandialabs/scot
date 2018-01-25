@@ -22,20 +22,20 @@ Docker-SCOT is comprised of the following services:
 * **Reflair** Similar to flair
 
 
-Installation
+Docker Installation
 ------------
 
 To get started, refer to the Docker Community Edition documentation for installing the Docker engine on your respective OS: `https://docs.docker.com/engine/installation/ <https://docs.docker.com/engine/installation/>`_
 
 Next, Docker-SCOT relies on docker-compose to build, run and manage services. Docker-compose does not ship with Docker engine, so you will need to refer to the following documentation for installation of Docker-Compose: https://docs.docker.com/compose/install/
 
-Getting Started
+SCOT Installation
 ---------------
 
 There are two methods for getting started with SCOT:
 
 1. Easy install - run the SCOT/restart-build-deploy.sh script (will be promopted to enter sudo credentials)
-2. Custom install - Follow below steps. 
+2. Custom install - Follow below steps: 
 
 Run::
 
@@ -43,6 +43,9 @@ Run::
 
 This above command will manage the building, running, name-spacing, networking, etc. of the Docker-SCOT services as defined in the docker-compose.yml file. 
 
+
+Managing the containers
+---------------
 To stop Docker-SCOT::
 
     sudo docker-compose stop
