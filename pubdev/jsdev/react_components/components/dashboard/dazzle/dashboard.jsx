@@ -12,6 +12,7 @@ class Dashboard extends PureComponent {
 		super( props );
 
 		this.state = {
+			editable: props.saveDashboard != null,
 			editMode: props.isNew,
 			layout: props.layout,
 			title: props.title,
@@ -32,7 +33,7 @@ class Dashboard extends PureComponent {
 	static propTypes = {
 		widgets: PropTypes.object.isRequired,
 		title: PropTypes.string,
-		saveDashboard: PropTypes.func.isRequired,
+		saveDashboard: PropTypes.func,
 		layout: PropTypes.object,
 		isNew: PropTypes.bool,
 		errorToggle: PropTypes.func,
@@ -129,12 +130,14 @@ class Dashboard extends PureComponent {
 			<div className="dashboard">
 				<WidgetPicker
 					widgets={this.props.widgets}
+					layout={this.state.layout}
 					isOpen={this.state.widgetPicker}
 					onClose={this.togglePicker}
 					onSelect={this.selectWidget}
 				/>
 				<TitleBar
 					title={this.state.title}
+					editable={this.state.editable}
 					editMode={this.state.editMode}
 					onEdit={this.toggleEdit}
 					onSave={this.saveDashboard}
@@ -165,26 +168,32 @@ const TitleBar = ( {
 	onSave,
 	onCancel,
 	handleTitleChange,
-	isNew
-} ) => (
-	<div className="titleBar clearfix">
-		{ editMode &&
-			<form onSubmit={onSave}>
-				<input type="text" className="title" value={title} placeholder="Dashboard Title" onChange={handleTitleChange} />
-			</form>
-		}
-		{ !editMode ? (
-			<div className="edit">
-				<Button bsSize="xsmall" onClick={onEdit}><i className="fa fa-edit" /></Button>
-			</div>
-		) : (
-			<div className="edit">
-				<Button bsStyle="primary" bsSize="small" onClick={onSave}>Save</Button>
-				<Button bsStyle="warning" bsSize="small" disabled={isNew} onClick={onCancel}>Cancel</Button>
-			</div>
-		) }
-	</div>
-)
+	isNew,
+	editable
+} ) => {
+	if ( !editable ) {
+		return null;
+	}
+	return (
+		<div className="titleBar clearfix">
+			{ editMode &&
+				<form onSubmit={onSave}>
+					<input type="text" className="title" value={title} placeholder="Dashboard Title" onChange={handleTitleChange} />
+				</form>
+			}
+			{ !editMode ? (
+				<div className="edit">
+					<Button bsSize="xsmall" onClick={onEdit}><i className="fa fa-edit" /></Button>
+				</div>
+			) : (
+				<div className="edit">
+					<Button bsStyle="primary" bsSize="small" onClick={onSave}>Save</Button>
+					<Button bsStyle="warning" bsSize="small" disabled={isNew} onClick={onCancel}>Cancel</Button>
+				</div>
+			) }
+		</div>
+	);
+}
 TitleBar.propTypes = {
 	title: PropTypes.string.isRequired,
 	editMode: PropTypes.bool.isRequired,
@@ -192,6 +201,7 @@ TitleBar.propTypes = {
 	onSave: PropTypes.func.isRequired,
 	onCancel: PropTypes.func.isRequired,
 	handleTitleChange: PropTypes.func.isRequired,
+	editable: PropTypes.bool.isRequired,
 };
 
 export default Dashboard;

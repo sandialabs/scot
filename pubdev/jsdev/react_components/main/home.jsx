@@ -34,11 +34,34 @@ class HomeDashboard extends PureComponent {
 	}
 
 	defaultTab() {
+		const defaultLayout = {
+			rows: [{
+				columns: [
+					{
+						className: 'col-sm-4',
+						widgets: [{key: 'heatmap'}],
+					},
+					{
+						className: 'col-sm-4',
+						widgets: [{key: 'art'}],
+					},
+					{
+						className: 'col-sm-4',
+						widgets: [{key: 'created'}],
+					},
+				],
+			}],
+		};
+
 		return {
 			title: 'Default',
-			layout: <h1>Default</h1>,
+			layout: <Dashboard
+				widgets={Widgets}
+				title="Default"
+				layout={defaultLayout}
+				errorToggle={this.props.errorToggle}
+			/>,
 			mountOnEnter: true,
-			unmountOnExit: false,
 		}
 	}
 
