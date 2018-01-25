@@ -118,5 +118,13 @@
                 }, # end enrichment module enrichers
             }, # end ennrichmenst config stanza
         }, # end enrichments stanza
+        {
+            attr    => 'regex',
+            class   => 'Scot::Extractor::Regex',
+            config  => {
+                entity_regexes  => [
+                ],
+            },
+        },  
     ],
 );

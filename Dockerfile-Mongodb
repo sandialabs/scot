@@ -32,8 +32,11 @@ RUN mkdir -p /var/lib/mongodb/
 RUN chmod 0755 /run.sh
 RUN chmod 0755 /set_mongodb_config.sh
 
+
 #set mongodb UID to system created
-RUN usermod -u ${MONGODBUID} mongodb  
+RUN usermod -u ${MONGODBUID} mongodb 
+
+#RUN usermod -g ${MONGODBGID} mongodb
 
 #Set permissions for mongodb user
 

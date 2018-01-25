@@ -33,7 +33,6 @@ fi
 #set permissions
 sudo chmod -R 0755 /opt/scotbackup/
 sudo chmod -R 0777 /var/log/scot/
-sudo chmod -R 0755 /var/lib/mongodb/
 
 
 function add_users {
@@ -41,6 +40,7 @@ function add_users {
     if grep --quiet -c scot: /etc/passwd; then
         echo "- scot user exists"
     else
+       echo "SCOT user does not exist. Creating user"
        sudo useradd -c "SCOT User"  -M -s /bin/bash scot
     fi
 
@@ -48,6 +48,7 @@ function add_users {
     if grep --quiet -c elasticsearch: /etc/passwd; then
         echo "- elasticsearch user exists"
     else
+        echo "Elasticsearch user does not exist. Creating user"
         sudo useradd -c "elasticsearch User"  -M -s /bin/bash elasticsearch
     fi
     
@@ -55,7 +56,9 @@ function add_users {
     if grep --quiet -c mongodb: /etc/passwd; then
         echo "- mongodb user exists"
     else
-        sudo useradd -c "mongodb User"  -M -s /bin/bash mongodb
+        
+       echo "mongodb user does not exist. Creating user"
+       sudo useradd -c "mongodb User"  -M -s /bin/bash mongodb
     fi
 
 }
@@ -63,7 +66,7 @@ function add_users {
 #set ownership 
 sudo chown -R mongodb:mongodb /var/lib/mongodb/ /var/log/mongodb/
 sudo chown -R scot:scot /var/log/scot/ /opt/scot/
-
+sudo chown -R elasticsearch:elasticsearch /var/lib/elasticsearch/ /var/log/elasticsearch/
 
 #add users
 add_users
