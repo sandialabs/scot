@@ -15,6 +15,7 @@ export default class ThingList extends PureComponent {
 	static propTypes = {
 		thingType: PropTypes.string.isRequired,
 		queryOptions: PropTypes.object,
+		processData: PropTypes.func,
 		errorToggle: PropTypes.func,
 	}
 
@@ -25,20 +26,38 @@ export default class ThingList extends PureComponent {
 			sort: {
 				id: -1,
 			},
+			columns: [],
+		},
+		processData: ( data ) => {
+			return data.map( thing => {
+				return {
+					id: thing.id,
+					subject: thing.subject,
+				};
+			} )
 		},
 	}
 
 	fetchData() {
+		let data = {...this.props.queryOptions}
+		if ( data.sort ) {
+			data.sort = JSON.stringify(data.sort);
+		}
+
 		$.ajax( {
 			type: 'get',
 			url: SCOT_API + this.props.thingType,
-		} ).then( ( data ) => {
-			this.setState( {
-				data: data.records,
-			} );
-		} ).catch( ( error ) => {
-			this.props.errorToggle( "Failed to fetch data: "+ error );
-		} );
+			data: data,
+		} ).then(
+			( data ) => {
+				this.setState( {
+					data: this.props.processData( data.records ),
+				} );
+			},
+			( error ) => {
+				this.props.errorToggle( "Failed to fetch data: "+ error );
+			}
+		);
 	}
 
 	componentDidMount() {
@@ -47,7 +66,7 @@ export default class ThingList extends PureComponent {
 
 	render() {
 		return (
-			<pre></pre>
+			<pre>{JSON.stringify(this.state.data, 2)}</pre>
 		)
 	}
 }
