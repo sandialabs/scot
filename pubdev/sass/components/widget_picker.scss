@@ -5,6 +5,11 @@
 		display: grid;
 		grid-template-columns: 1fr 1fr 1fr;
 		grid-gap: 15px;
+		
+		h2 {
+			text-align: center;
+			grid-column: span 3;
+		}
 
 		.picker-item {
 			cursor: pointer;
