@@ -9,6 +9,8 @@ unset HOSTNAME
 scot_log_dir="/var/log/scot"
 scot_backup="/opt/scotbackup"
 mongodb_dir="/var/lib/mongodb"
+elastic_dir="/var/lib/elasticsearch"
+
 
 #check if scot_log_dir exists
 if [  -d $scot_log_dir ]; then
@@ -29,11 +31,20 @@ if [  -d $mongodb_dir ]; then
 else
     sudo mkdir -p $mongodb_dir
 fi
+#check if elastic_dir exists
+if [ -d $elastic_dir ]; then
+    echo "$elastic_dir exists!"
+else
+    sudo mkdir -p $elastic_dir
+fi
+
+
 
 #set permissions
 sudo chmod -R 0755 /opt/scotbackup/
 sudo chmod -R 0777 /var/log/scot/
-
+chmod -R g+rwx /var/lib/elasticsearch/ 
+chgrp 1000 /var/lib/elasticsearch/
 
 function add_users {
     echo "- checking for existing scot user"
@@ -66,7 +77,6 @@ function add_users {
 #set ownership 
 sudo chown -R mongodb:mongodb /var/lib/mongodb/ /var/log/mongodb/
 sudo chown -R scot:scot /var/log/scot/ /opt/scot/
-sudo chown -R elasticsearch:elasticsearch /var/lib/elasticsearch/ /var/log/elasticsearch/
 
 #add users
 add_users

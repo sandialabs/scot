@@ -34,6 +34,11 @@ RUN mkdir -p /etc/apache2/ssl/ && \
    
 COPY docker-configs/apache/scot-revproxy-Ubuntu.conf /etc/apache2/sites-enabled
 
+#hopefully avoid 'PID already running'
+RUN rm -f /var/run/apache2/apache2.pid
+
+
+
 EXPOSE 443 80
     
 CMD apachectl -D FOREGROUND
