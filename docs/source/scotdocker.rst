@@ -135,7 +135,7 @@ Docker-SCOT's Apache instance comes configured with a self-signed SSL cert baked
 
     ServerName apache
     
-    with::
+with::
 
     Servername nameofyourhost
     
