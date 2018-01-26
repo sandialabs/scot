@@ -63,7 +63,6 @@ services:
      context: ./
      args: 
        ELASTICUID: ${ELASTICUID}
-       ELASTICGID: ${ELASTICGID}i
        http_proxy: ${http_proxy}
        https_proxy: ${https_proxy}
        HTTP_PROXY: ${HTTP_PROXY}
@@ -73,7 +72,6 @@ services:
      - "/etc/localtime:/etc/localtime:ro"
      - "/opt/scotbackup/elastic:/opt/scotbackup/elastic/"
      - "/var/lib/elasticsearch:/var/lib/elasticsearch/"
-     - "/home/bemonta/workspace:/var/lib/elasticsearch/maping/"
    networks:
     - scot-docker-net
    container_name: elastic
@@ -185,22 +183,6 @@ services:
 #    - mongodb
 #    - scot
 
-#  sshcontainer:
-#    build:
-#      dockerfile: Dockerfile-SSH
-#      context: ./
-#    volumes:
-#     - "/var/log/scot:/var/log/scot/"
-#     - "/var/lib/elasticsearch:/var/lib/elasticsearch/"
-#     - "/var/lib/mongodb:/var/lib/mongodb/"
-#     - "/opt/scotbackup:/opt/scotbackup/"
-#     - "/opt/scot/public/cached_images:/opt/scot/public/cached_images/"
-#    depends_on:
-#     - mongodb
-#     - elastic
-#    networks:
-#     - scot-docker-net
-#    container_name: sshcontainer
 networks:
   scot-docker-net:
     driver: bridge
