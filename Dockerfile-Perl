@@ -60,7 +60,7 @@ RUN apt-get update && \
 
 #Install CPAN modules
 
-RUN cpanm --force IO::AIO AnyEvent::IO Array::Split Data::Dumper Data::Dumper::HTML Data::Dumper::Concise Data::Clean@0.48 Data::Clean::FromJSON Daemon::Control \
+RUN cpanm --force IO::AIO AnyEvent::AIO Array::Split Data::Dumper Data::Dumper::HTML Data::Dumper::Concise Data::Clean@0.48 Data::Clean::FromJSON Daemon::Control \
     Net::LDAP Net::SMTP::TLS Net::Stomp Net::STOMP::Client Net::IDN::Encode Net::Works::Network Net::IP Moose Moose::Role \ 
     Moose::Util::TypeConstraints MooseX::MetaDescription::Meta::Attribute MooseX::Singleton MooseX::Emulate::Class::Accessor::Fast MooseX::Types \ 
     MooseX::Types::Common MooseX::MethodAttributes Safe Readonly DateTime DateTime::Cron::Simple DateTime::Format::Strptime \ 
