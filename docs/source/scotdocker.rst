@@ -134,9 +134,11 @@ Docker-SCOT's Apache instance comes configured with a self-signed SSL cert baked
 2. In docker-configs/apache/ directory, there is a scot-revproxy-Ubuntu.conf. Replace the following line:: 
 
     ServerName apache
-with::
+    
+    with::
 
     Servername nameofyourhost
+    
 3. In the same file, replace the following lines::
     SSLCertificateFile /etc/apache2/ssl/scot.crt
     SSLCertificateKeyFile /etc/apache2/ssl/scot.key
