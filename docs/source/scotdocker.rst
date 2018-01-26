@@ -1,6 +1,11 @@
 Docker-SCOT v 0.01
 ***************
 
+**IMPORTANT**
+----------------------
+
+Backup your database via the backup.pl in the /opt/scot/bin/ directory before upgrading to the docker version of SCOT. If you are upgrading, you will also need to turn off all services that the older version of SCOT uses such as Apache, Activemq, Mongodb, ElasticSearch and SCOT (i.e. sudo service stop scot)
+
 **Overview** 
 
 Docker-SCOT is an experimental, multi-container based implementation of SCOT. Docker-Scot allows a new user to get up and running with SCOT much quicker, and easier than with the traditional SCOT install process. 
@@ -98,6 +103,21 @@ and run::
     ./scriptexample.pl
    
 
+**Restoring a database**
+
+If you are upgrading to the docker version of SCOT and need to restore your database (make sure to backup your database prior to upgrading) or you are already using the docker version of SCOT and want to backup your database simply run:: 
+
+    sudo docker exec -i -t -u 0 scot /bin/bash
+
+cd to /opt/scot/bin and run::
+    ./backup.pl
+    
+To restore, once you have finished the backup::
+
+    sudo docker exec -i -t -u 0 scot /bin/bash
+
+cd to /opt/scot/bin and run::
+    ./restore.pl
 
 
 **docker-configs**

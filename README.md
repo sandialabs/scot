@@ -28,3 +28,7 @@ Install It!
 
 To install the docker version of SCOT, please read the docs here: https://github.com/sandialabs/scot/blob/scot-docker/docs/source/scotdocker.rst
 
+IMPORTANT
+-----------
+
+### BACKUP YOUR DATA BEFORE UPGRADING TO THE DOCKER VERSION OF SCOT
