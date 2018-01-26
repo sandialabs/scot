@@ -140,6 +140,7 @@ with::
     Servername nameofyourhost
     
 3. In the same file, replace the following lines::
+
     SSLCertificateFile /etc/apache2/ssl/scot.crt
     SSLCertificateKeyFile /etc/apache2/ssl/scot.key
 
