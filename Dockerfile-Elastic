@@ -10,16 +10,10 @@ ENV https_proxy=${https_proxy}
 ENV http_proxy=${http_proxy}
 ENV HTTP_PROXY=${HTTP_PROXY}
 ENV HTTPS_PROXY=${HTTPS_PROXY}
-ENV no_proxy=${no_proxy}
-ENV NO_PROXY=${NO_PROXY}
+ENV no_proxy="elastic,mongodb"
 
-
-ARG ELASTICGID
 ARG ELASTICUID
 ENV ELASTICUID=${ELASTICUID}
-ENV ELASTICGID=${ELASTICGID}
-
-ENV no_proxy="elastic,mongodb"
 
 USER root
 
@@ -39,10 +33,6 @@ RUN chmod -R 0777 /opt/scotbackup/elastic
 RUN mkdir -p /var/lib/elasticsearch/mapping
 RUN chown -R elasticsearch:elasticsearch /var/lib/elasticsearch/mapping
 
-#RUN groupadd -g ${ELASTICGID} elasticsearch && \
-
-RUN usermod -u ${ELASTICUID} -g elasticsearch elasticsearch
-
 USER elasticsearch
 
 ADD docker-configs/elastic/elasticsearch.yml /usr/share/elasticsearch/config/
@@ -51,4 +41,4 @@ ADD docker-configs/elastic/elasticsearch.yml /usr/share/elasticsearch/config/
 EXPOSE 9200 9300
 
 CMD /opt/scot/elastic/run.sh
-
+#CMD /bin/bash
