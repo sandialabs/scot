@@ -43,8 +43,8 @@ fi
 #set permissions
 sudo chmod -R 0755 /opt/scotbackup/
 sudo chmod -R 0777 /var/log/scot/
-chmod -R g+rwx /var/lib/elasticsearch/ 
-chgrp 1000 /var/lib/elasticsearch/
+sudo chmod -R g+rwx /var/lib/elasticsearch/ 
+sudo chgrp 1000 /var/lib/elasticsearch/
 
 function add_users {
     echo "- checking for existing scot user"
