@@ -126,10 +126,31 @@ docker-configs/mail/alert.cfg.pl file.
 By default, LDAP configuration is not enabled in docker-configs/scot/scot.cfg.pl. To enable, simply uncomment the LDAP configuration lines in docker-configs/scot/scot.cfg.pl and edit the necessary information to begin checking LDAP for group membership / auth. 
 
 
+**Custom SSL**
 
+Docker-SCOT's Apache instance comes configured with a self-signed SSL cert baked into the container. However, if you wish to use your own ceritifcates, do the following: 
 
+1. Remove the SSL cert creation lines from the Dockerfile-Apache file. 
+2. In docker-configs/apache/ directory, there is a scot-revproxy-Ubuntu.conf. Replace the following line:: 
+    ServerName apache
 
+with::
 
+    Servername nameofyourhost
+3. In the same file, replace the following lines::
+    SSLCertificateFile /etc/apache2/ssl/scot.crt
+    SSLCertificateKeyFile /etc/apache2/ssl/scot.key
+
+with the path and name of the eventual location where you will map your certs to via a shared data volume. 
+4. Next, as mentioned above, you need to pump your certs from your host machine into the container via a data volume (you can also copy them into the container at build time via COPY directive). In order to map them in via a data volume, add a new data volume under the apache service in the docker-compose.yml file. Eg.::
+    volumes:
+     - "/etc/timezone:/etc/timezone:ro"
+     - "/etc/localtime:/etc/localtime:ro"
+     - "/var/log/apache2:/var/log/apache2/"
+     - "/path/to/your/cert:/path/to/file/location/you/defined/in/step/3
+     - "/path/to/your/key:/path/to/file/location/you/defined/in/step/3
+
+5. Re-run the restart-build-deploy.sh script and you should be set!
 
 
 
