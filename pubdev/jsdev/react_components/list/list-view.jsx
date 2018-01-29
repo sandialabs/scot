@@ -74,7 +74,7 @@ module.exports = React.createClass({
             viewstext: '', entriestext: '', scrollheight: scrollHeight, display: 'flex',
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight,  minwidth: '650px',
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
-            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, columnsClassName:columnsClassName, typeCapitalized: typeCapitalized, type: type, queryType: queryType, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: sort, filter: filter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true, initialAutoScrollToId: false, manualScrollHeight: null, showEntityCreateModal: false, };
+            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, columnsClassName:columnsClassName, typeCapitalized: typeCapitalized, type: type, queryType: queryType, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: sort, filter: filter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true, initialAutoScrollToId: false, manualScrollHeight: null, showEntityCreateModal: false, form: []};
     },
 
     componentWillMount: function() {
@@ -90,6 +90,17 @@ module.exports = React.createClass({
         
         //if the type is entry, convert the id and type to the actual type and id
         this.ConvertEntryIdToType( this.props.id );
+    
+        $.ajax({ 
+            type: 'get',
+            url: '/scot/api/v2/form/' + this.props.type,
+            success: function(data) {
+                this.setState({form: data.form});
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('Failed to get form structure', data);
+            }.bind(this)
+        });
     },
 
     componentDidMount: function(){
@@ -355,7 +366,7 @@ module.exports = React.createClass({
                                             </div>
                                         </div>
                                     <div onMouseDown={this.dragdiv} className='splitter' style={{display:'block', height:'5px', backgroundColor:'black', borderTop:'1px solid #AAA', borderBottom:'1px solid #AAA', cursor: 'row-resize', overflow:'hidden'}}/>
-                                    {this.state.showSelectedContainer ? <SelectedContainer id={this.state.id} type={this.state.queryType} alertPreSelectedId={this.state.alertPreSelectedId} taskid={this.state.entryid} handleFilter={this.handleFilter} errorToggle={this.props.errorToggle} history={this.props.history}/> : null}
+                                    {this.state.showSelectedContainer ? <SelectedContainer id={this.state.id} type={this.state.queryType} alertPreSelectedId={this.state.alertPreSelectedId} taskid={this.state.entryid} handleFilter={this.handleFilter} errorToggle={this.props.errorToggle} history={this.props.history} form={this.state.form}/> : null}
                                     {this.state.showEntityCreateModal ? <EntityCreateModal match={''} modalActive={this.state.showEntityCreateModal} ToggleCreateEntity={this.ToggleCreateEntity} errorToggle={this.props.errorToggle}/> : null }
                                 </div>
                             </div>

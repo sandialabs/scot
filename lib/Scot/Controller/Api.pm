@@ -7,6 +7,7 @@ use Data::UUID;
 use Mojo::JSON qw(decode_json encode_json);
 use Try::Tiny;
 use Net::IP;
+use Crypt::PBKDF2;
 use strict;
 use warnings;
 use base 'Mojolicious::Controller';
@@ -418,6 +419,7 @@ sub post_get_one_process {
     my $self    = shift;
     my $object  = shift;
     my $req     = shift;
+    my $env     = $self->env;
 
     # handle special get_one cases and convert object into hash
 
@@ -470,6 +472,19 @@ sub post_get_one_process {
         my $signaturecol = $self->env->mongo->collection('Signature');
         $href->{version} = $signaturecol->get_sigbodies($object);
     }
+
+    #if ( defined $env->forms->{$object->get_collection_name} ) {
+    #    my @elements = $env->forms->{$object->get_collecton_name};
+    #    my @form     = ();
+    #    foreach my $fhref (@elements) {
+    #        my $compute = $href->{computed};
+    #        if ( defined $compute ) {
+    #            $fhref->{value} = &compute($env, $object);
+    #        }
+    #        push @form, $fhref;
+    #    }
+    #    $href->{form} = \@form;
+    #}
 
     $self->filter_unrequested_columns($alertcol, $href, $req);
     return $href;
@@ -787,6 +802,19 @@ sub pre_update_process {
         $req->{groups} = $updated_groups;
     }
 
+    if ( ref($object) eq "Scot::Model::User" ) {
+        # del password and create pwhash
+        my $pass_input  = delete $req->{request}->{json}->{password};
+        my $pbkdf2      = Crypt::PBKDF2->new(
+            hash_class  => 'HMACSHA2',
+            hash_args   => { sha_size => 512 },
+            iterations  => 10000,
+            salt_len    => 15,
+        );
+        my $pwhash  = $pbkdf2->generate($pass_input);
+        $req->{request}->{json}->{pwhash} = $pwhash;
+    }
+
     if ( ref($object) eq "Scot::Model::Alertgroup" ) {
         $self->update_alerts($object,$req);
         delete $req->{request}->{json}->{status}; # set by above function
@@ -1030,6 +1058,8 @@ sub post_update_process {
     my $env     = $self->env;
     my $colname = (split(/::/,ref($object)))[-1];
 
+    my $agcol   = $env->mongo->collection('Alertgroup');
+
 
     foreach my $uphref (@$updates) {
         if ( $uphref->{attribute} eq "status" ) {
@@ -1044,6 +1074,13 @@ sub post_update_process {
             }
         }
         $self->create_change_audit($object, $uphref);
+        if ( ref($object) eq "Alert" ) {
+            # need to write history to Alertgroup
+            my $agobj = $agcol->find($object->alertgroup);
+            if (defined $agobj) {
+                $self->crete_change_audit($agobj, $uphref);
+            }
+        }
     }
 
     if ( $object->meta->does_role("Scot::Role::Tags") ) {
@@ -1778,6 +1815,29 @@ sub get_cidr_matches {
         $log->error("in API cidr, Error: $_");
         $self->render_error(400, { error_msg => $_ } );
     };
+}
+
+sub get_form {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $type    = $self->stash('type');
+
+    my $form    = $env->forms;
+
+    $log->debug("Forms is ",{filter=>\&Dumper, value=>$form});
+    $log->debug("type is $type");
+    $log->debug("form is type: ".ref($form));
+
+    my $aref    = $form->{$type};
+
+    $log->debug("aref is ".ref($aref));
+    $log->debug("aref contains ",{filter=>\&Dumper, value=>$aref});
+
+        my $return = {
+            form    => $aref,
+        };
+        $self->do_render($return);
 }
 
 1;
