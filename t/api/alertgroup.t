@@ -57,7 +57,7 @@ $t->post_ok(
         ],
         tag     => [qw(test testing)],
         source  => [qw(todd scot)],
-        columns  => [qw(foo bar) ],
+        columns  => [qw(foo bar data) ],
     }
 )->status_is(200);
 

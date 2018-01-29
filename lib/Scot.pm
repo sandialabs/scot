@@ -218,6 +218,21 @@ relies on the browser BasicAuth popup.
 
 =pod
 
+@api {get} /scot/api/v2/form/:type SCOT Form server
+@apiName form
+@apiGroup Form
+@apiVersion 2.0.0
+@apiDescription provide info to UI client on how to display detail view for incidents and signatures.  possibly everything later
+@apiSuccess {Object}    -
+
+=cut
+
+    $scot   ->route ('/api/v2/form/:type')
+            ->to    ('controller-api#get_form')
+            ->name  ('form');
+
+=pod
+
 @api {get} /scot/api/v2/metric/:thing Get a metric from SCOT
 @apiName metric
 @apiGroup Metric

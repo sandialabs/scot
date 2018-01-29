@@ -22,7 +22,7 @@ pre {
 blockquote {
     max-height: 500px;
     overflow-y: auto;
-    display: inline-flex;
+    /*display: inline-flex;*/
     background: #f5f5f5;
     width: 90%;
 }
