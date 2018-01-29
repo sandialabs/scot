@@ -218,7 +218,7 @@ var SignatureTable = React.createClass({
             <div id={'signatureDetail'} className='signatureDetail'>
                 {this.state.loaded ?
                     <div>
-                        <SignatureMetaData signatureData={this.state.signatureData} type={this.props.type} id={this.props.id} currentLanguageMode={this.state.currentLanguageMode} currentEditorTheme={this.state.currentEditorTheme} currentKeyboardHandlerApplied={currentKeyboardHandlerApplied} errorToggle={this.props.errorToggle} showSignatureOptions={this.props.showSignatureOptions} />
+                        {/*<SignatureMetaData signatureData={this.state.signatureData} type={this.props.type} id={this.props.id} currentLanguageMode={this.state.currentLanguageMode} currentEditorTheme={this.state.currentEditorTheme} currentKeyboardHandlerApplied={currentKeyboardHandlerApplied} errorToggle={this.props.errorToggle} showSignatureOptions={this.props.showSignatureOptions} />*/}
                         <div id={not_saved_signature_entry_id} className={'not_saved_signature_entry'}>
                             <div className={'row-fluid signature-entry-outer'} style={{marginLeft: 'auto', marginRight: 'auto'}}>          
                                 <div className={'row-fluid signature-entry-header'}>

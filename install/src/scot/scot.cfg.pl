@@ -219,4 +219,250 @@
         }, # end ldap
     ],
     entity_regexes  => [],
+    #
+    # form contain directions on how to build the custom incident form fields
+    # and signatures (and others later?)
+    # 
+    forms   => {
+        signature  => [
+            {
+                type    => "textarea",
+                key     => "description",
+                value   => '',
+                value_type => {
+                    type    => 'static',
+                    url     => undef,
+                    key     => 'description',
+                },
+                label   => "Description",
+                help    => "Enter a short description of the signature's purpose",
+            },
+            {
+                type    => "input",
+                key     => "type",
+                value   => '',
+                label   => "Type",
+                help    => "Enter the signature type, e.g. yara, snort, etc.",
+                value_type => {
+                    type    => 'static',
+                    url     => undef,
+                    key     => 'type',
+                },
+            },
+            {
+                type    => "dropdown",
+                key     => "prod_sigbody_id",
+                value   => [],
+                value_type  => {
+                    type    => "dynamic",
+                    url     => '/scot/api/v2/signature/%s',
+                    key     => 'prod_sigbody_id',
+                },
+                label   => "Production Signature Body Version",
+                help    => "Select the version of the signature body you wish to be used in production",
+            },
+            {
+                type    => "dropdown",
+                key     => "qual_sigbody_id",
+                value   => [],
+                value_type  => {
+                    type    => "dynamic",
+                    url     => '/scot/api/v2/signature/%s',
+                    key     => 'qual_sigbody_id',
+                },
+                label   => "Quality Signature Body Version",
+                help    => "Select the version of the signature body you wish to be used in quality",
+            },
+            {
+                type    => "input_multi",
+                key     => 'signature_group',
+                value   => [],
+                value_type  => {
+                    type    => "static",
+                    url     => undef,
+                    key     => 'signature_group',
+                },
+                label   => "Signature Group",
+                help    => "Group signatures under common names",
+            },
+            {
+                type    => 'input',
+                key     => 'target.type',
+                value   => '',
+                value_type  => {
+                    type    => "static",
+                    url     => undef,
+                    key     => 'target.type',
+                },
+                label   => "Reference Type",
+                help    => "The SCOT datatype that originated this signature",
+            },
+            {
+                type    => 'input',
+                key     => 'target.id',
+                value   => '',
+                value_type  => {
+                    type    => "static",
+                    url     => undef,
+                    key     => 'target.id',
+                },
+                help    => 'The id of the SCOT datatype that originated this sig',
+                label   => "Reference ID",
+            },
+        ],
+        incident    => [
+            # substitue your text and values here to match your
+            # incident types
+            {
+                type    => "dropdown",
+                key     => 'type',
+                value   => [
+                    { value => 'NONE',  selected => 1 },
+                    { value => 'FYI', selected => 0 },
+                    { value => 'Type 1 : Root Comprimise', selected => 0 },
+                    { value => 'Type 1 : User Compromise', selected => 0 },
+                    { value => 'Type 1 : Loss/Theft/Missing Desktop', selected => 0 },
+                    { value => 'Type 1 : Loss/Theft/Missing Laptop', selected => 0 },
+                    { value => 'Type 1 : Loss/Theft/Missing Media', selected => 0 },
+                    { value => 'Type 1 : Loss/Theft/Missing Other', selected => 0 },
+                    { value => 'Type 1 : Malicious Code Trojan', selected => 0 },
+                    { value => 'Type 1 : Malicious Code Virus', selected => 0 },
+                    { value => 'Type 1 : Malicious Code Worm', selected => 0 },
+                    { value => 'Type 1 : Malicious Code Other', selected => 0 },
+                    { value => 'Type 1 : Web Site Defacement', selected => 0 },
+                    { value => 'Type 1 : Denial of Service', selected => 0 },
+                    { value => 'Type 1 : Critical Infrastructure Protection', selected => 0 },
+                    { value => 'Type 1 : Unauthorized Use', selected => 0 },
+                    { value => 'Type 1 : Information Compromise', selected => 0 },
+                    { value => 'Type 2 : Attempted Intrusion', selected => 0 },
+                    { value => 'Type 2 : Reconnaissance Activity', selected => 0 },
+                ],
+                value_type  => {
+                    type    => "static",
+                    url     => undef,
+                    key     => 'type',
+                },
+                label   => 'Incident Type',
+                help    => "Select best match for incident type",
+            }, 
+            # substitute your text and values to match your incident cats
+            {
+                type    => "dropdown",
+                key     => "category",
+                value   => [
+                    { value => 'NONE', selected => 1},
+                    { value => 'IMI-1', selected => 0},
+                    { value => 'IMI-2', selected => 0},
+                    { value => 'IMI-3', selected => 0},
+                    { value => 'IMI-4', selected => 0},
+                ],
+                value_type  => {
+                    type    => "static",
+                    url     => undef,
+                    key     => 'category',
+                },
+                label   => 'Incident Category',
+                help    => "Select best match for incident category",
+            },
+            {
+                type    => "dropdown",
+                key     => "sensitivity",
+                value   => [
+                    {value => 'NONE', selected => 1},
+                    {value => 'OUO', selected => 0},
+                    {value => 'PII', selected => 0},
+                    {value => 'SUI', selected => 0},
+                    {value => 'UCNI', selected => 0},
+                    {value => 'Other', selected => 0},
+                ],
+                value_type  => {
+                    type    => "static",
+                    url     => undef,
+                    key     => 'sensitivity',
+                },
+                label   => 'Incident Sensitivity',
+                help    => "Select best match for incident sensitivity",
+            },
+            {
+                type    => "dropdown",
+                key     => "security_category",
+                value   => [
+                    {value => 'NONE', selected => 1},
+                    {value => 'Low', selected => 0},
+                    {value => 'Moderate', selected => 0},
+                    {value => 'High', selected => 0},
+                ],
+                value_type  => {
+                    type    => "static",
+                    url     => undef,
+                    key     => 'security_category',
+                },
+                label   => 'Incident Security Category',
+                help    => "Select best match for incident security category",
+            },
+            #date field for tracking when incident occurred
+            {
+                type    => "calendar",
+                key     => "occurred",
+                value   => "",
+                value_type  => {
+                    type    => "static",
+                    url     => undef,
+                    key     => 'occurred',
+                },
+                label   => "Date/Time Occurred",
+                help    => "Select Date/Time Incident Occurred",
+            },
+            {
+                type    => "calendar",
+                key     => "discovered",
+                value   => "",
+                value_type  => {
+                    type    => "static",
+                    url     => undef,
+                    key     => 'discovered',
+                },
+                label   => "Date/Time Discovered",
+                help    => "Select Date/Time Incident was discovered",
+            },
+            {
+                type    => "calendar",
+                key     => "reported",
+                value   => "",
+                value_type  => {
+                    type    => "static",
+                    url     => undef,
+                    key     => 'reported',
+                },
+                label   => "Date/Time Reported",
+                help    => "Select Date/Time Incident was reported",
+            },
+            {
+                type    => "calendar",
+                key     => "closed",
+                value   => "",
+                value_type  => {
+                    type    => "static",
+                    url     => undef,
+                    key     => 'closed',
+                },
+                label   => "Date/Time Closed",
+                help    => "Select Date/Time Incident was closed",
+            },
+        ],
+        guide   => [
+            {
+                type    => "input_multi",
+                key     => "applies_to",
+                value   => '',
+                value_type  => {
+                    type    => "static",
+                    url     => undef,
+                    key     => 'applies_to',
+                },
+                label   => 'Guide applies to',
+                help    => 'Enter string matching subject that this guide applies to',
+            },
+        ],
+    }, 
 );
