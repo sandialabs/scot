@@ -4,7 +4,7 @@ Docker-SCOT v 0.01
 **IMPORTANT**
 ----------------------
 
-Backup your database via the backup.pl in the /opt/scot/bin/ directory before upgrading to the docker version of SCOT. If you are upgrading, you will also need to turn off all services that the older version of SCOT uses such as Apache, Activemq, Mongodb, ElasticSearch and SCOT (i.e. sudo service stop scot)
+Backup your database via the backup.pl in the /opt/scot/bin/ directory before upgrading to the docker version of SCOT. If you are upgrading, you will also need to turn off all services that the older version of SCOT uses such as Apache, Activemq, Mongodb, ElasticSearch and SCOT (i.e. sudo service stop scot). Also as far as upgrading, we have **not** tested upgrading from any version before 3.4. Upgrade from versions prior to 3.4 to 3.5 first before upgrading to Docker-SCOT
 
 **Overview** 
 
@@ -177,6 +177,7 @@ with the path and name of the eventual location where you will map your certs to
      - "/path/to/your/key:/path/to/file/location/you/defined/in/step/3
 
 5. Re-run the restart-build-deploy.sh script and you should be set!
+
 
 
 
