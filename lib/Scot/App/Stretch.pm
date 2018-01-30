@@ -215,6 +215,8 @@ sub process_message {
     my $log     = $self->log;
     my $es      = $self->es;
 
+    $log->debug("Processing message $action $type $id");
+
     if ($action eq "deleted") {
         $es->delete($type, $id, 'scot');
         $self->put_stat("elastic doc deleted", 1);
@@ -286,15 +288,22 @@ sub get_maxid {
 sub process_all {
     my $self        = shift;
     my $collection  = shift;
-    my $startid     = shift;
+    my $startid     = shift // 0;
     my $scot        = $self->scot;
     my $es          = $self->es;
     my $limit       = 100;
     my $last_completed = $startid;
+    my $log         = $self->log;
+
+    $log->debug("Processing all $collection greater than $startid");
+
+    say "Collection = $collection";
 
     my $maxid   = $self->get_maxid($collection);
     say "Max ID = $maxid";
     say "last_completed = $last_completed";
+
+    $log->debug("Max id = $maxid, last completed = $last_completed");
 
     my $continue = 1;
     my $cleanser = Data::Clean::FromJSON->get_cleanser;
@@ -330,6 +339,8 @@ sub process_all {
             my $href    = $obj->as_hash;
             say "   $count.    id = ".$href->{id};
 
+            $log->debug("$count ... indexing id $href->{id}");
+
             delete $href->{_id};
             try {
                 $es->index('scot',$collection, $href);
@@ -337,6 +348,7 @@ sub process_all {
             catch {
                 say "Error: Failed to index $collection : ". $href->{id};
                 say Dumper($href);
+                $log->error("Failed to index $collection $href->{id}");
                 push @errors, $href->{id};
             };
 

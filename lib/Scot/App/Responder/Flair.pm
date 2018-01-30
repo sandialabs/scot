@@ -41,20 +41,6 @@ sub _get_img_munger {
     return $env->img_munger;
 };
 
-has enrichers   => (
-    is              => 'ro',
-    isa             => 'Scot::Util::Enrichments',
-    required        => 1,
-    lazy            => 1,
-    builder         => '_get_enrichers',
-);
-
-sub _get_enrichers {
-    my $self    = shift;
-    my $env     = $self->env;
-    return $env->enrichments;
-}
-
 sub process_message {
     my $self    = shift;
     my $pm      = shift;

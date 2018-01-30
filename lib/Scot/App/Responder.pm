@@ -142,6 +142,13 @@ sub run {
         $log->debug("subscribed to $topic");
     });
 
+    $stomp->on_connect_error(sub {
+        my $stomp   = shift;
+        $log->error("ERROR connecting to STOMP server.  Will retry in 10 secs");
+        sleep 10;
+        $stomp->connect();
+    });
+
     $pm->on_start(sub {
         my $pm      = shift;
         my $pid     = shift;
