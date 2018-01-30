@@ -22,5 +22,6 @@ done
 
 #TODO: write script to not run mapping every time(doenst hurt though)
 /bin/bash /opt/scot/elastic/mapping.sh
+echo 'Mapping set' >/var/lib/elasticsearch/.elastic_mapping_set
 
 echo "Elastic configured successfully. You may now connect to http://elastic:9200."
