@@ -14,6 +14,16 @@ ENV HTTPS_PROXY=${HTTPS_PROXY}
 ENV no_proxy=${no_proxy}
 ENV NO_PROXY=${NO_PROXY}
 
+ENV  APACHE_RUN_USER=www-data \
+        APACHE_RUN_GROUP=www-data \
+        APACHE_LOG_DIR=/var/log/apache2 \
+        APACHE_LOCK_DIR=/var/lock/apache2 \
+        APACHE_RUN_DIR=/var/run/apache2 \
+        APACHE_PID_FILE=/var/run/apache2.pid 
+
+COPY ./docker-configs/apache/run.sh /scripts/
+RUN chmod +x /scripts/run.sh
+
 
 
 RUN apt-get update && \
@@ -34,12 +44,8 @@ RUN mkdir -p /etc/apache2/ssl/ && \
    
 COPY docker-configs/apache/scot-revproxy-Ubuntu.conf /etc/apache2/sites-enabled
 
-#hopefully avoid 'PID already running'
-RUN rm -f /var/run/apache2/apache2.pid
-
-
 
 EXPOSE 443 80
-    
-CMD apachectl -D FOREGROUND
-
+   
+ 
+CMD ["/scripts/run.sh"]

@@ -1,4 +1,4 @@
-version: '3'
+version: '3.4'
 services:
   apache:
     build:
@@ -19,6 +19,11 @@ services:
     networks:
      - scot-docker-net
     container_name: apache  
+    deploy:
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
 
   activemq:
     volumes:
