@@ -1,5 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+import { ListGroup, ListGroupItem } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 
 const SCOT_API = "/scot/api/v2/"
 
@@ -8,33 +10,33 @@ export default class ThingList extends PureComponent {
 		super( props );
 
 		this.state = {
-			data: null,
+			data: [],
 		}
 	}
 
 	static propTypes = {
 		thingType: PropTypes.string.isRequired,
+		title: PropTypes.string.isRequired,
 		queryOptions: PropTypes.object,
 		processData: PropTypes.func,
+		getSummary: PropTypes.func,
 		errorToggle: PropTypes.func,
 	}
 
 	static defaultProps = {
 		queryOptions: {
-			limit: 10,
+			limit: 5,
 			offset: 0,
 			sort: {
 				id: -1,
 			},
-			columns: [],
+			columns: ['id', 'subject'],
 		},
 		processData: ( data ) => {
-			return data.map( thing => {
-				return {
-					id: thing.id,
-					subject: thing.subject,
-				};
-			} )
+			return data;
+		},
+		getSummary: ( thing ) => {
+			return thing.subject;
 		},
 	}
 
@@ -44,6 +46,7 @@ export default class ThingList extends PureComponent {
 			data.sort = JSON.stringify(data.sort);
 		}
 
+		$.ajaxSetup({ traditional: true });
 		$.ajax( {
 			type: 'get',
 			url: SCOT_API + this.props.thingType,
@@ -65,8 +68,20 @@ export default class ThingList extends PureComponent {
 	}
 
 	render() {
+		const things = this.state.data.map( ( thing, i ) => (
+			<ThingItem key={i} dest={`${this.props.thingType}/${thing.id}`} summary={this.props.getSummary(thing)} />
+		) );
 		return (
-			<pre>{JSON.stringify(this.state.data, 2)}</pre>
+			<div className="ThingList">
+				<h1>{this.props.title}</h1>
+				<ListGroup>
+					{things}
+				</ListGroup>
+			</div>
 		)
 	}
 }
+
+const ThingItem = ( { dest, summary } ) => (
+	<Link to={dest} className="list-group-item">{summary}</Link>
+)
