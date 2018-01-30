@@ -83,5 +83,5 @@ export default class ThingList extends PureComponent {
 }
 
 const ThingItem = ( { dest, summary } ) => (
-	<Link to={dest} className="list-group-item">{summary}</Link>
+	<Link to={dest} className="list-group-item">{summary}<i className="fa fa-angle-right" /></Link>
 )
