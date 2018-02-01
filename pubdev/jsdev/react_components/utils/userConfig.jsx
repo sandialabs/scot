@@ -45,7 +45,9 @@ export class UserConfigProvider extends PureComponent {
 		super( props );
 
 		this.state = {
-			userConfig: {},
+			userConfig: {
+				loading: true,
+			},
 		}
 
 		this.update = this.update.bind(this);
@@ -114,6 +116,7 @@ export const UserConfigPropTypes = {
 		config: PropTypes.any.isRequired,
 		setUserConfig: PropTypes.func.isRequired,
 		getUserConfig: PropTypes.func.isRequired,
+		loading: PropTypes.bool,
 	} ).isRequired,
 }
 
@@ -149,9 +152,11 @@ export const withUserConfig = ( configKey ) => {
 				let { userConfig, ...restProps } = this.props;
 
 				let data = userConfig[ configKey.key ] || configKey.default;
+				const loading = userConfig.loading;
 
 				const userConfigProps = {
 					userConfig: {
+						loading: loading === true,
 						config: data,
 						setUserConfig: this.setUserSubConfig,
 						getUserConfig: this.context.getUserConfig,
