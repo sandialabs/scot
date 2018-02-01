@@ -1,6 +1,14 @@
 version: '3.4'
 services:
   apache:
+    build:
+      dockerfile: Dockerfile-Apache
+      context: ./
+      args:
+        http_proxy: ${http_proxy}
+        https_proxy: ${https_proxy}
+        HTTP_PROXY: ${HTTP_PROXY}
+        HTTPS_PROXY: ${HTTPS_PROXY}
     volumes: 
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
@@ -21,13 +29,30 @@ services:
   activemq:
     volumes:
      - "/var/log/activemq:/var/log/activemq/log/"
+    build:
+      dockerfile: Dockerfile-Activemq
+      context: ./ 
+      args:
+        http_proxy: ${http_proxy}
+        https_proxy: ${https_proxy}
+        HTTP_PROXY: ${HTTP_PROXY}
+        HTTPS_PROXY: ${HTTPS_PROXY}
     networks:
      - scot-docker-net
     container_name: activemq
     image: sandialabs/scot_activemq
   
   mongodb:
-   
+    build:
+      dockerfile: Dockerfile-Mongodb
+      context: ./
+      args:
+        MONGODBUID: ${MONGODBUID}
+        MONGODBGID: ${MONGODBGID}
+        http_proxy: ${http_proxy}
+        https_proxy: ${https_proxy}
+        HTTP_PROXY: ${HTTP_PROXY}
+        HTTPS_PROXY: ${HTTPS_PROXY}
     volumes:
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
@@ -42,6 +67,15 @@ services:
     image: sandialabs/scot_mongodb
 
   elastic:
+   build:
+     dockerfile: Dockerfile-Elastic
+     context: ./
+     args: 
+       ELASTICUID: ${ELASTICUID}
+       http_proxy: ${http_proxy}
+       https_proxy: ${https_proxy}
+       HTTP_PROXY: ${HTTP_PROXY}
+       HTTPS_PROXY: ${HTTPS_PROXY}
    volumes:
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
@@ -53,7 +87,13 @@ services:
    image: sandialabs/scot_elastic
  
   scot:
-   volumes:
+    build:
+      dockerfile: Dockerfile-Scot
+      context: ./
+      args:
+        SCOTUID: ${SCOTUID}
+        SCOTGID: ${SCOTGID}
+    volumes:
      - "/var/log/scot:/var/log/scot/"
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
@@ -64,19 +104,30 @@ services:
      - "/var/lib/mongodb:/var/lib/mongodb/"
      - "/opt/scotbackup:/opt/scotbackup/"
      - "/opt/scot/public/cached_images:/opt/scot/public/cached_images/"
-   depends_on:
+    depends_on:
      - perl
      - mongodb
      - activemq
-   networks:
+    networks:
      - scot-docker-net
-   container_name: scot
-   image: sandialabs/scot_scot
+    container_name: scot
+    image: sandialabs/scot_scot
   
   perl:
-   image: sandialabs/scot_perl 
+    build: 
+      dockerfile: Dockerfile-Perl
+      context: ./
+      args:
+        http_proxy: ${http_proxy}
+        https_proxy: ${https_proxy}
+        HTTP_PROXY: ${HTTP_PROXY}
+        HTTPS_PROXY: ${HTTPS_PROXY}
+    image: sandialabs/scot_perl 
   
-  flair: 
+  flair:
+   build:
+     dockerfile: Dockerfile-Flair
+     context: ./
    volumes:
     - "/var/log/scot:/var/log/scot/"
     - "/etc/localtime:/etc/localtime:ro"
@@ -90,6 +141,9 @@ services:
    image: sandialabs/scot_flair
   
   reflair:
+   build:
+     dockerfile: Dockerfile-Reflair
+     context: ./
    volumes:
     - "/var/log/scot:/var/log/scot/"
     - "/etc/localtime:/etc/localtime:ro"
@@ -103,6 +157,9 @@ services:
    image: sandialabs/scot_reflair
 
   stretch:
+   build:
+     dockerfile: Dockerfile-Stretch
+     context: ./
    image: scot_stretch
    volumes:
     - "/var/log/scot:/var/log/scot/"
@@ -117,6 +174,9 @@ services:
    image: sandialabs/scot_stretch
 
   game:
+   build:
+     dockerfile: Dockerfile-Game
+     context: ./
    volumes:
     - "/var/log/scot:/var/log/scot/"
     - "/etc/localtime:/etc/localtime:ro"
