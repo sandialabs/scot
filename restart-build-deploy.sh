@@ -90,5 +90,34 @@ export MONGODBGID=`id mongodb -g`
 
 
 #build open-source scot
-sudo -E docker-compose up --build
+
+echo " "
+echo "**************** "
+echo "Hello, and welcome to the Docker version of SCOT 🔍 "
+echo " "
+echo "This script will walk you through the installationprocess. First, we have a couple questions for you"
+echo " "
+echo "SCOT has two installation modes:" 
+echo " "
+echo "1. Easy Mode - In this mode, we will pull pre-built images from Dockerhub. There is no customization such as insertion of your servers SSL certs, no LDAP integration, etc."
+echo "2. Custom mode: In this mode, we will build the Docker containers from the Dockerfile's contained in the cloned source code. You can also make changes to the Dockerfile's, source code, etc. as you see fit"
+echo " "
+echo -n "Please enter your selection: 1 for easy mode 2 for custom mode"
+read -n 1 selection
+
+if [ "$selection" == "1" ]; then
+  echo "You selected easy mode."
+  echo " "
+  sudo -E docker-compose up --build
+elif [ "$selection" == "2" ]; then
+  echo "You selected custom mode."
+  echo " "
+  sudo -E docker-compose -f docker-compose-custom.yml up --build
+else:
+  echo "Invalid selection"
+fi
+
+
+
+
 

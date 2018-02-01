@@ -6,7 +6,6 @@ unset ELASTICUID
 unset ELASTICGID
 unset HOSTNAME
 
-cd ../
 
 export SCOTUID=`id scot -u`
 export SCOTGID=`id scot -g` 
@@ -17,5 +16,5 @@ export MONGODBGID=`id mongodb -g`
 
 
 #build open-source scot
-sudo -E docker-compose build
+docker-compose -f docker-compose-custom.yml build
 
