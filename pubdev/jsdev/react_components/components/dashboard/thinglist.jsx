@@ -26,6 +26,7 @@ export default class ThingList extends PureComponent {
 		queryOptions: PropTypes.object,
 		processData: PropTypes.func,
 		getSummary: PropTypes.func,
+		getLink: PropTypes.func,
 		newBadge: PropTypes.bool,
 		errorToggle: PropTypes.func,
 	}
@@ -45,6 +46,9 @@ export default class ThingList extends PureComponent {
 		getSummary: ( thing ) => {
 			return thing.subject;
 		},
+		getLink: ( thingType, thing ) => {
+			return `${thingType}/${thing.id}`;
+		},
 		newBadge: true,
 	}
 
@@ -53,6 +57,14 @@ export default class ThingList extends PureComponent {
 		let data = $.extend( true, {}, this.props.queryOptions );
 		if ( data.sort ) {
 			data.sort = JSON.stringify(data.sort);
+		}
+
+		if ( data.filter ) {
+			data = {
+				...data,
+				...data.filter,
+			}
+			delete data.filter;
 		}
 
 		if ( this.props.newBadge ) {
@@ -83,7 +95,7 @@ export default class ThingList extends PureComponent {
 	genThingItem( thing, i ) {
 		// Using this instead of a subcomponent so I don't have to forward all the props
 		return (
-			<Link key={i} to={`${this.props.thingType}/${thing.id}`} className="list-group-item">
+			<Link key={i} to={this.props.getLink(this.props.thingType, thing)} className="list-group-item">
 				{ this.props.getSummary(thing) }
 				{ this.props.newBadge && isNew( thing.created ) &&
 						<Label bsStyle="primary">New!</Label>
@@ -114,6 +126,7 @@ export const Widgets = () => {
 		...RecentIntel,
 		...RecentEvents,
 		...RecentIncidents,
+		...OpenTasks,
 	}
 };
 
@@ -152,3 +165,33 @@ export const RecentIncidents = {
 		}
 	},
 };
+
+export const OpenTasks = {
+	tasks: {
+		type: ThingList,
+		title: "Open Tasks",
+		description: "List of recent open tasks",
+		props: {
+			thingType: 'task',
+			title: 'Open Tasks',
+			queryOptions: {
+				limit: 5,
+				offset: 0,
+				sort: {
+					updated: -1,
+				},
+				filter: {
+					'metadata.task.status': 'open',
+				},
+				columns: ['id', 'body_plain', 'target'],
+			},
+			getSummary: ( thing ) => {
+				return thing.body_plain.length > 200 ? thing.body_plain.substr(0, 200) +'...' : thing.body_plain;
+			},
+			getLink: ( thingType, thing ) => {
+				let target = thing.target;
+				return `${thingType}/${target.type}/${target.id}/${thing.id}`;
+			},
+		},
+	},
+}
