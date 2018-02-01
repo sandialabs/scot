@@ -190,6 +190,9 @@ with the path and name of the eventual location where you will map your certs to
 
 5. Re-run the restart-build-deploy.sh script and you should be set!
 
+FAQ / Common Issues
+-------------
 
-
+**Common Issues**
+1. Apache frequently will throw an error on run time that the process is already running and will subequently die. In the event this happens, simply re-run the script. 
 
