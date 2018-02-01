@@ -19,6 +19,7 @@ services:
     networks:
      - scot-docker-net
     container_name: apache  
+    image: sandialabs/scot_apache
     deploy:
       restart_policy:
         condition: any
@@ -39,6 +40,7 @@ services:
     networks:
      - scot-docker-net
     container_name: activemq
+    image: sandialabs/scot_activemq
   
   mongodb:
     build:
@@ -62,6 +64,8 @@ services:
     container_name: mongodb
     depends_on: 
      - perl
+    image: sandialabs/scot_mongodb
+
   elastic:
    build:
      dockerfile: Dockerfile-Elastic
@@ -80,6 +84,7 @@ services:
    networks:
     - scot-docker-net
    container_name: elastic
+   image: sandialabs/scot_elastic
  
   scot:
     build:
@@ -106,6 +111,7 @@ services:
     networks:
      - scot-docker-net
     container_name: scot
+    image: sandialabs/scot_scot
   
   perl:
     build: 
@@ -116,7 +122,7 @@ services:
         https_proxy: ${https_proxy}
         HTTP_PROXY: ${HTTP_PROXY}
         HTTPS_PROXY: ${HTTPS_PROXY}
-    image: scot_perl
+    image: sandialabs/scot_perl 
   
   flair:
    build:
@@ -132,6 +138,7 @@ services:
    networks:
      - scot-docker-net
    container_name: flair
+   image: sandialabs/scot_flair
   
   reflair:
    build:
@@ -147,7 +154,7 @@ services:
    networks:
      - scot-docker-net
    container_name: reflair
-     
+   image: sandialabs/scot_reflair
 
   stretch:
    build:
@@ -164,7 +171,8 @@ services:
    networks:
     - scot-docker-net
    container_name: stretch
-  
+   image: sandialabs/scot_stretch
+
   game:
    build:
      dockerfile: Dockerfile-Game
@@ -178,6 +186,7 @@ services:
    networks:
      - scot-docker-net
    container_name: game
+   image: sandialabs/scot_game
 # mail: 
 #   build:
 #     dockerfile: Dockerfile-Mail
