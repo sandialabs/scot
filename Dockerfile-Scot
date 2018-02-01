@@ -1,4 +1,4 @@
-FROM scot_perl
+FROM sandialabs/scot_perl 
 
 ARG SCOTGID
 ARG SCOTUID
