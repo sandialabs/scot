@@ -105,6 +105,8 @@ var SelectedHeader = React.createClass({
                             }
 							if ( this.props.type == 'alertgroup' && eventResult.parsed === -1) { 
 								this.setState({flairing: true});
+                            } else {
+                                this.setState({flairing: false});
                             }
                         }
                     }.bind(this),
@@ -226,7 +228,9 @@ var SelectedHeader = React.createClass({
                         }
 						if ( this.props.type == 'alertgroup' && eventResult.parsed === -1) {
 							this.setState({flairing: true});
-						}
+						} else {
+                            this.setState({flairing: false});
+                        }
                     }
                 }.bind(this),
                 error: function(result) {
