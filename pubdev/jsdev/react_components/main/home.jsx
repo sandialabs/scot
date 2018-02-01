@@ -146,7 +146,7 @@ class HomeDashboard extends PureComponent {
 	}
 
 	render() {
-		if ( !this.props.loggedIn ) {
+		if ( !this.props.loggedIn || this.props.userConfig.loading ) {
 			return (
 				<div className="homePageDisplay">
 					<div className="home-grid loggedOut">
