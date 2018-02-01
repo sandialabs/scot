@@ -1,4 +1,4 @@
-FROM scot_perl
+FROM sandialabs/scot_perl 
 
 RUN apt-get update && apt-get install -y openssh-server
 RUN mkdir /var/run/sshd
