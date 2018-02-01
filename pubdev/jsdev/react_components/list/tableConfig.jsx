@@ -171,7 +171,7 @@ const columnDefinitions = {
 	TaskStatus: {
 		Header: 'Task Status',
 		accessor: d => d.metadata.task.status,
-		id: 'status',
+		id: 'metadata.task.status',
 		column: 'metadata',
 		Cell: customCellRenderers.textStatus,
 		Filter: customFilters.dropdownFilter( [ 'open', 'assigned', 'closed' ] ),
