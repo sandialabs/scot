@@ -179,18 +179,15 @@ const TitleBar = ( {
 			{ editMode &&
 				<form onSubmit={onSave}>
 					<input type="text" className="title" value={title} placeholder="Dashboard Title" onChange={handleTitleChange} />
+					<Button bsStyle="primary" bsSize="small" onClick={onSave}>Save</Button>
+					<Button bsStyle="warning" bsSize="small" disabled={isNew} onClick={onCancel}>Cancel</Button>
 				</form>
 			}
-			{ !editMode ? (
+			{ !editMode &&
 				<div className="edit">
 					<Button bsSize="xsmall" onClick={onEdit}><i className="fa fa-edit" /></Button>
 				</div>
-			) : (
-				<div className="edit">
-					<Button bsStyle="primary" bsSize="small" onClick={onSave}>Save</Button>
-					<Button bsStyle="warning" bsSize="small" disabled={isNew} onClick={onCancel}>Cancel</Button>
-				</div>
-			) }
+			}
 		</div>
 	);
 }
