@@ -17,5 +17,5 @@ export MONGODBGID=`id mongodb -g`
 
 
 #build open-source scot
-docker-compose build
+docker-compose -f ../docker-compose-custom.yml build
 
