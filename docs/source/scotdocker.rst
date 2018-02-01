@@ -39,7 +39,7 @@ SCOT Installation
 
 There are two methods for getting started with SCOT. Run the SCOT/restart-build-deploy.sh script (will be promopted to enter sudo credentials) and follow the on screen prompts for either: 
 
-1. Easy mode - this mode will pull all necessary docker images from from Dockerhub (preconfigured). This is the preferred method if you do are not concerned with the following:
+1. Easy mode - this mode will pull all necessary docker images from from Dockerhub (preconfigured). This is the preferred method if you do are not concerned with any of the below bullet points. 
     * Using self-signed certificates for apache
     * Making changes to the underlying SCOT perl source code
     * Configuring the mail service to integrate with you a corporate email account
