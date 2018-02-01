@@ -1,14 +1,26 @@
 Docker-SCOT v 0.01
 ***************
 
-**IMPORTANT**
+=================
+Table of Contents
+=================
+
+* Overview
+* Docker-SCOT containers
+* Managing the containers
+* Configuration
+* FAQ / Common Issues
+
+
+**Overview** 
 ----------------------
+
+Docker-SCOT is an experimental, multi-container based implementation of SCOT. Docker-Scot allows a new user to get up and running with SCOT much quicker, and easier than with the traditional SCOT install process. 
+
+**IMPORTANT**
 
 Backup your database via the backup.pl in the /opt/scot/bin/ directory before upgrading to the docker version of SCOT. If you are upgrading, you will also need to turn off all services that the older version of SCOT uses such as Apache, Activemq, Mongodb, ElasticSearch and SCOT (i.e. sudo service stop scot). Also as far as upgrading, we have **not** tested upgrading from any version before 3.4. Upgrade from versions prior to 3.4 to 3.5 first before upgrading to Docker-SCOT
 
-**Overview** 
-
-Docker-SCOT is an experimental, multi-container based implementation of SCOT. Docker-Scot allows a new user to get up and running with SCOT much quicker, and easier than with the traditional SCOT install process. 
 
 
 Docker-SCOT containers
@@ -37,16 +49,16 @@ Next, Docker-SCOT relies on docker-compose to build, run and manage services. Do
 SCOT Installation
 ---------------
 
-There are two methods for getting started with SCOT:
 
-1. Easy install - run the SCOT/restart-build-deploy.sh script (will be promopted to enter sudo credentials)
-2. Custom install - Follow below steps: 
+There are two methods for getting started with SCOT. Run the SCOT/restart-build-deploy.sh script (will be promopted to enter sudo credentials) and follow the on screen prompts for either. 
 
-Run::
 
-    sudo docker-compose up --build
+1. Easy mode - this mode will pull all necessary docker images from from Dockerhub (preconfigured). This is the preferred method if you do are not concerned with any of the below bullet points. 
+    * Using self-signed certificates for apache
+    * Making changes to the underlying SCOT perl source code
+    * Configuring the mail service to integrate with you a corporate email account
+2. Custom Mode - If you are concerned with the above, you should use the custom mode which builds the docker containers from source and deploys them. 
 
-This above command will manage the building, running, name-spacing, networking, etc. of the Docker-SCOT services as defined in the docker-compose.yml file. 
 
 
 Managing the containers
@@ -178,6 +190,10 @@ with the path and name of the eventual location where you will map your certs to
 
 5. Re-run the restart-build-deploy.sh script and you should be set!
 
+FAQ / Common Issues
+-------------
 
+**Common Issues**
 
+1. Apache frequently will throw an error on run time that the process is already running and will subequently die. In the event this happens, simply re-run the script. 
 
