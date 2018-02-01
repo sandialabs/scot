@@ -75,22 +75,21 @@
 		padding: 0 10px;
 
 		.titleBar {
-			text-align: start;
-
 			form {
 				display: inline-block;
+
+				button {
+					margin-left: 10px;
+				}
 			}
 
 			input {
 				width: 300px;
+				height: 30px;
 			}
 
 			.edit {
 				float: right;
-
-				button ~ button {
-					margin-left: 10px;
-				}
 			}
 		}
 

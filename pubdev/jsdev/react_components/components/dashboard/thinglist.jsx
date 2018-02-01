@@ -1,7 +1,13 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { ListGroup, ListGroupItem } from 'react-bootstrap';
+import { ListGroup, ListGroupItem, Label } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+
+import { timeOlderThan } from '../../utils/time';
+const NEW_TIME = 24 * 60 * 60; // 1 day
+const isNew = ( created ) => {
+	return !timeOlderThan( created * 1000, NEW_TIME );
+}
 
 const SCOT_API = "/scot/api/v2/"
 
@@ -20,6 +26,7 @@ export default class ThingList extends PureComponent {
 		queryOptions: PropTypes.object,
 		processData: PropTypes.func,
 		getSummary: PropTypes.func,
+		newBadge: PropTypes.bool,
 		errorToggle: PropTypes.func,
 	}
 
@@ -38,12 +45,18 @@ export default class ThingList extends PureComponent {
 		getSummary: ( thing ) => {
 			return thing.subject;
 		},
+		newBadge: true,
 	}
 
 	fetchData() {
-		let data = {...this.props.queryOptions}
+		// Force deep copy
+		let data = $.extend( true, {}, this.props.queryOptions );
 		if ( data.sort ) {
 			data.sort = JSON.stringify(data.sort);
+		}
+
+		if ( this.props.newBadge ) {
+			data.columns.push( 'created' );
 		}
 
 		$.ajaxSetup({ traditional: true });
@@ -67,10 +80,21 @@ export default class ThingList extends PureComponent {
 		this.fetchData();
 	}
 
+	genThingItem( thing, i ) {
+		// Using this instead of a subcomponent so I don't have to forward all the props
+		return (
+			<Link key={i} to={`${this.props.thingType}/${thing.id}`} className="list-group-item">
+				{ this.props.getSummary(thing) }
+				{ this.props.newBadge && isNew( thing.created ) &&
+						<Label bsStyle="primary">New!</Label>
+				}
+				<i className="fa fa-angle-right" />
+			</Link>
+		)
+	}
+
 	render() {
-		const things = this.state.data.map( ( thing, i ) => (
-			<ThingItem key={i} dest={`${this.props.thingType}/${thing.id}`} summary={this.props.getSummary(thing)} />
-		) );
+		const things = this.state.data.map( ( thing, i ) => this.genThingItem( thing, i ) );
 		return (
 			<div className="ThingList">
 				<h1>{this.props.title}</h1>
@@ -81,10 +105,6 @@ export default class ThingList extends PureComponent {
 		)
 	}
 }
-
-const ThingItem = ( { dest, summary } ) => (
-	<Link to={dest} className="list-group-item">{summary}<i className="fa fa-angle-right" /></Link>
-)
 
 /**
  * Hardcoded variants of Thinglist
