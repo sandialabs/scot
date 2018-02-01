@@ -1,14 +1,26 @@
 Docker-SCOT v 0.01
 ***************
 
-**IMPORTANT**
+=================
+Table of Contents
+=================
+
+* Overview
+* Docker-SCOT containers
+* Managing the containers
+* Configuration
+* FAQ / Common Issues
+
+
+**Overview** 
 ----------------------
+
+Docker-SCOT is an experimental, multi-container based implementation of SCOT. Docker-Scot allows a new user to get up and running with SCOT much quicker, and easier than with the traditional SCOT install process. 
+
+**IMPORTANT**
 
 Backup your database via the backup.pl in the /opt/scot/bin/ directory before upgrading to the docker version of SCOT. If you are upgrading, you will also need to turn off all services that the older version of SCOT uses such as Apache, Activemq, Mongodb, ElasticSearch and SCOT (i.e. sudo service stop scot). Also as far as upgrading, we have **not** tested upgrading from any version before 3.4. Upgrade from versions prior to 3.4 to 3.5 first before upgrading to Docker-SCOT
 
-**Overview** 
-
-Docker-SCOT is an experimental, multi-container based implementation of SCOT. Docker-Scot allows a new user to get up and running with SCOT much quicker, and easier than with the traditional SCOT install process. 
 
 
 Docker-SCOT containers
