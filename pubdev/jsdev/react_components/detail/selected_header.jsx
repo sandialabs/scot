@@ -81,6 +81,7 @@ var SelectedHeader = React.createClass({
             isDeleted: false,     
             flairOff: false,
             highlightedText: '',
+            flairing : false,
         }
     },
     componentWillMount: function() {
@@ -100,7 +101,10 @@ var SelectedHeader = React.createClass({
                             var eventResult = result;
                             this.setState({headerData:eventResult,showEventData:true, isNotFound:false, tagData:eventResult.tag, sourceData:eventResult.source})
                             if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
-                                this.setState({loading:false})
+                                this.setState({loading:false});
+                            }
+							if ( this.props.type == 'alertgroup' && eventResult.parsed === -1) { 
+								this.setState({flairing: true});
                             }
                         }
                     }.bind(this),
@@ -220,6 +224,9 @@ var SelectedHeader = React.createClass({
                         if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                             this.setState({refreshing:false})
                         }
+						if ( this.props.type == 'alertgroup' && eventResult.parsed === -1) {
+							this.setState({flairing: true});
+						}
                     }
                 }.bind(this),
                 error: function(result) {
@@ -587,6 +594,7 @@ var SelectedHeader = React.createClass({
                             {this.state.refreshing ? <span style={{color:'lightblue'}}>Refreshing Data...</span> :null }
                             {this.state.loading ? <span style={{color:'lightblue'}}>Loading...</span> :null}    
                             {this.state.processing ? <span style={{color: 'lightblue'}}>Processing Actions...</span> : null }
+                            {this.state.flairing ? <span style={{color: 'lightblue'}}>Flairing...</span> : null }
                         </div> 
                         {type != 'entity' ? 
                             <div className='details-table toolbar' style={{display: 'flex'}}>
