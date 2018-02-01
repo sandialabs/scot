@@ -85,3 +85,50 @@ export default class ThingList extends PureComponent {
 const ThingItem = ( { dest, summary } ) => (
 	<Link to={dest} className="list-group-item">{summary}<i className="fa fa-angle-right" /></Link>
 )
+
+/**
+ * Hardcoded variants of Thinglist
+ */
+export const Widgets = () => {
+	return {
+		...RecentIntel,
+		...RecentEvents,
+		...RecentIncidents,
+	}
+};
+
+export const RecentIntel = {
+	intel: {
+		type: ThingList,
+		title: "Recent Intel",
+		description: "List of the 5 most recent Intel entries",
+		props: {
+			thingType: 'intel',
+			title: 'Recent Intel',
+		}
+	},
+};
+
+export const RecentEvents = {
+	events: {
+		type: ThingList,
+		title: "Recent Events",
+		description: "List of the 5 most recent events",
+		props: {
+			thingType: 'event',
+			title: 'Recent Events',
+		}
+	},
+};
+
+export const RecentIncidents = {
+	incidents: {
+		type: ThingList,
+		title: "Recent Incidents",
+		description: "List of the 5 most recent Incidents",
+		props: {
+			thingType: 'incident',
+			title: 'Recent Incidents',
+		}
+	},
+};
