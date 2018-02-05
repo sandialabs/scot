@@ -54,7 +54,7 @@ function add_users {
         echo "- scot user exists"
     else
        echo "SCOT user does not exist. Creating user"
-       sudo useradd -c "SCOT User"  -M -s /bin/bash scot
+       sudo useradd -c "SCOT User" -u 1066 -M -s /bin/bash scot
     fi
 
     echo "-Checking for existing Elastic User"
@@ -62,7 +62,7 @@ function add_users {
         echo "- elasticsearch user exists"
     else
         echo "Elasticsearch user does not exist. Creating user"
-        sudo useradd -c "elasticsearch User"  -M -s /bin/bash elasticsearch
+        sudo useradd -c "elasticsearch User" -u 1067  -M -s /bin/bash elasticsearch
     fi
     
     echo "-Checking for existing Mongodb User"
@@ -71,7 +71,7 @@ function add_users {
     else
         
        echo "mongodb user does not exist. Creating user"
-       sudo useradd -c "mongodb User"  -M -s /bin/bash mongodb
+       sudo useradd -c "mongodb User" -u 1068 -M -s /bin/bash mongodb
     fi
 
 }
