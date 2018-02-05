@@ -12,9 +12,6 @@ ENV HTTP_PROXY=${HTTP_PROXY}
 ENV HTTPS_PROXY=${HTTPS_PROXY}
 ENV no_proxy="elastic,mongodb"
 
-ARG ELASTICUID
-ENV ELASTICUID=${ELASTICUID}
-
 USER root
 
 RUN mkdir -p /opt/scotbackup/elastic
@@ -41,4 +38,3 @@ ADD docker-configs/elastic/elasticsearch.yml /usr/share/elasticsearch/config/
 EXPOSE 9200 9300
 
 CMD /opt/scot/elastic/run.sh
-#CMD /bin/bash
