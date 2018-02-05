@@ -465,4 +465,12 @@
             },
         ],
     }, 
+    dailybrief  => {
+        mail    => {
+            from    => 'scot@yourdomain.com',
+            to      => 'tbruner@scotdemo.com',
+            host    => 'smtp.yourdomain.com',
+        },
+        url     => 'https://scot.yourdomain.com/'
+    },
 );
