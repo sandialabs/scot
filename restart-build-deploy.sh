@@ -48,6 +48,12 @@ sudo chmod -R 0777 /var/log/scot/
 sudo chmod -R g+rwx /var/lib/elasticsearch/ 
 sudo chgrp 1000 /var/lib/elasticsearch/
 
+
+#create groups
+sudo groupadd -g 2060 scot
+sudo groupadd -g 2061 mongodb
+
+
 function add_users {
     echo "- checking for existing scot user"
     if grep --quiet -c scot: /etc/passwd; then
@@ -57,13 +63,13 @@ function add_users {
        sudo useradd -c "SCOT User" -u 1060 -g 2060 -M -s /bin/bash scot
     fi
 
-    echo "-Checking for existing Elastic User"
-    if grep --quiet -c elasticsearch: /etc/passwd; then
-        echo "- elasticsearch user exists"
-    else
-        echo "Elasticsearch user does not exist. Creating user"
-        sudo useradd -c "elasticsearch User" -u 1000 -g 1000  -M -s /bin/bash elasticsearch
-    fi
+#    echo "-Checking for existing Elastic User"
+#    if grep --quiet -c elasticsearch: /etc/passwd; then
+#        echo "- elasticsearch user exists"
+#    else
+#        echo "Elasticsearch user does not exist. Creating user"
+#        sudo useradd -c "elasticsearch User" -u 1000 -g 1000  -M -s /bin/bash elasticsearch
+#    fi
     
     echo "-Checking for existing Mongodb User"
     if grep --quiet -c mongodb: /etc/passwd; then
@@ -85,8 +91,6 @@ add_users
 
 export SCOTUID=`id scot -u`
 export SCOTGID=`id scot -g` 
-export ELASTICUID=`id elasticsearch -u`
-export ELASTICGID=`id elasticsearch -g`
 export MONGODBUID=`id mongodb -u`
 export MONGODBGID=`id mongodb -g`
 
