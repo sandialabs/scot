@@ -1,7 +1,7 @@
 var React               = require('react');
 var ReactDateTime       = require('react-datetime');
 
-import { Button, Tooltip, OverlayTrigger } from 'react-bootstrap';
+import { Button, Tooltip, OverlayTrigger, FormGroup, ControlLabel, FormControl } from 'react-bootstrap';
 
 //Add data into this metadata field by entering in the form layout in scot.cfg.pl. 
 
@@ -10,7 +10,7 @@ var CustomMetaDataTable = React.createClass({
     onChange: function(event) {
         var k  = event.target.id;
         var v = event.target.value;
-        var json = {};
+		var json = {};
         json[k] = v;
         $.ajax({
             type: 'put',
@@ -38,6 +38,7 @@ var CustomMetaDataTable = React.createClass({
     },
 
     render: function() {
+        var multiSelectArr = [];
         var dropdownArr = [];
         var datesArr = [];
         var inputArr = [];
@@ -104,6 +105,14 @@ var CustomMetaDataTable = React.createClass({
                             booleanArr.push(<BooleanComponent id={this.props.form[i].key} onChange={this.onChange} label={this.props.form[i].label} fetchURL={url} dynamic={true} referenceKey={this.props.form[i]['value_type']['key']} help={this.props.form[i].help}/>)
                         }
                         break;
+                        
+                    case 'multi_select':
+                        if ( this.props.form[i]['value_type']['type'] == 'static' ) {
+                            multiSelectArr.push(<MultiSelectComponent onChange={this.onChange} label={this.props.form[i].label} id={this.props.form[i].key} referenceKey={this.props.form[i]['value_type']['key']} value={value} dropdownValues={this.props.form[i]['value']} help={this.props.form[i].help} mainType={this.props.type} mainId={this.props.id}/>)
+                        } else {
+                            multiSelectArr.push(<MultiSelectComponent onChange={this.onChange} label={this.props.form[i].label} id={this.props.form[i].key} referenceKey={this.props.form[i]['value_type']['key']} fetchURL={url} dynamic={true} help={this.props.form[i].help} mainType={this.props.type} mainId={this.props.id}/>)
+                        }
+                        break;
                 }
             }
         }
@@ -119,6 +128,7 @@ var CustomMetaDataTable = React.createClass({
                             {textAreaArr}
                             {inputMultiArr}
                             {booleanArr}
+                            {multiSelectArr}
                         </div>
                     </div>
                 :
@@ -208,7 +218,7 @@ let DropdownComponent = React.createClass({
                 <span className='custom-metadata-tableWidth'>
                     { this.props.label }
                     <OverlayTrigger placement='top' overlay={<Tooltip id={this.props.id}> {this.props.help}</Tooltip>}>
-                        <i className="fa fa-question-circle-o" aria-hidden="true"></i>
+                        <i className="fa fa-question-circle-o" aria-hidden="true" style={{paddingLeft: '5px'}}></i>
                     </OverlayTrigger>
                 </span>
                 <span>
@@ -268,8 +278,8 @@ let InputComponent = React.createClass({
                 <span className='custom-metadata-tableWidth'>
                     {this.props.label}
                     <OverlayTrigger placement='top' overlay={<Tooltip id={this.props.id}> {this.props.help}</Tooltip>}>
-                        <i className="fa fa-question-circle-o" aria-hidden="true"></i>
-                    </OverlayTrigger>
+                        <i className="fa fa-question-circle-o" aria-hidden="true" style={{paddingLeft: '5px'}}></i> 
+					</OverlayTrigger>
                 </span>
                 <span>
                     <input className='custom-metadata-input-width' id={this.props.id} onBlur={this.props.onBlur} onChange={this.inputOnChange} value={this.state.value} />
@@ -354,7 +364,7 @@ var Calendar = React.createClass({
                 <span className='custom-metadata-tableWidth'>
                     {this.props.typeTitle}
                     <OverlayTrigger placement='top' overlay={<Tooltip id={this.props.id}> {this.props.help}</Tooltip>}>
-                        <i className="fa fa-question-circle-o" aria-hidden="true"></i>
+                        <i className="fa fa-question-circle-o" aria-hidden="true" style={{paddingLeft: '5px'}}></i>
                     </OverlayTrigger>
                 </span>
 				{ !this.state.loading ? 
@@ -414,7 +424,7 @@ let TextAreaComponent = React.createClass({
                 <span className='custom-metadata-tableWidth'>
                     {this.props.label}
                     <OverlayTrigger placement='top' overlay={<Tooltip id={this.props.id}> {this.props.help}</Tooltip>}>
-                        <i className="fa fa-question-circle-o" aria-hidden="true"></i>
+                        <i className="fa fa-question-circle-o" aria-hidden="true" style={{paddingLeft: '5px'}}></i>
                     </OverlayTrigger>
                 </span>
                 <span>
@@ -551,7 +561,7 @@ let InputMultiComponent = React.createClass({
                 <span className='custom-metadata-tableWidth'>
                     {this.props.label}
                     <OverlayTrigger placement='top' overlay={<Tooltip id={this.props.id}> {this.props.help}</Tooltip>}>
-                        <i className="fa fa-question-circle-o" aria-hidden="true"></i>
+                        <i className="fa fa-question-circle-o" aria-hidden="true" style={{paddingLeft: '5px'}}></i>
                     </OverlayTrigger>
                 </span>
                 <span>
@@ -622,7 +632,7 @@ let BooleanComponent = React.createClass({
                 <span className='custom-metadata-tableWidth'>
                     {this.props.label}
                     <OverlayTrigger placement='top' overlay={<Tooltip id={this.props.id}> {this.props.help}</Tooltip>}>
-                        <i className="fa fa-question-circle-o" aria-hidden="true"></i>
+                        <i className="fa fa-question-circle-o" aria-hidden="true" style={{paddingLeft: '5px'}}></i>
                     </OverlayTrigger>
                 </span>
                 <span>
@@ -633,5 +643,115 @@ let BooleanComponent = React.createClass({
     },
 })
 
+let MultiSelectComponent = React.createClass({    
+    getInitialState: function() {
+        return {
+           options: []
+        }
+    },
+    
+	componentWillMount: function() {
+        if ( this.props.dynamic ) {
+            this.getDynamic();
+        } else {
+       		this.makeForm(); 	 
+        }
+    },	
+	
+	makeForm: function(nextProps) {
+		let props = this.props;
+		if (nextProps) { props = nextProps };
+		
+		let arr = [];
+		for (var j=0; j < props.dropdownValues.length; j++){
+			if ( props.value.includes( props.dropdownValues[j]['value'] )) {
+				arr.push(<option selected>{props.dropdownValues[j]['value']}</option>)
+			} else {
+				arr.push(<option>{props.dropdownValues[j]['value']}</option>)
+			}
+		}
+
+		this.setState({ options: arr });
+	}, 
+
+    getDynamic: function() {
+        $.ajax({
+            type: 'get',
+            url: this.props.fetchURL,
+            success: function ( result ) {
+                let arr = [];
+                let referenceKey = this.props.referenceKey;
+				for (var j=0; j < result[this.props.referenceKey].length; j++){
+					if ( result[this.props.referenceKey][j].selected == 1 ) {
+						arr.push(<option selected>{result[this.props.referenceKey][j].value}</option>);
+					} else {
+						arr.push(<option>{result[this.props.referenceKey][j].value}</option>)
+					}
+
+				}
+
+                this.setState({ options: arr });
+
+            }.bind(this)
+        });
+    },
+	
+    componentWillReceiveProps: function(nextProps) {
+        if ( nextProps.dynamic ) {
+            this.getDynamic();
+        } else {
+        	this.makeForm(nextProps);
+		}
+    },
+
+ 	
+	onChange: function( event ) {
+        var multiSelectArr = [];
+        for (var i=0; i < event.target.options.length; i++) {
+            if (event.target.options[i] != undefined) {
+                if (event.target.options[i].selected == true) {
+                    multiSelectArr.push(event.target.options[i].value);
+                } else {
+                	continue;
+				}
+            }
+        }
+       	 
+        let newData = {};
+        newData[this.props.id] = multiSelectArr;
+        
+        $.ajax({
+            type: 'put',
+            url: 'scot/api/v2/'+ this.props.mainType + '/' + this.props.mainId,
+            data: JSON.stringify(newData),
+            contentType: 'application/json; charset=UTF-8',
+            success: function(data) {
+                console.log('success: multi select added');
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('Failed to add multi select', data);
+            }.bind(this)
+        });
+        this.setState({ selected: event.target.value });
+    },
+    
+    render: function() {
+        return (
+            <div className='custom-metadata-table-component-div'>
+                <span className='custom-metadata-tableWidth'>
+                    {this.props.label}
+                    <OverlayTrigger placement='top' overlay={<Tooltip id={this.props.id}> {this.props.help}</Tooltip>}>
+                        <i className="fa fa-question-circle-o" aria-hidden="true" style={{paddingLeft: '5px'}}></i>
+                    </OverlayTrigger>
+                </span>
+                <span>
+                    <FormControl id={this.props.id} componentClass='select' placeholder='select' bsClass='custom-metadata-multi-select-width' multiple onChange={this.onChange} size={this.state.options.length}>
+                    	{this.state.options} 
+                    </FormControl>
+                </span>
+            </div>
+        )
+    },
+})
 
 module.exports = CustomMetaDataTable;
