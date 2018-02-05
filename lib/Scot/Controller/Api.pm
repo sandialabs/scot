@@ -172,6 +172,12 @@ sub post_create_process {
         $object->get_collection_name." created", 1
     );
 
+    if ( ref($object) eq "Alertgroup" ) {
+        $mongo->collection('Stat')->put_stat(
+            'alert created', $object->alert_count
+        );
+    }
+
     return $json;
 }
 
@@ -1056,7 +1062,7 @@ sub post_update_process {
     my $req     = shift;
     my $updates = shift; # aref of { what =>  , attribute=> ,old_value, new_value}
     my $env     = $self->env;
-    my $colname = (split(/::/,ref($object)))[-1];
+    my $colname = lc((split(/::/,ref($object)))[-1]);
 
     my $agcol   = $env->mongo->collection('Alertgroup');
 
