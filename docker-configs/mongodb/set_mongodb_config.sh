@@ -23,7 +23,7 @@ set='$set'
 if [ ! -f /var/lib/mongodb/.mongodb_password_set ]; then
     mongo --host mongodb scot-prod /opt/scot/install/src/mongodb/admin_user.js
     mongo --host mongodb scot-prod --eval "db.user.update({username:'admin'}, {$set:{pwhash:'$HASH'}}, {multi:true})"
-    echo "hello" > /var/lib/mongodb/.mongodb_password_set
+    echo "Mapping set for Mongo" > /var/lib/mongodb/mongodb_password_set
 fi
 
 sleep 3

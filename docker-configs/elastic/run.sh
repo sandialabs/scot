@@ -12,7 +12,7 @@ fi
 
 
 #check to see if file exists (meaning mapping has been run) and if it doesnt, create one
-if [ ! -f /var/lib/elasticsearch/.elastic_mapping_set ]; then
+if [ ! -f /var/lib/elasticsearch/elastic_mapping_set ]; then
     /opt/scot/elastic/set_elastic_config.sh 
 fi
 
