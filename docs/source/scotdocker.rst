@@ -1,5 +1,7 @@
-Docker-SCOT v 0.01
+Docker-SCOT v 0.02
 ***************
+
+v0.02 relase date - 2/5/2017
 
 =================
 Table of Contents
@@ -57,6 +59,7 @@ There are two methods for getting started with SCOT. Run the SCOT/restart-build-
     * Using self-signed certificates for apache
     * Making changes to the underlying SCOT perl source code
     * Configuring the mail service to integrate with you a corporate email account
+    * **IMPORTANT** The easy install assumes that you do not already have elasticsearch, mongodb, and scot user accounts on  host. If you do, please remove them PRIOR to running the install. In order to make sure mongo and elasticsearch data is perssited, we have to user accounts on the host and container keep those in sync, otherwise elasticsearch and mongo will die on restarts due to being unable to read / write to their various data stores. 
 2. Custom Mode - If you are concerned with the above, you should use the custom mode which builds the docker containers from source and deploys them. 
 
 
