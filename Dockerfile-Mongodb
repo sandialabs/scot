@@ -1,9 +1,5 @@
 FROM sandialabs/scot_perl
 
-ARG MONGODBUID
-ARG MONGODBGID
-ENV MONGODBUID=${MONGODBUID}
-ENV MONGODBGID=${MONGODBGID}
 
 # Installation:
 # Import MongoDB public GPG key AND create a MongoDB list file
@@ -34,13 +30,13 @@ RUN chmod 0755 /set_mongodb_config.sh
 
 
 #set mongodb UID to system created
-RUN usermod -u ${MONGODBUID} mongodb 
+RUN usermod -u 1061 mongodb 
 
-#RUN usermod -g ${MONGODBGID} mongodb
+#RUN usermod -g 2061 mongodb
 
 #Set permissions for mongodb user
 
-RUN chown -R mongodb:mongodb /var/log/mongodb /var/lib/mongodb/
+RUN chown -R 1061:2061 /var/log/mongodb /var/lib/mongodb/
 
 # Set /usr/bin/mongod as the dockerized entry-point application
 USER mongodb:mongodb
