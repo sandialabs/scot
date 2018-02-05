@@ -309,6 +309,21 @@
                 help    => 'The id of the SCOT datatype that originated this sig',
                 label   => "Reference ID",
             },
+            {
+                type    => "multi_select",
+                key     => "action",
+                value   => [
+                    { value => 'alert',  selected => 0 },
+                    { value => 'block', selected => 0 },
+                ],
+                value_type  => {
+                    type    => "static",
+                    url     => undef,
+                    key     => 'action',
+                },
+                label   => "Action",
+                help    => "The automated action that should take place when this signature is triggered. Select multiple actions using ctrl/command key.",
+            },
         ],
         incident    => [
             # substitue your text and values here to match your
