@@ -47,8 +47,6 @@ services:
       dockerfile: Dockerfile-Mongodb
       context: ./
       args:
-        MONGODBUID: ${MONGODBUID}
-        MONGODBGID: ${MONGODBGID}
         http_proxy: ${http_proxy}
         https_proxy: ${https_proxy}
         HTTP_PROXY: ${HTTP_PROXY}
@@ -71,7 +69,6 @@ services:
      dockerfile: Dockerfile-Elastic
      context: ./
      args: 
-       ELASTICUID: ${ELASTICUID}
        http_proxy: ${http_proxy}
        https_proxy: ${https_proxy}
        HTTP_PROXY: ${HTTP_PROXY}
@@ -90,9 +87,6 @@ services:
     build:
       dockerfile: Dockerfile-Scot
       context: ./
-      args:
-        SCOTUID: ${SCOTUID}
-        SCOTGID: ${SCOTGID}
     volumes:
      - "/var/log/scot:/var/log/scot/"
      - "/etc/timezone:/etc/timezone:ro"
