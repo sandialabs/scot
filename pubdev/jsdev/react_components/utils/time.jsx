@@ -1,5 +1,6 @@
-import moment from 'moment';
-require( 'moment-range' );
+import Moment from 'moment';
+import { extendMoment } from 'moment-range';
+const moment = extendMoment( Moment );
 
 /**
  * Calculate if a timestamp is older than a number of seconds
