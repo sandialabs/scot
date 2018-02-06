@@ -87,6 +87,7 @@ SCOT's installer, install.sh,  is designed to automate many of the tasks need to
 
         -A mode     where mode = (default) "Local", "Ldap", or "Remoteuser" 
         -M path     where to locate installer for scot private modules
+        -C          replace existing config files
         -D          delete target install directory before beginning install
         -d          restart scot daemons (scepd and scfd)
         -e          reset the Elasticsearch DB
@@ -105,4 +106,21 @@ Configuration Files
 ^^^^^^^^^^^^^^^^^^^
 
 Configuration templates are in SCOT/install/src/scot.  The files end in "cfg.pl".  You may edit them prior to install to suite your environment, or you may edit them post install in /opt/scot/etc.  All changes to config files after installation will require a restart of the service for changes to take place.
+
+Ideally, you should keep your config file modifications under software control outside of the SCOT repo directory.  Here's how to set that up.
+
+    # cd /home/scotadmin
+    # ls -l
+    drwxrwxr-x scotadmin scotadmin 4096 Jan 1 19:19 SCOT
+    # mkdir Scot-Internal-Modules
+    # cd Scot-Internal-Modules
+    # mkdir etc
+    # cd etc
+    # cp ../../SCOT/install/src/scot/scot.cfg.pl .
+    # vi scot.cfg.pl    # make changes
+    # cd ..
+    # cp ../SCOT/install/src/localinstall.sh ./install.sh
+    # chmod +x ./install.sh
+
+Place all your local configs in the Scot-Internal-Modules/etc/ directory.  Modify the install.sh to suit your site.  While you are it, place that directory under software control (git, etc.) and now you can make changes to your config confidently.  When ever you run SCOT/install.sh the final step is a check for Scot-Internal-Modules/install.sh.  If it exists, it will be executed.
 
