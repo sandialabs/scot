@@ -1,13 +1,5 @@
 sudo docker-compose down
 
-unset MONGODBUID
-unset MONGODBGID
-unset SCOTUID
-unset SCOTGID
-unset ELASTICUID
-unset ELASTICGID
-unset HOSTNAME
-
 scot_log_dir="/var/log/scot"
 scot_backup="/opt/scotbackup"
 mongodb_dir="/var/lib/mongodb"
@@ -62,14 +54,6 @@ function add_users {
        echo "SCOT user does not exist. Creating user"
        sudo useradd -c "SCOT User" -u 1060 -g 2060 -M -s /bin/bash scot
     fi
-
-#    echo "-Checking for existing Elastic User"
-#    if grep --quiet -c elasticsearch: /etc/passwd; then
-#        echo "- elasticsearch user exists"
-#    else
-#        echo "Elasticsearch user does not exist. Creating user"
-#        sudo useradd -c "elasticsearch User" -u 1000 -g 1000  -M -s /bin/bash elasticsearch
-#    fi
     
     echo "-Checking for existing Mongodb User"
     if grep --quiet -c mongodb: /etc/passwd; then
@@ -89,11 +73,6 @@ sudo chown -R 1060:2060 /var/log/scot/ /opt/scot/
 #add users
 add_users
 
-export SCOTUID=`id scot -u`
-export SCOTGID=`id scot -g` 
-export MONGODBUID=`id mongodb -u`
-export MONGODBGID=`id mongodb -g`
-
 
 #build open-source scot
 
@@ -105,15 +84,16 @@ echo "This script will walk you through the installation process. First, we have
 echo " "
 echo "SCOT has two installation modes:" 
 echo " "
-echo "1. Easy Mode - In this mode, we will pull pre-built images from Dockerhub. Note: Using this mode, there is no customization such as insertion of your own server's SSL certs, no LDAP integration, etc."
+echo "1. Demo Mode - In this mode, we will pull pre-built images from Dockerhub. Note: Using this mode, there is no customization such as insertion of your own server's SSL certs, no LDAP integration, etc. This mode should not be used in production instances"
 echo "2. Custom mode: In this mode, we will build the Docker containers from the Dockerfiles contained in the cloned source code. You can also make changes to the Dockerfiles, source code, etc. as you see fit"
 echo " "
 echo -n "Please enter your selection: 1 for easy mode / 2 for custom mode"
 read -n 1 selection
 
 if [ "$selection" == "1" ]; then
-  echo "You selected easy mode."
+  echo "You selected demo mode."
   echo " "
+  sudo -E docker-compose pull
   sudo -E docker-compose up --build
 elif [ "$selection" == "2" ]; then
   echo "You selected custom mode."
