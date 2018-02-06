@@ -25,7 +25,10 @@ foreach my $user (sort keys %users) {
     my $client  = Scot::Util::ScotClient->new({
         auth_type   => 'apikey',
         api_key => $users{$user},
-        config  => {},
+        servername => 'scotdemo.com',
+        config  => {
+
+       },
     });
 
     $clients{$user} = $client;
@@ -166,25 +169,25 @@ sub load_demo_data {
                 data            => [
                     {
                         # alert 4
-                        src		=> "50.203.149.4",
-                        status_code	=> 500,
-                        method		=> "GET",
-                        hostname	=> "sittingduck.sandia.gov",
-                        uri		=> q{/lookup.php?q=y;insert from users username="foo" },
-                        referer		=> "http://www.osito.org/create_an_injection.html",
-                        content_disposition	=> "text/plain",
-                        length		=> "0",
+                        src        => "50.203.149.4",
+                        status_code    => 500,
+                        method        => "GET",
+                        hostname    => "sittingduck.sandia.gov",
+                        uri        => q{/lookup.php?q=y;insert from users username="foo" },
+                        referer        => "http://www.osito.org/create_an_injection.html",
+                        content_disposition    => "text/plain",
+                        length        => "0",
                     },
                     {
                         # alert 5
-                        src		=> "50.203.149.4",
-                        status_code	=> 200,
-                        method		=> "GET",
-                        hostname	=> "sittingduck.sandia.gov",
-                        uri		=> q{/lookup.php?q=y;insert into users username="foo" },
-                        referer		=> "http://www.osito.org/create_an_injection.html",
-                        content_disposition	=> "text/plain",
-                        length		=> "346",
+                        src        => "50.203.149.4",
+                        status_code    => 200,
+                        method        => "GET",
+                        hostname    => "sittingduck.sandia.gov",
+                        uri        => q{/lookup.php?q=y;insert into users username="foo" },
+                        referer        => "http://www.osito.org/create_an_injection.html",
+                        content_disposition    => "text/plain",
+                        length        => "346",
                     },
                 ],
             },
@@ -263,7 +266,7 @@ sub load_demo_data {
                         PATH        => q{c:\users\jed\appdata\local\temp },
                         DESCRIPTION => "screensaver",
                         CHECKSUM    => "d41d8cd98f00b204e9800998ecf8427e",
-                        USER	    => "jed",
+                        USER        => "jed",
                         TIMESTAMP   => 13072469257554,
                     },
                     {
@@ -272,7 +275,7 @@ sub load_demo_data {
                         PATH        => q{c:\users\fred\appdata\local\temp },
                         DESCRIPTION => "exe",
                         CHECKSUM    => "a2506232cb3a3f1d9a2795c92f2bd5fd",
-                        USER	    => "administrator",
+                        USER        => "administrator",
                         TIMESTAMP   => 13072469257999,
                     },
                 ],
@@ -295,25 +298,25 @@ sub load_demo_data {
                 data            => [
                     {
                         # alert 8
-                        src		=> "50.203.149.4",
-                        status_code	=> 500,
-                        method		=> "GET",
-                        hostname	=> "sittingduck.sandia.gov",
-                        uri		=> q{/lookup.php?q=y;insert from users username="foo" },
-                        referer		=> "http://www.osito.org/create_an_injection.html",
-                        content_disposition	=> "text/plain",
-                        length		=> "0",
+                        src        => "50.203.149.4",
+                        status_code    => 500,
+                        method        => "GET",
+                        hostname    => "sittingduck.sandia.gov",
+                        uri        => q{/lookup.php?q=y;insert from users username="foo" },
+                        referer        => "http://www.osito.org/create_an_injection.html",
+                        content_disposition    => "text/plain",
+                        length        => "0",
                     },
                     {
                         # alert 9
-                        src		=> "50.203.149.4",
-                        status_code	=> 200,
-                        method		=> "GET",
-                        hostname	=> "sittingduck.sandia.gov",
-                        uri		=> q{/lookup.php?q=y;insert into users username="foo" },
-                        referer		=> "http://www.osito.org/create_an_injection.html",
-                        content_disposition	=> "text/plain",
-                        length		=> "346",
+                        src        => "50.203.149.4",
+                        status_code    => 200,
+                        method        => "GET",
+                        hostname    => "sittingduck.sandia.gov",
+                        uri        => q{/lookup.php?q=y;insert into users username="foo" },
+                        referer        => "http://www.osito.org/create_an_injection.html",
+                        content_disposition    => "text/plain",
+                        length        => "346",
                     },
                 ],
             },
@@ -367,39 +370,39 @@ sub load_demo_data {
             endpt   => "alertgroup",
             next    => 10,
             data    => {
-                source		=> [ qw(netdetctr) ],
-                subject		=> "Executable downloaded",
-                tag		=> [ qw(web executable) ],
+                source        => [ qw(netdetctr) ],
+                subject        => "Executable downloaded",
+                tag        => [ qw(web executable) ],
                 groups          => {
                     read        => [ qw(wg-scot-ir) ],
                     modify      => [ qw(wg-scot-ir) ],
                 },
                 columns     => [ qw(URL date dstip) ],
-                data		=> [
+                data        => [
                     {
                         # alert 10
-                        URL	=> 'http://bnet.downlow.com/dl?file=xplt.exe',
-                        date	=> '2015-04-21 09:45:00',
-                        dstip	=> '10.234.21.2',
+                        URL    => 'http://bnet.downlow.com/dl?file=xplt.exe',
+                        date    => '2015-04-21 09:45:00',
+                        dstip    => '10.234.21.2',
                     },
                     {
                         # alert 11
-                        URL	=> 'http://dark.foo.net/dl?file=stg2.exe',
-                        date	=> '2015-04-21 09:47:00',
-                        dstip	=> '10.234.21.2',
+                        URL    => 'http://dark.foo.net/dl?file=stg2.exe',
+                        date    => '2015-04-21 09:47:00',
+                        dstip    => '10.234.21.2',
                     },
                     {
                         # alert 12
-                        URL	=> 'http://chrome.google.com/download',
-                        date	=> '2015-04-21 10:30:01',
-                        dstip	=> '10.233.26.1',
+                        URL    => 'http://chrome.google.com/download',
+                        date    => '2015-04-21 10:30:01',
+                        dstip    => '10.233.26.1',
                         file    => 'chromedownload.exe',
                     },
                     {
                         # alert 13
-                        URL	=> 'http://openme.com/download',
-                        date	=> '2015-04-21 10:29:04',
-                        dstip	=> '10.233.26.1',
+                        URL    => 'http://openme.com/download',
+                        date    => '2015-04-21 10:29:04',
+                        dstip    => '10.233.26.1',
                         file    => 'openme.exe',
                     },
                 ],
@@ -747,4 +750,4 @@ sub load_demo_data {
 
         },
     );
-}
+} 
