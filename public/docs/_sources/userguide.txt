@@ -31,7 +31,7 @@ To access the Alert Grid, click on the “Alert” button in the Navigation Bar 
 :Tags: Tags are seen as a catchall and are useful in subsequent searches for alerts with a specific set of tags.
 :Views: You can also filter by the number of times a particular alert has been viewed to know if anyone else on your team has looked at it.
 
-.. figure:: _static/images/alertfilters.png
+.. figure:: _static/alertfilters.png
    :width: 100 %
    :alt: Filters in alert grid
 
@@ -263,6 +263,25 @@ These Entities are extracted via Regualar Expressions.  If you develop other int
 
 Extracted Entities are stored within the SCOT database and Links are created to the Alert/Alertgroup or Entry and parent Alertgroup, Intel, Event, or Incident.  The source HTML is also modified to wrap the Entity with a <span> tag of class "entity."  Addition classes may be applied to the Entity based on the type of the Entity.  
 
+User Defined Entity
+^^^^^^^^^^^^^^^^^^^
+
+You can highlight text within an Entry and a new button will appear that will
+allow you to "create user defined entity."  You will be asked to describe the
+type of the entity.  Once you click on create, SCOT will then search through
+all alerts and entries for that string and flair them.  All future appearances
+of that string will also be flaired as an entity of the type you created.
+
+For example, let's pretend you just created an entry that says::
+   
+    The fuzzy foobar group's fingerprints are all over this.
+
+You want to link "fuzzy foobar" as a threat actor group and be able to find
+other references to this group within SCOT.  Highlight the text "fuzzy foobar"
+click "create entity" and enter "threat-actor-group" as the type. (spaces are
+autocoverted to dashes '-').  Now SCOT will add "fuzzy foobar" to the list of
+flairable entities and well as "reflairing" instances in previous entries.
+
 Entities
 ---------
 
@@ -287,7 +306,7 @@ SCOT can automatically detect and extract the following Entities:
         SCOT can extract MD5, SHA1, and SHA256 hashes from input data.
 
     IP Addresses
-        SCOT currently only extracts IPv4 addresses.
+        SCOT will extract IP addresses.  IP version 4 address will have type ipaddr, and IP version 6 addresses will have type "ipv6".
 
     Email Addresses
         E-mail addresses, both email username and the domain, are extracted and watched.
@@ -295,15 +314,35 @@ SCOT can automatically detect and extract the following Entities:
     Latitude/Longitude
         In the form of -120.093 +100.234
 
+    CVE
+        SCOT will detect CVE names in the form of "CVE-YYYY-XXXX"
+
+    CIDR
+        SCOT will detect CIDR blocks in the form of X.Y.Z.0/A, where A is 0  through 32.  As an added benefit, SCOT will also link ip address entities that are
+        in that CIDR block to this entity as well.
+
+
+
+
+
         
 
 Building Additional Entity Types
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The primary tool for entity extraction is the Perl module Scot::Util::EntityExtractor.
+The primary tool for entity extraction is the Perl module Scot::Extractor::Regex
 Additional regular expression may be added to this module to extract additional entities.  
 
-We would also be happy to accept submissions from users on new ways to parse and extract entities.
+Another way to add additional Regexes is to add them to your scot.cfg.pl.  Add a key "entity_regexes" to the cfg file.  This array of items will be added to the Regex module at server start time.  
+
+The format of the regex item is::
+
+    {
+        type    => "name_of_the_entity",
+        regex   => qr{ regex_here },
+        order   => number,    # lower numbers get precidence over higher
+    }
+
 
 
 Permissions
@@ -362,4 +401,24 @@ the /opt/scot/etc/ldap.cfg file.  The line::
 
 can be changed to whatever naming convention you decide upon.
 
+HotKeys
+-------
 
+The following hotkeys are supported::
+
+    f: Toggle full screen mode when a detail section is open
+    t: Toggle flair on/off
+    o: This will open all alerts within the alertgroup when in the alertgroup list view as your focus. 
+    c: This will close all alerts within the alertgroup when in the alertgroup list view as your focus. 
+    j: This will select one row down within the list view.
+    k: This will select one row up within the list view.
+    esc: This will close the entity pop-up window. 
+
+Posting a global notificaton:
+-----------------------------
+
+A global notification can be posted to all users by navigating to::
+    
+    https://<scot instance>/#/wall
+
+Note that only raw text will be displayed.

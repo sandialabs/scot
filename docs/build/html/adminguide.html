@@ -253,7 +253,7 @@ Reenter Admin Password   : *</strong>
 </li>
 </ol>
 <blockquote>
-<div>$ mongo scot-prod
+<div>$ mongo scot-prod &lt;enter&gt;
 &gt; db.user.update({username:&#8221;admin&#8221;},{$set:{hash:&#8217;{X-PBKDF2}HMACSHA2+512:AAAnEA:2/oQYlnzjibzWoCs2aPv:KAZIhhNUgPBw4M7ZOVU1/2yT/P07FRe2bhacBw6J6ru4jwFRM9dMpxOARc9IfxrQs7ltxSn1ceW76dgJ4kL0Ng==&#8217;}});</div></blockquote>
 <ol class="arabic simple" start="3">
 <li>Now you (admin) will be able to log in via Local Auth using the password you entered.</li>
