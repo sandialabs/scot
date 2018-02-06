@@ -25,14 +25,16 @@ ADD install/src/mongodb /opt/scot/install/src/mongodb
 #Create /var/lib/mongodb directory
 RUN mkdir -p /var/lib/mongodb/
 
+
+#add entry scripts
 RUN chmod 0755 /run.sh
 RUN chmod 0755 /set_mongodb_config.sh
 
+#ADD demo files
+ADD demo/ /opt/scot/demo/
 
 #set mongodb UID to system created
 RUN usermod -u 1061 mongodb 
-
-#RUN usermod -g 2061 mongodb
 
 #Set permissions for mongodb user
 
