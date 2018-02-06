@@ -4,8 +4,8 @@ import { ListGroup, ListGroupItem, Label } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 import LoadingContainer from '../../list/LoadingContainer';
+import { todayRange, epochRangeToFilter, timeOlderThan } from '../../utils/time';
 
-import { timeOlderThan } from '../../utils/time';
 const NEW_TIME = 24 * 60 * 60; // 1 day
 const isNew = ( created ) => {
 	return !timeOlderThan( created * 1000, NEW_TIME );
@@ -30,6 +30,7 @@ export default class ThingList extends PureComponent {
 		processData: PropTypes.func,
 		getSummary: PropTypes.func,
 		getLink: PropTypes.func,
+		emptyString: PropTypes.string,
 		newBadge: PropTypes.bool,
 		errorToggle: PropTypes.func,
 	}
@@ -52,6 +53,7 @@ export default class ThingList extends PureComponent {
 		getLink: ( thingType, thing ) => {
 			return `${thingType}/${thing.id}`;
 		},
+		emptyString: 'No Data',
 		newBadge: true,
 	}
 
@@ -113,16 +115,21 @@ export default class ThingList extends PureComponent {
 	}
 
 	render() {
-		const things = this.state.data.map( ( thing, i ) => this.genThingItem( thing, i ) );
+		let things = this.state.data.map( ( thing, i ) => this.genThingItem( thing, i ) );
+		if ( things.length === 0 ) {
+			things = <div className="list-group-item">{this.props.emptyString}</div>
+		}
+
 		return (
 			<div className="ThingList">
 				<h1>{this.props.title}</h1>
-				{ this.state.loading &&
+				{ this.state.loading ?
 					<LoadingContainer loading={true} />
+					:
+					<ListGroup>
+						{things}
+					</ListGroup>
 				}
-				<ListGroup>
-					{things}
-				</ListGroup>
 			</div>
 		)
 	}
@@ -137,6 +144,7 @@ export const Widgets = () => {
 		...RecentEvents,
 		...RecentIncidents,
 		...OpenTasks,
+		...UnviewedAlerts,
 	}
 };
 
@@ -202,6 +210,32 @@ export const OpenTasks = {
 				let target = thing.target;
 				return `${thingType}/${target.type}/${target.id}/${thing.id}`;
 			},
+		},
+	},
+}
+
+export const UnviewedAlerts = {
+	unviewedAlerts: {
+		type: ThingList,
+		title: "Unviewed Alerts",
+		description: "Recent alerts with zero views",
+		props: {
+			thingType: 'alertgroup',
+			title: 'Unviewed Alerts',
+			queryOptions: {
+				limit: 5,
+				offset: 0,
+				sort: {
+					id: -1,
+				},
+				filter: {
+					created: JSON.stringify(epochRangeToFilter( todayRange() )),
+					views: 0,
+				},
+				columns: ['id', 'subject', 'has_tasks'],
+			},
+			newBadge: false,
+			emptyString: 'None!',
 		},
 	},
 }
