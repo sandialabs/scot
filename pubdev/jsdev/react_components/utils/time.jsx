@@ -2,6 +2,8 @@ import Moment from 'moment';
 import { extendMoment } from 'moment-range';
 const moment = extendMoment( Moment );
 
+const DAY = 24 * 60 * 60 * 1000;
+
 /**
  * Calculate if a timestamp is older than a number of seconds
  *
@@ -24,6 +26,29 @@ export const timeOlderThan = ( timestamp, secondsAgo ) => {
 export const isExpired = ( expires ) => {
     return !expires || Date.now() >= expires;
 };
+
+/**
+ * Return an Epoch Range from beginning of yesterday till end of tomorrow
+ */
+export const todayRange = () => {
+	return {
+		start: Math.floor( (new Date(Date.now() - DAY)).setHours(0, 0, 0, 0) / 1000 ),
+		end: Math.floor( (new Date(Date.now() + DAY)).setHours(23, 59, 59, 999) / 1000 ),
+	}
+}
+
+
+/**
+ * Epoch Range to filter array
+ *
+ * range: epoch range
+ */
+export const epochRangeToFilter = ( range ) => {
+	return [
+		range.start,
+		range.end,
+	];
+}
 
 /**
  * Conversion Functions for DateRangeFilter
