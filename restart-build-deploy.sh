@@ -87,7 +87,7 @@ echo " "
 echo "1. Demo Mode - In this mode, we will pull pre-built images from Dockerhub. Note: Using this mode, there is no customization such as insertion of your own server's SSL certs, no LDAP integration, etc. This mode should not be used in production instances"
 echo "2. Custom mode: In this mode, we will build the Docker containers from the Dockerfiles contained in the cloned source code. You can also make changes to the Dockerfiles, source code, etc. as you see fit"
 echo " "
-echo -n "Please enter your selection: 1 for easy mode / 2 for custom mode"
+echo -n "Please enter your selection: 1 for demo mode  / 2 for custom mode"
 read -n 1 selection
 
 if [ "$selection" == "1" ]; then
