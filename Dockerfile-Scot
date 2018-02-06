@@ -29,6 +29,7 @@ COPY docker-scripts/* /opt/scot/bin/
 RUN groupadd -g 2060 scot && \
     useradd -r -u 1060 -g scot scot
 
+COPY demo/ /opt/scot/demo/
 
 #scot permissions
 RUN chown -R scot:scot /opt/scot/
