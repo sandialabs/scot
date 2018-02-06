@@ -22,7 +22,7 @@ Docker-SCOT is an experimental, multi-container based implementation of SCOT. Do
 **IMPORTANT**
 
 Backup your database via the backup.pl in the /opt/scot/bin/ directory before upgrading to the docker version of SCOT. If you are upgrading, you will also need to turn off all services that the older version of SCOT uses such as Apache, Activemq, Mongodb, ElasticSearch and SCOT (i.e. sudo service stop scot). Also as far as upgrading, we have **not** tested upgrading from any version before 3.4. Upgrade from versions prior to 3.4 to 3.5 first before upgrading to Docker-SCOT
-
+7
 
 
 Docker-SCOT containers
@@ -55,12 +55,12 @@ SCOT Installation
 There are two methods for getting started with SCOT. Run the SCOT/restart-build-deploy.sh script (will be promopted to enter sudo credentials) and follow the on screen prompts for either. 
 
 
-1. Easy mode - this mode will pull all necessary docker images from from Dockerhub (preconfigured). This is the preferred method if you do are not concerned with any of the below bullet points. 
+1. Demo mode - this mode will pull all necessary docker images from from Dockerhub (preconfigured). For demo purposes, this is the preferred method if you do are not concerned with any of the below bullet points. Demo mode should not be ran in production. 
     * Using self-signed certificates for apache
     * Making changes to the underlying SCOT perl source code
     * Configuring the mail service to integrate with you a corporate email account
     * **IMPORTANT** The easy install assumes that you do not already have elasticsearch, mongodb, and scot user accounts on  host. If you do, please remove them PRIOR to running the install. In order to make sure mongo and elasticsearch data is perssited, we have to user accounts on the host and container keep those in sync, otherwise elasticsearch and mongo will die on restarts due to being unable to read / write to their various data stores. 
-2. Custom Mode - If you are concerned with the above, you should use the custom mode which builds the docker containers from source and deploys them. 
+2. Custom Mode - If you are concerned with the above, you should use the custom mode which builds the docker containers from source and deploys them.  
 
 
 
