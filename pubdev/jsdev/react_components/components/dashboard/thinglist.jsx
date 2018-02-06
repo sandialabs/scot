@@ -144,7 +144,9 @@ export const Widgets = () => {
 		...RecentEvents,
 		...RecentIncidents,
 		...OpenTasks,
+		...YourTasks,
 		...UnviewedAlerts,
+		...TopEvents,
 	}
 };
 
@@ -214,6 +216,37 @@ export const OpenTasks = {
 	},
 }
 
+export const YourTasks = {
+	yourTasks: {
+		type: ThingList,
+		title: "Your Tasks",
+		description: "List of open tasks that you own",
+		props: {
+			thingType: 'task',
+			title: 'Your Tasks',
+			queryOptions: {
+				limit: 5,
+				offset: 0,
+				sort: {
+					updated: 1,
+				},
+				filter: {
+					'metadata.task.status': 'open',
+					owner: getLocalStorage('whoami'),
+				},
+				columns: ['id', 'body_plain', 'target'],
+			},
+			getSummary: ( thing ) => {
+				return thing.body_plain.length > 200 ? thing.body_plain.substr(0, 200) +'...' : thing.body_plain;
+			},
+			getLink: ( thingType, thing ) => {
+				let target = thing.target;
+				return `${thingType}/${target.type}/${target.id}/${thing.id}`;
+			},
+		},
+	},
+}
+
 export const UnviewedAlerts = {
 	unviewedAlerts: {
 		type: ThingList,
@@ -232,7 +265,38 @@ export const UnviewedAlerts = {
 					created: JSON.stringify(epochRangeToFilter( todayRange() )),
 					views: 0,
 				},
+				columns: ['id', 'subject'],
+			},
+			newBadge: false,
+			emptyString: 'None!',
+		},
+	},
+}
+
+export const TopEvents = {
+	topEvents: {
+		type: ThingList,
+		title: "Top Events",
+		description: "Recent Events with open tasks",
+		props: {
+			thingType: 'event',
+			title: 'Top Events',
+			queryOptions: {
+				limit: 5,
+				offset: 0,
+				sort: {
+					has_tasks: 1,
+				},
+				filter: {
+					created: JSON.stringify(epochRangeToFilter( todayRange() )),
+				},
 				columns: ['id', 'subject', 'has_tasks'],
+			},
+			processData: ( data ) => {
+				return data.filter( ( thing ) => thing.has_tasks );
+			},
+			getSummary: ( thing ) => {
+				return `${thing.subject} (${thing.has_tasks} open task${ thing.has_tasks > 1 ? '(s)' : ''})`;
 			},
 			newBadge: false,
 			emptyString: 'None!',
