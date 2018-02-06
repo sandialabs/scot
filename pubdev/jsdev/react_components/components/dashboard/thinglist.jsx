@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import { ListGroup, ListGroupItem, Label } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
+import LoadingContainer from '../../list/LoadingContainer';
+
 import { timeOlderThan } from '../../utils/time';
 const NEW_TIME = 24 * 60 * 60; // 1 day
 const isNew = ( created ) => {
@@ -17,6 +19,7 @@ export default class ThingList extends PureComponent {
 
 		this.state = {
 			data: [],
+			loading: true,
 		}
 	}
 
@@ -80,10 +83,14 @@ export default class ThingList extends PureComponent {
 			( data ) => {
 				this.setState( {
 					data: this.props.processData( data.records ),
+					loading: false,
 				} );
 			},
 			( error ) => {
 				this.props.errorToggle( "Failed to fetch data: "+ error );
+				this.setState( {
+					loading: false,
+				} );
 			}
 		);
 	}
@@ -110,6 +117,9 @@ export default class ThingList extends PureComponent {
 		return (
 			<div className="ThingList">
 				<h1>{this.props.title}</h1>
+				{ this.state.loading &&
+					<LoadingContainer loading={true} />
+				}
 				<ListGroup>
 					{things}
 				</ListGroup>
