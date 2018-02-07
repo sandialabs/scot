@@ -17,8 +17,7 @@
         VERSION:     '3.5.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
+        HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
@@ -26,6 +25,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
     <link rel="next" title="POST Install Procedures" href="postinstall.html" />
     <link rel="prev" title="License" href="license.html" /> 
   </head>
@@ -137,6 +137,7 @@ $ tar czvf scotng-backup.tgz ./dump
 
     -A mode     where mode = (default) &quot;Local&quot;, &quot;Ldap&quot;, or &quot;Remoteuser&quot;
     -M path     where to locate installer for scot private modules
+    -C          replace existing config files
     -D          delete target install directory before beginning install
     -d          restart scot daemons (scepd and scfd)
     -e          reset the Elasticsearch DB
@@ -154,6 +155,21 @@ $ tar czvf scotng-backup.tgz ./dump
 <div class="section" id="configuration-files">
 <h2>Configuration Files<a class="headerlink" href="#configuration-files" title="Permalink to this headline">¶</a></h2>
 <p>Configuration templates are in SCOT/install/src/scot.  The files end in &#8220;cfg.pl&#8221;.  You may edit them prior to install to suite your environment, or you may edit them post install in /opt/scot/etc.  All changes to config files after installation will require a restart of the service for changes to take place.</p>
+<p>Ideally, you should keep your config file modifications under software control outside of the SCOT repo directory.  Here&#8217;s how to set that up.</p>
+<blockquote>
+<div># cd /home/scotadmin
+# ls -l
+drwxrwxr-x scotadmin scotadmin 4096 Jan 1 19:19 SCOT
+# mkdir Scot-Internal-Modules
+# cd Scot-Internal-Modules
+# mkdir etc
+# cd etc
+# cp ../../SCOT/install/src/scot/scot.cfg.pl .
+# vi scot.cfg.pl    # make changes
+# cd ..
+# cp ../SCOT/install/src/localinstall.sh ./install.sh
+# chmod +x ./install.sh</div></blockquote>
+<p>Place all your local configs in the Scot-Internal-Modules/etc/ directory.  Modify the install.sh to suit your site.  While you are it, place that directory under software control (git, etc.) and now you can make changes to your config confidently.  When ever you run SCOT/install.sh the final step is a check for Scot-Internal-Modules/install.sh.  If it exists, it will be executed.</p>
 </div>
 </div>
 
@@ -188,7 +204,7 @@ $ tar czvf scotng-backup.tgz ./dump
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/install.rst.txt"
+      <li><a href="_sources/install.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>

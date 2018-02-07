@@ -13,8 +13,6 @@
     # authentication can be "Remoteuser", "Local", or "Ldap"
     auth_type   => 'Testing', 
 
-    authclass   => 'Controller::Auth::Testing',
-
     # group mode can be "local" or "ldap"
     group_mode  => 'ldap',
 
