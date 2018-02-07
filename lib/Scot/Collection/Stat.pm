@@ -40,6 +40,15 @@ sub put_stat {
     $self->increment($dt, $metric, $value);
 }
 
+sub fix_stat {
+    my $self    = shift;
+    my $metric  = shift;
+    my $value   = shift;
+    my $epoch   = shift;
+    my $dt      = DateTime->from_epoch( epoch => $epoch );
+    $self->increment($dt, $metric, $value);
+}
+
 sub increment {
     my $self    = shift;
     my $dt      = shift;

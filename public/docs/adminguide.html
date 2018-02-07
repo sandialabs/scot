@@ -17,8 +17,7 @@
         VERSION:     '3.5.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
+        HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
@@ -26,6 +25,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
     <link rel="next" title="Developing For SCOT" href="devguide.html" />
     <link rel="prev" title="User Guide" href="userguide.html" /> 
   </head>
@@ -65,8 +65,7 @@ backups to another system is left as an exercise to the admin.  By default, the
 last 7 days of backups are kept in /opt/scotbackup and files older than 7 days are removed.</p>
 <div class="section" id="manual-backup">
 <h3>Manual Backup<a class="headerlink" href="#manual-backup" title="Permalink to this headline">¶</a></h3>
-<p>I get it, you don&#8217;t trust some fancy script to back up.  Here&#8217;s what is going on behind the
-scenes.</p>
+<p>I get it, you don&#8217;t trust some fancy script to back up.  Here&#8217;s what is going on behind the scenes.</p>
 <ol class="arabic">
 <li><p class="first">Back up the mongo database with the &#8220;mongodump&#8221; command.</p>
 <p>$ cd /directory/with/space
@@ -178,13 +177,11 @@ $ tar xzvf /tmp/esback.tgz
 </div>
 <div class="section" id="ssl-certs">
 <h2>SSL Certs<a class="headerlink" href="#ssl-certs" title="Permalink to this headline">¶</a></h2>
-<p>The initial install of SCOT will use self-signed SSL Certs.  Please update these certs as
-soon as possible.</p>
+<p>The initial install of SCOT will use self-signed SSL Certs.  Please update these certs as soon as possible.</p>
 </div>
 <div class="section" id="geoip">
 <h2>GeoIP<a class="headerlink" href="#geoip" title="Permalink to this headline">¶</a></h2>
-<p>SCOT use the MaxMind GEOIP2 libraries and databases for geo location.  Please see the MaxMind
-website for details on how to update the database files.</p>
+<p>SCOT use the MaxMind GEOIP2 libraries and databases for geo location.  Please see the MaxMind website for details on how to update the database files.</p>
 </div>
 <div class="section" id="upgrading">
 <h2>Upgrading<a class="headerlink" href="#upgrading" title="Permalink to this headline">¶</a></h2>
@@ -193,7 +190,7 @@ downloaded directory, run:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">install</span><span class="o">.</span><span class="n">sh</span> <span class="o">-</span><span class="n">s</span>
 </pre></div>
 </div>
-<p>You probably want to do this when your analysts are very busy.</p>
+<p>You probably want to do this when your analysts are not very busy.</p>
 </div>
 <div class="section" id="cron-entries">
 <h2>CRON Entries<a class="headerlink" href="#cron-entries" title="Permalink to this headline">¶</a></h2>
@@ -215,9 +212,10 @@ downloaded directory, run:</p>
 <li>Apache2</li>
 <li>Scot</li>
 <li>scfd   (scot flairing daemon)</li>
+<li>scrfd  (scot reflairing daemon)</li>
 <li>scepd  (scot elastic push daemon)</li>
 </ul>
-<p>All of these services have /etc/init.d entries with start|stop|restart commands.</p>
+<p>Depending on the Linux version, these will have init style startup scripts or systemd style entries.</p>
 </div>
 <div class="section" id="logging">
 <h2>Logging<a class="headerlink" href="#logging" title="Permalink to this headline">¶</a></h2>
@@ -255,7 +253,7 @@ Reenter Admin Password   : *</strong>
 </li>
 </ol>
 <blockquote>
-<div>$ mongo scot-prod
+<div>$ mongo scot-prod &lt;enter&gt;
 &gt; db.user.update({username:&#8221;admin&#8221;},{$set:{hash:&#8217;{X-PBKDF2}HMACSHA2+512:AAAnEA:2/oQYlnzjibzWoCs2aPv:KAZIhhNUgPBw4M7ZOVU1/2yT/P07FRe2bhacBw6J6ru4jwFRM9dMpxOARc9IfxrQs7ltxSn1ceW76dgJ4kL0Ng==&#8217;}});</div></blockquote>
 <ol class="arabic simple" start="3">
 <li>Now you (admin) will be able to log in via Local Auth using the password you entered.</li>
@@ -300,7 +298,7 @@ Reenter Admin Password   : *</strong>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/adminguide.rst.txt"
+      <li><a href="_sources/adminguide.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>

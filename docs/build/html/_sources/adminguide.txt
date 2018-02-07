@@ -199,9 +199,9 @@ Let's say you forgot the admin password, what to do?
     Reenter Admin Password   : ***
     {X-PBKDF2}HMACSHA2+512:AAAnEA:2/oQYlnzjibzWoCs2aPv:KAZIhhNUgPBw4M7ZOVU1/2yT/P07FRe2bhacBw6J6ru4jwFRM9dMpxOARc9IfxrQs7ltxSn1ceW76dgJ4kL0Ng==
 
-2.  Enter mongodb shell and issue the following:
+2.  Enter mongodb shell and issue the following: 
 
-   $ mongo scot-prod
+   $ mongo scot-prod <enter>
    > db.user.update({username:"admin"},{$set:{hash:'{X-PBKDF2}HMACSHA2+512:AAAnEA:2/oQYlnzjibzWoCs2aPv:KAZIhhNUgPBw4M7ZOVU1/2yT/P07FRe2bhacBw6J6ru4jwFRM9dMpxOARc9IfxrQs7ltxSn1ceW76dgJ4kL0Ng=='}});
 
 3.  Now you (admin) will be able to log in via Local Auth using the password you entered.
