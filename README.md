@@ -26,7 +26,7 @@ Also, for docker documentation, please read: [https://github.com/sandialabs/scot
 Install It!
 -----------
 
-**Docker Method **
+**Docker Method**
 
 The suggested method for installation of SCOT is using docker. For a walkthrough of installing SCOT via docker, please read: https://github.com/sandialabs/scot/blob/master/docs/source/scotdocker.rst
 
