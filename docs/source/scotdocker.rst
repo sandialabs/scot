@@ -81,7 +81,7 @@ To stop a specific service::
     
 To restart a specific service and build in any particular changes you have made to source:: 
 
-    sudo docker-compose up -d --build name_of_service
+    sudo docker-compose restart --build name_of_service
     
 
 
@@ -89,11 +89,13 @@ To restart a specific service and build in any particular changes you have made 
 Configuration
 -------------
 
-Docker-SCOT relies on the docker-compose.yml to define the execution of the services, the DockerFiles that define the dependencies for each container, and two directories (docker-scripts & docker-configs). Below I will talk about each. 
+Docker-SCOT relies on docker-compose files to define the execution of the services, the DockerFiles that define the dependencies for each container, and two directories (docker-scripts & docker-configs). Below I will talk about each. 
 
-**docker-compose.yml**
+**docker-compose-custom.yml**
 
-The docker-compose.yml simply defines the port mappings, data volumes, build contexts, etc. Most of this can be configured as you please but keep in mind some of the data volume mapping and all of the static IPs are currently required unless you modify the configuration files in docker-configs. 
+The docker-compose-custom.yml file is the compose file that is referenced in the install script (restart-build-deploy.sh) when you choose 'Custom' (option 2). 
+
+The docker-compose-custom.yml file simply defines the port mappings, data volumes, build contexts, etc. Most of this can be configured as you please but do so at your own risk as most of the data volume mappings / container_names are required. 
 
 **docker-scripts**
 
@@ -147,7 +149,7 @@ MongoDB default password (also used for logging in to SCOT if local auth is enab
 * Username: admin
 * Password: admin
 
-Note: If by chance you ever go to wipe your mongo database and would like to start fresh, you would need to delete the file /var/lib/mongodb/.mongodb_password_set. 
+Note: If by chance you ever go to wipe your mongo database and would like to start fresh, you would need to delete the file /var/lib/mongodb/mongodb_password_set. 
 
 
 **Persisted Data** 
