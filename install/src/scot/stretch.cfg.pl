@@ -11,6 +11,7 @@
     max_workers     => 2,
     stomp_host      => 'localhost',
     stomp_port      => 61613,
+    topic           => '/topic/scot',
     default_owner   => 'scot-admin',
     modules => [
         {
