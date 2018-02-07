@@ -48,7 +48,7 @@ my $env = Scot::Env->new(
 );
 
 
-my $loop    = Scot::App::Stretch->new( 
+my $loop    = Scot::App::Responder::Stretch->new( 
     env => $env,
 );
 
