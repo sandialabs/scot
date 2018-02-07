@@ -21,7 +21,7 @@ Documentation and Install
 -------------------------
 Read our [documentation](http://scot.readthedocs.org/en/latest/install.html) at Read The Docs.
 
-Also, for docker documentation, please read: [https://github.com/sandialabs/scot/blob/scot-docker/docs/source/scotdocker.rs](https://github.com/sandialabs/scot/blob/scot-docker/docs/source/scotdocker.rst)
+Also, for docker documentation, please read: [https://github.com/sandialabs/scot/blob/scot-docker/docs/source/scotdocker.rst](https://github.com/sandialabs/scot/blob/scot-docker/docs/source/scotdocker.rst)
 
 Install It!
 -----------
