@@ -11,6 +11,7 @@
     max_workers     => 2,
     stomp_host      => 'activemq',
     stomp_port      => 61613,
+    topic           => '/topic/scot',
     default_owner   => 'scot-admin',
     modules => [
         {
@@ -24,7 +25,7 @@
             attr    => 'scot',
             class   => 'Scot::Util::ScotClient',
             config  => {
-                servername  => "localhost",
+                servername  => "scot",
                 username    => "scot-alerts",
                 password    => "changemenow",
                 auth_type    => "basic",
