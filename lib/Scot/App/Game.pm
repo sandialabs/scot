@@ -67,6 +67,19 @@ sub out {
     }
 }
 
+sub docker {
+    my $self    = shift;
+    my $log     = $self->log;
+    my $env     = $self->env;
+    my $interval    = (24 * 60 * 60);
+    while (1) {
+        $self->run();
+        sleep $interval;
+    }
+}
+
+
+
 sub run {
     my $self    = shift;
     my $log     = $self->log;

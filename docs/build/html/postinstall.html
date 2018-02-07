@@ -56,7 +56,7 @@
 <div class="section" id="migration">
 <h2>Migration<a class="headerlink" href="#migration" title="Permalink to this headline">¶</a></h2>
 <p>If you backed up data from your 3.4 SCOT instance and wish to restore it,
-you will need to follow the migration procedure <span class="xref std std-ref">migration.rst</span></p>
+you will need to follow the migration procedure <span class="xref std std-ref">Migration</span></p>
 </div>
 <div class="section" id="ssl-certs">
 <h2>SSL Certs<a class="headerlink" href="#ssl-certs" title="Permalink to this headline">¶</a></h2>
@@ -298,7 +298,274 @@ to resart SCOT for any changes to be recognized.</p>
 219
 220
 221
-222</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324
+325
+326
+327
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340
+341
+342
+343
+344
+345
+346
+347
+348
+349
+350
+351
+352
+353
+354
+355
+356
+357
+358
+359
+360
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372
+373
+374
+375
+376
+377
+378
+379
+380
+381
+382
+383
+384
+385
+386
+387
+388
+389
+390
+391
+392
+393
+394
+395
+396
+397
+398
+399
+400
+401
+402
+403
+404
+405
+406
+407
+408
+409
+410
+411
+412
+413
+414
+415
+416
+417
+418
+419
+420
+421
+422
+423
+424
+425
+426
+427
+428
+429
+430
+431
+432
+433
+434
+435
+436
+437
+438
+439
+440
+441
+442
+443
+444
+445
+446
+447
+448
+449
+450
+451
+452
+453
+454
+455
+456
+457
+458
+459
+460
+461
+462
+463
+464
+465
+466
+467
+468
+469
+470
+471
+472
+473
+474
+475
+476
+477
+478
+479
+480
+481
+482
+483
+484
+485
+486
+487
+488
+489</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
     
     time_zone   =&gt; &#39;America/Denver&#39;,
     # scot version
@@ -312,8 +579,6 @@ to resart SCOT for any changes to be recognized.</p>
 
     # authentication can be &quot;Remoteuser&quot;, &quot;Local&quot;, or &quot;Ldap&quot;
     auth_type   =&gt; &#39;Local&#39;, 
-
-    authclass   =&gt; &#39;Controller::Auth::Local&#39;,
 
     # group mode can be &quot;local&quot; or &quot;ldap&quot;
     group_mode  =&gt; &#39;local&#39;,
@@ -519,6 +784,275 @@ to resart SCOT for any changes to be recognized.</p>
         }, # end ldap
     ],
     entity_regexes  =&gt; [],
+    #
+    # form contain directions on how to build the custom incident form fields
+    # and signatures (and others later?)
+    # 
+    forms   =&gt; {
+        signature  =&gt; [
+            {
+                type    =&gt; &quot;textarea&quot;,
+                key     =&gt; &quot;description&quot;,
+                value   =&gt; &#39;&#39;,
+                value_type =&gt; {
+                    type    =&gt; &#39;static&#39;,
+                    url     =&gt; undef,
+                    key     =&gt; &#39;description&#39;,
+                },
+                label   =&gt; &quot;Description&quot;,
+                help    =&gt; &quot;Enter a short description of the signature&#39;s purpose&quot;,
+            },
+            {
+                type    =&gt; &quot;input&quot;,
+                key     =&gt; &quot;type&quot;,
+                value   =&gt; &#39;&#39;,
+                label   =&gt; &quot;Type&quot;,
+                help    =&gt; &quot;Enter the signature type, e.g. yara, snort, etc.&quot;,
+                value_type =&gt; {
+                    type    =&gt; &#39;static&#39;,
+                    url     =&gt; undef,
+                    key     =&gt; &#39;type&#39;,
+                },
+            },
+            {
+                type    =&gt; &quot;dropdown&quot;,
+                key     =&gt; &quot;prod_sigbody_id&quot;,
+                value   =&gt; [],
+                value_type  =&gt; {
+                    type    =&gt; &quot;dynamic&quot;,
+                    url     =&gt; &#39;/scot/api/v2/signature/%s&#39;,
+                    key     =&gt; &#39;prod_sigbody_id&#39;,
+                },
+                label   =&gt; &quot;Production Signature Body Version&quot;,
+                help    =&gt; &quot;Select the version of the signature body you wish to be used in production&quot;,
+            },
+            {
+                type    =&gt; &quot;dropdown&quot;,
+                key     =&gt; &quot;qual_sigbody_id&quot;,
+                value   =&gt; [],
+                value_type  =&gt; {
+                    type    =&gt; &quot;dynamic&quot;,
+                    url     =&gt; &#39;/scot/api/v2/signature/%s&#39;,
+                    key     =&gt; &#39;qual_sigbody_id&#39;,
+                },
+                label   =&gt; &quot;Quality Signature Body Version&quot;,
+                help    =&gt; &quot;Select the version of the signature body you wish to be used in quality&quot;,
+            },
+            {
+                type    =&gt; &quot;input_multi&quot;,
+                key     =&gt; &#39;signature_group&#39;,
+                value   =&gt; [],
+                value_type  =&gt; {
+                    type    =&gt; &quot;static&quot;,
+                    url     =&gt; undef,
+                    key     =&gt; &#39;signature_group&#39;,
+                },
+                label   =&gt; &quot;Signature Group&quot;,
+                help    =&gt; &quot;Group signatures under common names&quot;,
+            },
+            {
+                type    =&gt; &#39;input&#39;,
+                key     =&gt; &#39;target.type&#39;,
+                value   =&gt; &#39;&#39;,
+                value_type  =&gt; {
+                    type    =&gt; &quot;static&quot;,
+                    url     =&gt; undef,
+                    key     =&gt; &#39;target.type&#39;,
+                },
+                label   =&gt; &quot;Reference Type&quot;,
+                help    =&gt; &quot;The SCOT datatype that originated this signature&quot;,
+            },
+            {
+                type    =&gt; &#39;input&#39;,
+                key     =&gt; &#39;target.id&#39;,
+                value   =&gt; &#39;&#39;,
+                value_type  =&gt; {
+                    type    =&gt; &quot;static&quot;,
+                    url     =&gt; undef,
+                    key     =&gt; &#39;target.id&#39;,
+                },
+                help    =&gt; &#39;The id of the SCOT datatype that originated this sig&#39;,
+                label   =&gt; &quot;Reference ID&quot;,
+            },
+			{
+                type    =&gt; &quot;multi_select&quot;,
+                key     =&gt; &quot;action&quot;,
+                value   =&gt; [
+                    { value =&gt; &#39;alert&#39;,  selected =&gt; 0 },
+                    { value =&gt; &#39;block&#39;, selected =&gt; 0 },
+                ],
+                value_type  =&gt; {
+                    type    =&gt; &quot;static&quot;,
+                    url     =&gt; undef,
+                    key     =&gt; &#39;action&#39;,
+                },
+                label   =&gt; &quot;Action&quot;,
+                help    =&gt; &quot;The automated action that should take place when this signature is triggered. Select multiple actions using ctrl/command key.&quot;,
+            },
+        ],
+        incident    =&gt; [
+            # substitue your text and values here to match your
+            # incident types
+            {
+                type    =&gt; &quot;dropdown&quot;,
+                key     =&gt; &#39;type&#39;,
+                value   =&gt; [
+                    { value =&gt; &#39;NONE&#39;,  selected =&gt; 1 },
+                    { value =&gt; &#39;FYI&#39;, selected =&gt; 0 },
+                    { value =&gt; &#39;Type 1 : Root Comprimise&#39;, selected =&gt; 0 },
+                    { value =&gt; &#39;Type 1 : User Compromise&#39;, selected =&gt; 0 },
+                    { value =&gt; &#39;Type 1 : Loss/Theft/Missing Desktop&#39;, selected =&gt; 0 },
+                    { value =&gt; &#39;Type 1 : Loss/Theft/Missing Laptop&#39;, selected =&gt; 0 },
+                    { value =&gt; &#39;Type 1 : Loss/Theft/Missing Media&#39;, selected =&gt; 0 },
+                    { value =&gt; &#39;Type 1 : Loss/Theft/Missing Other&#39;, selected =&gt; 0 },
+                    { value =&gt; &#39;Type 1 : Malicious Code Trojan&#39;, selected =&gt; 0 },
+                    { value =&gt; &#39;Type 1 : Malicious Code Virus&#39;, selected =&gt; 0 },
+                    { value =&gt; &#39;Type 1 : Malicious Code Worm&#39;, selected =&gt; 0 },
+                    { value =&gt; &#39;Type 1 : Malicious Code Other&#39;, selected =&gt; 0 },
+                    { value =&gt; &#39;Type 1 : Web Site Defacement&#39;, selected =&gt; 0 },
+                    { value =&gt; &#39;Type 1 : Denial of Service&#39;, selected =&gt; 0 },
+                    { value =&gt; &#39;Type 1 : Critical Infrastructure Protection&#39;, selected =&gt; 0 },
+                    { value =&gt; &#39;Type 1 : Unauthorized Use&#39;, selected =&gt; 0 },
+                    { value =&gt; &#39;Type 1 : Information Compromise&#39;, selected =&gt; 0 },
+                    { value =&gt; &#39;Type 2 : Attempted Intrusion&#39;, selected =&gt; 0 },
+                    { value =&gt; &#39;Type 2 : Reconnaissance Activity&#39;, selected =&gt; 0 },
+                ],
+                value_type  =&gt; {
+                    type    =&gt; &quot;static&quot;,
+                    url     =&gt; undef,
+                    key     =&gt; &#39;type&#39;,
+                },
+                label   =&gt; &#39;Incident Type&#39;,
+                help    =&gt; &quot;Select best match for incident type&quot;,
+            }, 
+            # substitute your text and values to match your incident cats
+            {
+                type    =&gt; &quot;dropdown&quot;,
+                key     =&gt; &quot;category&quot;,
+                value   =&gt; [
+                    { value =&gt; &#39;NONE&#39;, selected =&gt; 1},
+                    { value =&gt; &#39;IMI-1&#39;, selected =&gt; 0},
+                    { value =&gt; &#39;IMI-2&#39;, selected =&gt; 0},
+                    { value =&gt; &#39;IMI-3&#39;, selected =&gt; 0},
+                    { value =&gt; &#39;IMI-4&#39;, selected =&gt; 0},
+                ],
+                value_type  =&gt; {
+                    type    =&gt; &quot;static&quot;,
+                    url     =&gt; undef,
+                    key     =&gt; &#39;category&#39;,
+                },
+                label   =&gt; &#39;Incident Category&#39;,
+                help    =&gt; &quot;Select best match for incident category&quot;,
+            },
+            {
+                type    =&gt; &quot;dropdown&quot;,
+                key     =&gt; &quot;sensitivity&quot;,
+                value   =&gt; [
+                    {value =&gt; &#39;NONE&#39;, selected =&gt; 1},
+                    {value =&gt; &#39;OUO&#39;, selected =&gt; 0},
+                    {value =&gt; &#39;PII&#39;, selected =&gt; 0},
+                    {value =&gt; &#39;SUI&#39;, selected =&gt; 0},
+                    {value =&gt; &#39;UCNI&#39;, selected =&gt; 0},
+                    {value =&gt; &#39;Other&#39;, selected =&gt; 0},
+                ],
+                value_type  =&gt; {
+                    type    =&gt; &quot;static&quot;,
+                    url     =&gt; undef,
+                    key     =&gt; &#39;sensitivity&#39;,
+                },
+                label   =&gt; &#39;Incident Sensitivity&#39;,
+                help    =&gt; &quot;Select best match for incident sensitivity&quot;,
+            },
+            {
+                type    =&gt; &quot;dropdown&quot;,
+                key     =&gt; &quot;security_category&quot;,
+                value   =&gt; [
+                    {value =&gt; &#39;NONE&#39;, selected =&gt; 1},
+                    {value =&gt; &#39;Low&#39;, selected =&gt; 0},
+                    {value =&gt; &#39;Moderate&#39;, selected =&gt; 0},
+                    {value =&gt; &#39;High&#39;, selected =&gt; 0},
+                ],
+                value_type  =&gt; {
+                    type    =&gt; &quot;static&quot;,
+                    url     =&gt; undef,
+                    key     =&gt; &#39;security_category&#39;,
+                },
+                label   =&gt; &#39;Incident Security Category&#39;,
+                help    =&gt; &quot;Select best match for incident security category&quot;,
+            },
+            #date field for tracking when incident occurred
+            {
+                type    =&gt; &quot;calendar&quot;,
+                key     =&gt; &quot;occurred&quot;,
+                value   =&gt; &quot;&quot;,
+                value_type  =&gt; {
+                    type    =&gt; &quot;static&quot;,
+                    url     =&gt; undef,
+                    key     =&gt; &#39;occurred&#39;,
+                },
+                label   =&gt; &quot;Date/Time Occurred&quot;,
+                help    =&gt; &quot;Select Date/Time Incident Occurred&quot;,
+            },
+            {
+                type    =&gt; &quot;calendar&quot;,
+                key     =&gt; &quot;discovered&quot;,
+                value   =&gt; &quot;&quot;,
+                value_type  =&gt; {
+                    type    =&gt; &quot;static&quot;,
+                    url     =&gt; undef,
+                    key     =&gt; &#39;discovered&#39;,
+                },
+                label   =&gt; &quot;Date/Time Discovered&quot;,
+                help    =&gt; &quot;Select Date/Time Incident was discovered&quot;,
+            },
+            {
+                type    =&gt; &quot;calendar&quot;,
+                key     =&gt; &quot;reported&quot;,
+                value   =&gt; &quot;&quot;,
+                value_type  =&gt; {
+                    type    =&gt; &quot;static&quot;,
+                    url     =&gt; undef,
+                    key     =&gt; &#39;reported&#39;,
+                },
+                label   =&gt; &quot;Date/Time Reported&quot;,
+                help    =&gt; &quot;Select Date/Time Incident was reported&quot;,
+            },
+            {
+                type    =&gt; &quot;calendar&quot;,
+                key     =&gt; &quot;closed&quot;,
+                value   =&gt; &quot;&quot;,
+                value_type  =&gt; {
+                    type    =&gt; &quot;static&quot;,
+                    url     =&gt; undef,
+                    key     =&gt; &#39;closed&#39;,
+                },
+                label   =&gt; &quot;Date/Time Closed&quot;,
+                help    =&gt; &quot;Select Date/Time Incident was closed&quot;,
+            },
+        ],
+        guide   =&gt; [
+            {
+                type    =&gt; &quot;input_multi&quot;,
+                key     =&gt; &quot;applies_to&quot;,
+                value   =&gt; &#39;&#39;,
+                value_type  =&gt; {
+                    type    =&gt; &quot;static&quot;,
+                    url     =&gt; undef,
+                    key     =&gt; &#39;applies_to&#39;,
+                },
+                label   =&gt; &#39;Guide applies to&#39;,
+                help    =&gt; &#39;Enter string matching subject that this guide applies to&#39;,
+            },
+        ],
+    }, 
+    dailybrief  =&gt; {
+        mail    =&gt; {
+            from    =&gt; &#39;scot@yourdomain.com&#39;,
+            to      =&gt; &#39;tbruner@scotdemo.com&#39;,
+            host    =&gt; &#39;smtp.yourdomain.com&#39;,
+        },
+        url     =&gt; &#39;https://scot.yourdomain.com/&#39;
+    },
 );
 </pre></div>
 </td></tr></table></div>
@@ -526,105 +1060,150 @@ to resart SCOT for any changes to be recognized.</p>
 <div class="section" id="alert-cfg-pl">
 <h3>alert.cfg.pl<a class="headerlink" href="#alert-cfg-pl" title="Permalink to this headline">¶</a></h3>
 <p>This config file controls how alerts are received from an IMAP server.</p>
-<div class="highlight-default"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39
-40
-41
-42
-43
-44
-45
-46
-47
-48
-49
-50
-51
-52
-53
-54
-55
-56
-57
-58
-59
-60
-61
-62
-63
-64
-65
-66
-67
-68
-69
-70
-71
-72
-73
-74
-75
-76
-77
-78
-79
-80
-81
-82
-83
-84
-85
-86
-87
-88
-89
-90
-91
-92
-93
-94
-95
-96
-97
-98</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+<div class="highlight-default"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129</pre></div></td><td class="code"><div class="highlight"><pre><span></span>####
+#### alert.cfg.pl
+####
+#### Used to configure the SCOT email alert input program
+#### bin/alert.pl which uses Scot::App::Mail
+####
+
+%environment = (
+
+    ## See perl DateTime documenation for values matching your locale
     time_zone   =&gt; &#39;America/Denver&#39;,
+
+    ## Set up Scot Logging to your liking.  See Log::Log4perl documentaton
+    ## for details on layout and log_level.  By default, log_level of DEBUB
+    ## is very verbose, but is probably the level you want to be able to 
+    ## figure out an error after it occurs.
     log_config  =&gt; {
         logger_name     =&gt; &#39;SCOT&#39;,
         layout          =&gt; &#39;%d %7p [%P] %15F{1}: %4L %m%n&#39;,
@@ -632,7 +1211,15 @@ to resart SCOT for any changes to be recognized.</p>
         logfile         =&gt; &#39;/var/log/scot/scot.mail.log&#39;,
         log_level       =&gt; &#39;DEBUG&#39;,
     },
+
+    ## MODULES
+    ## Each hash in the following array, will result in an attribute
+    ## being created in the Scot/Env.pm module that points to the class
+    ## described.  if you ever get a &quot;cant find foo in Scot::Env&quot; you might
+    ## be missing something here
+
     modules =&gt; [
+        ## describe to SCOT how to talk to your imap server
         {
             attr    =&gt; &#39;imap&#39;,
             class   =&gt; &#39;Scot::Util::Imap&#39;,
@@ -650,6 +1237,7 @@ to resart SCOT for any changes to be recognized.</p>
                 ignore_size_errors  =&gt; 1,        # ignore_size_errors 
             },
         },
+        ## describe how for the Scot Perl client to find the SCOT server
         {
             attr    =&gt; &#39;scot&#39;,
             class   =&gt; &#39;Scot::Util::ScotClient&#39;,
@@ -663,6 +1251,7 @@ to resart SCOT for any changes to be recognized.</p>
                 authtype    =&gt; &#39;Local&#39;,
             },
         },
+        ## mongodb connection information
         {
             attr    =&gt; &#39;mongo&#39;,
             class   =&gt; &#39;Scot::Util::MongoFactory&#39;,
@@ -673,6 +1262,7 @@ to resart SCOT for any changes to be recognized.</p>
                 find_master     =&gt; 1,
             },
         },
+        ## ActiveMQ connection info
         {
             attr    =&gt; &#39;mq&#39;,
             class   =&gt; &#39;Scot::Util::Messageq&#39;,
@@ -682,6 +1272,7 @@ to resart SCOT for any changes to be recognized.</p>
                 stomp_port  =&gt; 61613,
             },
         },
+        ## Elasticsearch connection info
         {
             attr    =&gt; &#39;es&#39;,
             class   =&gt; &#39;Scot::Util::ElasticSearch&#39;,
@@ -691,8 +1282,12 @@ to resart SCOT for any changes to be recognized.</p>
             },
         },
     ],
+    ## parser_dir is where to find the modules that can parse the emails
     parser_dir  =&gt; &#39;/opt/scot/lib/Scot/Parser&#39;,
+    ## alert.pl can utilize rest or direct mongo connection to input data
     get_method      =&gt; &quot;mongo&quot;,     # other value is &quot;rest&quot;
+    ## leave_unseen = 1 means SCOT will leave emails marked &quot;unread&quot; 
+    ## leave_unseen = 0 means SCOT marks emails read after processing
     leave_unseen    =&gt; 1,
     # interactive =&gt; [ yes | no ]
     # pauses processing after each message and writes to console 
@@ -701,6 +1296,7 @@ to resart SCOT for any changes to be recognized.</p>
     # max_processes =&gt; 0 to positive int
     # number of child processes to fork to parse messages in parallel
     # 0 = disable forking and do all messages sequentially
+    # recommendation is 5-10 in production, 0 for testing.
     max_processes   =&gt; 0,       
     # fetch_mode    =&gt; [ unseen | time ]
     # unseen looks for unseen messages via imap protocol
@@ -716,7 +1312,7 @@ to resart SCOT for any changes to be recognized.</p>
     # approved_alert_domains =&gt; [ &#39;domain1\.org&#39;, ... ]
     # only domains listed in this array can send email to scot
     # periods need to be escaped by \
-    approved_alert_domains  =&gt; [ &#39;domain.tld&#39; ],
+    approved_alert_domains  =&gt; [ &#39;domain\.tld&#39; ],
     # approve_accounts =&gt; [ &#39;user@email.addr&#39; ];
     # account in this domain can also send to scot
     approved_accounts   =&gt; [ &#39;user@server.domain.tld&#39; ],
@@ -726,7 +1322,7 @@ to resart SCOT for any changes to be recognized.</p>
 </div>
 <div class="section" id="flair-cfg-pl">
 <h3>flair.cfg.pl<a class="headerlink" href="#flair-cfg-pl" title="Permalink to this headline">¶</a></h3>
-<p>The Flair app automatically detects enties, see <span class="xref std std-ref">entities</span>.  This config file look like:</p>
+<p>The Flair app automatically detects enties, see <span class="xref std std-ref">Entities</span>.  This config file look like:</p>
 <div class="highlight-default"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
   2
   3
@@ -856,7 +1452,9 @@ to resart SCOT for any changes to be recognized.</p>
 127
 128
 129
-130</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+130
+131
+132</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
     time_zone   =&gt; &#39;America/Denver&#39;,
     # server name of the SCOT server
     servername  =&gt; &#39;localhost&#39;,
@@ -878,9 +1476,11 @@ to resart SCOT for any changes to be recognized.</p>
         logfile         =&gt; &#39;/var/log/scot/scot.flair.log&#39;,
         log_level       =&gt; &#39;DEBUG&#39;,
     },
+    ## Flair.pm needs to know how to connect to the ActiveMQ topic
     stomp_host  =&gt; &quot;localhost&quot;,
     stomp_port  =&gt; 61613,
     topic       =&gt; &quot;/topic/scot&quot;,
+    ## updates to flair-ed entries and alerts will be done by this account
     default_owner   =&gt; &quot;scot-admin&quot;,
     # modules used by flair app
     modules =&gt; [
@@ -1084,7 +1684,8 @@ to resart SCOT for any changes to be recognized.</p>
 41
 42
 43
-44</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+44
+45</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
     time_zone   =&gt; &#39;America/Denver&#39;,
     max_workers =&gt; 1,
     log_config  =&gt; {
@@ -1097,6 +1698,7 @@ to resart SCOT for any changes to be recognized.</p>
     max_workers     =&gt; 2,
     stomp_host      =&gt; &#39;localhost&#39;,
     stomp_port      =&gt; 61613,
+    topic           =&gt; &#39;/topic/scot&#39;,
     default_owner   =&gt; &#39;scot-admin&#39;,
     modules =&gt; [
         {
@@ -1141,6 +1743,14 @@ entry.  It is recommended to run this every 2 to 5 minutes.  Here&#8217;s the cr
 </div>
 <p>Automating SCOT backups are a good idea as well:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">0</span> <span class="mi">3</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">20</span> <span class="o">*</span> <span class="o">*</span> <span class="o">*</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">backup</span><span class="o">.</span><span class="n">pl</span>     <span class="c1"># backup scot at 3am 12 noon and 8pm</span>
+</pre></div>
+</div>
+<p>The game.pl job populates the analyst leaderboard:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">30</span> <span class="mi">4</span> <span class="o">*</span> <span class="o">*</span> <span class="o">*</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">game</span><span class="o">.</span><span class="n">pl</span>
+</pre></div>
+</div>
+<p>The metric.pl job calculates response time metrics:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">15</span> <span class="mi">2</span> <span class="o">*</span> <span class="o">*</span> <span class="o">*</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">metric</span><span class="o">.</span><span class="n">pl</span>
 </pre></div>
 </div>
 </div>

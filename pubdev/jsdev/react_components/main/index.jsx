@@ -198,7 +198,7 @@ var App = React.createClass({
     loginToggle: function( csrf, loggedin ) {
         //Only open modal once - if other requests come in to open the modal just bypass since the login page is active
         if ( !this.state.login && loggedin != true ) {
-            let origurl = this.props.location.pathname;;
+            let origurl = this.props.location.pathname;
             this.props.history.push( '/' );
             this.setState({login: true, origurl: origurl}); 
         } else if ( this.state.login && loggedin == true ) {
@@ -312,7 +312,7 @@ var App = React.createClass({
                     </Navbar.Collapse>
                 </Navbar>
                 <div className='mainNavPadding'>
-                    <Login csrf={this.state.csrf} modalActive={this.state.login} loginToggle={this.loginToggle} WhoAmIQuery={this.WhoAmIQuery} GetHandler={this.GetHandler} errorToggle={this.errorToggle} />
+                    <Login csrf={this.state.csrf} modalActive={this.state.login} loginToggle={this.loginToggle} WhoAmIQuery={this.WhoAmIQuery} GetHandler={this.GetHandler} errorToggle={this.errorToggle} origurl={this.state.origurl} />
                     <Notification ref='notificationSystem' />
                     {!type || type == 'home' ? 
                     <div className="homePageDisplay">

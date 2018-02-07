@@ -182,8 +182,10 @@ my $ts  = $dt->strftime("%Y%m%d%H%M");
 # back up cached images
 system("cp -r /opt/scot/public/cached_images $cacheimgdir");
 
+my $uploads = "/opt/scotfiles";
+
 print "TARing up backups to $tarloc.$ts.tgz\n";
-system("tar cvzf $tarloc.$ts.tgz $dumpdir $esdir $cacheimgdir");
+system("tar cvzf $tarloc.$ts.tgz $dumpdir $esdir $cacheimgdir $uploads");
 
 if ( $env->cleanup ) {
     print "Cleaning up...\n";

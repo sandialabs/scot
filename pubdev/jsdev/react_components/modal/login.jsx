@@ -1,6 +1,6 @@
 import React, { PureComponent, Component } from 'react';
 import PropTypes from 'prop-types';
-import { Modal } from 'react-bootstrap';
+import { Modal, Button } from 'react-bootstrap';
 import Actions from '../activemq/actions';
 
 class Login extends Component {
@@ -26,7 +26,8 @@ class Login extends Component {
     }
     
     render() {
-
+        let origurl = this.props.origurl;
+        let url = '/sso?orig_url=/#' + origurl;
         return (
             <Modal dialogClassName='login-modal' show={ this.props.modalActive }> 
                 <Modal.Header >
@@ -36,7 +37,7 @@ class Login extends Component {
                 </Modal.Header>
                 <Modal.Body style={{textAlign: 'center'}}>
                     <img src='/images/scot_logo_473x473.png' alt='SCOT Logo' />
-                    <input type='submit' value='Sign in using SSO' onClick={this.SSO} />
+                    <Button type='submit' href={url}>Sign in using SSO</Button>
                     <br />
                     <br />
                     <div>
@@ -72,6 +73,7 @@ class Login extends Component {
         $.ajax({
             type: 'get',
             url: 'sso',
+            crossDomain: true,
             data: data,
             success: function(data) {
                 console.log('success logging in');
