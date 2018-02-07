@@ -98,7 +98,7 @@ $t  ->get_ok("/scot/api/v2/signature/$sig_id/history")
     ->status_is(200)
     ->json_is("/records/0/what" => "created via api")
     ->json_is("/records/0/target/id" => 1)
-    ->json_is("/records/1/what" => "Signature status change to enabled")
+    ->json_is("/records/1/what" => "signature status change to enabled")
     ->json_is("/records/1/target/id" => 1);
 
 

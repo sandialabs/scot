@@ -20,9 +20,11 @@
         logfile         => '/var/log/scot/scot.flair.log',
         log_level       => 'DEBUG',
     },
+    ## Flair.pm needs to know how to connect to the ActiveMQ topic
     stomp_host  => "localhost",
     stomp_port  => 61613,
     topic       => "/topic/scot",
+    ## updates to flair-ed entries and alerts will be done by this account
     default_owner   => "scot-admin",
     # modules used by flair app
     modules => [

@@ -25,6 +25,7 @@ Contents:
     Installation <install>
     Post-Installation <postinstall>
     Migrating 3.4 data <migration>
+    Getting Alerts <feeding>
     SCOT Overview <overview>
     User Guide <userguide>
     Admin Guide <adminguide>
