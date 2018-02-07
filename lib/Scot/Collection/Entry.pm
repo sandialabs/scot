@@ -646,4 +646,16 @@ sub tasks_not_completed_count {
     return $cursor->count // 0;
 }
 
+sub get_target_summary {
+    my $self    = shift;
+    my $obj     = shift;
+    my $match   = {
+        'target.type'   => $obj->get_collection_name,
+        'target.id'     => $obj->id,
+        'class'         => 'summary',
+    };
+    my $cursor  = $self->find($match);
+    return $cursor;
+}
+
 1;

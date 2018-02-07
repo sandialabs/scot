@@ -7,7 +7,7 @@ use lib '../../lib';
 use lib '../../Scot-Internal-Modules/lib';
 use lib '/opt/scot/lib';
 use v5.18;
-use Scot::App::Stretch;
+use Scot::App::Responder::Stretch;
 use IO::Prompt;
 use Getopt::Long qw(GetOptions);
 
@@ -48,7 +48,7 @@ my $env = Scot::Env->new(
 );
 
 
-my $loop    = Scot::App::Stretch->new( 
+my $loop    = Scot::App::Responder::Stretch->new( 
     env => $env,
 );
 

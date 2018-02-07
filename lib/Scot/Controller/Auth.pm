@@ -619,7 +619,7 @@ sub get_groups {
 
     my $envmeta = $env->meta;
 
-    if ( $envmeta->has_attribute('ldap') ) {
+    if ( $envmeta->has_attribute('ldap') and $mode ne "local" ) {
         my $ldap = $self->env->ldap;
 
         if ( defined $ldap ) {

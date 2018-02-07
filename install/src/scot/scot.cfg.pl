@@ -13,8 +13,6 @@
     # authentication can be "Remoteuser", "Local", or "Ldap"
     auth_type   => 'Local', 
 
-    authclass   => 'Controller::Auth::Local',
-
     # group mode can be "local" or "ldap"
     group_mode  => 'local',
 
@@ -480,4 +478,12 @@
             },
         ],
     }, 
+    dailybrief  => {
+        mail    => {
+            from    => 'scot@yourdomain.com',
+            to      => 'tbruner@scotdemo.com',
+            host    => 'smtp.yourdomain.com',
+        },
+        url     => 'https://scot.yourdomain.com/'
+    },
 );

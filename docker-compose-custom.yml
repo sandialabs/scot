@@ -181,15 +181,20 @@ services:
      - scot-docker-net
    container_name: game
    image: sandialabs/scot_game
-# mail: 
-#   build:
-#     dockerfile: Dockerfile-Mail
-#     context: ./
-#   volumes: 
-#     - "/var/log/scot:/var/log/scot/"
-#   depends_on:
-#    - mongodb
-#    - scot
+  
+  mail: 
+   build:
+     dockerfile: Dockerfile-Mail
+     context: ./
+   volumes: 
+     - "/var/log/scot:/var/log/scot/"
+   depends_on:
+    - mongodb
+    - scot
+   networks:
+    - scot-docker-net
+   image: sandialabs/scot_mail
+   container_name: mail
 
 networks:
   scot-docker-net:

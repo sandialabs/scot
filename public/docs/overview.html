@@ -17,8 +17,7 @@
         VERSION:     '3.5.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
+        HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
@@ -26,8 +25,9 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
     <link rel="next" title="User Guide" href="userguide.html" />
-    <link rel="prev" title="Migration" href="migration.html" /> 
+    <link rel="prev" title="SCOT Feeding" href="feeding.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -40,7 +40,7 @@
           <a href="userguide.html" title="User Guide"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="migration.html" title="Migration"
+          <a href="feeding.html" title="SCOT Feeding"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
       </ul>
@@ -105,7 +105,8 @@ when certain conditions are met.  These methods often vary widely.  There
 is one commonality among most applications, however, and that is E^mail.</p>
 <p>One of the ways SCOT can accept information from other systems is by setting
 up an IMAP inbox that these systems can send E^mail to.  SCOT then periodically
-checks that inbox, and ingests any new email messages it finds.</p>
+checks that inbox, and ingests any new email messages it finds.  Creation of
+Alertgroups are possible via the REST API as well.</p>
 <p>The E^mail messages may often contain several &#8220;rows&#8221; of data.  For example,
 several IDS alerts could be bundled up into a single E^mail message.  This
 grouping of alerts is called an &#8220;Alertgroup.&#8221;  In other words, an Alertgroup
@@ -180,6 +181,18 @@ Entity are available, and others that you can implement.</p>
 <p>Often, IRTs receive information about threats, reports from other entities, and other general information that can be thought of as Intel.  Storing these items
 within SCOT allows SCOT to detect entities, flair them, and cross reference these entities in existing and future Alerts and Entries.</p>
 </div>
+<div class="section" id="guide">
+<h3>Guide<a class="headerlink" href="#guide" title="Permalink to this headline">¶</a></h3>
+<p>Guides are mini instruction manuals that help your analysts know how to respond
+to incoming Alertgroups.  Guides are linked to the Alertgroup throught the Subject value of the Alertgroup.</p>
+</div>
+<div class="section" id="signature">
+<h3>Signature<a class="headerlink" href="#signature" title="Permalink to this headline">¶</a></h3>
+<p>Do you wish there was a place to store all your Yara, Snort, and other
+detection signatures?  We look no further.  Here you can store, discuss,
+and revise your signatures and link them to your activities tracked in SCOT.
+You can use the REST API to serve these signatures to your detection systems.</p>
+</div>
 </div>
 </div>
 
@@ -204,6 +217,8 @@ within SCOT allows SCOT to detect entities, flair them, and cross reference thes
 <li><a class="reference internal" href="#entity">Entity</a></li>
 <li><a class="reference internal" href="#flair">Flair</a></li>
 <li><a class="reference internal" href="#intel">Intel</a></li>
+<li><a class="reference internal" href="#guide">Guide</a></li>
+<li><a class="reference internal" href="#signature">Signature</a></li>
 </ul>
 </li>
 </ul>
@@ -211,15 +226,15 @@ within SCOT allows SCOT to detect entities, flair them, and cross reference thes
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="migration.html"
-                        title="previous chapter">Migration</a></p>
+  <p class="topless"><a href="feeding.html"
+                        title="previous chapter">SCOT Feeding</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="userguide.html"
                         title="next chapter">User Guide</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/overview.rst.txt"
+      <li><a href="_sources/overview.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -247,7 +262,7 @@ within SCOT allows SCOT to detect entities, flair them, and cross reference thes
           <a href="userguide.html" title="User Guide"
              >next</a> |</li>
         <li class="right" >
-          <a href="migration.html" title="Migration"
+          <a href="feeding.html" title="SCOT Feeding"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
       </ul>
