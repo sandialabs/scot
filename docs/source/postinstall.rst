@@ -5,7 +5,7 @@ Migration
 ---------
 
 If you backed up data from your 3.4 SCOT instance and wish to restore it, 
-you will need to follow the migration procedure :ref:`migration.rst`
+you will need to follow the migration procedure :ref:`Migration <migration.rst>`
 
 SSL Certs
 ---------
@@ -45,7 +45,7 @@ This config file controls how alerts are received from an IMAP server.
 flair.cfg.pl
 ^^^^^^^^^^^^^
 
-The Flair app automatically detects enties, see :ref:`entities`.  This config file look like:
+The Flair app automatically detects enties, see :ref:`Entities <entities>`.  This config file look like:
 
 .. literalinclude:: ../../install/src/scot/flair.cfg.pl
    :linenos:
@@ -59,7 +59,7 @@ This controls aspects of the gamification system.
    :linenos:
 
 stretch.cfg.pl
-^^^^^^^^^^^
+^^^^^^^^^^^^^^
 
 This controls aspects of the elastic search input system.
 
@@ -79,5 +79,12 @@ Automating SCOT backups are a good idea as well::
 
     0 3,12,20 * * * /opt/scot/bin/backup.pl     # backup scot at 3am 12 noon and 8pm
 
+The game.pl job populates the analyst leaderboard::
+
+    30 4 * * * /opt/scot/bin/game.pl
+
+The metric.pl job calculates response time metrics::
+
+    15 2 * * * /opt/scot/bin/metric.pl
 
 

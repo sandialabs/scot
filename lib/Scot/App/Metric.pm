@@ -384,7 +384,7 @@ sub alert_response_time {
                         },
                     );
                     foreach my $metric (@metrics) {
-                        # say Dumper($metric);
+                        say Dumper($metric);
                         # $log->debug("writing metric ",{filter=>\&Dumper,value=>$metric});
                         $statcol->upsert_metric($metric);
                     }
