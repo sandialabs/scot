@@ -1,5 +1,5 @@
 Docker-SCOT v 0.02
-***************
+******************
 
 v0.02 relase date - 2/5/2017
 
@@ -42,14 +42,14 @@ Docker-SCOT is comprised of the following services:
 
 
 Docker Installation
-------------
+--------------------
 
 To get started, refer to the Docker Community Edition documentation for installing the Docker engine on your respective OS: `https://docs.docker.com/engine/installation/ <https://docs.docker.com/engine/installation/>`_
 
 Next, Docker-SCOT relies on docker-compose to build, run and manage services. Docker-compose does not ship with Docker engine, so you will need to refer to the following documentation for installation of Docker-Compose: https://docs.docker.com/compose/install/
 
 SCOT Installation
----------------
+-----------------------
 
 
 There are two methods for getting started with SCOT. Run the SCOT/restart-build-deploy.sh script (will be promopted to enter sudo credentials) and follow the on screen prompts for either. 
@@ -65,7 +65,7 @@ There are two methods for getting started with SCOT. Run the SCOT/restart-build-
 
 
 Managing the containers
----------------
+-----------------------
 To stop Docker-SCOT::
 
     sudo docker-compose stop
@@ -194,7 +194,7 @@ with the path and name of the eventual location where you will map your certs to
 5. Re-run the restart-build-deploy.sh script and you should be set!
 
 FAQ / Common Issues
--------------
+---------------------
 
 **Common Issues**
 

@@ -550,7 +550,22 @@ to resart SCOT for any changes to be recognized.</p>
 471
 472
 473
-474</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+474
+475
+476
+477
+478
+479
+480
+481
+482
+483
+484
+485
+486
+487
+488
+489</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
     
     time_zone   =&gt; &#39;America/Denver&#39;,
     # scot version
@@ -858,6 +873,21 @@ to resart SCOT for any changes to be recognized.</p>
                 },
                 help    =&gt; &#39;The id of the SCOT datatype that originated this sig&#39;,
                 label   =&gt; &quot;Reference ID&quot;,
+            },
+			{
+                type    =&gt; &quot;multi_select&quot;,
+                key     =&gt; &quot;action&quot;,
+                value   =&gt; [
+                    { value =&gt; &#39;alert&#39;,  selected =&gt; 0 },
+                    { value =&gt; &#39;block&#39;, selected =&gt; 0 },
+                ],
+                value_type  =&gt; {
+                    type    =&gt; &quot;static&quot;,
+                    url     =&gt; undef,
+                    key     =&gt; &#39;action&#39;,
+                },
+                label   =&gt; &quot;Action&quot;,
+                help    =&gt; &quot;The automated action that should take place when this signature is triggered. Select multiple actions using ctrl/command key.&quot;,
             },
         ],
         incident    =&gt; [
@@ -1654,7 +1684,8 @@ to resart SCOT for any changes to be recognized.</p>
 41
 42
 43
-44</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+44
+45</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
     time_zone   =&gt; &#39;America/Denver&#39;,
     max_workers =&gt; 1,
     log_config  =&gt; {
@@ -1667,6 +1698,7 @@ to resart SCOT for any changes to be recognized.</p>
     max_workers     =&gt; 2,
     stomp_host      =&gt; &#39;localhost&#39;,
     stomp_port      =&gt; 61613,
+    topic           =&gt; &#39;/topic/scot&#39;,
     default_owner   =&gt; &#39;scot-admin&#39;,
     modules =&gt; [
         {
