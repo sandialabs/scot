@@ -149,7 +149,7 @@ MongoDB default password (also used for logging in to SCOT if local auth is enab
 * Username: admin
 * Password: admin
 
-Note: If by chance you ever go to wipe your mongo database and would like to start fresh, you would need to delete the file /var/lib/mongodb/.mongodb_password_set. 
+Note: If by chance you ever go to wipe your mongo database and would like to start fresh, you would need to delete the file /var/lib/mongodb/mongodb_password_set. 
 
 
 **Persisted Data** 
