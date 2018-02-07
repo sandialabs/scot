@@ -21,8 +21,18 @@ Documentation and Install
 -------------------------
 Read our [documentation](http://scot.readthedocs.org/en/latest/install.html) at Read The Docs.
 
+Also, for docker documentation, please read: [https://github.com/sandialabs/scot/blob/scot-docker/docs/source/scotdocker.rst](https://github.com/sandialabs/scot/blob/scot-docker/docs/source/scotdocker.rst)
+
 Install It!
 -----------
+
+**Docker Method **
+
+The suggested method for installation of SCOT is using docker. For a walkthrough of installing SCOT via docker, please read: https://github.com/sandialabs/scot/blob/scot-docker/docs/source/scotdocker.rst
+
+Once you have read the documentation, please run the restart-build-deploy.sh script in the root directory of the scot source code to begin the installation process. 
+
+**Legacy Method**
 
 SCOT has an installer that will work with Ubuntu 16.04 and CentOS 7.3.  While there should be nothing preventing SCOT to work on other Linux's, you will have to do a lot more work by hand to get SCOT installed.  (Please post your successes for others)
 
