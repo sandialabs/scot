@@ -54,7 +54,8 @@ is one commonality among most applications, however, and that is E^mail.
 
 One of the ways SCOT can accept information from other systems is by setting
 up an IMAP inbox that these systems can send E^mail to.  SCOT then periodically
-checks that inbox, and ingests any new email messages it finds.
+checks that inbox, and ingests any new email messages it finds.  Creation of 
+Alertgroups are possible via the REST API as well.
 
 The E^mail messages may often contain several "rows" of data.  For example,
 several IDS alerts could be bundled up into a single E^mail message.  This
@@ -143,6 +144,19 @@ Intel
 Often, IRTs receive information about threats, reports from other entities, and other general information that can be thought of as Intel.  Storing these items
 within SCOT allows SCOT to detect entities, flair them, and cross reference these entities in existing and future Alerts and Entries.  
 
+Guide
+^^^^^
+
+Guides are mini instruction manuals that help your analysts know how to respond
+to incoming Alertgroups.  Guides are linked to the Alertgroup throught the Subject value of the Alertgroup.
+
+Signature
+^^^^^^^^^
+
+Do you wish there was a place to store all your Yara, Snort, and other 
+detection signatures?  We look no further.  Here you can store, discuss,
+and revise your signatures and link them to your activities tracked in SCOT.
+You can use the REST API to serve these signatures to your detection systems.
 
 
 

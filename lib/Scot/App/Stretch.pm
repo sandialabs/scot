@@ -22,7 +22,6 @@ Send it on a case by case basis
 use Data::Dumper;
 use JSON;
 use Try::Tiny;
-
 use Scot::Env;
 use Scot::Util::ScotClient;
 use Scot::Util::ElasticSearch;
@@ -36,7 +35,7 @@ use warnings;
 use v5.18;
 
 use Moose;
-extends 'Scot::App';
+extends 'Scot::App::Responder';
 
 has scot_get_method => (
     is          => 'ro',
@@ -81,152 +80,32 @@ sub _build_es {
     return $env->es;
 }
 
-has max_workers => (
-    is          => 'ro',
-    isa         => 'Int',
-    required    => 1,
-    lazy        => 1,
-    builder     => '_get_max_workers',
-);
-
-sub _get_max_workers {
-    my $self    = shift;
-    my $attr    = "max_workers";
-    my $default = 1;
-    my $envname = "scot_app_stretch_max_workers";
-    return $self->get_config_value($attr, $default, $envname);
-}
-
-has stomp_host  => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-    lazy        => 1,
-    builder     => '_build_stomp_host',
-);
-
-sub _build_stomp_host {
-    my $self    = shift;
-    my $attr    = "stomp_host";
-    my $default = "localhost";
-    my $envname = "scot_util_stomphost";
-    return $self->get_config_value($attr, $default, $envname);
-}
-has stomp_port  => (
-    is          => 'ro',
-    isa         => 'Int',
-    required    => 1,
-    lazy        => 1,
-    builder     => '_build_stomp_port',
-);
-
-sub _build_stomp_port {
-    my $self    = shift;
-    my $attr    = "stomp_port";
-    my $default = 61613;
-    my $envname = "scot_util_stompport";
-    return $self->get_config_value($attr, $default, $envname);
-}
-
-=head2 Autonomous
-
-$stretch->run();
-
-this will listen to the activemq topic queue for changes.
-pull them in, and then submit them for indexing to ES
-
-=cut
-
-sub run {
-    my $self    = shift;
-    my $log     = $self->log;
-    my $scot    = $self->scot;
-
-    $log->debug("Starting STOMP watcher");
-    $log->debug("SCOT access mode is ".$self->scot_get_method);
-
-    my $stomp;
-
-    if ( $self->stomp_host eq "localhost" ) {
-        $stomp   = AnyEvent::STOMP::Client->new();
-    }
-    else {
-        $stomp   = AnyEvent::STOMP::Client->new($self->stomp_host, $self->stomp_port);
-    }
-
-    my $pm      = AnyEvent::ForkManager->new( 
-        max_workers => $self->max_workers 
-    );
-
-    $pm->on_start( sub {
-        my ( $pm, $pid, $action, $type, $id ) = @_;
-        $log->debug("Starting worker $pid to handle $action on $type $id");
-    });
-
-    $pm->on_finish( sub {
-        my ( $pm, $pid, $action, $type, $id ) = @_;
-        $log->debug("Ending worker $pid to handle $action on $type $id");
-    });
-
-    $pm->on_error( sub {
-        my ( $pm, @anyargs ) = @_;
-        say Dumper(@anyargs);
-        $log->error("Worker ERROR: ",{filter=>\&Dumper, value=>\@_});
-    });
-
-
-    $stomp->connect();
-    $stomp->on_connected(sub {
-        my $stomp   = shift;
-        $stomp->subscribe('/topic/scot');
-    });
-
-    $stomp->on_message(
-        sub {
-            my ($stomp, $header, $body) = @_;
-
-            my $json    = decode_json $body;
-            my $type    = $json->{data}->{type};
-            my $id      = $json->{data}->{id};
-            my $action  = $json->{action};
-
-            $log->debug("[AMQ] $action $type $id");
-
-            return if ($action eq "viewed");
-
-        #    $pm->start(
-        #        cb  => sub {
-        #            my ( $pm, $action, $type, $id ) = @_;
-                    $self->process_message($action, $type, $id);
-        #        },
-        #        args    => [ $action, $type, $id ],
-        #    );
-        }
-    );
-    my $cv = AnyEvent->condvar;
-    $cv->recv;
-}
-
 sub process_message {
     my $self    = shift;
-    my $action  = shift;
-    my $type    = shift;
-    my $id      = shift;
+    my $pm      = shift;
+    my $href    = shift;
     my $log     = $self->log;
     my $es      = $self->es;
 
-    $log->debug("Processing message $action $type $id");
+    my $action  = lc($href->{action});
+    my $type    = lc($href->{data}->{type});
+    my $id      = $href->{data}->{id} + 0;
+    my $who     = $href->{data}->{who};
+    my $opts    = $href->{data}->{opts};
+
+    $log->debug("[Wkr $$] Processing message $action $type $id from $who");
 
     if ($action eq "deleted") {
         $es->delete($type, $id, 'scot');
         $self->put_stat("elastic doc deleted", 1);
-        return;
+        return "deleted elastic doc $type $id";
     }
     my $cleanser = Data::Clean::FromJSON->get_cleanser;
     my $record  = $self->get_document($type, $id);
     $cleanser->clean_in_place($record);
     $es->index('scot', $type, $record);
     $self->put_stat("elastic doc inserted", 1);
+    return "indexed document $type $id";
 }
 
 sub get_document {
