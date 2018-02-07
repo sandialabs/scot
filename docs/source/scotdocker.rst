@@ -81,7 +81,7 @@ To stop a specific service::
     
 To restart a specific service and build in any particular changes you have made to source:: 
 
-    sudo docker-compose up -d --build name_of_service
+    sudo docker-compose restart --build name_of_service
     
 
 
@@ -89,11 +89,13 @@ To restart a specific service and build in any particular changes you have made 
 Configuration
 -------------
 
-Docker-SCOT relies on the docker-compose.yml to define the execution of the services, the DockerFiles that define the dependencies for each container, and two directories (docker-scripts & docker-configs). Below I will talk about each. 
+Docker-SCOT relies on docker-compose files to define the execution of the services, the DockerFiles that define the dependencies for each container, and two directories (docker-scripts & docker-configs). Below I will talk about each. 
 
-**docker-compose.yml**
+**docker-compose-custom.yml**
 
-The docker-compose.yml simply defines the port mappings, data volumes, build contexts, etc. Most of this can be configured as you please but keep in mind some of the data volume mapping and all of the static IPs are currently required unless you modify the configuration files in docker-configs. 
+The docker-compose-custom.yml file is the compose file that is referenced in the install script (restart-build-deploy.sh) when you choose 'Custom' (option 2). 
+
+The docker-compose-custom.yml file simply defines the port mappings, data volumes, build contexts, etc. Most of this can be configured as you please but do so at your own risk as most of the data volume mappings / container_names are required. 
 
 **docker-scripts**
 
@@ -199,5 +201,6 @@ FAQ / Common Issues
 **Common Issues**
 
 1. Apache frequently will throw an error on run time that the process is already running and will subequently die. In the event this happens, simply re-run the script. 
+2. For SELinux data volume issues, please follow: [https://docs.docker.com/storage/bind-mounts/#configure-the-selinux-label](https://docs.docker.com/storage/bind-mounts/#configure-the-selinux-label)
 
 
