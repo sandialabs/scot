@@ -1,4 +1,4 @@
-package Scot::App::Responder::Reflair;
+package Scot::App::Responder::Stretch;
 
 use Try::Tiny;
 use Data::Dumper;
