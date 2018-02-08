@@ -26,6 +26,7 @@ sub process_message {
 
     if ( $action eq "deleted" ) {
         $es->delete($type, $id, 'scot');
+        $log->debug("after sending delete");
         $self->put_stat("elastic doc deleted",1);
         return 1;
     }
@@ -36,12 +37,14 @@ sub process_message {
 
     if ( $action eq "created" ) {
         $es->index('scot', $type, $record);
+        $log->debug("after sending index");
         $self->put_stat("elastic doc inserted", 1);
         return 1;
     }
 
     if ( $action eq "updated" ) {
         $es->update("scot", $type, $id, $record);
+        $log->debug("after sending update");
         $self->put_stat("elastic doc updated", 1);
         return 1;
     }
