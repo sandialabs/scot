@@ -35,16 +35,17 @@ fi
 
 
 #set permissions
-sudo chmod -R 0755 /opt/scotbackup/
-sudo chmod -R 0777 /var/log/scot/
+sudo chmod -R 0770 /opt/scotbackup/
+sudo chmod -R 0775 /var/log/scot/
 sudo chmod -R g+rwx /var/lib/elasticsearch/ 
 sudo chgrp 1000 /var/lib/elasticsearch/
 
-
+echo "Creating SCOT and mongodb groups"
 #create groups
 sudo groupadd -g 2060 scot
 sudo groupadd -g 2061 mongodb
-
+echo "Changing /opt/scotbackup/ permissions"
+sudo chown -R :2060 /opt/scotbackup/
 
 function add_users {
     echo "- checking for existing scot user"
@@ -99,7 +100,7 @@ elif [ "$selection" == "2" ]; then
   echo "You selected custom mode."
   echo " "
   sudo -E docker-compose -f docker-compose-custom.yml up --build
-else:
+else
   echo "Invalid selection"
 fi
 
