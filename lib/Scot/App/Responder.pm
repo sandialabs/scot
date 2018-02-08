@@ -231,8 +231,8 @@ sub run {
                 my $id      = $href->{data}->{id};
 
                 try { 
-                    $log->debug("WTF procmgr: ",{filter=>\&Dumper, value => $procmgr});
-                    $log->debug("WTF HREF: ",{filter=>\&Dumper, value => $href});
+                    # $log->debug("procmgr: ",{filter=>\&Dumper, value => $procmgr});
+                    $log->debug("MSG HREF: ",{filter=>\&Dumper, value => $href});
                     my $stat = $self->process_message($procmgr, $href);
                     $log->debug("=== worker $$ status is $stat");
                 }
