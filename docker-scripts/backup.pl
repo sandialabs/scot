@@ -81,13 +81,8 @@ if ( $env->tarloc ) {
     $tarloc = $env->tarloc;
 }
 
-##
-print "!!!!!here is \$env->es_server";
-print "$env->es_server";
-
 
 ## now backup elasticsearch
-
 
 print "Backing up ElasticSearch...\n";
 
@@ -136,7 +131,7 @@ my $del_stat = `$curl -XDELETE $escmd`;
 sleep 2;
 
 print "Request new snapshot...\n";
-print "!!!!!!!!!!!!!!! Here is escmd\n";
+print "Issuing following command: \n";
 print "$curl -XPUT $escmd \n";
 
 my $snap_stat   = `$curl -XPUT $escmd`;
