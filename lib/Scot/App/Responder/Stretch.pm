@@ -2,6 +2,7 @@ package Scot::App::Responder::Stretch;
 
 use Try::Tiny;
 use Data::Dumper;
+use Data::Clean::JSON;
 use Moose;
 extends 'Scot::App::Responder';
 
@@ -16,32 +17,38 @@ sub process_message {
     my $self        = shift;
     my $pm          = shift;
     my $href        = shift;
+    my $log         = $self->log;
+
+    $log->debug("processing message");
+
     my $action      = $href->{action};
     my $type        = $href->{data}->{type};
     my $id          = $href->{data}->{id};
-    my $log         = $self->log;
-    my $es          = $self->es;
+    my $es          = $self->env->es;
 
     $log->debug("[Wkr $$] Processing Message $action $type $id");
 
     if ( $action eq "deleted" ) {
         $es->delete($type, $id, 'scot');
+        $log->debug("after sending delete");
         $self->put_stat("elastic doc deleted",1);
         return 1;
     }
 
-    my $cleanser    = Data::Clean::FromJSON->get_cleanser;
+    my $cleanser    = Data::Clean::JSON->get_cleanser;
     my $record      = $self->get_document($type, $id);
     $cleanser->clean_in_place($record);
 
     if ( $action eq "created" ) {
         $es->index('scot', $type, $record);
+        $log->debug("after sending index");
         $self->put_stat("elastic doc inserted", 1);
         return 1;
     }
 
     if ( $action eq "updated" ) {
         $es->update("scot", $type, $id, $record);
+        $log->debug("after sending update");
         $self->put_stat("elastic doc updated", 1);
         return 1;
     }
@@ -54,14 +61,10 @@ sub get_document {
     my $type    = shift;
     my $id      = shift;
 
-    if ( $self->scot_get_method eq "mongo" ) {
-        my $mongo   = $self->env->mongo;
-        my $col     = $mongo->collection(ucfirst(lc($type)));
-        my $obj     = $col->find_iid($id);
-        return $obj->as_hash;
-    }
-    my $record  = $self->scot->get("$type/$id");
-    return $record;
+    my $mongo   = $self->env->mongo;
+    my $col     = $mongo->collection(ucfirst(lc($type)));
+    my $obj     = $col->find_iid($id);
+    return $obj->as_hash;
 }
 
 sub query_documents {
@@ -71,38 +74,29 @@ sub query_documents {
     my $lastid  = shift // 0;
     my $log     = $self->log;
 
-    if ( $self->scot_get_method eq "mongo" ) {
-        my $mongo   = $self->env->mongo;
-        my $col     = $mongo->collection(ucfirst(lc($type)));
-        my $match   = {
-            id  => { '$gt'  => $lastid }
-        };
-        $log->debug("Match is ".Dumper($match));
-        my $cursor  = $col->find({
-            id      => { '$gt' => $lastid },
-        });
-        $cursor->limit($limit);
-        $cursor->sort({id => 1});
-        return $cursor;
-    }
-    my $record  = $self->scot->get("$type?id=x>$lastid");
-    return $record;
+    my $mongo   = $self->env->mongo;
+    my $col     = $mongo->collection(ucfirst(lc($type)));
+    my $match   = {
+        id  => { '$gt'  => $lastid }
+    };
+    $log->debug("Match is ".Dumper($match));
+    my $cursor  = $col->find({
+        id      => { '$gt' => $lastid },
+    });
+    $cursor->limit($limit);
+    $cursor->sort({id => 1});
+    return $cursor;
 }
 
 sub get_maxid {
     my $self    = shift;
     my $type    = shift;
 
-    if ( $self->scot_get_method eq "mongo" ) {
-        my $col = $self->env->mongo->collection(ucfirst(lc($type)));
-        my $cur = $col->find({});
-        $cur->sort({id => -1});
-        my $obj = $cur->next;
-        return $obj->id;
-    }
-    my $resp = $self->scot->get("$type/maxid");
-    my $maxid   = $resp->{max_id} // 500;
-    return $maxid;
+    my $col = $self->env->mongo->collection(ucfirst(lc($type)));
+    my $cur = $col->find({});
+    $cur->sort({id => -1});
+    my $obj = $cur->next;
+    return $obj->id;
 }
         
 

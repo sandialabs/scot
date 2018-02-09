@@ -55,8 +55,8 @@ services:
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
      - "/var/lib/mongodb:/var/lib/mongodb/"
-     - "/opt/scotbackup/mongo/scot-prod:/opt/scotbackup/mongo/scot-prod/"
-     - "/var/log/scot:/var/log/scot/"
+     - "/opt/scotbackup/mongo/scot-prod:/opt/scotbackup/mongo/scot-prod/:z"
+     - "/var/log:/var/log/"
     networks:
      - scot-docker-net
     container_name: mongodb
@@ -76,8 +76,9 @@ services:
    volumes:
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
-     - "/opt/scotbackup/elastic:/opt/scotbackup/elastic/"
+     - "/opt/scotbackup/elastic:/opt/scotbackup/elastic/:z"
      - "/var/lib/elasticsearch:/var/lib/elasticsearch/"
+     - "/var/log/elasticsearch:/var/log/elasticsearch/"
    networks:
     - scot-docker-net
    container_name: elastic
@@ -96,7 +97,7 @@ services:
      - "./pubdev/:/opt/scot/pubdev"
      - "/var/lib/elasticsearch:/var/lib/elasticsearch/"
      - "/var/lib/mongodb:/var/lib/mongodb/"
-     - "/opt/scotbackup:/opt/scotbackup/"
+     - "/opt/scotbackup:/opt/scotbackup/:z"
      - "/opt/scot/public/cached_images:/opt/scot/public/cached_images/"
     depends_on:
      - perl
@@ -182,19 +183,19 @@ services:
    container_name: game
    image: sandialabs/scot_game
   
-  mail: 
-   build:
-     dockerfile: Dockerfile-Mail
-     context: ./
-   volumes: 
-     - "/var/log/scot:/var/log/scot/"
-   depends_on:
-    - mongodb
-    - scot
-   networks:
-    - scot-docker-net
-   image: sandialabs/scot_mail
-   container_name: mail
+  #mail: 
+  # build:
+  #   dockerfile: Dockerfile-Mail
+  #   context: ./
+  # volumes: 
+  #   - "/var/log/scot:/var/log/scot/"
+  # depends_on:
+  #  - mongodb
+  #  - scot
+  # networks:
+  #  - scot-docker-net
+  # image: sandialabs/scot_mail
+  # container_name: mail
 
 networks:
   scot-docker-net:
