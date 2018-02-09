@@ -10,10 +10,13 @@ use v5.18;
 use Scot::App::Responder::Stretch;
 use IO::Prompt;
 use Getopt::Long qw(GetOptions);
+use Data::Dumper;
 
 # put things into elastic 
 
-my $config_file  = "/opt/scot/etc/stretch.cfg.pl";
+my $config_file  = $ENV{'scot_app_stretch_config_file'} // 
+                "/opt/scot/etc/stretch.cfg.pl";
+
 my $startepoch;
 my $endepoch;
 my $collection;
@@ -22,6 +25,21 @@ my $all;
 my $id  = 0;
 my $start;
 my $end;
+my $env = Scot::Env->new(
+    config_file => $config_file,
+);
+
+
+
+$SIG{__DIE__} = sub { our @reason = @_};
+
+END {
+    our @reason;
+    if (@reason) {
+        say "Stretch died because: @reason";
+        $env->log->error("Stretch died because: ",{filter=>\&Dumper,value=>\@reason});
+    }
+}
 
 GetOptions(
     'l=i'       => \$limit,
@@ -42,11 +60,6 @@ Invalid option!
         [-re m-d-yyyy]      date range reprocess end
 EOF
 ;
-
-my $env = Scot::Env->new(
-    config_file => $config_file,
-);
-
 
 my $loop    = Scot::App::Responder::Stretch->new( 
     env => $env,
