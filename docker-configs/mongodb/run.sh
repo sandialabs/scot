@@ -3,7 +3,7 @@ set -m
 
 
 #set index parameter
-mongodb_cmd="mongod --setParameter failIndexKeyTooLong=false --dbpath=/var/lib/mongodb/"
+mongodb_cmd="mongod --setParameter failIndexKeyTooLong=false --dbpath=/var/lib/mongodb/ --logpath /var/log/mongodb/mongod.log"
 cmd="$mongodb_cmd"
 
 

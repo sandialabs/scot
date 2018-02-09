@@ -56,7 +56,7 @@ services:
      - "/etc/localtime:/etc/localtime:ro"
      - "/var/lib/mongodb:/var/lib/mongodb/"
      - "/opt/scotbackup/mongo/scot-prod:/opt/scotbackup/mongo/scot-prod/:z"
-     - "/var/log/scot:/var/log/scot/"
+     - "/var/log:/var/log/"
     networks:
      - scot-docker-net
     container_name: mongodb
@@ -78,6 +78,7 @@ services:
      - "/etc/localtime:/etc/localtime:ro"
      - "/opt/scotbackup/elastic:/opt/scotbackup/elastic/:z"
      - "/var/lib/elasticsearch:/var/lib/elasticsearch/"
+     - "/var/log/elasticsearch:/var/log/elasticsearch/"
    networks:
     - scot-docker-net
    container_name: elastic
