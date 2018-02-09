@@ -133,8 +133,7 @@ get JSON that was submitted with the web request
 
 =cut
 
-    my $authclass   = $env->authclass;
-       $authclass   = "Controller::Auth";
+    my $authclass   = "Controller::Auth";
 
     # routes
     my $r       = $self->routes;
