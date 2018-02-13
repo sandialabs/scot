@@ -8,7 +8,7 @@ import Dashboard from '../components/dashboard/dazzle/dashboard';
 
 import Status from '../components/dashboard/status';
 import Gamification from '../components/dashboard/gamification';
-let Online = require( '../components/dashboard/online.jsx' );
+import Activity from '../components/dashboard/activity';
 
 import { Widgets } from '../components/dashboard/dazzle/widgets';
 
@@ -176,9 +176,7 @@ class HomeDashboard extends PureComponent {
 				<div className="game-area">
 					<Gamification />
 				</div>
-				<Well bsSize="small" className="activity-area">
-					Activity
-				</Well>
+				<Activity className="activity-area" />
 			</div>
 		);
 
