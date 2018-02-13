@@ -117,7 +117,7 @@ export default class ThingList extends PureComponent {
 	render() {
 		let things = this.state.data.map( ( thing, i ) => this.genThingItem( thing, i ) );
 		if ( things.length === 0 ) {
-			things = <div className="list-group-item">{this.props.emptyString}</div>
+			things = <div className="list-group-item list-group-item-success">{this.props.emptyString}</div>
 		}
 
 		return (
@@ -276,11 +276,11 @@ export const UnviewedAlerts = {
 export const TopEvents = {
 	topEvents: {
 		type: ThingList,
-		title: "Top Events",
+		title: "Important Events",
 		description: "Recent Events with open tasks",
 		props: {
 			thingType: 'event',
-			title: 'Top Events',
+			title: 'Important Events',
 			queryOptions: {
 				limit: 5,
 				offset: 0,

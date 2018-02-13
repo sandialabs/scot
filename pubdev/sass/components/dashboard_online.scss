@@ -1,0 +1,16 @@
+// Styles for Dashboard Activity component
+
+.Activity {
+	padding: 7px;
+
+	.activity-item {
+		display: inline-block;
+		font-size: 1.2em;
+
+		.badge {
+			color: #777;
+			background: white;
+			margin: -1px 0 0 10px;
+		}
+	}
+}
