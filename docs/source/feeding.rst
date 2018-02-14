@@ -93,7 +93,7 @@ Here's a sample curl command to insert an alertgroup::
                         MAIL_FROM   : "scbrb\@aa.edu",
                         MAIL_TO     : "tbruner\@watermellon.com",
                         HREFS       : "https://www.aa.edu/athletics/schedule",
-                        SUBJECT     : "Schedule for next week",
+                        SUBJECT     : "Schedule for next week",}
                     },
                     {
                         MAIL_FROM   : "bubba\@bbn.com",
