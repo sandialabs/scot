@@ -743,13 +743,17 @@ EOF
 cmd.exe /c bcdedit /set {default} recoveryenabled No
 EOF
         flair       => <<'EOF',
-<div>cmd.exe /c <span class="entity jrock1" data-entity-type="jrock1" data-entity-value="bcdedit /set">bcdedit /set</span> {default} recoveryenabled No</div>
+<div><span class="entity file" data-entity-type="file" data-entity-value="cmd.exe">cmd.exe</span> /c <span class="entity jrock1" data-entity-type="jrock1" data-entity-value="bcdedit /set">bcdedit /set</span> {default} recoveryenabled No</div>
 EOF
         entities    => [
             {
                 value   => 'bcdedit /set',
                 type    => 'jrock1',
-            }
+            },
+            {
+                value   => "cmd.exe",
+                type    => "file",
+            },
         ],
         userdef => [
         ],
@@ -776,5 +780,26 @@ EOF
         userdef => [
         ],
     },
-
+    {
+        testname    => "file1",
+        testgroup   => "filenames",
+        testnumber  => 32,
+        source      => <<'EOF',
+invoice.pdf.exe
+EOF
+        plain       => <<'EOF',
+invoice.pdf.exe
+EOF
+    flair           => <<'EOF',
+<div><span class="entity file" data-entity-type="file" data-entity-value="invoice.pdf.exe">invoice.pdf.exe</span>
+</div>
+EOF
+    entities    => [
+            {
+                value   => 'invoice.pdf.exe',
+                type    => 'file',
+            }
+    ],
+    userdef => [],
+    },
 );

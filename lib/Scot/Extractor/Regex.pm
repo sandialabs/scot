@@ -569,6 +569,31 @@ sub _build_WINREGISTRY {
     };
 }
 
+has regex_common_file_ext => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_COMMON_FILE_EXT',
+);
+
+sub _build_COMMON_FILE_EXT {
+    my $self    = shift;
+    my $regex   = qr{
+        \b
+        [0-9a-zA-Z_\-\.]+
+        \.
+        (exe|bat|zip|txt|rar|tar|dll|7z|ps1|vbs|js|pdf|msi|hta|mht|doc|docx|xls|xlsx|ppt|pptx|jse|jar|vbe|wsf|wsh|sct|wsc)
+        \b
+    }xims;
+    return {
+        regex   => $regex,
+        type    => "file",
+        order   => 100,
+        options => { multiword => "no" },
+    };
+}
+
 has regex_appkey => (
     is          => 'ro',
     isa         => 'HashRef',
