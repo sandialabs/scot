@@ -41,7 +41,7 @@ sub BUILD {
     # load regexes that are in config file attr "entity_regexes"
 
     foreach my $href (@{$self->config->{entity_regexes}}) {
-        $log->debug("building attr from ",{filter=>\&Dumper, value=>$href});
+        $log->trace("building attr from ",{filter=>\&Dumper, value=>$href});
         my $attrname    = 'regex_'.$href->{type};
         $meta->add_attribute(
             $attrname => (
@@ -130,7 +130,7 @@ sub load_entitytypes {
             order   => $etype->order,
             options => $etype->options,
         });
-        $log->debug("created $attrname");
+        $log->trace("created $attrname");
     }
     $meta->make_immutable;
 }
@@ -142,7 +142,7 @@ sub build_re {
     my $log     = $self->env->log;
     my $re;
 
-    $log->debug("building re from $text");
+    $log->trace("building re from $text");
 
     my $quoted  = quotemeta($text);
 
@@ -653,7 +653,7 @@ sub find_matches {
     foreach my $rehash (@$rearef) {
         my $type    = $rehash->{type};
         my $regex   = $rehash->{regex};
-        $log->debug("$word: Try to match a $type");
+        $log->trace("$word: Try to match a $type");
 
         if ( $word =~ m/$regex/ ) {
 
@@ -669,7 +669,7 @@ sub find_matches {
                 match   => $match, 
                 post    => $post };
         }
-        $log->debug("$type match failed on $word");
+        $log->trace("$type match failed on $word");
     }
     return {};
 }
