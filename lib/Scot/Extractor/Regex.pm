@@ -588,7 +588,7 @@ sub _build_COMMON_FILE_EXT {
     }xims;
     return {
         regex   => $regex,
-        type    => "file",
+        type    => "filename",
         order   => 100,
         options => { multiword => "no" },
     };
