@@ -37,6 +37,7 @@ override 'create' => sub {
     my ($self, $args)   = $check->(@_);
     my $env = $self->env;
     my $log = $self->env->log;
+    my $location    = $self->env->location;
 
     $log->debug("In overriden create ".ref($self));
 
@@ -44,6 +45,7 @@ override 'create' => sub {
     my $iid     = $self->get_next_id;
 
     push @args, "id" => $iid;
+    push @args, "location" => $location;
 
     if ( $self->class->meta->does_role("Scot::Role::Permittable") ) {
         $log->trace("Checking for group permissions !!!!!!!");
