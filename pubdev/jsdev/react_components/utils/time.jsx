@@ -37,6 +37,23 @@ export const todayRange = () => {
 	}
 }
 
+/**
+ * Convert an epoch to seconds ago
+ *
+ * epoch: epoch to convert
+ */
+export const epochToTimeago = ( epoch ) => {
+	return ( Date.now() - epoch * 1000 ) / 1000;
+}
+
+/**
+ * Convert seconds ago to epoch
+ *
+ * timeago: seconds ago to convert
+ */
+export const timeagoToEpoch = ( timeago ) => {
+	return ( Date.now() - timeago * 1000 ) / 1000;
+}
 
 /**
  * Epoch Range to filter array

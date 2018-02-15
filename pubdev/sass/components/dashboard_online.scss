@@ -12,5 +12,9 @@
 			background: white;
 			margin: -1px 0 0 10px;
 		}
+
+		& ~ .activity-item {
+			margin-left: 5px;
+		}
 	}
 }

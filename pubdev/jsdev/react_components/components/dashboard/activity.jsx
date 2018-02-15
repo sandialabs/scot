@@ -1,19 +1,31 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent, Component } from 'react';
 import PropTypes from 'prop-types';
 
 import { Well, Label, Badge } from 'react-bootstrap';
 
-const REFRESH_RATE = 30 * 1000; // 30 seconds
+import Store from '../../activemq/store';
+import { epochToTimeago, timeagoToEpoch } from '../../utils/time';
 
-class Activity extends PureComponent {
+const REFRESH_RATE = 30 * 1000; // 30 seconds
+const NOTIFICATION_LEVEL = {
+	wall: "warning",
+};
+const ACTIVITY_TYPE = {
+	USER: 0,
+	NOTIFICATION: 1,
+};
+
+class Activity extends Component {
 	constructor( props ) {
 		super( props );
 
 		this.state = {
-			data: [],
+			users: [],
+			notifications: [],
 		};
 
-		this.updateData = this.updateData.bind(this);
+		this.updateUsers = this.updateUsers.bind(this);
+		this.wallMessage = this.wallMessage.bind(this);
 		this.fetchError = this.fetchError.bind(this);
 	}
 
@@ -21,8 +33,11 @@ class Activity extends PureComponent {
 	}
 
 	componentDidMount() {
-		this.refreshTimer = setInterval( this.updateData, REFRESH_RATE );
-		this.updateData();
+		this.refreshTimer = setInterval( this.updateUsers, REFRESH_RATE );
+		this.updateUsers();
+
+        Store.storeKey( 'wall' );
+        Store.addChangeListener( this.wallMessage );
 	}
 
 	componentWillUnmount() {
@@ -31,29 +46,66 @@ class Activity extends PureComponent {
 		}
 	}
 
-	updateData() {
+	updateUsers() {
         $.ajax({
             type: 'get',
             url: '/scot/api/v2/who',
 			success: ( data ) => {
 				this.setState( {
-					data: data.records,
+					users: data.records.map( user => {
+						return {
+							type: ACTIVITY_TYPE.USER,
+							who: user.username,
+							time: timeagoToEpoch( user.last_activity ),
+						}
+					} ),
 				} );
 			},
             error: this.fetchError,
         });
 	}
 
+	wallMessage() {
+		let notifications = this.state.notifications;
+		notifications.push( {
+			type: ACTIVITY_TYPE.NOTIFICATION,
+			time: activemqwhen,
+			who: activemqwho,
+			message: activemqmessage,
+			level: NOTIFICATION_LEVEL.wall,
+		} );
+
+		this.setState( {
+			notifications: notifications,
+		} );
+	}
+
 	fetchError( error ) {
+	}
+
+	buildActivityItem( item, i ) {
+		let badge = timeSince( epochToTimeago( item.time ) );
+		let text = '';
+		switch( item.type ) {
+			default:
+			case ACTIVITY_TYPE.USER:
+				text = item.who;
+				break;
+			case ACTIVITY_TYPE.NOTIFICATION:
+				text = `${item.who}: ${item.message}`;
+				break;
+		}
+
+		return <ActivityItem key={i} badge={badge} style={item.level}>{text}</ActivityItem>
 	}
 
 	render() {
 		let { className = "" } = this.props;
 		let classes = [ "Activity", className ];
 
-		let items = this.state.data.map( ( item, i ) => {
-			return <ActivityItem key={i} badge={timeSince(item.last_activity)}>{item.username}</ActivityItem>
-		} );
+		let items = this.state.users.concat( this.state.notifications ).sort( ( a, b ) => {
+			return b.time - a.time;
+		} ).map( this.buildActivityItem );
 
 		return (
 			<Well bsSize='small' className={classes.join(' ')}>
