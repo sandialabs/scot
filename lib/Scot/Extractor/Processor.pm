@@ -84,7 +84,7 @@ sub process_html {
     my $fmt = HTML::FormatText->new();
     my $txt = $fmt->format($tree);
 	$entities{text}	    = $txt;
-    $log->trace("plain text results: ",{filter=>\&Dumer, value=>$txt});
+    $log->trace("plain text results: ",{filter=>\&Dumper, value=>$txt});
 
     # detach content from <html><body> and push into new <div>
     my $body    = $tree->look_down('_tag', 'body');
@@ -226,7 +226,7 @@ sub do_multiword_matches {
         my $regex   = $href->{regex};
         my $type    = $href->{type};
 
-        $log->trace("Looking for $type match");
+        $log->trace("Looking for $type match in $text");
 
         if ( $text =~ m/$regex/ ) {
 
@@ -328,158 +328,11 @@ sub do_singleword_matches {
             }
         }
         if ($foundmatch == 0) {
-            $log->debug("no matches, placing unchanged $word on stack");
+            $log->trace("no matches, placing unchanged $word on stack");
             push @new, $word;
         }
     }
     return wantarray ? @new : \@new;
-}
-sub parse_old {
-    my $self    = shift;
-    my $text    = shift;
-    my $dbhref  = shift;
-    my $reutil  = $self->env->regex;
-    my @new     = ();
-    my $splitre = $self->splitre;
-    my $log     = $self->env->log;
-    my $mwmatch;
-
-    $log->debug("Parsing $text");
-
-    # if the text to parse is only a tab, space or newline, we are done
-    if ( $text =~ /^[\t\n ]$/ ) {
-        return @new;
-    }
-
-    # iterate through the multiword regexes to find any multiword patterns
-    MWREGEX:
-    foreach my $mw ($reutil->list_multiword_regexes) {
-
-        my $regex   = $mw->{regex};
-        my $type    = $mw->{type};
-
-        $log->trace("Looking for MW $type");
-
-        if ( $text =~ m/$regex/ ) {
-            # we found a match lets split string and recurse
-            $mwmatch++;     
-            $log->trace("    found match");
-
-            my $pre     = substr($text, 0, $-[0]);
-            my $match   = substr($text, $-[0], $+[0] - $-[0]);
-            my $post    = substr($text, $+[0]);
-
-            push @new, $self->parse($pre, $dbhref); #look for matches in pre
-            push @new, $self->span ($match, $type); # span what we found
-            push @new, $self->parse($post, $dbhref); #look in post
-
-            # add found match to the entity list
-            push @{$dbhref->{entities}}, {
-                type    => $type,
-                value   => lc($match),
-            };
-
-            last MWREGEX;
-        }
-    }
-
-    # if we found no multiword matches then we can process the text
-    # for single word matches
-    if (! defined $mwmatch ) {
-
-        $log->trace("Looking for SW matches in $text");
-
-        # splitre is defined a top, essetially creates a list of words
-        # that will count spaces, tabs, newlines, and non-word chars
-        # in addition to "normal" words as elements of the array
-        my @words   = ( $text =~ m/$splitre/g );
-
-        $log->trace("got words ",{filter=>\&Dumper, value=>\@words});
-
-        # iterate on each discovered word
-        WORD:
-        foreach my $word (@words) {
-
-            $log->debug("examining word $word");
-            my $wordmatch;
-        
-            # check word against each single word regex
-            SWREGEX:
-            foreach my $sw ($reutil->list_singleword_regexes) {
-
-                my $s_regex = $sw->{regex};
-                my $s_type  = $sw->{type};
-
-                $log->debug("   type $s_type");
-
-                if ( $word =~ m/$s_regex/ ) {
-
-                    # we have a potential match 
-                    my $falsematch = undef;
-                    $log->debug("    potential $s_type match!");
-
-                    my $pre     = substr($word, 0, $-[0]);
-                    $log->trace("    pre = $pre");
-                    my $match   = substr($word, $-[0], $+[0] - $-[0]);
-                    $log->trace("  match = $match");
-                    my $post    = substr($word, $+[0]);
-                    $log->trace("   post = $post");
-
-
-                    # if there is a fragment prior to the match, add it
-                    push @new, $pre  if ($pre  ne '');
-
-                    # domain special handling
-                    if ( $s_type eq "domain" ) {
-                        my $dspan = $self->domain_action($match, $dbhref);
-                        if ( defined $dspan ) {
-                            push @new, $dspan;
-                        }
-                        else {
-                            $falsematch++;
-                        }
-                    }   
-                    # ipaddr special handling
-                    elsif ( $s_type eq "ipaddr" ) {
-                        push @new, $self->ipaddr_action($match, $dbhref);
-                    }
-                    # email special handling
-                    elsif( $s_type eq "email" ) {
-                        push @new, $self->email_action($match, $dbhref);
-                    }
-                    # default case, everything else
-                    else {
-                        push @new, $self->span($match, $s_type);
-                        push @{$dbhref->{entities}},{
-                            type    => $s_type,
-                            value   => lc($match),
-                        };
-                    }
-
-                    if ( defined $falsematch ) {
-                        $log->warn("falsely matched $s_type, retrying");
-                    }
-
-                    # add any post match fragments
-                    push @new, $post if ($post ne '');
-
-                    $log->trace("at this point \@new is ",{filter=>\&Dumper,value=>\@new});
-
-                    # stop after the first matching regex.
-                    $wordmatch++;
-                    last SWREGEX;
-                }
-                else {
-                    $log->trace("no match");
-                }
-            }
-            # no match, add the text onto the stack as is
-            if ( ! defined $wordmatch ) {
-                push @new, $word;
-            }
-        }
-    }
-    return @new;
 }
 
 =item B<span($text,$type)>
@@ -575,13 +428,13 @@ sub domain_action {
     };
 
     if ( defined $is_domain ) {
-        $log->debug("we have a valid domain");
+        $log->trace("we have a valid domain");
         push @{$dbhref->{entities}}, {
             value   => lc($match),
             type    => "domain",
         };
         my $span =  $self->span($match,"domain");
-        $log->debug("span generated ",{filter=>\&Dumper,value=>$span});
+        $log->trace("span generated ",{filter=>\&Dumper,value=>$span});
         return $span;
     }
     return undef;
