@@ -324,7 +324,7 @@ sub do_singleword_matches {
                 last REGEX;
             }
             else {
-                $log->debug("did not match $type");
+                $log->trace("did not match $type");
             }
         }
         if ($foundmatch == 0) {
