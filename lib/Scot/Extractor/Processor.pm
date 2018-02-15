@@ -107,11 +107,11 @@ sub walk_tree {
        $level  += 4;
     my $log     = $self->env->log;
 
-    $log->debug(" "x$level . "Walking Node: ". $element->starttag);
-    $log->debug(" "x$level . "Adress      : ". $element->address);
+    $log->trace(" "x$level . "Walking Node: ". $element->starttag);
+    $log->trace(" "x$level . "Adress      : ". $element->address);
 
     if ( $element->is_empty ) {
-        $log->debug(" "x$level . "------------- empty node --------");
+        $log->trace(" "x$level . "------------- empty node --------");
         return;
     }
 
@@ -121,7 +121,7 @@ sub walk_tree {
 
     for( my $index = 0; $index < scalar(@content); $index++ ) {
 
-        $log->debug(" "x$level . "Index $index");
+        $log->trace(" "x$level . "Index $index");
 
         if ( ref $content[$index] ) {
 
@@ -144,12 +144,12 @@ sub walk_tree {
                 $text,
                 $dbhref,
             );
-            $log->debug(" "x$level."new html stack is ",{filter=>\&Dumper, value=>\@new});
+            $log->trace(" "x$level."new html stack is ",{filter=>\&Dumper, value=>\@new});
         }
     }
     $element->splice_content(0, scalar(@content), @new);
-    $log->debug(" "x$level." NEWCONTENT = ".$element->as_HTML);
-    $log->debug(" "x$level." dbhref     = ",{filter=>\&Dumper, value=>$dbhref});
+    $log->trace(" "x$level." NEWCONTENT = ".$element->as_HTML);
+    $log->trace(" "x$level." dbhref     = ",{filter=>\&Dumper, value=>$dbhref});
 }
 
 =item B<parse>
@@ -226,7 +226,7 @@ sub do_multiword_matches {
         my $regex   = $href->{regex};
         my $type    = $href->{type};
 
-        $log->debug("Looking for $type match");
+        $log->trace("Looking for $type match");
 
         if ( $text =~ m/$regex/ ) {
 
@@ -267,7 +267,7 @@ sub do_singleword_matches {
 
     WORD:
     foreach my $word (@words) {
-        $log->debug("examining word $word");
+        $log->trace("examining word $word");
         my $foundmatch = 0;
 
         REGEX:
@@ -276,11 +276,11 @@ sub do_singleword_matches {
             my $regex   = $href->{regex};
             my $type    = $href->{type};
 
-            $log->debug("Looking for $type match");
+            $log->trace("Looking for $type match");
 
             if ( $word =~ m/$regex/ ) {
 
-                $log->debug("potential match found for $type");
+                $log->trace("potential match found for $type");
 
                 my $pre     = substr($word, 0, $-[0]);
                 my $match   = substr($word, $-[0], $+[0] - $-[0]);
@@ -316,6 +316,7 @@ sub do_singleword_matches {
                     };
                 }
                 # getting here means a valid match, i hope
+                $log->debug("match validated $type $match");
                 push @new, $pre if ( $pre ne '' );
                 push @new, $span;
                 push @new, $post if ( $post ne '' );
