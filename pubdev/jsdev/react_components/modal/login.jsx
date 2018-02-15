@@ -29,26 +29,30 @@ class Login extends Component {
         let origurl = this.props.origurl;
         let url = '/sso?orig_url=/#' + origurl;
         return (
-            <Modal dialogClassName='login-modal' show={ this.props.modalActive }> 
+            <Modal dialogClassName='login-modal' show={ this.props.modalActive }>
                 <Modal.Header >
                     <Modal.Title style={{textAlign: 'center'}}>
                         <h1> SCOT Login </h1>
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body style={{textAlign: 'center'}}>
-                    <img src='/images/scot_logo_473x473.png' alt='SCOT Logo' />
+                    {/*<img src='/images/scot_logo_473x473.png' alt='SCOT Logo' />*/}
+                    <img class="profile-img" src="/images/scot_logo_473x473.pn" alt='SCOT Logo' />
                     <Button type='submit' href={url}>Sign in using SSO</Button>
                     <br />
                     <br />
                     <div>
-                        <label>Username </label>
-                        <input id='user' type='user' ref='user' defaultValue=''  />
+                        {/*<input id='user' type='user' ref='user' defaultValue=''  />*/}
+                        <input type="user" id='user' class="form-control" placeholder="Login" required autofocus/>
                     </div>
                     <div>
-                        <label>Password </label>
                         <input id='pass' type='password' ref='pass' defaultValue='' onKeyPress={this.isEnterPressed}  />
+                        <input type="password" class="form-control" id='pass' ref='pass' placeholder="Password" onKeyPress={this.isEnterPressed} />
                     </div>
-                    <input type='submit' onClick={this.NormalAuth} />
+                    {/*<input type='submit' onClick={this.NormalAuth} />*/}
+                    <button class="btn btn-lg btn-primary btn-block" type="submit" onClick={this.NormalAuth}>
+                        Sign in
+                    </button>
                     <input type='reset' onClick={this.Reset} />
                     <br />
                 </Modal.Body>
