@@ -243,6 +243,7 @@ export const YourTasks = {
 				let target = thing.target;
 				return `${thingType}/${target.type}/${target.id}/${thing.id}`;
 			},
+			emptyString: 'None!',
 		},
 	},
 }
