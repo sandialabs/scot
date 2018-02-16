@@ -71,6 +71,7 @@ has location    => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
+    default     => 'local',
 );
 
 
