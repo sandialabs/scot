@@ -866,5 +866,27 @@ EOF
         ],
         userdef => [],
     },
+    {
+        testname    => 'uuid1-1',
+        testgroup   => 'uuid1',
+        testnumber  => 35,
+        source      => <<'EOF',
+d0229d40-1274-11e8-a427-3d01d7fc9aea
+EOF
+        plain       => <<'EOF',
+d0229d40-1274-11e8-a427-3d01d7fc9aea
+EOF
+        flair       => <<'EOF',
+<div><span class="entity uuid1" data-entity-type="uuid1" data-entity-value="d0229d40-1274-11e8-a427-3d01d7fc9aea">d0229d40-1274-11e8-a427-3d01d7fc9aea</span>
+</div>
+EOF
+        entities    => [
+            {
+                value   => 'd0229d40-1274-11e8-a427-3d01d7fc9aea',
+                type    => 'uuid1',
+            }
+        ],
+        userdef => [],
+    },
 
 );
