@@ -659,6 +659,32 @@ sub _build_APPKEY {
     };
 }
 
+has regex_UUID1 => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_UUID1',
+);
+
+sub _build_UUID1 {
+    my $self    = shift;
+    my $hex     = qr{[0-9a-f]};
+    my $regex   = qr{
+        \b
+        (
+        $hex{8}-$hex{4}-11[ef]$hex-[89ab]$hex{3}-$hex{12}
+        )
+        \b
+    }xms;
+    return {
+        regex   => $regex,
+        type    => "uuid1",
+        order   => 20,
+        options => { multiword => "no" },
+    };
+}
+
 sub find_all_matches {
     my $self    = shift;
     my $word    = shift;
