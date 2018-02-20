@@ -61,6 +61,20 @@ has id => (
     required    => 1,
 );
 
+=item B<location>
+
+the location string that identifies this scot instance
+
+=cut
+
+has location    => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => 'local',
+);
+
+
 sub get_collection_name {
     my $self    = shift;
     my $thing   = lc((split(/::/, ref($self) ))[-1]);
