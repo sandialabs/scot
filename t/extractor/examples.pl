@@ -743,13 +743,17 @@ EOF
 cmd.exe /c bcdedit /set {default} recoveryenabled No
 EOF
         flair       => <<'EOF',
-<div>cmd.exe /c <span class="entity jrock1" data-entity-type="jrock1" data-entity-value="bcdedit /set">bcdedit /set</span> {default} recoveryenabled No</div>
+<div><span class="entity filename" data-entity-type="filename" data-entity-value="cmd.exe">cmd.exe</span> /c <span class="entity jrock1" data-entity-type="jrock1" data-entity-value="bcdedit /set">bcdedit /set</span> {default} recoveryenabled No</div>
 EOF
         entities    => [
             {
                 value   => 'bcdedit /set',
                 type    => 'jrock1',
-            }
+            },
+            {
+                value   => "cmd.exe",
+                type    => "filename",
+            },
         ],
         userdef => [
         ],
@@ -775,6 +779,114 @@ EOF
         ],
         userdef => [
         ],
+    },
+    {
+        testname    => "file1",
+        testgroup   => "filenames",
+        testnumber  => 32,
+        source      => <<'EOF',
+invoice.pdf.exe
+EOF
+        plain       => <<'EOF',
+invoice.pdf.exe
+EOF
+    flair           => <<'EOF',
+<div><span class="entity filename" data-entity-type="filename" data-entity-value="invoice.pdf.exe">invoice.pdf.exe</span>
+</div>
+EOF
+    entities    => [
+            {
+                value   => 'invoice.pdf.exe',
+                type    => 'filename',
+            }
+    ],
+    userdef => [],
+    },
+
+    {
+        testname    => 'ipv6-1',
+        testgroup   => 'ipv6',
+        testnumber  => 33,
+        source      => <<'EOF',
+1762:0:0:0:0:B03:1:AF18
+EOF
+        plain       => <<'EOF',
+1762:0:0:0:0:B03:1:AF18
+EOF
+        flair       => <<'EOF',
+<div><span class="entity ipv6" data-entity-type="ipv6" data-entity-value="1762:0:0:0:0:b03:1:af18">1762:0:0:0:0:B03:1:AF18</span></div>
+EOF
+        entities    => [
+            {
+                value   => '1762:0:0:0:0:b03:1:af18',
+                type    => 'ipv6',
+            }
+        ],
+        userdef => [],
+    },
+    {
+        testname    => 'ipv6-1',
+        testgroup   => 'ipv6',
+        testnumber  => 33,
+        source      => <<'EOF',
+1762::b03:1:af18
+EOF
+        plain       => <<'EOF',
+1762::b03:1:af18
+EOF
+        flair       => <<'EOF',
+<div><span class="entity ipv6" data-entity-type="ipv6" data-entity-value="1762::b03:1:af18">1762::b03:1:af18</span></div>
+EOF
+        entities    => [
+            {
+                value   => '1762::b03:1:af18',
+                type    => 'ipv6',
+            }
+        ],
+        userdef => [],
+    },
+    {
+        testname    => 'ipv6-3',
+        testgroup   => 'ipv6',
+        testnumber  => 35,
+        source      => <<'EOF',
+2001:41d0:2:9d17::
+EOF
+        plain       => <<'EOF',
+2001:41d0:2:9d17::
+EOF
+        flair       => <<'EOF',
+<div><span class="entity ipv6" data-entity-type="ipv6" data-entity-value="2001:41d0:2:9d17::">2001:41d0:2:9d17::</span></div>
+EOF
+        entities    => [
+            {
+                value   => '2001:41d0:2:9d17::',
+                type    => 'ipv6',
+            }
+        ],
+        userdef => [],
+    },
+    {
+        testname    => 'uuid1-1',
+        testgroup   => 'uuid1',
+        testnumber  => 35,
+        source      => <<'EOF',
+d0229d40-1274-11e8-a427-3d01d7fc9aea
+EOF
+        plain       => <<'EOF',
+d0229d40-1274-11e8-a427-3d01d7fc9aea
+EOF
+        flair       => <<'EOF',
+<div><span class="entity uuid1" data-entity-type="uuid1" data-entity-value="d0229d40-1274-11e8-a427-3d01d7fc9aea">d0229d40-1274-11e8-a427-3d01d7fc9aea</span>
+</div>
+EOF
+        entities    => [
+            {
+                value   => 'd0229d40-1274-11e8-a427-3d01d7fc9aea',
+                type    => 'uuid1',
+            }
+        ],
+        userdef => [],
     },
 
 );
