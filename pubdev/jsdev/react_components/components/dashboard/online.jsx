@@ -1,37 +1,36 @@
-var React = require('react');
-var Panel = require('react-bootstrap/lib/Panel.js');
-var Badge = require('react-bootstrap/lib/Badge.js');
+let React = require( 'react' );
+let Panel = require( 'react-bootstrap/lib/Panel.js' );
 
-var Online = React.createClass({
+let Online = React.createClass( {
     getInitialState: function() {
         return {
             OnlineData: null
-        }
+        };
     },
     componentDidMount: function() {
-        $.ajax({
+        $.ajax( {
             type: 'get',
             url: '/scot/api/v2/who',
-            success: function(response) {
-                this.setState({OnlineData:response.records});
-            }.bind(this),
-            error: function(data) {
-                this.props.errorToggle('failed to get current user', data);
-            }.bind(this)
-        })
+            success: function( response ) {
+                this.setState( {OnlineData:response.records} );
+            }.bind( this ),
+            error: function( data ) {
+                this.props.errorToggle( 'failed to get current user', data );
+            }.bind( this )
+        } );
     },
     render: function() {
-        var OnlineRows = [];
-        if (this.state.OnlineData != null) {
-            for (var i=0; i < this.state.OnlineData.length; i++) {
-                var timeago = timeSince(this.state.OnlineData[i].last_activity);
+        let OnlineRows = [];
+        if ( this.state.OnlineData != null ) {
+            for ( let i=0; i < this.state.OnlineData.length; i++ ) {
+                let timeago = timeSince( this.state.OnlineData[i].last_activity );
                 OnlineRows.push(
                     <Panel header={this.state.OnlineData[i].username} >
                         <div style={{display:'flex', flexFlow:'column'}}>
                             <div>{timeago} ago</div>
                         </div>
                     </Panel>
-                )
+                );
             }
         } else {
             OnlineRows.push(
@@ -40,7 +39,7 @@ var Online = React.createClass({
                     <div style={{fontWeight:'bold'}}>Coming Soon</div>
                     <br/>
                 </Panel>
-            )
+            );
         }
         return (
             <div id='online' className="dashboard col-md-2">
@@ -53,6 +52,6 @@ var Online = React.createClass({
             </div>
         );
     }
-});
+} );
 
 module.exports = Online;

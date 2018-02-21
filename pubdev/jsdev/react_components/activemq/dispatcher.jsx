@@ -1,12 +1,12 @@
-var Dispatcher  = require('flux').Dispatcher
-var assign      = require('object-assign')
+let Dispatch  = require( 'flux' ).Dispatcher;
+let assign      = require( 'object-assign' );
 
-var Dispatcher = assign(new Dispatcher(), {
-    handleActivemq: function(action){
-        this.dispatch({
+let Dispatcher = assign( new Dispatch(), {
+    handleActivemq: function( action ){
+        this.dispatch( {
             action: action
-        })
+        } );
     }
-})
+} );
 
-module.exports = Dispatcher
+module.exports = Dispatcher;
