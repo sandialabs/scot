@@ -69,6 +69,7 @@ function add_users {
 #set ownership 
 sudo chown -R 1061:2060 /var/lib/mongodb/ /var/log/mongodb/
 sudo chown -R 1060:2060 /var/log/scot/ /opt/scot/
+sudo chown -R 1060:2060 /opt/scotfiles/
 
 #add users
 add_users
