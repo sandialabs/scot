@@ -1,0 +1,45 @@
+{
+    "extends": [
+        "eslint:recommended",
+        "plugin:react/recommended",
+    ],
+    "parserOptions": {
+		// ECMAScript version: 3—8 (or 2015—2017), defaults to 5
+		"ecmaVersion": 6,
+
+		// Treat source files as ECMAScript modules, defaults to "script"
+		"sourceType": "module",
+		"ecmaFeatures": {
+			// Enable JSX
+			"jsx": true,
+
+			// Enable object rest/spread properties: {...a, ...b}
+			"experimentalObjectRestSpread": true
+		}
+	},
+
+	// If you’re using Flow or experimental ECMAScript features
+	// not supported by ESLint, enable babel-eslint parser
+	"parser": "babel-eslint",
+
+	// Predefined sets of global variables
+	"env": {
+		"browser": true,
+		"node": true,
+		"es6": true,
+	    "jquery": true,
+    },
+    "plugins": [
+        "import", 
+        "react"
+    ],
+    "rules" : {
+        "react/jsx-uses-vars": 2,
+        "indent": [ "error", 4 ],
+        "semi": [ "error", "always" ],
+        "space-in-parens": [ "error", "always" ],
+		"linebreak-style": [ "error", "unix" ],
+		"quotes": [ "error", "single" ],
+        "no-var": 2
+    }
+}
