@@ -1,6 +1,6 @@
-var React                   = require('react');
-var Modal                   = require('react-modal');
-var Button                  = require('react-bootstrap/lib/Button');
+let React                   = require( 'react' );
+let Modal                   = require( 'react-modal' );
+let Button                  = require( 'react-bootstrap/lib/Button' );
 
 const customStyles = {
     content : {
@@ -11,26 +11,26 @@ const customStyles = {
         marginRight: '-50%',
         transform:  'translate(-50%, -50%)'
     }
-}
+};
 
-var LinkWarning = React.createClass({ 
+let LinkWarning = React.createClass( { 
     proceed: function() {
-        window.open(this.props.link);
+        window.open( this.props.link );
         this.props.linkWarningToggle();
     },
     componentWillMount: function() {
-        var myDomain = window.location.href; 
-        var reg = new RegExp(/((https?|ftp):\/\/[a-zA-Z0-9\-_\.]+\.)?([a-zA-Z0-9\-_\.]+\.([a-zA-Z]{1,63}))/,'i');
-        var linkRegResult = this.props.link.match(reg);
-        var myDomainRegResult = myDomain.match(reg);
-        if (linkRegResult != undefined && myDomainRegResult != undefined) {
-            var linkDomain = linkRegResult[3];
-            var myDomain = myDomainRegResult[3];
-            if (linkDomain == myDomain ) {   
+        let myDomain = window.location.href; 
+        let reg = new RegExp( /((https?|ftp):\/\/[a-zA-Z0-9\-_\.]+\.)?([a-zA-Z0-9\-_\.]+\.([a-zA-Z]{1,63}))/,'i' );
+        let linkRegResult = this.props.link.match( reg );
+        let myDomainRegResult = myDomain.match( reg );
+        if ( linkRegResult != undefined && myDomainRegResult != undefined ) {
+            let linkDomain = linkRegResult[3];
+            let myDomain = myDomainRegResult[3];
+            if ( linkDomain == myDomain ) {   
                 this.proceed();
             }
         } else if ( linkRegResult == undefined ) {
-           this.proceed(); 
+            this.proceed(); 
         }
         /*
         if ($.isUrlInternal(this.props.link)) {
@@ -59,7 +59,7 @@ var LinkWarning = React.createClass({
                     </div>
                 </Modal>
             </div>
-        )
+        );
     }
-});
+} );
 module.exports = LinkWarning;

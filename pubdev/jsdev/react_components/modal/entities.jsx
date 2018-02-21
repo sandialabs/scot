@@ -1,6 +1,6 @@
-var React           = require('react');
-var Modal           = require('react-modal');
-var Button          = require('react-bootstrap/lib/Button');
+let React           = require( 'react' );
+let Modal           = require( 'react-modal' );
+let Button          = require( 'react-bootstrap/lib/Button' );
 const customStyles = {
     content : {
         top     : '50%',
@@ -10,13 +10,13 @@ const customStyles = {
         marginRight: '-50%',
         transform:  'translate(-50%, -50%)'
     }
-}
+};
 
-var Entities = React.createClass({
+let Entities = React.createClass( {
     getInitialState: function() {
         return {
             entitiesBody:true,
-        }
+        };
     }, 
     render: function() {
         return (
@@ -37,58 +37,58 @@ var Entities = React.createClass({
                     </div>
                 </Modal>         
             </div>        
-        )
+        );
     }
-});
+} );
 
-var EntitiesData = React.createClass({
+let EntitiesData = React.createClass( {
     render: function() {
-        var rows = [];
-        var data = this.props.data;
-        var originalobj = {};
+        let rows = [];
+        let data = this.props.data;
+        let originalobj = {};
         originalobj['entities'] = {};
-        var obj = originalobj.entities;
-        for (var prop in data) {
-            var subobj = {};
-            var type = data[prop].type;
-            var id = data[prop].id;
-            var value = prop;
+        let obj = originalobj.entities;
+        for ( let prop in data ) {
+            let subobj = {};
+            let type = data[prop].type;
+            let id = data[prop].id;
+            let value = prop;
             subobj[id] = value;
-            if (obj.hasOwnProperty(type)) { 
-                obj[type].push(subobj); 
+            if ( obj.hasOwnProperty( type ) ) { 
+                obj[type].push( subobj ); 
             } else { 
-                var arr = [];
-                arr.push(subobj);
+                let arr = [];
+                arr.push( subobj );
                 obj[type] = arr;
             } 
         }
-        for (var prop in obj) {
-            var type = prop;
-            var value = obj[prop];
-            rows.push(<EntitiesDataHeaderIterator type={type} value={value} flairToolbarToggle={this.props.flairToolbarToggle}/>);
+        for ( let prop in obj ) {
+            let type = prop;
+            let value = obj[prop];
+            rows.push( <EntitiesDataHeaderIterator type={type} value={value} flairToolbarToggle={this.props.flairToolbarToggle}/> );
         }
         return (
             <div>
                 {rows}
             </div>
-        )
+        );
     }
-});
+} );
 
-var EntitiesDataHeaderIterator = React.createClass({
+let EntitiesDataHeaderIterator = React.createClass( {
     render: function() {
-        var rows = [];
-        var type = this.props.type;
-        var value = this.props.value;
-        for (var i=0;i<value.length;i++) {
-            var eachValue = value[i];
-            var entityId = null;
-            var entityValue = null;
-            for (var prop in eachValue) {
+        let rows = [];
+        let type = this.props.type;
+        let value = this.props.value;
+        for ( let i=0;i<value.length;i++ ) {
+            let eachValue = value[i];
+            let entityId = null;
+            let entityValue = null;
+            for ( let prop in eachValue ) {
                 entityId = prop;
                 entityValue = eachValue[prop];
             }
-            rows.push(<EntitiesDataValueIterator entityValue={entityValue} entityId={entityId} flairToolbarToggle={this.props.flairToolbarToggle}/>);
+            rows.push( <EntitiesDataValueIterator entityValue={entityValue} entityId={entityId} flairToolbarToggle={this.props.flairToolbarToggle}/> );
         }
         return (
             <div style={{border:'1px solid black',width:'500px'}}>
@@ -97,19 +97,19 @@ var EntitiesDataHeaderIterator = React.createClass({
                     {rows}
                 </div>            
             </div>
-        )   
+        );   
     }
-});
+} );
 
-var EntitiesDataValueIterator = React.createClass({
+let EntitiesDataValueIterator = React.createClass( {
     toggle: function() {
-        this.props.flairToolbarToggle(this.props.entityId,this.props.entityValue,'entity'); 
+        this.props.flairToolbarToggle( this.props.entityId,this.props.entityValue,'entity' ); 
     },
     render: function() {
-        var entityValue = this.props.entityValue;
+        let entityValue = this.props.entityValue;
         return (
             <a href="javascript: void(0)" onClick={this.toggle}>{entityValue}<br/></a>
-        )
+        );
     }
-});
+} );
 module.exports = Entities;
