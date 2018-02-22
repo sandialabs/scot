@@ -13,26 +13,26 @@ let AddEntryModal = React.createClass( {
         let content;
         let asyncContentLoaded;
         switch( this.props.entryAction ) {
-            case 'Add':
-                content = '';
-                asyncContentLoaded = true;
-                break;
-            case 'Reply':
-                content = '';
-                asyncContentLoaded = true;
-                break;
-            case 'Copy To Entry':
-                content = this.props.content; 
-                asyncContentLoaded = true;
-                break;
-            case 'Edit':
-                content = '',
-                asyncContentLoaded = false;
-                break;
-            default:
-                content = '';
-                asyncContentLoaded = true
-                break;
+        case 'Add':
+            content = '';
+            asyncContentLoaded = true;
+            break;
+        case 'Reply':
+            content = '';
+            asyncContentLoaded = true;
+            break;
+        case 'Copy To Entry':
+            content = this.props.content; 
+            asyncContentLoaded = true;
+            break;
+        case 'Edit':
+            content = '',
+            asyncContentLoaded = false;
+            break;
+        default:
+            content = '';
+            asyncContentLoaded = true;
+            break;
         }
         
         return {
