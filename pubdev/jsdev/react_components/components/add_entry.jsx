@@ -5,35 +5,39 @@ let Button      = require( 'react-bootstrap/lib/Button.js' );
 let Prompt      = require( 'react-router-dom' ).Prompt;
 let Link        = require( 'react-router-dom' ).Link;
 
-let recently_updated = 0;
-
 let AddEntryModal = React.createClass( {
     getInitialState: function(){
         let key = new Date();
         key = key.getTime();
         let tinyID = 'tiny_' + key;
         let content;
-        if ( this.props.entryAction == 'Add' || this.props.entryAction == 'Reply' ){
-            content = '';
-            return {
-                tinyID: tinyID, key: key, content: content, asyncContentLoaded: true, leaveCatch: true, whoami: undefined,
-            };
-        } else if ( this.props.entryAction == 'Copy To Entry' ) {
-            content = this.props.content;
-            return {
-                tinyID: tinyID, key: key, content: content, asyncContentLoaded: true, leaveCatch: true, whoami: undefined,
-            };
-        } else if ( this.props.entryAction == 'Edit' ) {
-            return {
-                tinyID: tinyID, key: key, content: '', asyncContentLoaded: false, leaveCatch: true, whoami: undefined,//Wait until componentDidMount to add the content
-            };
+        let asyncContentLoaded;
+        switch( this.props.entryAction ) {
+            case 'Add':
+                content = '';
+                asyncContentLoaded = true;
+                break;
+            case 'Reply':
+                content = '';
+                asyncContentLoaded = true;
+                break;
+            case 'Copy To Entry':
+                content = this.props.content; 
+                asyncContentLoaded = true;
+                break;
+            case 'Edit':
+                content = '',
+                asyncContentLoaded = false;
+                break;
+            default:
+                content = '';
+                asyncContentLoaded = true
+                break;
         }
-        else {            //This is just in case a condition is missed
-            content = '';
-            return {
-                tinyID: tinyID, key: key, content: content, asyncContentLoaded: true, leaveCatch: true, whoami: undefined,
-            };
-        }
+        
+        return {
+            tinyID: tinyID, key: key, content: content, asyncContentLoaded: asyncContentLoaded, leaveCatch: true, whoami: undefined, recentlyUpdated: 0,
+        };
     },
 
     componentDidMount: function(){
@@ -48,8 +52,7 @@ let AddEntryModal = React.createClass( {
                 type: 'GET',
                 url:  '/scot/api/v2/entry/'+ this.props.id,
                 success: function( response ){
-                    recently_updated = response.updated;
-                    this.setState( {content: response.body, asyncContentLoaded: true} );
+                    this.setState( {content: response.body, asyncContentLoaded: true, recentlyUpdated: response.updated} );
                     this.forceUpdate();
                 }.bind( this ),
                 error: function( data ) {
@@ -181,7 +184,7 @@ let AddEntryModal = React.createClass( {
                     type: 'GET',
                     url: '/scot/api/v2/entry/'+this.props.id,
                     success: function( response ){
-                        if( recently_updated != response.updated ){
+                        if( this.state.recentlyUpdated != response.updated ){
                             this.forEdit( false );
                             let set = false;
                             let Confirm = {
