@@ -46,7 +46,7 @@ let EntityDetail = React.createClass( {
         };
     },
     componentDidMount: function () {
-        this.setState({isMounted: true});
+        this.setState( {isMounted: true} );
         let currentTabArray = this.state.tabs;
         let valueClicked = this.props.entityvalue;
         if ( this.state.entityid == undefined ) {
@@ -129,7 +129,7 @@ let EntityDetail = React.createClass( {
 
     },
     componentWillUnmount: function() {
-        this.setState({isMounted: false});
+        this.setState( {isMounted: false} );
         //removes escHandler bind
         $( document ).off( 'keydown' );
         //This makes the size that was last used hold for future entities 
@@ -500,10 +500,10 @@ let EntityBody = React.createClass( {
         this.props.linkWarningToggle( e.target.id );
     },
     componentDidMount: function() {
-        this.setState({isMounted: true});
+        this.setState( {isMounted: true} );
     },
     componentWillUnmount: function() {
-        this.setState({isMounted: false});
+        this.setState( {isMounted: false} );
     },
     render: function() {
         let entityEnrichmentDataArr = [];
@@ -644,7 +644,7 @@ let EntityReferences = React.createClass( {
         };
     },
     componentDidMount: function() {
-        this.setState({isMounted: true});
+        this.setState( {isMounted: true} );
         this.alertRequest = $.ajax( {
             type: 'get',
             url: 'scot/api/v2/entity/' + this.props.entityid + '/alert',
@@ -911,7 +911,7 @@ let EntityReferences = React.createClass( {
         $.tablesorter.updateAll( config, resort );
     },
     componentWillUnmount: function() {
-        this.setState({isMounted: false});
+        this.setState( {isMounted: false} );
     },
     render: function() {
         let id = 'sortableentitytable' + this.props.entityid;

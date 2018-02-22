@@ -50,7 +50,7 @@ const customFilters = {
                         onClick={ () => onChange( '' ) }
                         bsStyle='primary'
                         style={{marginTop: '3px'}}
-					>Clear</Button>
+                    >Clear</Button>
                 }
             </Popover>
         }>
