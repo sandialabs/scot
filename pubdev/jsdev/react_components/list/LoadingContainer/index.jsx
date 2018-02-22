@@ -13,7 +13,7 @@ class LoadingContainer extends PureComponent {
     			    <i className='fa fa-spinner fa-spin fa-2x' aria-hidden='true' />	
                     :
                     null
-                    }
+                }
             </div>
         );
     }
