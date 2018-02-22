@@ -1,4 +1,5 @@
-import React, { PureComponent, Component } from 'react';
+import React, { Component } from 'react';
+import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 
 import { Well, Label, Badge } from 'react-bootstrap';
@@ -9,6 +10,8 @@ import { epochToTimeago, timeagoToEpoch } from '../../utils/time';
 const REFRESH_RATE = 30 * 1000; // 30 seconds
 const NOTIFICATION_LEVEL = {
 	wall: "warning",
+	create: "info",
+	delete: "danger",
 };
 const ACTIVITY_TYPE = {
 	USER: 0,
@@ -26,6 +29,7 @@ class Activity extends Component {
 
 		this.updateUsers = this.updateUsers.bind(this);
 		this.wallMessage = this.wallMessage.bind(this);
+		this.notification = this.notification.bind(this);
 		this.fetchError = this.fetchError.bind(this);
 	}
 
@@ -38,6 +42,10 @@ class Activity extends Component {
 
         Store.storeKey( 'wall' );
         Store.addChangeListener( this.wallMessage );
+		Store.storeKey( 'notification' );
+		Store.addChangeListener( this.notification );
+
+		// this.addDebugItems();
 	}
 
 	componentWillUnmount() {
@@ -80,6 +88,48 @@ class Activity extends Component {
 		} );
 	}
 
+	notification() {
+		const ignoredUsers = [ 'scot-flair', 'scot-alerts', 'scot-admin', '', 'api' ];
+		const interestedEvents = [ 'create', 'delete' ];
+
+		// Ignore some notifications
+		if ( ignoredUsers.includes( activemqwho ) ) return;
+		if ( activemqwall === true ) return;
+		if ( activemqtype === 'entity' ) return;
+		if ( !interestedEvents.includes( activemqstate ) ) return;
+
+		let notifications = this.state.notifications;
+		notifications.push( {
+			type: ACTIVITY_TYPE.NOTIFICATION,
+			time: Date.now() / 1000,
+			who: activemqwho,
+			message: activemqmessage + activemqid,
+			level: NOTIFICATION_LEVEL[ activemqstate ],
+		} );
+
+		this.setState( {
+			notifications: notifications,
+		} );
+	}
+
+	addDebugItems( count = 10) {
+		let notifications = this.state.notifications;
+
+		for ( let i = 0; i < count; i++ ) {
+			notifications.push( {
+				type: ACTIVITY_TYPE.NOTIFICATION,
+				time: Date.now() / 1000,
+				who: 'fred',
+				message: 'blah',
+				level: NOTIFICATION_LEVEL.create,
+			} );
+		}
+
+		this.setState( {
+			notifications: notifications,
+		} );
+	}
+
 	fetchError( error ) {
 	}
 
@@ -103,13 +153,22 @@ class Activity extends Component {
 		let { className = "" } = this.props;
 		let classes = [ "Activity", className ];
 
-		let items = this.state.users.concat( this.state.notifications ).sort( ( a, b ) => {
-			return b.time - a.time;
-		} ).map( this.buildActivityItem );
+		let items = this.state.users.concat( this.state.notifications )
+			.sort( ( a, b ) => {
+				return b.time - a.time;
+			} )
+			.map( this.buildActivityItem );
+
+		let stopped = true;
+		if ( this.marquee && this.well && this.marquee.offsetWidth > this.well.offsetWidth ) {
+			stopped = false;
+		}
 
 		return (
-			<Well bsSize='small' className={classes.join(' ')}>
-				{items}
+			<Well bsSize='small' className={classes.join(' ')} ref={ well => this.well = ReactDOM.findDOMNode( well ) }>
+				<div className={`marquee ${stopped ? 'stopped' : ''}`} ref={ marquee => this.marquee = marquee }>
+					{items}
+				</div>
 			</Well>
 		)
 	}
