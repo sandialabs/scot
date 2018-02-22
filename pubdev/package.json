@@ -45,8 +45,6 @@
     "deep-equal": "^1.0.1",
     "events": "^1.1.0",
     "flux": "^3.0.0",
-    "grunt-browserify": "^5.0.0",
-    "grunt-contrib-watch": "^0.6.1",
     "invariant": "^2.2.1",
     "js-tokens": "^2.0.0",
     "loose-envify": "^1.2.0",
