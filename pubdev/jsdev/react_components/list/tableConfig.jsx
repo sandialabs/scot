@@ -193,6 +193,14 @@ const columnDefinitions = {
         maxWidth: 5000,
         Filter: customFilters.stringFilter,
     },
+    
+    Location: {
+        Header: 'Location',
+        accessor: 'location',
+        minWidth: 80,
+        maxWidth: 180,
+        Filter: customFilters.stringFilter,
+    },
 
     Created: {
         Header: 'Created',
@@ -387,9 +395,9 @@ const defaultColumnSettings = {
 };
 
 const typeColumns = {
-    alertgroup: [ 'Id', 'AlertStatus', 'Subject', 'Created', 'Sources', 'Tags', 'Views', 'OpenTasks' ],
-    event: [ 'Id', 'EventStatus', 'Subject', 'Created', 'Updated', 'Sources', 'Tags', 'Owner', 'Entries', 'Views', 'OpenTasks' ],
-    incident: [ 'Id', 'DOE', 'IncidentStatus', 'Owner', 'Subject', 'Occurred', 'IncidentType',
+    alertgroup: [ 'Id', 'Location', 'AlertStatus', 'Subject', 'Created', 'Sources', 'Tags', 'Views', 'OpenTasks' ],
+    event: [ 'Id', 'Location', 'EventStatus', 'Subject', 'Created', 'Updated', 'Sources', 'Tags', 'Owner', 'Entries', 'Views', 'OpenTasks' ],
+    incident: [ 'Id', 'Location', 'DOE', 'IncidentStatus', 'Owner', 'Subject', 'Occurred', 'IncidentType',
         {
             title: 'Tags',
             options: { minWidth: 100, maxWidth: 150 },
@@ -399,12 +407,12 @@ const typeColumns = {
             options: { minWidth: 100, maxWidth: 150 },
         },
     ],
-    intel: [ 'Id', 'Subject', 'Created', 'Updated', 'Sources', 
+    intel: [ 'Id', 'Location', 'Subject', 'Created', 'Updated', 'Sources', 
         {
             title: 'Tags',
             options: { minWidth: 200, maxWidth: 250 },
         }, 'Owner', 'Entries', 'Views', ],
-    task: [ 'Id', 'TargetType', 'TargetId', 
+    task: [ 'Id', 'Location', 'TargetType', 'TargetId', 
         {
             title: 'TaskOwner',
             options: { minWidth: 150, maxWidth: 500 },
@@ -415,10 +423,10 @@ const typeColumns = {
             options: { minWidth: 150, maxWidth: 500 },
         },
     ],
-    signature: [ 'Id', 'Name', 'Type', 'SigStatus', 'Group', 'Description', 'Owner', 'Tags', 'Sources', 'Updated', ],
-    guide: [ 'Id', 'Subject', 'AppliesTo' ],
-    entity: [ 'Id', 'Value', 'Type', 'Entries', ],
-    default: [ 'Id', 'AlertStatus', 'Subject', 'Created', 'Sources', 'Tags', 'Views', ],
+    signature: [ 'Id', 'Location', 'Name', 'Type', 'SigStatus', 'Group', 'Description', 'Owner', 'Tags', 'Sources', 'Updated', ],
+    guide: [ 'Id', 'Location', 'Subject', 'AppliesTo' ],
+    entity: [ 'Id', 'Location', 'Value', 'Type', 'Entries', ],
+    default: [ 'Id', 'Location', 'AlertStatus', 'Subject', 'Created', 'Sources', 'Tags', 'Views', ],
 };
 
 export const buildTypeColumns = ( type ) => {
