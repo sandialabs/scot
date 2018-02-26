@@ -664,6 +664,25 @@ sub api_create {
     return wantarray ? @objects : \@objects;
 }
 
+sub api_restore {
+    my $self    = shift;
+    my $href    = shift;
+    my $req     = $href->{request};
+    my $json    = $req->{json};
+    my $params  = $req->{params};
+    my @objects;
+
+    $self->env->log->debug("api_restore");
+
+    my $object  = $self->exact_create($req);
+
+    push @objects, $object;
+
+    return wantarray ? @objects : \@objects;
+}
+
+
+
 sub api_update {
     my $self    = shift;
     my $object  = shift;
