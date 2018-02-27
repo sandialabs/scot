@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import { Well, Label, Badge } from 'react-bootstrap';
 
 import Store from '../../activemq/store';
-import { epochToTimeago, timeagoToEpoch } from '../../utils/time';
+import { timeOlderThan, epochToTimeago, timeagoToEpoch } from '../../utils/time';
 
 const REFRESH_RATE = 30 * 1000; // 30 seconds
 const NOTIFICATION_LEVEL = {
@@ -13,10 +13,16 @@ const NOTIFICATION_LEVEL = {
 	create: "info",
 	delete: "danger",
 };
+const NOTIFICATION_TIME = {
+	create: 120,
+	delete: 60,
+	wall: 60 * 60,	// 1 hour
+};
 const ACTIVITY_TYPE = {
 	USER: 0,
 	NOTIFICATION: 1,
 };
+const WALL_KEY = 'walls';
 
 class Activity extends Component {
 	constructor( props ) {
@@ -24,9 +30,10 @@ class Activity extends Component {
 
 		this.state = {
 			users: [],
-			notifications: [],
+			notifications: this.loadWall(),
 		};
 
+		this.updateActivity = this.updateActivity.bind(this);
 		this.updateUsers = this.updateUsers.bind(this);
 		this.wallMessage = this.wallMessage.bind(this);
 		this.notification = this.notification.bind(this);
@@ -37,21 +44,34 @@ class Activity extends Component {
 	}
 
 	componentDidMount() {
-		this.refreshTimer = setInterval( this.updateUsers, REFRESH_RATE );
-		this.updateUsers();
+		this.refreshTimer = setInterval( this.updateActivity, REFRESH_RATE );
+		this.updateActivity();
 
         Store.storeKey( 'wall' );
         Store.addChangeListener( this.wallMessage );
 		Store.storeKey( 'notification' );
 		Store.addChangeListener( this.notification );
 
-		// this.addDebugItems();
+		this.addDebugItems();
 	}
 
 	componentWillUnmount() {
 		if ( this.refreshTimer ) {
 			clearInterval( this.refreshTimer );
 		}
+	}
+
+	updateActivity() {
+		this.updateUsers();
+
+		// Clean out notifications
+		let pruned = this.state.notifications.filter( notification => {
+			return !timeOlderThan( notification.time * 1000, NOTIFICATION_TIME[ notification.action ] );
+		} );
+
+		this.setState( {
+			notifications: pruned,
+		}, this.persistWall );
 	}
 
 	updateUsers() {
@@ -73,6 +93,25 @@ class Activity extends Component {
         });
 	}
 
+	persistWall( walls = null ) {
+		if ( walls === null ) {
+			walls = this.state.notifications.filter( notification => {
+				return notification.action === 'wall';
+			} );
+		}
+
+		setLocalStorage( WALL_KEY, JSON.stringify( walls ) ); 
+	}
+	
+	loadWall() {
+		let json = getLocalStorage( WALL_KEY );
+		if ( json ) {
+			return JSON.parse( json );
+		}
+
+		return [];
+	}
+
 	wallMessage() {
 		let notifications = this.state.notifications;
 		notifications.push( {
@@ -81,11 +120,12 @@ class Activity extends Component {
 			who: activemqwho,
 			message: activemqmessage,
 			level: NOTIFICATION_LEVEL.wall,
+			action: 'wall',
 		} );
 
 		this.setState( {
 			notifications: notifications,
-		} );
+		}, this.persistWall );
 	}
 
 	notification() {
@@ -105,6 +145,7 @@ class Activity extends Component {
 			who: activemqwho,
 			message: activemqmessage + activemqid,
 			level: NOTIFICATION_LEVEL[ activemqstate ],
+			action: activemqstate,
 		} );
 
 		this.setState( {
@@ -122,6 +163,7 @@ class Activity extends Component {
 				who: 'fred',
 				message: 'blah',
 				level: NOTIFICATION_LEVEL.create,
+				action: 'create',
 			} );
 		}
 
@@ -160,8 +202,11 @@ class Activity extends Component {
 			.map( this.buildActivityItem );
 
 		let stopped = true;
-		if ( this.marquee && this.well && this.marquee.offsetWidth > this.well.offsetWidth ) {
-			stopped = false;
+		if ( this.marquee && this.well ) {
+			let marqueeValues = window.getComputedStyle( this.marquee )
+			if ( ( parseInt( marqueeValues.width ) - parseInt( marqueeValues.paddingLeft ) ) > this.well.offsetWidth ) {
+				stopped = false;
+			}
 		}
 
 		return (
