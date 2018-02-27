@@ -1,14 +1,14 @@
 export default function debounce( callback, wait = 200, immediate = false ) {
-	let timeout;
+    let timeout;
 
-	return function( ...args ) {
-		clearTimeout(timeout);
+    return function( ...args ) {
+        clearTimeout( timeout );
 
-		timeout = setTimeout( () => {
-			timeout = null;
-			if ( !immediate ) callback.apply( this, args )
-		}, wait )
+        timeout = setTimeout( () => {
+            timeout = null;
+            if ( !immediate ) callback.apply( this, args );
+        }, wait );
 
-		if ( immediate && !timeout ) callback.apply( this, [...args] )
-	}
+        if ( immediate && !timeout ) callback.apply( this, [...args] );
+    };
 }

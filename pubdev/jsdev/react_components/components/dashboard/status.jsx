@@ -1,34 +1,34 @@
-var React = require('react');
-var Panel = require('react-bootstrap/lib/Panel.js');
-var Badge = require('react-bootstrap/lib/Badge.js');
+let React = require( 'react' );
+let Panel = require( 'react-bootstrap/lib/Panel.js' );
+let Badge = require( 'react-bootstrap/lib/Badge.js' );
 
-var Status = React.createClass({
+let Status = React.createClass( {
     getInitialState: function() {
         return {
             StatusData: null
-        }
+        };
     },
     componentDidMount: function() {
-        $.ajax({
+        $.ajax( {
             type: 'get',
             url: '/scot/api/v2/status',
-            success: function(response) {
-                this.setState({StatusData:response});
-            }.bind(this),
-            error: function(data) {
-                this.props.errorToggle('failed to get status', data)
-            }.bind(this)
-        })
+            success: function( response ) {
+                this.setState( {StatusData:response} );
+            }.bind( this ),
+            error: function( data ) {
+                this.props.errorToggle( 'failed to get status', data );
+            }.bind( this )
+        } );
     },
     render: function() {
-        var StatusRows = [];
-        if (this.state.StatusData != null) {
-            for (var key in this.state.StatusData) {
-                var className = 'dashboardStatusDetail';
-                if (this.state.StatusData[key] == 'Not Running') {
-                    className = 'dashboardStatusDetailNotRunning'
-                } else if (this.state.StatusData[key] == 'Running') {
-                    className = 'dashboardStatusDetailRunning'
+        let StatusRows = [];
+        if ( this.state.StatusData != null ) {
+            for ( let key in this.state.StatusData ) {
+                let className = 'dashboardStatusDetail';
+                if ( this.state.StatusData[key] == 'Not Running' ) {
+                    className = 'dashboardStatusDetailNotRunning';
+                } else if ( this.state.StatusData[key] == 'Running' ) {
+                    className = 'dashboardStatusDetailRunning';
                 }
                 StatusRows.push(
                     <Panel header={key} >
@@ -36,7 +36,7 @@ var Status = React.createClass({
                             <div className={className}>{this.state.StatusData[key]}</div>
                         </div>
                     </Panel>
-                )
+                );
             }
         } else {
             StatusRows.push(
@@ -45,7 +45,7 @@ var Status = React.createClass({
                     <div style={{fontWeight:'bold'}}>Coming Soon</div>
                     <br/>
                 </Panel>
-            )
+            );
         }
         return (
             <div id='status' className="dashboardStatusParent">
@@ -58,6 +58,6 @@ var Status = React.createClass({
             </div>
         );
     }
-});
+} );
 
 module.exports = Status;

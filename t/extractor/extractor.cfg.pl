@@ -1,5 +1,6 @@
 %environment = (
     
+    location   => "snl",
     time_zone   => "America/Denver",
     # scot version
     version     => '3.5.4',
@@ -62,7 +63,7 @@
         layout          => '%d %7p [%P] %15F{1}: %4L %m%n',
         appender_name   => 'scot_log',
         logfile         => '/var/log/scot/scot.test.log',
-        log_level       => 'DEBUG',
+        log_level       => 'TRACE',
     },
 
     # modules to instantiate at Env.pm startup. will be done in 
