@@ -1,13 +1,12 @@
-var AppActions  = require('./actions.jsx').default;
-var Store       = require('./store.jsx')
-var Listeneraq = {
+let AppActions  = require( './actions.jsx' ).default;
+let Listeneraq = {
     activeMq: function(){
-        AppActions.getClient()
+        AppActions.getClient();
     }
-}
+};
 
 
-module.exports = Listeneraq
+module.exports = Listeneraq;
 
 
 

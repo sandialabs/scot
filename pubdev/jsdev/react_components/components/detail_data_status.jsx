@@ -1,36 +1,36 @@
-var React                   = require('react');
-var ButtonToolbar           = require('react-bootstrap/lib/ButtonToolbar');
-var OverlayTrigger          = require('react-bootstrap/lib/OverlayTrigger');
-var MenuItem                = require('react-bootstrap/lib/MenuItem');
-var DropdownButton          = require('react-bootstrap/lib/DropdownButton');
-var Popover                 = require('react-bootstrap/lib/Popover');
-var Link                    = require('react-router-dom').Link;
+let React                   = require( 'react' );
+let ButtonToolbar           = require( 'react-bootstrap/lib/ButtonToolbar' );
+let OverlayTrigger          = require( 'react-bootstrap/lib/OverlayTrigger' );
+let MenuItem                = require( 'react-bootstrap/lib/MenuItem' );
+let DropdownButton          = require( 'react-bootstrap/lib/DropdownButton' );
+let Popover                 = require( 'react-bootstrap/lib/Popover' );
+let Link                    = require( 'react-router-dom' ).Link;
 
-var DetailDataStatus = React.createClass({
+let DetailDataStatus = React.createClass( {
     getInitialState: function() {
         return {
             key: this.props.id
-        }
+        };
     },
     componentDidMount: function() {
         //Adds open/close hot keys for alertgroup
-        if (this.props.type == 'alertgroup') {
-            $('#list-view').keydown(function(event){
+        if ( this.props.type == 'alertgroup' ) {
+            $( '#list-view' ).keydown( function( event ){
                 //prevent from working when in input
-                if ($('input').is(':focus')) {return};
+                if ( $( 'input' ).is( ':focus' ) ) {return;}
                 //check for character "o" for 79 or "c" for 67
-                if (this.props.status != 'promoted') {
-                    if (event.keyCode == 79 && (event.ctrlKey != true && event.metaKey != true)) {
-                        this.statusAjax('open');
-                    } else if (event.keyCode == 67 && (event.ctrlKey != true && event.metaKey != true)) {
-                        this.statusAjax('closed');
+                if ( this.props.status != 'promoted' ) {
+                    if ( event.keyCode == 79 && ( event.ctrlKey != true && event.metaKey != true ) ) {
+                        this.statusAjax( 'open' );
+                    } else if ( event.keyCode == 67 && ( event.ctrlKey != true && event.metaKey != true ) ) {
+                        this.statusAjax( 'closed' );
                     }
                 }
-            }.bind(this))
+            }.bind( this ) );
         }
     },
     componentWillUnmount: function() {
-        $('#list-view').unbind('keydown');
+        $( '#list-view' ).unbind( 'keydown' );
     },
     /*eventStatusToggle: function () {
         if (this.props.status == 'open') {
@@ -40,74 +40,74 @@ var DetailDataStatus = React.createClass({
         }
     },*/
     trackAll: function() {
-        this.statusAjax('tracked');
+        this.statusAjax( 'tracked' );
     },
     untrackAll: function() {
-        this.statusAjax('untracked');
+        this.statusAjax( 'untracked' );
     },
     closeAll: function() {
-        this.statusAjax('closed');
+        this.statusAjax( 'closed' );
     },
     openAll: function() {
-        this.statusAjax('open');
+        this.statusAjax( 'open' );
     },
     enableAll: function() {
-        this.statusAjax('enabled');
+        this.statusAjax( 'enabled' );
     },
     disableAll: function() {
-        this.statusAjax('disabled');
+        this.statusAjax( 'disabled' );
     },
-    statusAjax: function(newStatus) {
-        console.log(newStatus);
-        var json = {'status':newStatus};
-        $.ajax({
+    statusAjax: function( newStatus ) {
+        console.log( newStatus );
+        let json = {'status':newStatus};
+        $.ajax( {
             type: 'put',
             url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
-            data: JSON.stringify(json),
+            data: JSON.stringify( json ),
             contentType: 'application/json; charset=UTF-8',
-            success: function(data) {
-                console.log('success status change to: ' + data);
-            }.bind(this),
-            error: function(data) {
-                this.props.errorToggle('Failed to change status', data);
-            }.bind(this)
-        });
+            success: function( data ) {
+                console.log( 'success status change to: ' + data );
+            }.bind( this ),
+            error: function( data ) {
+                this.props.errorToggle( 'Failed to change status', data );
+            }.bind( this )
+        } );
     },
     render: function() {
-        var buttonStyle = '';
-        var open = '';
-        var closed = '';
-        var promoted = '';
-        var title = '';
-        var classStatus = '';
-        var href;
-        if (this.props.status == 'open' || this.props.status == 'disabled' || this.props.status == 'untracked') {
-    buttonStyle = 'danger';
-            classStatus = 'alertgroup_open'
-        } else if (this.props.status == 'closed' || this.props.status == 'enabled' || this.props.status == 'tracked') {
+        let buttonStyle = '';
+        let open = '';
+        let closed = '';
+        let promoted = '';
+        let title = '';
+        let classStatus = '';
+        let href;
+        if ( this.props.status == 'open' || this.props.status == 'disabled' || this.props.status == 'untracked' ) {
+            buttonStyle = 'danger';
+            classStatus = 'alertgroup_open';
+        } else if ( this.props.status == 'closed' || this.props.status == 'enabled' || this.props.status == 'tracked' ) {
             buttonStyle = 'success';
-            classStatus = 'alertgroup_closed'
-        } else if (this.props.status == 'promoted') {
-            buttonStyle = 'default'
-            classStatus = 'alertgroup_promoted'
-        };
+            classStatus = 'alertgroup_closed';
+        } else if ( this.props.status == 'promoted' ) {
+            buttonStyle = 'default';
+            classStatus = 'alertgroup_promoted';
+        }
 
-        if (this.props.type == 'alertgroup') {
+        if ( this.props.type == 'alertgroup' ) {
             open = this.props.data.open_count;
             closed = this.props.data.closed_count;
             promoted = this.props.data.promoted_count;
             title = open + ' / ' + closed + ' / ' + promoted;
         }
 
-        if (this.props.type == 'event') {
+        if ( this.props.type == 'event' ) {
             href = '/incident/' + this.props.data.promotion_id;
-        } else if (this.props.type == 'intel') {
+        } else if ( this.props.type == 'intel' ) {
             href = '/event/' + this.props.data.promotion_id;
         }
 
-        if (this.props.type == 'guide' || this.props.type == 'intel') {
-            return(<div/>)
-        } else if (this.props.type == 'alertgroup') {
+        if ( this.props.type == 'guide' || this.props.type == 'intel' ) {
+            return( <div/> );
+        } else if ( this.props.type == 'alertgroup' ) {
             return (
                 <ButtonToolbar>
                     <OverlayTrigger placement='top' overlay={<Popover id={this.props.id}>open/closed/promoted alerts</Popover>}>
@@ -117,28 +117,28 @@ var DetailDataStatus = React.createClass({
                         </DropdownButton>
                     </OverlayTrigger>
                 </ButtonToolbar>
-            )
-        } else if (this.props.type == 'incident') {
+            );
+        } else if ( this.props.type == 'incident' ) {
             return (
                 <DropdownButton bsSize='xsmall' bsStyle={buttonStyle} id="event_status" className={classStatus} style={{fontSize: '14px'}} title={this.props.status}>
                     <MenuItem eventKey='1' onClick={this.openAll}>Open Incident</MenuItem>
                     <MenuItem eventKey='2' onClick={this.closeAll}>Close Incident</MenuItem>
                 </DropdownButton>
-           )
-        } else if (this.props.type == 'signature') {
+            );
+        } else if ( this.props.type == 'signature' ) {
             return (
                 <DropdownButton bsSize='xsmall' bsStyle={buttonStyle} id="event_status" className={classStatus} style={{fontSize: '14px'}} title={this.props.status}>
                     <MenuItem eventKey='1' onClick={this.enableAll}>Enable Signature</MenuItem>
                     <MenuItem eventKey='2' onClick={this.disableAll}>Disable Signature</MenuItem>
                 </DropdownButton>
-            )
-        } else if (this.props.type == 'entity') {
+            );
+        } else if ( this.props.type == 'entity' ) {
             return (
                 <DropdownButton bsSize='xsmall' bsStyle={buttonStyle} id="event_status" className={classStatus} style={{fontSize: '14px'}} title={this.props.status}>
                     <MenuItem eventKey='1' onClick={this.trackAll}>Track</MenuItem>
                     <MenuItem eventKey='2' onClick={this.untrackAll}>Untracked</MenuItem>
                 </DropdownButton>
-            )
+            );
         } else {
             return (
                 <div>
@@ -149,9 +149,9 @@ var DetailDataStatus = React.createClass({
                         </DropdownButton>
                     }
                 </div>
-            )
+            );
         }
     }
-});
+} );
 
 module.exports = DetailDataStatus;

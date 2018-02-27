@@ -11,12 +11,12 @@ class Links extends Component {
             data: [],
             allSelected: false,
             loading: false,
-        }
+        };
         
-        this.getLinks = this.getLinks.bind(this);
-        this.handleTHeadCheckboxSelection = this.handleTHeadCheckboxSelection.bind(this);
-        this.handleRowSelection = this.handleRowSelection.bind(this);
-        this.handleCheckboxSelection = this.handleCheckboxSelection.bind(this);
+        this.getLinks = this.getLinks.bind( this );
+        this.handleTHeadCheckboxSelection = this.handleTHeadCheckboxSelection.bind( this );
+        this.handleRowSelection = this.handleRowSelection.bind( this );
+        this.handleCheckboxSelection = this.handleCheckboxSelection.bind( this );
     }
 
     componentWillMount() {
@@ -38,7 +38,7 @@ class Links extends Component {
                             <div className='links-checkbox'><i className={`fa fa${this.state.allSelected ? '-check' : '' }-square-o`} aria-hidden="true"></i></div>
 
                         </div>
-                    )
+                    );
                 },
                 id: 'selected',
                 accessor: d => d.selected,
@@ -47,7 +47,7 @@ class Links extends Component {
                         <div>
                             <div className='links-checkbox'><i className={`fa fa${row.row.selected ? '-check' : '' }-square-o`} aria-hidden="true"></i></div>
                         </div>
-                    )
+                    );
                 },
                 maxWidth: 100,
                 filterable: false,
@@ -83,7 +83,7 @@ class Links extends Component {
                 sortable: true,
             },
         
-        ]
+        ];
         
         return (
             <Modal dialogClassName='links-modal' show={ this.props.modalActive } onHide={ this.props.linksModalToggle }>
@@ -105,23 +105,23 @@ class Links extends Component {
                         noDataText= 'No items Linked.'
                         loading = { this.state.loading }
                         style={{
-                            maxHeight: "60vh" 
+                            maxHeight: '60vh' 
                         }}
                         filterable
                     />
                     
                 </Modal.Body>
                 <Modal.Footer>
-                   <Actions data={this.state.data} id={this.props.id} type={this.props.type} getLinks={this.getLinks} errorToggle={this.props.errorToggle} /> 
+                    <Actions data={this.state.data} id={this.props.id} type={this.props.type} getLinks={this.getLinks} errorToggle={this.props.errorToggle} /> 
                 </Modal.Footer>
             </Modal>
-        )
+        );
     }
 
     getLinks () {
-        this.setState({ loading: true });
+        this.setState( { loading: true } );
 
-        $.ajax({
+        $.ajax( {
             type: 'get',
             url: '/scot/api/v2/' + this.props.type + '/' + this.props.id + '/link',
             success: function( data ) {
@@ -151,13 +151,13 @@ class Links extends Component {
                     }
                 }
 
-                this.setState({ data: arr, loading: false });
-            }.bind(this),
+                this.setState( { data: arr, loading: false } );
+            }.bind( this ),
             error: function( data ) {
-                this.setState({ loading: false });
+                this.setState( { loading: false } );
                 this.props.errorToggle( 'failed to get links', data );
-            }.bind(this),
-        });
+            }.bind( this ),
+        } );
     }
 
     handleRowSelection( state, rowInfo, column ) {
@@ -165,7 +165,7 @@ class Links extends Component {
             onClick: event => {
                 let data = this.state.data;
 
-                for (let row of data ) {
+                for ( let row of data ) {
                     if ( rowInfo.row.id == row.id && rowInfo.row.type == row.type ) {
                         row.selected = true;
                     } else {
@@ -173,33 +173,33 @@ class Links extends Component {
                     }
                 }
 
-                this.setState({data: data, allSelected: false});
+                this.setState( {data: data, allSelected: false} );
                 return;
             },
             style: {
                 background: rowInfo != undefined ? rowInfo.row.selected ? 'rgb(174, 218, 255)' : null : null,
             }
-        }
+        };
     }
 
     handleCheckboxSelection( state, rowInfo, column ) {
         if ( column.id == 'selected' ) {
             return {
                 onClick: event => {
-                    var data = this.state.data;
+                    let data = this.state.data;
 
                     for ( let row of data ) {
                         if ( rowInfo.row.id == row.id && rowInfo.row.type == row.type ) {
-                            row.selected = !row.selected
+                            row.selected = !row.selected;
                             break;
                         }
                     }
 
-                    this.setState({data: data, allSelected: this.checkAllSelected(data) });
+                    this.setState( {data: data, allSelected: this.checkAllSelected( data ) } );
                     event.stopPropagation();
                     return;
                 }
-            }
+            };
         } else {
             return {};
         }
@@ -221,10 +221,10 @@ class Links extends Component {
                         }
                     }
 
-                    this.setState({data: data, allSelected: allSelected});
+                    this.setState( {data: data, allSelected: allSelected} );
                     return;
                 }
-            }
+            };
         } else {
             return {};
         }
@@ -248,11 +248,11 @@ class Actions extends Component {
             entry: false,
             thing: false,
             actionSuccess: false,
-        }
+        };
 
-        this.RemoveLink = this.RemoveLink.bind(this);
-        this.RemoveLinkAjax = this.RemoveLinkAjax.bind(this);
-        this.ToggleActionSuccess = this.ToggleActionSuccess.bind(this);
+        this.RemoveLink = this.RemoveLink.bind( this );
+        this.RemoveLinkAjax = this.RemoveLinkAjax.bind( this );
+        this.ToggleActionSuccess = this.ToggleActionSuccess.bind( this );
     }
 
     componentWillMount() {
@@ -284,7 +284,7 @@ class Actions extends Component {
                     <div>
                         <span bsStyle={{color: 'green'}}>Action Successful!</span>
                     </div>
-                : 
+                    : 
                     null 
                 }
                 <div>
@@ -294,7 +294,7 @@ class Actions extends Component {
                     </ButtonGroup>
                 </div>
             </div>
-        )
+        );
     }
     
     RemoveLink() {
@@ -309,24 +309,24 @@ class Actions extends Component {
 
     RemoveLinkAjax( id ) {
 
-        $.ajax({
+        $.ajax( {
             type: 'delete',
             url: '/scot/api/v2/link/' + id,
             success: function( response ) {
                 console.log( 'successfully removed link' );
                 this.ToggleActionSuccess();
-            }.bind(this),
+            }.bind( this ),
             error: function( data ) {
                 this.props.errorToggle( 'failed to remove link', data );
-            }.bind(this)
-        })
+            }.bind( this )
+        } );
 
     }
 
     ToggleActionSuccess() {
         let newActionSuccess = !this.state.actionSuccess;
         this.props.getLinks();
-        this.setState({ actionSuccess: newActionSuccess });
+        this.setState( { actionSuccess: newActionSuccess } );
     }
 
 }

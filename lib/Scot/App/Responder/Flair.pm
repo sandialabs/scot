@@ -232,7 +232,7 @@ sub flair_record {
             }
             if ( $column =~ /^(lb){0,1}scanid$/i ) {
                 # another special column
-                my ($eref, $flair) = $self->process_cell($value, "lb_scan_id");
+                my ($eref, $flair) = $self->process_cell($value, "uuid1");
                 if ( ! defined $seen{$eref->{value}} ) {
                     push @entity, $eref;
                     $seen{$eref->{value}}++;

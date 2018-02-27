@@ -41,7 +41,7 @@ sub BUILD {
     # load regexes that are in config file attr "entity_regexes"
 
     foreach my $href (@{$self->config->{entity_regexes}}) {
-        $log->debug("building attr from ",{filter=>\&Dumper, value=>$href});
+        $log->trace("building attr from ",{filter=>\&Dumper, value=>$href});
         my $attrname    = 'regex_'.$href->{type};
         $meta->add_attribute(
             $attrname => (
@@ -130,7 +130,7 @@ sub load_entitytypes {
             order   => $etype->order,
             options => $etype->options,
         });
-        $log->debug("created $attrname");
+        $log->trace("created $attrname");
     }
     $meta->make_immutable;
 }
@@ -142,7 +142,7 @@ sub build_re {
     my $log     = $self->env->log;
     my $re;
 
-    $log->debug("building re from $text");
+    $log->trace("building re from $text");
 
     my $quoted  = quotemeta($text);
 
@@ -380,8 +380,48 @@ has regex_IPV6 => (
     builder     => '_build_IPV6',
 );
 
-
 sub _build_IPV6 {
+    my $self    = shift;
+    my $re      = qr{
+		\A(?:
+# Mixed
+		(?:
+		# Non-compressed
+		(?:[A-F0-9]{1,4}:){6}
+		# Compressed with at most 6 colons
+		|(?=(?:[A-F0-9]{0,4}:){0,6}
+			(?:[0-9]{1,3}\.){3}[0-9]{1,3}  # and 4 bytes
+			\Z)                            # and anchored
+		# and at most 1 double colon
+		(([0-9A-F]{1,4}:){0,5}|:)((:[0-9A-F]{1,4}){1,5}:|:)
+		# Compressed with 7 colons and 5 numbers
+		|::(?:[A-F0-9]{1,4}:){5}
+		)
+		# 255.255.255.
+		(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}
+		# 255
+		(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])
+		|# Standard
+		(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}
+		|# Compressed with at most 7 colons
+		(?=(?:[A-F0-9]{0,4}:){0,7}[A-F0-9]{0,4}
+			\Z)  # and anchored
+		# and at most 1 double colon
+		(([0-9A-F]{1,4}:){1,7}|:)((:[0-9A-F]{1,4}){1,7}|:)
+		# Compressed with 8 colons
+		|(?:[A-F0-9]{1,4}:){7}:|:(:[A-F0-9]{1,4}){7}
+		)\Z
+    }xmis;
+    return {
+        regex => $re,
+        type    => "ipv6",
+        order   => 11,
+        options => { multiword => "yes" },
+    };
+}
+        
+
+sub _build_IPV6_not {
     my $self    = shift;
     my $ipv4 = "((25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2}))";
     my $hex = "[0-9a-fA-F]{1,4}";
@@ -402,7 +442,7 @@ sub _build_IPV6 {
     return {
         regex => $ipv6_re,
         type    => "ipv6",
-        order   => 200,
+        order   => 11,
         options => { multiword => "no" },
     };
 }
@@ -569,6 +609,31 @@ sub _build_WINREGISTRY {
     };
 }
 
+has regex_common_file_ext => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_COMMON_FILE_EXT',
+);
+
+sub _build_COMMON_FILE_EXT {
+    my $self    = shift;
+    my $regex   = qr{
+        \b
+        [0-9a-zA-Z_\-\.]+
+        \.
+        (exe|bat|zip|txt|rar|tar|dll|7z|ps1|vbs|js|pdf|msi|hta|mht|doc|docx|xls|xlsx|ppt|pptx|jse|jar|vbe|wsf|wsh|sct|wsc)
+        \b
+    }xims;
+    return {
+        regex   => $regex,
+        type    => "filename",
+        order   => 100,
+        options => { multiword => "no" },
+    };
+}
+
 has regex_appkey => (
     is          => 'ro',
     isa         => 'HashRef',
@@ -590,6 +655,32 @@ sub _build_APPKEY {
         regex   => $regex,
         type    => "appkey",
         order   => 10,
+        options => { multiword => "no" },
+    };
+}
+
+has regex_UUID1 => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_UUID1',
+);
+
+sub _build_UUID1 {
+    my $self    = shift;
+    my $hex     = qr{[0-9a-f]};
+    my $regex   = qr{
+        \b
+        (
+        $hex{8}-$hex{4}-11[ef]$hex-[89ab]$hex{3}-$hex{12}
+        )
+        \b
+    }xms;
+    return {
+        regex   => $regex,
+        type    => "uuid1",
+        order   => 20,
         options => { multiword => "no" },
     };
 }
@@ -628,7 +719,7 @@ sub find_matches {
     foreach my $rehash (@$rearef) {
         my $type    = $rehash->{type};
         my $regex   = $rehash->{regex};
-        $log->debug("$word: Try to match a $type");
+        $log->trace("$word: Try to match a $type");
 
         if ( $word =~ m/$regex/ ) {
 
@@ -644,7 +735,7 @@ sub find_matches {
                 match   => $match, 
                 post    => $post };
         }
-        $log->debug("$type match failed on $word");
+        $log->trace("$type match failed on $word");
     }
     return {};
 }

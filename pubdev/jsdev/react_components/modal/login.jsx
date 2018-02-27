@@ -53,13 +53,11 @@ class Login extends Component {
             </Modal>
         );
     }
-
     isEnterPressed( e ) {
         if ( e.key == 'Enter' ) {
             this.NormalAuth();
         }
     }
-
 
     SSO() {
         let data = {};
