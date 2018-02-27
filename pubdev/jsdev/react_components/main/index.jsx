@@ -30,6 +30,8 @@ var Notification    = require('react-notification-system');
 var Login           = require('../modal/login.jsx').default;
 import Home from './home';
 
+import { NOTIFICATION_TYPES } from '../components/dashboard/activity';
+
 import { UserConfigProvider } from '../utils/userConfig';
 
 {
@@ -135,6 +137,11 @@ let App = React.createClass( {
         this.setState( {viewMode:viewModeSetting, notificationSetting:notificationSetting, listViewFilter:listViewFilterSetting,listViewSort:listViewSortSetting, listViewPage:listViewPageSetting} );
     },
     notification: function() {
+		// Don't show on dashboard if filtered type
+		if ( this.props.match.path === '/' && this.props.match.isExact && NOTIFICATION_TYPES.includes( activemqstate ) ) {
+			return;
+		}
+
         //Notification display in update as it will run on every amq message matching 'main'.
         let notification = this.refs.notificationSystem;
         //not showing notificaiton on entity due to "flooding" on an entry update that has many entities causing a storm of AMQ messages
@@ -153,8 +160,13 @@ let App = React.createClass( {
         }
     },
     wall: function() {
-        let notification = this.refs.notificationSystem;
-        let date = new Date( activemqwhen * 1000 );
+		// Don't show on dashboard
+		if ( this.props.match.path === '/' && this.props.match.isExact ) {
+			return;
+		}
+
+        var notification = this.refs.notificationSystem
+        var date = new Date(activemqwhen * 1000);
         date = date.toLocaleString();
         if ( activemqwall == true ) {
             notification.addNotification( {
