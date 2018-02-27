@@ -8,12 +8,12 @@ require( 'moment-range' );
  * secondsAgo: Number of seconds to test against
  */
 export const timeOlderThan = ( timestamp, secondsAgo ) => {
-	if ( !timestamp ) {
-		return true;
-	}
+    if ( !timestamp ) {
+        return true;
+    }
 
-	return Date.now() - timestamp > ( secondsAgo * 1000 );
-}
+    return Date.now() - timestamp > ( secondsAgo * 1000 );
+};
 
 /**
  * Calculate if a timestamp is in the past and therefore data is expired
@@ -21,8 +21,8 @@ export const timeOlderThan = ( timestamp, secondsAgo ) => {
  * expires: time data expires
  */
 export const isExpired = ( expires ) => {
-	return !expires || Date.now() >= expires;
-}
+    return !expires || Date.now() >= expires;
+};
 
 /**
  * Conversion Functions for DateRangeFilter
@@ -34,16 +34,16 @@ export const isExpired = ( expires ) => {
  * epoch range: { start: _epoch_, end: _epoch_ }
  */
 export const epochRangeToString = range => {
-	return range.start +', '+ range.end;
-}
+    return range.start +', '+ range.end;
+};
 
 export const epochRangeToMoment = range => {
-	return moment.range( range.start * 1000, range.end * 1000 );
-}
+    return moment.range( range.start * 1000, range.end * 1000 );
+};
 
 export const momentRangeToEpoch = range => {
-	return {
-		start: Math.round( range.start ) / 1000,
-		end: Math.round( range.end ) / 1000,
-	}
-}
+    return {
+        start: Math.round( range.start ) / 1000,
+        end: Math.round( range.end ) / 1000,
+    };
+};

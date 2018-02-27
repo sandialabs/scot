@@ -43,7 +43,6 @@ RUN groupadd -g 2060 scot && \
 
 RUN chown -R 1061:2060 /var/log/mongodb /var/lib/mongodb/
 
-
 # Set /usr/bin/mongod as the dockerized entry-point application
 USER mongodb:mongodb
 
