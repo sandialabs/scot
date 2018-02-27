@@ -13,6 +13,7 @@ const NOTIFICATION_LEVEL = {
 	create: "info",
 	delete: "danger",
 };
+export const NOTIFICATION_TYPES = [ 'create', 'delete' ];
 const NOTIFICATION_TIME = {
 	create: 120,
 	delete: 60,
@@ -52,7 +53,7 @@ class Activity extends Component {
 		Store.storeKey( 'notification' );
 		Store.addChangeListener( this.notification );
 
-		this.addDebugItems();
+		// this.addDebugItems();
 	}
 
 	componentWillUnmount() {
