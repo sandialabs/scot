@@ -13,7 +13,6 @@ class Login extends Component {
         };
         this.SSO = this.SSO.bind( this );
         this.NormalAuth = this.NormalAuth.bind( this );
-        this.Reset = this.Reset.bind( this );
         this.isEnterPressed = this.isEnterPressed.bind( this );
     }
 
@@ -24,12 +23,12 @@ class Login extends Component {
     componentWillUnmount() {
         this.mounted = false;
     }
-    
+
     render() {
         let origurl = this.props.origurl;
         let url = '/sso?orig_url=/#' + origurl;
         return (
-            <Modal dialogClassName='login-modal' show={ this.props.modalActive }> 
+            <Modal dialogClassName='login-modal' show={ this.props.modalActive }>
                 <Modal.Header >
                     <Modal.Title style={{textAlign: 'center'}}>
                         <h1> SCOT Login </h1>
@@ -40,31 +39,24 @@ class Login extends Component {
                     <Button type='submit' href={url}>Sign in using SSO</Button>
                     <br />
                     <br />
-                    <div>
-                        <label>Username </label>
-                        <input id='user' type='user' ref='user' defaultValue=''  />
+                    <div className="input-group" style={{marginBottom: '25px', marginRight: '100px', marginLeft: '100px'}}>
+                        <span className="input-group-addon"><i className="fa fa-user"></i></span>
+                        <input id="user" type='user' ref='user' defaultValue='' className="form-control" placeholder="Username or Email" />
                     </div>
-                    <div>
-                        <label>Password </label>
-                        <input id='pass' type='password' ref='pass' defaultValue='' onKeyPress={this.isEnterPressed}  />
+                    <div  className="input-group" style={{marginBottom: '25px', marginRight: '100px', marginLeft: '100px'}}>
+                        <span className="input-group-addon"><i className="fa fa-lock"></i></span>
+                        <input id="pass" type='password' ref='pass' defaultValue='' placeholder="Password" className="form-control" onKeyPress={this.isEnterPressed}/>
                     </div>
-                    <input type='submit' onClick={this.NormalAuth} />
-                    <input type='reset' onClick={this.Reset} />
+                    <Button type='submit' className="btn btn-primary" onClick={this.NormalAuth} style={{marginBottom: '25px', width: '140px'}}>Submit</Button>
                     <br />
                 </Modal.Body>
             </Modal>
         );
     }
-    
     isEnterPressed( e ) {
         if ( e.key == 'Enter' ) {
             this.NormalAuth();
         }
-    }
-
-    Reset() {
-        this.refs.user.value == '';
-        this.refs.pass.value == '';
     }
 
     SSO() {
