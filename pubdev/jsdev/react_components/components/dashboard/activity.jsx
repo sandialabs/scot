@@ -8,12 +8,19 @@ import Store from '../../activemq/store';
 import { timeOlderThan, epochToTimeago, timeagoToEpoch } from '../../utils/time';
 
 const REFRESH_RATE = 30 * 1000; // 30 seconds
+
+// Bootstrap styles for different notification types
 const NOTIFICATION_LEVEL = {
 	wall: "warning",
 	create: "info",
 	delete: "danger",
 };
+
+// Types of notifications we're interested in
+// (used to hide normal notifications of these types)
 export const NOTIFICATION_TYPES = [ 'create', 'delete' ];
+
+// Time notifications will stay in activity bar
 const NOTIFICATION_TIME = {
 	create: 120,
 	delete: 60,
@@ -23,6 +30,8 @@ const ACTIVITY_TYPE = {
 	USER: 0,
 	NOTIFICATION: 1,
 };
+
+// localstorage key for persisting wall messages
 const WALL_KEY = 'walls';
 
 class Activity extends Component {
@@ -94,12 +103,10 @@ class Activity extends Component {
         });
 	}
 
-	persistWall( walls = null ) {
-		if ( walls === null ) {
-			walls = this.state.notifications.filter( notification => {
-				return notification.action === 'wall';
-			} );
-		}
+	persistWall() {
+		let walls = this.state.notifications.filter( notification => {
+			return notification.action === 'wall';
+		} );
 
 		setLocalStorage( WALL_KEY, JSON.stringify( walls ) ); 
 	}
@@ -196,12 +203,14 @@ class Activity extends Component {
 		let { className = "" } = this.props;
 		let classes = [ "Activity", className ];
 
+		// Build activity items
 		let items = this.state.users.concat( this.state.notifications )
 			.sort( ( a, b ) => {
 				return b.time - a.time;
 			} )
 			.map( this.buildActivityItem );
 
+		// Calculate whether the marquee should scroll
 		let stopped = true;
 		if ( this.marquee && this.well ) {
 			let marqueeValues = window.getComputedStyle( this.marquee )
