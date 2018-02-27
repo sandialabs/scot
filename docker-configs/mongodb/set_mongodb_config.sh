@@ -20,9 +20,9 @@ set='$set'
 # If everything went well, add a file as a flag so we know in the future to not re-create the
 # users if we're recreating the container (provided we're using some persistent storage)
 
-if [ ! -f /var/lib/mongodb/.mongodb_password_set ]; then
-    mongo --host mongodb scot-prod /opt/scot/install/src/mongodb/admin_user.js
-    mongo --host mongodb scot-prod --eval "db.user.update({username:'admin'}, {$set:{pwhash:'$HASH'}}, {multi:true})"
+if [ ! -f /var/lib/mongodb/mongodb_password_set ]; then
+    mongo scot-prod --host mongodb /opt/scot/install/src/mongodb/admin_user.js
+    mongo scot-prod --host mongodb --eval "db.user.update({username:'admin'}, {$set:{pwhash:'$HASH'}}, {multi:true})"
     echo "Mapping set for Mongo" > /var/lib/mongodb/mongodb_password_set
 fi
 
