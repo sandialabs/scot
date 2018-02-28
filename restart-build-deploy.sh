@@ -1,3 +1,4 @@
+#!/bin/bash
 sudo docker-compose down
 
 scot_log_dir="/var/log/scot"
