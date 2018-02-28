@@ -20,7 +20,7 @@ var paths = {
 }
 
 gulp.task('watch', ['build'], function () {
-    gulp.watch( paths.admin, ['buildadmin'] );
+    gulp.watch( paths.admin, ['buildapi', 'buildundelete'] );
     gulp.watch( paths.scripts, ['scripts'] );
 	gulp.watch( paths.sass, ['sass'] );
 });
@@ -42,8 +42,8 @@ gulp.task( 'scripts', function() {
 
 } );
 
-gulp.task('buildadmin', function() {
-    console.log('Compiling admin page... wait for the auto copy to complete');
+gulp.task('buildapi', function() {
+    console.log('Compiling api page... wait for the auto copy to complete');
     
     return browserify({entries: './jsdev/react_components/administration/api.jsx', extensions: ['.jsx'], debug: true})
     .transform('babelify', {presets: ['es2015', 'react', 'stage-2', 'stage-0']})
@@ -53,6 +53,20 @@ gulp.task('buildadmin', function() {
         this.emit('end');
     })
     .pipe(source('api.js'))
+    .pipe(gulp.dest('../public/admin/'),{overwrite:true});
+});
+
+gulp.task('buildundelete', function() {
+    console.log('Compiling undelete page... wait for the auto copy to complete');
+    
+    return browserify({entries: './jsdev/react_components/administration/undelete.jsx', extensions: ['.jsx'], debug: true})
+    .transform('babelify', {presets: ['es2015', 'react', 'stage-2', 'stage-0']})
+    .bundle()
+    .on('error', err => {
+        gutil.log('Browserify Error: ', gutil.colors.red(err.message))
+        this.emit('end');
+    })
+    .pipe(source('undelete.js'))
     .pipe(gulp.dest('../public/admin/'),{overwrite:true});
 });
 
@@ -108,10 +122,10 @@ gulp.task( 'exit', ['minify'], function() {
 
 gulp.task( 'watch-copy', [ 'copy-changed', 'watch'], function() {} );
 
-gulp.task( 'build', ['scripts', 'sass', 'buildadmin'] );
+gulp.task( 'build', ['scripts', 'sass', 'buildapi', 'buildundelete'] );
 
-gulp.task( 'build-prod', ['set-prod', 'scripts', 'sass', 'buildadmin', 'minify'] );
+gulp.task( 'build-prod', ['set-prod', 'scripts', 'sass', 'buildapi', 'buildundelete', 'minify'] );
 
-gulp.task( 'docker-build-prod', ['copy-changed', 'set-prod', 'scripts', 'sass', 'buildadmin', 'minify', 'exit'] );
+gulp.task( 'docker-build-prod', ['copy-changed', 'set-prod', 'scripts', 'sass', 'buildapi', 'buildundelete', 'minify', 'exit'] );
 
 gulp.task('default', ['build-prod']);
