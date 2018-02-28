@@ -211,7 +211,7 @@ let SignatureTable = React.createClass( {
             <div id={'signatureDetail'} className='signatureDetail'>
                 {this.state.loaded ?
                     <div>
-                        {/*<SignatureMetaData signatureData={this.state.signatureData} type={this.props.type} id={this.props.id} currentLanguageMode={this.state.currentLanguageMode} currentEditorTheme={this.state.currentEditorTheme} currentKeyboardHandlerApplied={currentKeyboardHandlerApplied} errorToggle={this.props.errorToggle} showSignatureOptions={this.props.showSignatureOptions} />*/}
+                        <SignatureMetaData signatureData={this.state.signatureData} type={this.props.type} id={this.props.id} currentLanguageMode={this.state.currentLanguageMode} currentEditorTheme={this.state.currentEditorTheme} currentKeyboardHandlerApplied={currentKeyboardHandlerApplied} errorToggle={this.props.errorToggle} showSignatureOptions={this.props.showSignatureOptions} />
                         <div id={not_saved_signature_entry_id} className={'not_saved_signature_entry'}>
                             <div className={'row-fluid signature-entry-outer'} style={{marginLeft: 'auto', marginRight: 'auto'}}>          
                                 <div className={'row-fluid signature-entry-header'}>
@@ -285,42 +285,11 @@ let SignatureTable = React.createClass( {
 
 let SignatureMetaData = React.createClass( {
     getInitialState: function() {
-        let inputArrayType = ['description','type', 'prod_sigbody_id','qual_sigbody_id', 'signature_group', 'target'];
-        let inputArrayTypeDisplay = ['Description','Type', 'Production Signature Body Version','Quality Signature Body Version', 'Signature Group', 'Target']; 
-        let target = {};
-        if ( this.props.signatureData.target == undefined ) {
-            target = {};
-            target['target.id'] = null;
-            target['target.type'] = null;
-        } else {
-            target['target.id'] = this.props.signatureData.target.id;
-            target['target.type'] = this.props.signatureData.target.type;
-        }
         return {
-            descriptionValue: this.props.signatureData.description,
-            inputArrayType: inputArrayType,
-            inputArrayTypeDisplay: inputArrayTypeDisplay,
-            description: this.props.signatureData.description,
-            type: this.props.signatureData.type,
-            prod_sigbody_id: this.props.signatureData.prod_sigbody_id,
-            qual_sigbody_id: this.props.signatureData.qual_sigbody_id,
-            signature_group: this.props.signatureData.signature_group,
             optionsValue: JSON.stringify( this.props.signatureData.options ),
-            target: target,
         };
     },
-    InputChange: function( event ) {
-        let key = event.target.id;
-        let newValue = {};
-        newValue[key] = event.target.value;
-        this.setState( newValue );
-    },
-    TargetInputChange: function( event ) {
-        let currentTarget = this.state.target;
-        let key = event.target.id;
-        currentTarget[key] = event.target.value;
-        this.setState( {target:currentTarget} );
-    },
+    
     submitMetaData: function( event ) {
         let k  = event.target.id;
         let v = event.target.value;
@@ -349,95 +318,9 @@ let SignatureMetaData = React.createClass( {
         this.setState( {optionsValue:optionsValue} );
     },
     render: function() {
-        let inputArray = [];
-        for ( let i=0; i < this.state.inputArrayType.length; i++ ) {
-            let value = this.props.signatureData[this.state.inputArrayType[i]];
-            if ( this.state.inputArrayType[i] == 'prod_sigbody_id' || this.state.inputArrayType[i] == 'qual_sigbody_id' ) {
-                let sigBodyVersionArray = [];
-                let productionNewerVersionExists = false;
-                if ( !jQuery.isEmptyObject( this.props.signatureData ) ) {
-                    for ( let key in this.props.signatureData.version ) {
-                        let versionidrevision = this.props.signatureData.version[key].revision;
-                        let versionidrevisionprodqual = this.props.signatureData.version[key].revision;
-                        let versionid = this.props.signatureData.version[key].id;
-                        if ( this.props.signatureData.prod_sigbody_id == versionidrevision ) {versionidrevisionprodqual = versionidrevision + ' - Production';} else if ( this.props.signatureData.qual_sigbody_id == versionidrevision ) {versionidrevisionprodqual = versionidrevision + ' - Quality';} //add production and quality text to identify current status on the menu
-                        sigBodyVersionArray.push( <Button id={this.state.inputArrayType[i]} key={versionidrevision} onClick={this.submitMetaData} eventKey={versionidrevision} bsSize={'xsmall'} value={versionidrevision}>{versionidrevisionprodqual}</Button> );        
-                        if ( value < versionidrevision ) {productionNewerVersionExists = true;} //check if the production/quality versions are the highest, if not, show warning.
-                    }
-                } 
-                inputArray.push(
-                    <div className='col-lg-2 col-md-4'> 
-                        <span className='signatureTableWidth'>
-                            {this.state.inputArrayTypeDisplay[i]}:
-                        </span>
-                        <span className='signatureTableWidth'>
-                            <OverlayTrigger trigger='focus' placement='bottom' overlay={<Popover id='sigversionpicker'><ButtonGroup vertical>{sigBodyVersionArray}</ButtonGroup></Popover>}>
-                                <input id={this.state.inputArrayType[i]} onChange={this.InputChange} value={value} />
-                            </OverlayTrigger>  
-                        </span>
-                        {productionNewerVersionExists == true && this.state.inputArrayType[i] == 'prod_sigbody_id' ? <div style={{color:'red'}}>A higher signature body version exists, do you want to apply it?</div> : null }
-                    </div> 
-                );
-            } else if ( this.state.inputArrayType[i] == 'target' ) {
-                inputArray.push(
-                    <div className='col-lg-2 col-md-4'> 
-                        <span className='signatureTableWidth'>Reference Type: </span>
-                        <span className='signatureTableWidth'>
-                            <input id={'target.type'} onChange={this.TargetInputChange} value={this.state.target['target.type']} placeholder={'event, intel, entry... (only type one)'} onBlur={this.submitMetaData}/>
-                        </span>
-                        <span className='signatureTableWidth'>Reference ID: </span>
-                        <span className='signatureTableWidth'>
-                            <input id={'target.id'} onChange={this.TargetInputChange} value={this.state.target['target.id']} placeholder={'ID of above'} onBlur={this.submitMetaData}/>
-                        </span>
-                    </div>
-                );
-            } else if ( this.state.inputArrayType[i] == 'signature_group' ) {
-                inputArray.push(
-                    <SignatureGroup metaType={'signature_group'} id={this.props.id} data={this.props.signatureData[this.state.inputArrayType[i]]} errorToggle={this.props.errorToggle}/>
-                );
-            } else if ( this.state.inputArrayType[i] == 'description' ) {
-                inputArray.push(
-                    <div className='col-lg-2 col-md-4'> 
-                        <span className='signatureTableWidth'>
-                            {this.state.inputArrayTypeDisplay[i]}:
-                        </span>
-                        <span className='signatureTableWidth'>
-                            <textarea id={this.state.inputArrayType[i]} onChange={this.InputChange} value={this.state[this.state.inputArrayType[i]]} onBlur={this.submitMetaData} className='signatureMetaTextArea'>{this.state[this.state.inputArrayType[i]]}</textarea>
-                        </span>
-                    </div> 
-                );
-            } else if ( this.state.inputArrayType[i] == 'type' ) {
-                inputArray.push(
-                    <div className='col-lg-2 col-md-4'> 
-                        <span className='signatureTableWidth'>
-                            {this.state.inputArrayTypeDisplay[i]}:
-                        </span>
-                        <span className='signatureTableWidth'>
-                            <input id={this.state.inputArrayType[i]} onChange={this.InputChange} value={this.state[this.state.inputArrayType[i]]} placeholder='yara, snort, etc.' onBlur={this.submitMetaData}/>
-                        </span>
-                    </div> 
-                );
-            }
-            else {
-                inputArray.push(
-                    <div className='col-lg-2 col-md-4'> 
-                        <span className='signatureTableWidth'>
-                            {this.state.inputArrayTypeDisplay[i]}:
-                        </span>
-                        <span className='signatureTableWidth'>
-                            <input id={this.state.inputArrayType[i]} onChange={this.InputChange} value={this.state[this.state.inputArrayType[i]]} onBlur={this.submitMetaData}/>
-                        </span>
-                    </div> 
-                );
-            }
-        }
+        
         return (
             <div>
-                <div id='signatureTable' className='signatureTable'>
-                    <div className="row">
-                        {inputArray}
-                    </div>
-                </div>
                 {this.props.showSignatureOptions ? 
                     <div id='signatureTable2' className='signatureTableOptions'>
                         <div className={'row-fluid signature-entry-outer'} style={{marginLeft: 'auto', marginRight: 'auto'}}>          
