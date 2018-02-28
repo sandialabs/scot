@@ -190,10 +190,9 @@ sub create_file {
             # create a name with low chance of collision
             $name   = md5_hex($data);
         }
-        $name = $name . ".". $ext if ( $ext );
-        $log->debug("dir = $dir name = $name");
-        my $fqn = join('/',$dir,$name);
+        my $fqn = $self->get_unique_filename($dir, $name, $ext);
         $log->debug("file at $fqn");
+
         open my $fh, ">", "$fqn" or die $!;
         binmode $fh;
         print   $fh $data;
@@ -205,6 +204,26 @@ sub create_file {
     # get the Scot::Model::CachedImage return code
     # return the $fqn, $name
 }
+
+sub get_unique_filename {
+    my $self    = shift;
+    my $dir     = shift;
+    my $name    = shift;
+    my $ext     = shift;
+    my $counter = 0;
+
+    my $fqn = sprintf("%s/%s.%s", $dir, $name, $ext);
+
+    while ( -e $fqn ) {
+        $counter++;
+        $fqn = sprintf("%s/%s-%s.%s", $dir, $name, $counter, $ext);
+    }
+
+    return $fqn;
+}
+
+
+
 
 sub update_html {
     my $self    = shift;
