@@ -1,152 +1,150 @@
-var React           = require('react');
-var ButtonGroup     = require('react-bootstrap/lib/ButtonGroup.js');
-var Button          = require('react-bootstrap/lib/Button.js');
-var MenuItem        = require('react-bootstrap/lib/MenuItem.js');
-var DropdownButton  = require('react-bootstrap/lib/DropdownButton.js');
-var Promote         = require('../components/promote.jsx');
-var Marker          = require('../components/marker.jsx').default;
-var TrafficLightProtocol = require('../components/traffic_light_protocol.jsx');
+let React           = require( 'react' );
+let ButtonGroup     = require( 'react-bootstrap/lib/ButtonGroup.js' );
+let Button          = require( 'react-bootstrap/lib/Button.js' );
+let Promote         = require( '../components/promote.jsx' );
+let Marker          = require( '../components/marker.jsx' ).default;
+let TrafficLightProtocol = require( '../components/traffic_light_protocol.jsx' );
 
-var SelectedHeaderOptions = React.createClass({
+let SelectedHeaderOptions = React.createClass( {
     getInitialState: function() {
         return {
             globalFlairState: true,
             promoteRemaining: null,
-        }
+        };
     },
     toggleFlair: function() {
         let newGlobalFlairState = !this.state.globalFlairState;
         this.props.toggleFlair();
-        $('iframe').each(function(index, ifr) {
-            if(ifr.contentDocument != null) {
-                var ifrContents = $(ifr).contents();
-                var off = ifrContents.find('.entity-off');
-                var on = ifrContents.find('.entity');
-                if (this.state.globalFlairState == false) {
-                    ifrContents.find('.extras').show();
-                    ifrContents.find('.flair-off').hide();
-                    off.each(function(index, entity) {
-                        $(entity).addClass('entity');
-                        $(entity).removeClass('entity-off');
-                    });
+        $( 'iframe' ).each( function( index, ifr ) {
+            if( ifr.contentDocument != null ) {
+                let ifrContents = $( ifr ).contents();
+                let off = ifrContents.find( '.entity-off' );
+                let on = ifrContents.find( '.entity' );
+                if ( this.state.globalFlairState == false ) {
+                    ifrContents.find( '.extras' ).show();
+                    ifrContents.find( '.flair-off' ).hide();
+                    off.each( function( index, entity ) {
+                        $( entity ).addClass( 'entity' );
+                        $( entity ).removeClass( 'entity-off' );
+                    } );
                 } else {
-                    ifrContents.find('.extras').hide();
-                    ifrContents.find('.flair-off').show();
-                    on.each(function(index, entity) {
-                        $(entity).addClass('entity-off');
-                        $(entity).removeClass('entity');
-                    });
+                    ifrContents.find( '.extras' ).hide();
+                    ifrContents.find( '.flair-off' ).show();
+                    on.each( function( index, entity ) {
+                        $( entity ).addClass( 'entity-off' );
+                        $( entity ).removeClass( 'entity' );
+                    } );
                 }
             }
-        }.bind(this));
-        this.setState({globalFlairState: newGlobalFlairState});
+        }.bind( this ) );
+        this.setState( {globalFlairState: newGlobalFlairState} );
         
     },
     //All methods containing alert are only used by selected_entry when viewing an alertgroupand interacting with an alert.
     alertOpenSelected: function() {
-        var array = []
-        $('tr.selected').each(function(index,tr) {
-            var id = $(tr).attr('id');
-            array.push({id:id,status:'open'});
-        }.bind(this));
-        var data = JSON.stringify({alerts:array})    
+        let array = [];
+        $( 'tr.selected' ).each( function( index,tr ) {
+            let id = $( tr ).attr( 'id' );
+            array.push( {id:id,status:'open'} );
+        }.bind( this ) );
+        let data = JSON.stringify( {alerts:array} );    
         
-        this.props.ToggleProcessingMessage(true);
+        this.props.ToggleProcessingMessage( true );
 
-        $.ajax({
+        $.ajax( {
             type:'put',
             url: '/scot/api/v2/'+this.props.type + '/' +this.props.id,
             data: data,
             contentType: 'application/json; charset=UTF-8',
-            success: function(response){
-                console.log('success');
-                this.props.ToggleProcessingMessage(false);
-            }.bind(this),
-            error: function(data) {
-                this.props.errorToggle('failed to open selected alerts', data);
-                this.props.ToggleProcessingMessage(false);
-            }.bind(this)
-        })
+            success: function( ){
+                console.log( 'success' );
+                this.props.ToggleProcessingMessage( false );
+            }.bind( this ),
+            error: function( data ) {
+                this.props.errorToggle( 'failed to open selected alerts', data );
+                this.props.ToggleProcessingMessage( false );
+            }.bind( this )
+        } );
     },
 
     alertCloseSelected: function() {
-        var time = Math.round(new Date().getTime() / 1000)
-        var array = [];
-        $('tr.selected').each(function(index,tr) {
-            var id = $(tr).attr('id');
-            array.push({id:id,status:'closed', closed:time});
-        }.bind(this)); 
-        var data = JSON.stringify({alerts:array})
+        let time = Math.round( new Date().getTime() / 1000 );
+        let array = [];
+        $( 'tr.selected' ).each( function( index,tr ) {
+            let id = $( tr ).attr( 'id' );
+            array.push( {id:id,status:'closed', closed:time} );
+        }.bind( this ) ); 
+        let data = JSON.stringify( {alerts:array} );
         
-        this.props.ToggleProcessingMessage(true);
+        this.props.ToggleProcessingMessage( true );
         
-        $.ajax({
+        $.ajax( {
             type:'put',
             url: '/scot/api/v2/'+this.props.type + '/'+ this.props.id,
             data: data,
             contentType: 'application/json; charset=UTF-8',
-            success: function(response){
-                console.log('success');
-                this.props.ToggleProcessingMessage(false);
-            }.bind(this),
-            error: function(data) {
-                this.props.errorToggle('failed to close selected alerts', data);
-                this.props.ToggleProcessingMessage(false);
-            }.bind(this)
-        })
+            success: function( ){
+                console.log( 'success' );
+                this.props.ToggleProcessingMessage( false );
+            }.bind( this ),
+            error: function( data ) {
+                this.props.errorToggle( 'failed to close selected alerts', data );
+                this.props.ToggleProcessingMessage( false );
+            }.bind( this )
+        } );
     },
 
     alertPromoteSelected: function() {
-        var data = JSON.stringify({promote:'new'})
-        var array = [];
-        $('tr.selected').each(function(index,tr) {
-            var id = $(tr).attr('id');
-            array.push(id);
-        }.bind(this));
+        let data = JSON.stringify( {promote:'new'} );
+        let array = [];
+        $( 'tr.selected' ).each( function( index,tr ) {
+            let id = $( tr ).attr( 'id' );
+            array.push( id );
+        }.bind( this ) );
 
-        this.props.ToggleProcessingMessage(true);
+        this.props.ToggleProcessingMessage( true );
 
         //Start by promoting the first one in the array
-        $.ajax({
+        $.ajax( {
             type:'put',
             url: '/scot/api/v2/alert/'+array[0],
             data: data,
             contentType: 'application/json; charset=UTF-8',
-            success: function(response){
+            success: function( response ){
                 //With the entry number, promote the others into the existing event
-                var promoteTo = {
+                let promoteTo = {
                     promote:response.pid
-                }
+                };
                 
-                this.setState({promoteRemaining: array.length -1 });
+                this.setState( {promoteRemaining: array.length -1 } );
                 
-                for (var i=1; i < array.length; i++) {
+                for ( let i=1; i < array.length; i++ ) {
                    
-                    $.ajax({
+                    $.ajax( {
                         type:'put',
                         url: '/scot/api/v2/alert/'+array[i],
-                        data: JSON.stringify(promoteTo),
+                        data: JSON.stringify( promoteTo ),
                         contentType: 'application/json; charset=UTF-8',
-                        success: function(response){
-                            console.log('success');
-                            this.setState({promoteRemaining: this.state.promoteRemaining -1})
+                        success: function( ){
+                            console.log( 'success' );
+                            this.setState( {promoteRemaining: this.state.promoteRemaining -1} );
                             
                             if ( this.state.promoteRemaining == 0 ) {
-                                this.props.ToggleProcessingMessage(false);
+                                this.props.ToggleProcessingMessage( false );
                             }
 
-                        }.bind(this),
-                        error: function(data) {
-                            this.props.errorToggle('failed to promoted selected alerts', data);
-                            this.setState({promoteRemaining: this.state.promoteRemaining -1});
-                        }.bind(this)
-                    })
+                        }.bind( this ),
+                        error: function( data ) {
+                            this.props.errorToggle( 'failed to promoted selected alerts', data );
+                            this.setState( {promoteRemaining: this.state.promoteRemaining -1} );
+                        }.bind( this )
+                    } );
                 }
-            }.bind(this),
-            error: function(data) {
-                this.props.errorToggle('failed to promoted selected alerts', data);
-            }.bind(this)
-        })
+            }.bind( this ),
+            error: function( data ) {
+                this.props.errorToggle( 'failed to promoted selected alerts', data );
+            }.bind( this )
+        } );
         
     },
     /*Future use?
@@ -173,170 +171,170 @@ var SelectedHeaderOptions = React.createClass({
         }
     },*/
     alertSelectExisting: function() {
-        var text = prompt("Please Enter Event ID to promote into")
-        var array = [];
-        if (text != '' && text != null){
-            $('tr.selected').each(function(index,tr) {
-                var id = $(tr).attr('id');
-                array.push(id);
-            }.bind(this));
-            for (var i=0; i < array.length; i++) {
-                if ($.isNumeric(text)) {
-                    var data = {
-                        promote:parseInt(text)
-                    }
-                    $.ajax({
+        let text = prompt( 'Please Enter Event ID to promote into' );
+        let array = [];
+        if ( text != '' && text != null ){
+            $( 'tr.selected' ).each( function( index,tr ) {
+                let id = $( tr ).attr( 'id' );
+                array.push( id );
+            }.bind( this ) );
+            for ( let i=0; i < array.length; i++ ) {
+                if ( $.isNumeric( text ) ) {
+                    let data = {
+                        promote:parseInt( text )
+                    };
+                    $.ajax( {
                         type: 'PUT',
                         url: '/scot/api/v2/alert/' + array[i],
-                        data: JSON.stringify(data),
+                        data: JSON.stringify( data ),
                         contentType: 'application/json; charset=UTF-8',
-                        success: function(response){
-                            if($.isNumeric(text)){
-                                window.location = '#/event/' + text
+                        success: function( ){
+                            if( $.isNumeric( text ) ){
+                                window.location = '#/event/' + text;
                             }
-                        }.bind(this),
-                        error: function(data) {
-                            this.props.errorToggle('failed to promote into existing event', data);
-                        }.bind(this)
-                    })
+                        }.bind( this ),
+                        error: function( data ) {
+                            this.props.errorToggle( 'failed to promote into existing event', data );
+                        }.bind( this )
+                    } );
                 } else {
-                    prompt("Please use numbers only")
+                    prompt( 'Please use numbers only' );
                     this.selectExisting();
                 }
             }
         }
     },
     alertExportCSV: function(){
-        var keys = []
-        $('.alertTableHorizontal').find('th').each(function(key,value){
-            var obj = $(value).text();
-            keys.push(obj);
-        });
-        var csv = ''
-        $('tr.selected').each(function(x,y) {
-            var storearray = []
-            $(y).find('td').each(function(x,y) {
-                var copy = $(y).clone(false);
-                $(copy).find('.extras').remove();
-                var value = $(copy).text()
-                value = value.replace(/,/g,'|')
-                storearray.push(value);
-            })
-            csv += storearray.join() + '\n'
-        });
-        var result = keys.join() + "\n"
+        let keys = [];
+        $( '.alertTableHorizontal' ).find( 'th' ).each( function( key,value ){
+            let obj = $( value ).text();
+            keys.push( obj );
+        } );
+        let csv = '';
+        $( 'tr.selected' ).each( function( x,y ) {
+            let storearray = [];
+            $( y ).find( 'td' ).each( function( x,y ) {
+                let copy = $( y ).clone( false );
+                $( copy ).find( '.extras' ).remove();
+                let value = $( copy ).text();
+                value = value.replace( /,/g,'|' );
+                storearray.push( value );
+            } );
+            csv += storearray.join() + '\n';
+        } );
+        let result = keys.join() + '\n';
         csv = result + csv;
-        var data_uri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv)
-        window.open(data_uri)
+        let data_uri = 'data:text/csv;charset=utf-8,' + encodeURIComponent( csv );
+        window.open( data_uri );
     },
     alertDeleteSelected: function(){
-        if(confirm("Are you sure you want to Delete? This action can not be undone.")){
-            var array = [];
-            $('tr.selected').each(function(index,tr) {
-                var id = $(tr).attr('id');
-                array.push(id);
-            }.bind(this));
-            for (var i=0; i < array.length; i++) {
-                $.ajax({
+        if( confirm( 'Are you sure you want to Delete? This action can not be undone.' ) ){
+            let array = [];
+            $( 'tr.selected' ).each( function( index,tr ) {
+                let id = $( tr ).attr( 'id' );
+                array.push( id );
+            }.bind( this ) );
+            for ( let i=0; i < array.length; i++ ) {
+                $.ajax( {
                     type:'delete',
                     url: '/scot/api/v2/alert/'+array[i],
-                    success: function(response){
-                        console.log('success');
-                    }.bind(this),
-                    error: function(data) {
-                        this.props.errorToggle('failed to delete selected alerts' , data)
-                    }.bind(this)
-                });
+                    success: function( ){
+                        console.log( 'success' );
+                    }.bind( this ),
+                    error: function( data ) {
+                        this.props.errorToggle( 'failed to delete selected alerts' , data );
+                    }.bind( this )
+                } );
             }        
         }
     },
 
     componentDidMount: function() {
         //open, close SELECTED alerts
-        if (this.props.type == 'alertgroup' || this.props.type == 'alert') { 
-            $('#main-detail-container').keydown(function(event){
-                if($('input').is(':focus')) {return}
-                if (event.keyCode == 79 && (event.ctrlKey != true && event.metaKey != true)) {
+        if ( this.props.type == 'alertgroup' || this.props.type == 'alert' ) { 
+            $( '#main-detail-container' ).keydown( function( event ){
+                if( $( 'input' ).is( ':focus' ) ) {return;}
+                if ( event.keyCode == 79 && ( event.ctrlKey != true && event.metaKey != true ) ) {
                     this.alertOpenSelected();
                 }
-                if (event.keyCode == 67 && (event.ctrlKey != true && event.metaKey != true)) {
+                if ( event.keyCode == 67 && ( event.ctrlKey != true && event.metaKey != true ) ) {
                     this.alertCloseSelected();
                 }
-            }.bind(this))
+            }.bind( this ) );
         }
-        $('#main-detail-container').keydown(function(event){
-            if($('input').is(':focus')) {return}
-            if (event.keyCode == 84 && (event.ctrlKey != true && event.metaKey != true)) {
+        $( '#main-detail-container' ).keydown( function( event ){
+            if( $( 'input' ).is( ':focus' ) ) {return;}
+            if ( event.keyCode == 84 && ( event.ctrlKey != true && event.metaKey != true ) ) {
                 this.toggleFlair();
             }
-        }.bind(this))
+        }.bind( this ) );
     },
 
     componentWillUnmount: function() {
-        $('#main-detail-container').unbind('keydown');
+        $( '#main-detail-container' ).unbind( 'keydown' );
     },
 
     guideToggle: function() {
-        var entityoffset = {top: 0, left: 0} //set to 0 so it appears in a default location.
-        this.props.flairToolbarToggle(this.props.guideID,null,'guide', entityoffset, null)
+        let entityoffset = {top: 0, left: 0}; //set to 0 so it appears in a default location.
+        this.props.flairToolbarToggle( this.props.guideID,null,'guide', entityoffset, null );
     },
 
     createGuide: function() {
-       var data = JSON.stringify({subject: 'ENTER A GUIDE NAME',applies_to:[this.props.subjectName]})
-        $.ajax({
+        let data = JSON.stringify( {subject: 'ENTER A GUIDE NAME',applies_to:[this.props.subjectName]} );
+        $.ajax( {
             type: 'POST',
             url: '/scot/api/v2/guide',
             data: data,
             contentType: 'application/json; charset=UTF-8',
-            success: function(response){
-                window.open('/#/guide/' + response.id);        
-            }.bind(this),
-            error: function(data) {
-                this.props.errorToggle('failed to create a new guide', data);
-            }.bind(this)
-        })
+            success: function( response ){
+                window.open( '/#/guide/' + response.id );        
+            }.bind( this ),
+            error: function( data ) {
+                this.props.errorToggle( 'failed to create a new guide', data );
+            }.bind( this )
+        } );
     },
     reparseFlair: function() {
-        $.ajax({
+        $.ajax( {
             type: 'put',
             url: '/scot/api/v2/'+this.props.type+'/'+this.props.id,
-            data: JSON.stringify({parsed:0}),
+            data: JSON.stringify( {parsed:0} ),
             contentType: 'application/json; charset=UTF-8',
-            success: function(response){
-                console.log('reparsing started');
-            }.bind(this),
-            error: function(data) {
-                this.props.errorToggle('failed to reparse flair', data);
-            }.bind(this)
-        })
+            success: function( ){
+                console.log( 'reparsing started' );
+            }.bind( this ),
+            error: function( data ) {
+                this.props.errorToggle( 'failed to reparse flair', data );
+            }.bind( this )
+        } );
     },
 
     createLinkSignature: function() {
-        $.ajax({
+        $.ajax( {
             type: 'POST',
             url: '/scot/api/v2/signature',
-            data: JSON.stringify({target: {id:this.props.id, type: this.props.type}, name: 'Name your Signature', status: 'disabled'}),
+            data: JSON.stringify( {target: {id:this.props.id, type: this.props.type}, name: 'Name your Signature', status: 'disabled'} ),
             contentType: 'application/json; charset=UTF-8',
-            success: function(response) {
+            success: function( response ) {
                 const url = '/#/signature/'+response.id;
-                window.open(url,'_blank');
-            }.bind(this),
-            error: function(data) {
-                this.props.errorToggle('failed to create a signature', data); 
-            }.bind(this)
-        })
+                window.open( url,'_blank' );
+            }.bind( this ),
+            error: function( data ) {
+                this.props.errorToggle( 'failed to create a signature', data ); 
+            }.bind( this )
+        } );
     },
 
     manualUpdate: function() {
-        this.props.updated(null,null);
+        this.props.updated( null,null );
     },
     render: function() { 
-        var subjectType = this.props.subjectType;
-        var type = this.props.type;
-        var id = this.props.id;
-        var status = this.props.status;
+        let subjectType = this.props.subjectType;
+        let type = this.props.type;
+        let id = this.props.id;
+        let status = this.props.status;
 
-        var string = '';
+        let string = '';
 
         if ( this.props.headerData.subject ) {
             string = this.props.headerData.subject;
@@ -348,16 +346,15 @@ var SelectedHeaderOptions = React.createClass({
             string = this.props.headerData.body;
         } 
 
-        if (type != 'alertgroup') {
-            var newType = null;
-            var showPromote = true;
-            var showAddEntry = true;
-            if (status != 'promoted') {
-                if (type == "alert") {
-                    newType = "Event"
-                } else if (type == "event") {
-                    newType = "Incident"
-                } else if (type == "incident" || type == "guide" || type == 'intel' || type == 'signature' || type == 'entity') {
+        if ( type != 'alertgroup' ) {
+            let newType;
+            let showPromote = true;
+            if ( status != 'promoted' ) {
+                if ( type == 'alert' ) {
+                    newType = 'Event';
+                } else if ( type == 'event' ) {
+                    newType = 'Incident';
+                } else if ( type == 'incident' || type == 'guide' || type == 'intel' || type == 'signature' || type == 'entity' ) {
                     showPromote = false;
                 } 
             } else {
@@ -386,9 +383,9 @@ var SelectedHeaderOptions = React.createClass({
                     </ButtonGroup>
                     
                 </div>
-            )
+            );
         } else {
-            if (this.props.aIndex != undefined) {
+            if ( this.props.aIndex != undefined ) {
                 return (
                     <div className="entry-header second-menu detail-buttons">
                         <Button eventKey='1' onClick={this.toggleFlair} bsSize='xsmall'><i className="fa fa-eye-slash" aria-hidden="true"></i> Toggle Flair</Button>
@@ -417,7 +414,7 @@ var SelectedHeaderOptions = React.createClass({
                             <Button bsStyle='info' eventKey="16" onClick={this.manualUpdate} bsSize='xsmall' style={{float:'right'}}><i className='fa fa-refresh' aria-hidden='true'></i></Button>
                         </ButtonGroup>
                     </div>
-                )
+                );
             } else { 
                 return (
                     <div className="entry-header detail-buttons">
@@ -438,10 +435,10 @@ var SelectedHeaderOptions = React.createClass({
                             <Button bsStyle='info' eventKey="9" onClick={this.manualUpdate} bsSize='xsmall' style={{float:'right'}}><i className='fa fa-refresh' aria-hidden='true'></i></Button>
                         </ButtonGroup>
                     </div>
-                )
+                );
             }
         }
     }
-});
+} );
 
 module.exports = SelectedHeaderOptions;

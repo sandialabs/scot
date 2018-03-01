@@ -41,7 +41,7 @@ sub _get_shareable {
     return $env->default_share_policy;
 }
 
-sub is_sharable {
+sub is_shareable {
     my $self            = shift;
     my $env             = Scot::Env->instance;
     my $log             = $env->log;
