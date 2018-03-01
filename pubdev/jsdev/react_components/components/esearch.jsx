@@ -1,14 +1,7 @@
-var React               = require('react')
-var Draggable           = require('react-draggable');
-var Link                = require('react-router-dom').Link;
-var type = ''
-var id = 0
-var sourceid = ''
-var body = ''
-var owner = ''
-var typeid = ''
+let React               = require( 'react' );
+let Link                = require( 'react-router-dom' ).Link;
 
-var Search = React.createClass({
+let Search = React.createClass( {
     getInitialState: function() {
         return {
             showSearchToolbar: false,
@@ -16,68 +9,68 @@ var Search = React.createClass({
             entityHeight: '60vh',
             searching: false,
             searchString: '',
-        }
+        };
     },	
     componentDidMount: function() {
-        function searchEscHandler(event) {
-            if ($('#main-search-results')[0] != undefined) {
-                if (event.keyCode == 27) {
+        function searchEscHandler( event ) {
+            if ( $( '#main-search-results' )[0] != undefined ) {
+                if ( event.keyCode == 27 ) {
                     this.closeSearch();
                     event.preventDefault();
                 }
             }
         }
-        $(document).keyup(searchEscHandler.bind(this));
+        $( document ).keyup( searchEscHandler.bind( this ) );
     },
     closeSearch: function() {
-        this.setState({showSearchToolbar: false});
+        this.setState( {showSearchToolbar: false} );
     },
-    doSearch: function(string) { 
-        $.ajax({
+    doSearch: function( string ) { 
+        $.ajax( {
             type: 'get',
             url: '/scot/api/v2/esearch',
             data: {qstring:string},
-            success: function(response) {
-                if (string == $('#main-search')[0].value) { 
-                    this.setState({results:response.records, showSearchToolbar:true, searching:false, searchString:string})
+            success: function( response ) {
+                if ( string == $( '#main-search' )[0].value ) { 
+                    this.setState( {results:response.records, showSearchToolbar:true, searching:false, searchString:string} );
                 }
-            }.bind(this),
-            error: function(response) {
+            }.bind( this ),
+            error: function( ) {
                 //this.props.errorToggle('search failed')
-                this.setState({searching: false});    
-            }.bind(this)
-        });
-        this.setState({searching: true});
+                this.setState( {searching: false} );    
+            }.bind( this )
+        } );
+        this.setState( {searching: true} );
     },
-    handleEnterKey: function(e) {
-        if (e.key == 'Enter') {
-            this.doSearch(e.target.value);
+    handleEnterKey: function( e ) {
+        if ( e.key == 'Enter' ) {
+            this.doSearch( e.target.value );
         }
     },
-    onChange: function(e) {
+    onChange: function( e ) {
         //only do auto search if there are at least 3 characters
         //if (e.target.value.length > 2) {
-            this.doSearch(e.target.value);
+        this.doSearch( e.target.value );
         //}
     },
     componentDidUpdate: function() {
-        if (this.state.searchString != undefined) {
+        if ( this.state.searchString != undefined ) {
             //var re = new RegExp(this.state.searchString,"gi");            
             //$(".search-snippet").html(function(_, html) {
             //    return html.replace(re, '<span class="search_highlight">$&</span>');
             //});
-            $(".search-snippet").mark(this.state.searchString, {"element":"span", "className":"search_highlight"});
+            $( '.search-snippet' ).mark( this.state.searchString, {'element':'span', 'className':'search_highlight'} );
         }
     },
     render: function(){
-        var tableRows = [] ;
-        if (this.state.results != undefined) {
-            if (this.state.results[0] != undefined) {
-                for (var i=0; i < this.state.results.length; i++) {
-                    tableRows.push(<SearchDataEachRows dataOne={this.state.results[i]} key={i} index={i}/>);
+        let tableRows = [] ;
+        if ( this.state.results != undefined ) {
+            if ( this.state.results[0] != undefined ) {
+                for ( let i=0; i < this.state.results.length; i++ ) {
+                    tableRows.push( <SearchDataEachRows dataOne={this.state.results[i]} key={i} index={i}/> );
                 }
             } else {
-                tableRows.push(<div style={{display:'inline-flex'}}><div style={{display:'flex'}}>No results returned</div></div>)
+                tableRows.push( <div style={{display:'inline-flex'}}><div style={{display:'flex'}}>No results returned</div></div> );
             }
         }
         return (
@@ -95,17 +88,17 @@ var Search = React.createClass({
                             </div>
                         </div>
                     </div>
-                :
+                    :
                     null} 
             </div>
-        )
-	},
-    componentWillUnmount: function() {
-        $(document).off('keypress');
+        );
     },
-})
+    componentWillUnmount: function() {
+        $( document ).off( 'keypress' );
+    },
+} );
 
-var SearchDataEachHeader = React.createClass({
+let SearchDataEachHeader = React.createClass( {
     render: function() {
         /*return (
             <div className="table-row header" style={{color:'black', display:'flex'}}>
@@ -135,38 +128,37 @@ var SearchDataEachHeader = React.createClass({
                     </div>
                 </div>
             </div>
-        )
+        );
     }
-});
+} );
 
-var SearchDataEachRows = React.createClass({
+let SearchDataEachRows = React.createClass( {
     render: function() {
-        var type = this.props.dataOne.type;
-        var id = this.props.dataOne.id;
-        var entryid = this.props.dataOne.entryid;
-        var score = this.props.dataOne.score;
-        var snippet = this.props.dataOne.snippet;
-        var highlight = [];
+        let type = this.props.dataOne.type;
+        let id = this.props.dataOne.id;
+        let entryid = this.props.dataOne.entryid;
+        let score = this.props.dataOne.score;
+        let highlight = [];
 
-        var rowEvenOdd = 'even';
-        if (!isEven(this.props.index)) {rowEvenOdd = 'odd'};
+        let rowEvenOdd = 'even';
+        if ( !isEven( this.props.index ) ) {rowEvenOdd = 'odd';}
         
-        var rowClassName = 'search_result_row list-view-row'+rowEvenOdd;
+        let rowClassName = 'search_result_row list-view-row'+rowEvenOdd;
         
-        var href = '/' + type+'/'+id;
-        if (entryid != undefined) {
+        let href = '/' + type+'/'+id;
+        if ( entryid != undefined ) {
             href = '/' + type+'/'+id+'/'+entryid;
         }
 
-        if (this.props.dataOne.highlight != undefined) {
-            if (typeof(this.props.dataOne.highlight) == 'string') {
-                highlight.push(<span className='search_snippet_container panel col'><span className='search_snippet_header'>Snippet:</span><span className='search_snippet_result'>{this.props.dataOne.highlight}</span></span>);
+        if ( this.props.dataOne.highlight != undefined ) {
+            if ( typeof( this.props.dataOne.highlight ) == 'string' ) {
+                highlight.push( <span className='search_snippet_container panel col'><span className='search_snippet_header'>Snippet:</span><span className='search_snippet_result'>{this.props.dataOne.highlight}</span></span> );
             }
-            else if ($.isArray(this.props.dataOne.highlight)) {
-                highlight.push(<span className='search_snippet_container panel col'><span className='search_snippet_header'>Snippet:</span><span className='search_snippet_result'>{this.props.dataOne.highlight[0]}</span></span>);
+            else if ( $.isArray( this.props.dataOne.highlight ) ) {
+                highlight.push( <span className='search_snippet_container panel col'><span className='search_snippet_header'>Snippet:</span><span className='search_snippet_result'>{this.props.dataOne.highlight[0]}</span></span> );
             } else {
-                for (var key in this.props.dataOne.highlight) {
-                    highlight.push(<span className='search_snippet_container panel col'><span className='search_snippet_header'>{key}</span><span className='search_snippet_result'>{this.props.dataOne.highlight[key]}</span></span>);
+                for ( let key in this.props.dataOne.highlight ) {
+                    highlight.push( <span className='search_snippet_container panel col'><span className='search_snippet_header'>{key}</span><span className='search_snippet_result'>{this.props.dataOne.highlight[key]}</span></span> );
                 }
             }
         }
@@ -183,7 +175,7 @@ var SearchDataEachRows = React.createClass({
                     </span>
                 </Link>
             </div>
-        )
+        );
         /*
         return (
             <div key={Date.now()} className={rowClassName}>
@@ -204,10 +196,10 @@ var SearchDataEachRows = React.createClass({
             </div>
         )*/
     }
-})
+} );
 
-function isEven(n) {
+function isEven( n ) {
     return n % 2 == 0;
 }
 
-module.exports = Search
+module.exports = Search;

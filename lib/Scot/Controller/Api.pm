@@ -722,6 +722,10 @@ sub update {
         if ( ! $self->update_permitted($object, $req_href)) { 
             die "Insufficent Privilege"; 
         }
+        # special case of undelete
+        if ( $req_href->{request}->{json}->{status} eq "undelete" ) {
+            return $self->undelete($object, $req_href);
+        }
         # special case of promotion
         if ( defined $req_href->{request}->{json}->{promote} ) {
             return $self->promote($object, $req_href);
@@ -1844,6 +1848,54 @@ sub get_form {
             form    => $aref,
         };
         $self->do_render($return);
+}
+
+sub undelete {
+    my $self    = shift;
+    my $obj     = shift;
+    my $req     = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+    my $user    = $self->session('user');
+
+    $log->debug("processing undelete");
+
+    my $collection  = (split(/::/,$obj->type))[-1];
+    my $href    = $obj->data;
+    $log->debug("obj dump ",{filter=>\&Dumper, value=>$href});
+    my %request = (
+        collection  => lc($collection),
+        id          => $href->{id},
+        user        => $href->{owner},
+        request     => $href,
+    );
+    my $col     = $mongo->collection($collection);
+    my $restored    = ($col->api_restore(\%request))[0];
+    $log->debug("restored obj ".ref($restored));
+    $log->debug("restore id = ".$restored->id);
+    push my @returnjson, $self->post_create_process($restored);
+
+    $log->debug("Returnjson is ", {filter=>\&Dumper, value=>\@returnjson});
+
+    my $data = {
+        who => $req->{user},
+        type=> $restored->get_collection_name,
+        id  => $restored->id,
+    };
+    if ( ref($restored) eq "Scot::Model::Entry" ) {
+        $data->{target} = $restored->target;
+    }
+    $self->env->mq->send("scot",{
+        action  => "created",
+        data    => $data,
+    });
+    if ( scalar(@returnjson) > 1 ) {
+        $self->do_render(\@returnjson);
+    }
+    else {
+        $self->do_render(pop @returnjson);
+    }
 }
 
 1;
