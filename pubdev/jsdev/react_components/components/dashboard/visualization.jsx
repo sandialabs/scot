@@ -1,6 +1,6 @@
-var React = require('react');
+let React = require( 'react' );
 
-var Visualization = React.createClass({
+let Visualization = React.createClass( {
     componentDidMount: function() {
         /*var g = {
             nodes: [],
@@ -15,9 +15,9 @@ var Visualization = React.createClass({
         });*/
         //sigma.parsers.json('/scot/api/v2/graph/'+this.props.type+'/'+this.props.id+'/'+this.props.depth, {
         
-        sigma.parsers.json('arctic.json', {
+        sigma.parsers.json( 'arctic.json', {
             container: 'visualization'
-        })   
+        } );   
     },
     render: function() {
         return (
@@ -25,6 +25,6 @@ var Visualization = React.createClass({
             </div>
         );
     }
-});
+} );
 
 module.exports = Visualization;

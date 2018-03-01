@@ -20,4 +20,4 @@ export const INCIDENT_TYPES = [
     'Type 1 : Information Compromise',
     'Type 2 : Attempted Intrusion',
     'Type 2 : Reconnaissance Activity',
-]
+];

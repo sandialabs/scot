@@ -416,6 +416,9 @@ function install_perl_modules {
         Net::SFTP
         Lingua::Stem
         Lingua::EN::StopWords
+        XML::Twig
+        XML::Simple
+
     '
 
     # install_cpanm

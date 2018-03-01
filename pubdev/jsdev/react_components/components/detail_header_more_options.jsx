@@ -10,9 +10,9 @@ class DetailHeaderMoreOptions extends Component {
 
         this.state = {
             optionsActive: false,    
-        }
+        };
     
-        this.ToggleOptions = this.ToggleOptions.bind(this);
+        this.ToggleOptions = this.ToggleOptions.bind( this );
     }
 
     componentWillMount() {
@@ -29,33 +29,33 @@ class DetailHeaderMoreOptions extends Component {
 
     render() {
            
-            return (
-                <div className='detail-header-more-options'>
-                    {this.props.showData ? 
-                        <Dropdown id="detail-header-more-options" pullRight noCaret bsSize='small' >
-                            <Dropdown.Toggle>
+        return (
+            <div className='detail-header-more-options'>
+                {this.props.showData ? 
+                    <Dropdown id="detail-header-more-options" pullRight noCaret bsSize='small' >
+                        <Dropdown.Toggle>
                                 More
-                            </Dropdown.Toggle>
-                            <Dropdown.Menu>
-                                {( this.props.type == 'event' || this.props.type == 'incident') ? 
-                                    <PromotedData data={this.props.data.promoted_from} type={this.props.type} id={this.props.id} />
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu>
+                            {( this.props.type == 'event' || this.props.type == 'incident' ) ? 
+                                <PromotedData data={this.props.data.promoted_from} type={this.props.type} id={this.props.id} />
                                 : 
-                                    null
-                                }
-                                <MenuItem>Links</MenuItem>
-                                <MenuItem>Checkbox & Marked Objects</MenuItem>
-                            </Dropdown.Menu>
-                        </Dropdown>
+                                null
+                            }
+                            <MenuItem>Links</MenuItem>
+                            <MenuItem>Checkbox & Marked Objects</MenuItem>
+                        </Dropdown.Menu>
+                    </Dropdown>
                     :
-                        null 
-                    }
-                </div>
-            )
+                    null 
+                }
+            </div>
+        );
     }
 
     ToggleOptions() {
         let newState = !this.state.optionsActive;
-        this.setState({ optionsActive: newState });
+        this.setState( { optionsActive: newState } );
     }
    
 }
