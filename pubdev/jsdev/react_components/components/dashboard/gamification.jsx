@@ -1,38 +1,38 @@
-var React = require('react');
-var Panel = require('react-bootstrap/lib/Panel.js');
-var Badge = require('react-bootstrap/lib/Badge.js');
-var Tooltip = require('react-bootstrap/lib/Tooltip.js');
-var OverlayTrigger = require('react-bootstrap/lib/OverlayTrigger.js');
+let React = require( 'react' );
+let Panel = require( 'react-bootstrap/lib/Panel.js' );
+let Badge = require( 'react-bootstrap/lib/Badge.js' );
+let Tooltip = require( 'react-bootstrap/lib/Tooltip.js' );
+let OverlayTrigger = require( 'react-bootstrap/lib/OverlayTrigger.js' );
 
-var Gamification = React.createClass({
+let Gamification = React.createClass( {
     getInitialState: function() {
         return {
             GameData: null
-        }
+        };
     },
     componentDidMount: function() {
-        $.ajax({
+        $.ajax( {
             type: 'get',
             url: '/scot/api/v2/game',
-            success: function(response) {
-                this.setState({GameData:response});
-            }.bind(this),
-            error: function(data) {
-                this.props.errorToggle('unable to get game data', data);
-            }.bind(this)
-        })
+            success: function( response ) {
+                this.setState( {GameData:response} );
+            }.bind( this ),
+            error: function( data ) {
+                this.props.errorToggle( 'unable to get game data', data );
+            }.bind( this )
+        } );
     },
-    titleCase: function(string) {
-        var newstring = string.charAt(0).toUpperCase() + string.slice(1)
+    titleCase: function( string ) {
+        let newstring = string.charAt( 0 ).toUpperCase() + string.slice( 1 );
         return (
             newstring
-        )
+        );
     },
     render: function() {
-        var GameRows = [];
-        if (this.state.GameData != null) {
-            for (var key in this.state.GameData) {
-                var keyCapitalized = this.titleCase(key);
+        let GameRows = [];
+        if ( this.state.GameData != null ) {
+            for ( let key in this.state.GameData ) {
+                let keyCapitalized = this.titleCase( key );
                 GameRows.push(
                     <OverlayTrigger placement="top" overlay={<Tooltip id='tooltip'>{this.state.GameData[key][0].tooltip}</Tooltip>}>
                         <Panel header={keyCapitalized} >
@@ -43,7 +43,7 @@ var Gamification = React.createClass({
                             </div>
                         </Panel>
                     </OverlayTrigger>
-                )
+                );
             }
         }
         return (
@@ -57,6 +57,6 @@ var Gamification = React.createClass({
             </div>
         );
     }
-});
+} );
 
 module.exports = Gamification;

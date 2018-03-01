@@ -8,12 +8,12 @@ class Marker extends Component {
 
         this.state = {
             isMarked: false,
-        }
+        };
         
-        this.removeMarkedItemsHandler = this.removeMarkedItemsHandler.bind(this);
-        this.getMarkedItemsHandler = this.getMarkedItemsHandler.bind(this);
-        this.setMarkedItemsHandler = this.setMarkedItemsHandler.bind(this);
-        this.getSelectedAlerts = this.getSelectedAlerts.bind(this);
+        this.removeMarkedItemsHandler = this.removeMarkedItemsHandler.bind( this );
+        this.getMarkedItemsHandler = this.getMarkedItemsHandler.bind( this );
+        this.setMarkedItemsHandler = this.setMarkedItemsHandler.bind( this );
+        this.getSelectedAlerts = this.getSelectedAlerts.bind( this );
     }
 
     componentWillMount() {
@@ -27,10 +27,10 @@ class Marker extends Component {
         this.mounted = false;
     }
     
-    componentWillReceiveProps(nextProps) {
+    componentWillReceiveProps( nextProps ) {
         this.getMarkedItemsHandler();
         if ( nextProps.isAlert ) {              //set marked to false if alert since we can't predict if new ones are selected
-            this.setState({isMarked : false });
+            this.setState( {isMarked : false } );
         }
     }
 
@@ -42,7 +42,7 @@ class Marker extends Component {
                     <i style={{color: `${ this.state.isMarked ? 'green' : '' } `}} className={`fa fa${this.state.isMarked ? '-check' : '' }-square-o`} aria-hidden="true"></i>
                     { this.state.isMarked ? <span>Marked</span> : <span>Mark</span> }
                 </MenuItem>
-            )
+            );
 
         } else {
             
@@ -55,7 +55,7 @@ class Marker extends Component {
                         {/* { this.state.isMarked ? <span>Marked</span> : <span>Mark</span> }*/}
                     </Button>
                 </OverlayTrigger>
-            )
+            );
         }
     }
     
@@ -64,14 +64,14 @@ class Marker extends Component {
         let isMarked = false;
 
         if ( markedItems ) {
-            for (let key of markedItems ) {
+            for ( let key of markedItems ) {
                 if ( key.id === this.props.id && key.type === this.props.type ) {
                     isMarked = true;
                     break;
                 }
             }
         }
-        this.setState({ isMarked: isMarked });
+        this.setState( { isMarked: isMarked } );
     }
 
     removeMarkedItemsHandler() {
@@ -88,7 +88,7 @@ class Marker extends Component {
         
     }
 
-   setMarkedItemsHandler() {
+    setMarkedItemsHandler() {
         if ( this.props.isAlert ) {                             //parse alerts then iterate through them to add to marking list
             let selectedAlerts = this.getSelectedAlerts();
             for ( let i=0; i < selectedAlerts.length; i++ ) {
@@ -98,16 +98,16 @@ class Marker extends Component {
         } else {
             setMarkedItems( this.props.type, this.props.id, this.props.string );
         }
-        this.setState({ isMarked: true});
+        this.setState( { isMarked: true} );
     }
 
     getSelectedAlerts() {
         let array = [];
 
-        $('tr.selected').each(function(index,tr) {
-            var id = $(tr).attr('id');
-            array.push(id);
-        }.bind(this));
+        $( 'tr.selected' ).each( function( index,tr ) {
+            let id = $( tr ).attr( 'id' );
+            array.push( id );
+        }.bind( this ) );
     
         return array;
     }
@@ -119,22 +119,22 @@ export const removeMarkedItems = ( type, id ) => {
     if ( currentMarked ) {
         for ( let i= 0; i < currentMarked.length ; i++ ) {
             if ( currentMarked[i].type == type && currentMarked[i].id == id ) {
-                currentMarked.splice(i, 1);
+                currentMarked.splice( i, 1 );
                 break;
             }
         }
 
         setLocalStorage( 'marked' , JSON.stringify( currentMarked ) );
     }
-}
+};
 
 export const getMarkedItems = () => {
     let markedItems = getLocalStorage( 'marked' );
     if ( markedItems ) {
         markedItems = JSON.parse( markedItems );
-        return (markedItems) ;
+        return ( markedItems ) ;
     }
-}
+};
 
 export const setMarkedItems = ( type, id, string ) => {
     let nextMarked = []; 
@@ -148,16 +148,16 @@ export const setMarkedItems = ( type, id, string ) => {
         }
     }
     
-    nextMarked.push( { id: id, type: type, subject: string.substring(0,120) } );
-    setLocalStorage( 'marked' , JSON.stringify( nextMarked ));
-}
+    nextMarked.push( { id: id, type: type, subject: string.substring( 0,120 ) } );
+    setLocalStorage( 'marked' , JSON.stringify( nextMarked ) );
+};
 
 Marker.propTypes = {
     isMarked: PropTypes.bool
-}
+};
 
 Marker.defaultProps = {
     isMarked: false
-}
+};
 
 export default Marker;

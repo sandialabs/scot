@@ -1,7 +1,5 @@
 FROM ubuntu:16.04
 
-
-
 ARG HTTPS_PROXY
 ARG HTTP_PROXY
 ARG https_proxy
@@ -14,10 +12,9 @@ ENV HTTP_PROXY=${HTTP_PROXY}
 ENV HTTPS_PROXY=${HTTPS_PROXY}
 ENV no_proxy=${no_proxy}
 ENV NO_PROXY=${NO_PROXY}
-
-
 ENV no_proxy="elastic,mongodb,scot,activemq,apache"
 ENV NO_PROXY="elastic,mongodb,scot,activemq,apache"
+
 
 
 RUN apt-get update && \
@@ -60,7 +57,7 @@ RUN apt-get update && \
 
 #Install CPAN modules
 
-RUN cpanm --force IO::AIO AnyEvent::AIO Array::Split Data::Dumper Data::Dumper::HTML Data::Dumper::Concise Data::Clean@0.48 Data::Clean::FromJSON Daemon::Control \
+RUN cpanm --force IO::AIO AnyEvent::AIO Array::Split Data::Dumper Data::Dumper::HTML Data::Dumper::Concise Data::Clean  Data::Clean::FromJSON Daemon::Control \
     Net::LDAP Net::SMTP::TLS Net::Stomp Net::STOMP::Client Net::IDN::Encode Net::Works::Network Net::IP Moose Moose::Role \ 
     Moose::Util::TypeConstraints MooseX::MetaDescription::Meta::Attribute MooseX::Singleton MooseX::Emulate::Class::Accessor::Fast MooseX::Types \ 
     MooseX::Types::Common MooseX::MethodAttributes Safe Readonly DateTime DateTime::Cron::Simple DateTime::Format::Strptime \ 
@@ -70,16 +67,15 @@ RUN cpanm --force IO::AIO AnyEvent::AIO Array::Split Data::Dumper Data::Dumper::
     MIME::Base64 IPC::Run IO::Prompt Log::Log4perl Mail::IMAPClient Mail::IMAPClient::BodyStructure MongoDB@1.2.3 MongoDB::GridFS@1.2.3 \
     MongoDB::GridFS::File@1.2.3 MongoDB::OID@1.2.3 Meerkat Mojo MojoX::Log::Log4perl Mojolicious::Plugin::WithCSRFProtection \ 
     Mojolicious::Plugin::TagHelpers XML::Smart Config::Auto Data::GUID File::LibMagic List::Uniq Domain::PublicSuffix Mozilla::PublicSuffix \
-    Crypt::PBKDF2 Config::Crontab Test::JSON Math::Int128 GeoIP2  Search::Elasticsearch Term::ANSIColor Courriel Statistics::Descriptive Net::SSH::Perl Net::SFTP Lingua::EN::StopWords Data::Clone
+    Crypt::PBKDF2 Config::Crontab Test::JSON Math::Int128 GeoIP2  Search::Elasticsearch Term::ANSIColor Courriel Statistics::Descriptive Net::SSH::Perl Net::SFTP Lingua::EN::StopWords Data::Clone XML::Twig
 
 #Mongo stuff
 
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
-RUN echo "deb http://repo.mongodb.org/apt/ubuntu $(cat /etc/lsb-release | grep DISTRIB_CODENAME | cut -d= -f2)/mongodb-org/3.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.2.list
-
-RUN apt-get update && \
-    apt-get --allow-unauthenticated install -qy mongodb-org
-
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10 && \
+    echo "deb http://repo.mongodb.org/apt/ubuntu $(cat /etc/lsb-release | grep DISTRIB_CODENAME | cut -d= -f2)/mongodb-org/3.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.2.list && \
+    apt-get update && \
+    apt-get install -y --force-yes pwgen mongodb-org-shell mongodb-org-tools  && \
+    echo "mongodb-org-shell hold" | dpkg --set-selections 
 
 COPY lib/ /opt/scot/lib/
 COPY bin/ /opt/scot/bin/

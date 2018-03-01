@@ -3,6 +3,7 @@ db.alert.drop();
 db.alertgroup.drop();
 db.audit.drop();
 db.checklist.drop();
+db.deleted.drop();
 db.entity.drop();
 db.entry.drop();
 db.event.drop();

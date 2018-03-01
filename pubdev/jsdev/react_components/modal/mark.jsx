@@ -6,22 +6,22 @@ import { removeMarkedItems } from '../components/marker';
 import { DeleteModal } from './delete';
 
 const ACTION_BUTTONS = {
-	READY: {
-		style: "default",
-	},
-	LOADING: {
-		text: "Processing...",
-		style: "default",
-		disabled: true,
-	},
-	SUCCESS: {
-		text: "Success!",
-		style: "success",
-	},
-	ERROR: {
-		text: "Error!",
-		style: "danger",
-	},
+    READY: {
+        style: 'default',
+    },
+    LOADING: {
+        text: 'Processing...',
+        style: 'default',
+        disabled: true,
+    },
+    SUCCESS: {
+        text: 'Success!',
+        style: 'success',
+    },
+    ERROR: {
+        text: 'Error!',
+        style: 'danger',
+    },
 };
 
 class Mark extends Component {
@@ -31,12 +31,12 @@ class Mark extends Component {
         this.state = {
             data: [],
             allSelected: false,
-        }
+        };
         
-        this.handleTHeadCheckboxSelection = this.handleTHeadCheckboxSelection.bind(this);
-        this.handleRowSelection = this.handleRowSelection.bind(this);
-        this.handleCheckboxSelection = this.handleCheckboxSelection.bind(this);
-        this.getMarkedItems = this.getMarkedItems.bind(this);
+        this.handleTHeadCheckboxSelection = this.handleTHeadCheckboxSelection.bind( this );
+        this.handleRowSelection = this.handleRowSelection.bind( this );
+        this.handleCheckboxSelection = this.handleCheckboxSelection.bind( this );
+        this.getMarkedItems = this.getMarkedItems.bind( this );
     }
 
     componentWillMount() {
@@ -52,14 +52,14 @@ class Mark extends Component {
     render() {
 
         const columns = [
-        {
+            {
                 Header: cell => {
                     return (
                         <div>
                             <div className='mark-checkbox'><i className={`fa fa${this.state.allSelected ? '-check' : '' }-square-o`} aria-hidden="true"></i></div>
                              
                         </div>
-                    )
+                    );
                 },
                 id: 'selected',
                 accessor: d => d.selected,
@@ -68,7 +68,7 @@ class Mark extends Component {
                         <div>
                             <div className='mark-checkbox'><i className={`fa fa${row.row.selected ? '-check' : '' }-square-o`} aria-hidden="true"></i></div>
                         </div>
-                    )
+                    );
                 },
                 maxWidth: 100,
                 filterable: false,
@@ -89,7 +89,7 @@ class Mark extends Component {
                 maxWidth: '100%',
                 sortable: true,
             },   
-        ]
+        ];
         
         return (
             <Modal dialogClassName='mark-modal' show={ this.props.modalActive } onHide={ this.props.markModalToggle }>
@@ -110,11 +110,11 @@ class Mark extends Component {
                             minRows = { 0 }
                             noDataText= 'No items marked.'
                             style={{
-                                maxHeight: "60vh"
+                                maxHeight: '60vh'
                             }}
                             filterable
                         />
-                    :
+                        :
                         <h3>No marked items detected.</h3>
                     }
                 </Modal.Body>
@@ -122,7 +122,7 @@ class Mark extends Component {
                     <Actions data={this.state.data} id={this.props.id} type={this.props.type} getMarkedItems={this.getMarkedItems} errorToggle={this.props.errorToggle} />
                 </Modal.Footer>
             </Modal>
-        )
+        );
     }
     
     handleRowSelection( state, rowInfo, column ) {
@@ -130,7 +130,7 @@ class Mark extends Component {
             onClick: event => {
                 let data = this.state.data;
                 
-                for (let row of data ) { 
+                for ( let row of data ) { 
                     if ( rowInfo.row.id == row.id && rowInfo.row.type == row.type ) {
                         row.selected =  true;
                     } else {
@@ -138,33 +138,33 @@ class Mark extends Component {
                     }
                 }
 
-                this.setState({data: data, allSelected: false});
+                this.setState( {data: data, allSelected: false} );
                 return;
             },
             style: {
                 background: rowInfo != undefined ? rowInfo.row.selected ? 'rgb(174, 218, 255)' : null : null,
             }
-        }
+        };
     }
 
     handleCheckboxSelection( state, rowInfo, column ) {
         if ( column.id == 'selected' ) {
             return {
                 onClick: event => {
-                    var data = this.state.data;
+                    let data = this.state.data;
                     
                     for ( let row of data ) { 
                         if ( rowInfo.row.id == row.id && rowInfo.row.type == row.type ) {
-                            row.selected = !row.selected
+                            row.selected = !row.selected;
                             break;
                         }
                     }
                     
-                    this.setState({data: data, allSelected: this.checkAllSelected(data) });
+                    this.setState( {data: data, allSelected: this.checkAllSelected( data ) } );
                     event.stopPropagation();
                     return;
                 } 
-            }
+            };
         } else {
             return {};
         }
@@ -186,10 +186,10 @@ class Mark extends Component {
                         }
                     }
 
-                    this.setState({data: data, allSelected: allSelected});
+                    this.setState( {data: data, allSelected: allSelected} );
                     return; 
                 }
-            }
+            };
         } else {
             return {};
         }
@@ -211,7 +211,7 @@ class Mark extends Component {
         if ( markedItems ) {
             markedItems = JSON.parse( markedItems );
             markedItems.unshift( currentItem );         //Add currently viewed item to the top of the list
-            this.setState({ data: markedItems });
+            this.setState( { data: markedItems } );
         } else {
             return; //return if no items are marked
         }
@@ -229,28 +229,28 @@ class Actions extends Component {
             actionSuccess: false,
             linkContextString: null,
             linkPanel: false,
-			pendingDelete: false,
+            pendingDelete: false,
 
-			reparseButton: ACTION_BUTTONS.READY,
-			deleteButton: ACTION_BUTTONS.READY,
-			promoteButton: ACTION_BUTTONS.READY,
-        }
+            reparseButton: ACTION_BUTTONS.READY,
+            deleteButton: ACTION_BUTTONS.READY,
+            promoteButton: ACTION_BUTTONS.READY,
+        };
         
-        this.RemoveSelected = this.RemoveSelected.bind(this);
-        this.MoveEntry = this.MoveEntry.bind(this);
-        this.CopyEntry = this.CopyEntry.bind(this);
-        this.EntryAjax = this.EntryAjax.bind(this);
-        this.Link = this.Link.bind(this);
-        this.LinkAjax = this.LinkAjax.bind(this);
-		this.Reparse = this.Reparse.bind(this);
-		this.ReparseAjax = this.ReparseAjax.bind(this);
-		this.Promote = this.Promote.bind(this);
-		this.PromoteAjax = this.PromoteAjax.bind(this);
-        this.ToggleActionSuccess = this.ToggleActionSuccess.bind(this);
-        this.ExpandLinkToggle = this.ExpandLinkToggle.bind(this);
-        this.LinkContextChange = this.LinkContextChange.bind(this);
-		this.deleteCallback = this.deleteCallback.bind(this);
-		this.StartDelete = this.StartDelete.bind(this);
+        this.RemoveSelected = this.RemoveSelected.bind( this );
+        this.MoveEntry = this.MoveEntry.bind( this );
+        this.CopyEntry = this.CopyEntry.bind( this );
+        this.EntryAjax = this.EntryAjax.bind( this );
+        this.Link = this.Link.bind( this );
+        this.LinkAjax = this.LinkAjax.bind( this );
+        this.Reparse = this.Reparse.bind( this );
+        this.ReparseAjax = this.ReparseAjax.bind( this );
+        this.Promote = this.Promote.bind( this );
+        this.PromoteAjax = this.PromoteAjax.bind( this );
+        this.ToggleActionSuccess = this.ToggleActionSuccess.bind( this );
+        this.ExpandLinkToggle = this.ExpandLinkToggle.bind( this );
+        this.LinkContextChange = this.LinkContextChange.bind( this );
+        this.deleteCallback = this.deleteCallback.bind( this );
+        this.StartDelete = this.StartDelete.bind( this );
     }
 
     componentWillMount() {
@@ -261,24 +261,24 @@ class Actions extends Component {
         this.mounted = false;
     }
 
-	deleteCallback( success ) {
-		if ( success === true ) {
-			this.RemoveSelected();
-		}
+    deleteCallback( success ) {
+        if ( success === true ) {
+            this.RemoveSelected();
+        }
 
-		this.setState( {
-			pendingDelete: false,
-		} );
-	}
+        this.setState( {
+            pendingDelete: false,
+        } );
+    }
 
     render() {
         let buttons = [];
         let entry = false, thing = false, alert = true;
 
-		let numSelected = 0;
+        let numSelected = 0;
         for ( let key of this.props.data ) {
             if ( key.type && key.selected ) {
-				numSelected++;
+                numSelected++;
 
                 if ( key.type === 'entry' ) { 
                     entry = true;
@@ -286,21 +286,21 @@ class Actions extends Component {
                     thing = true;
                 }
 
-				if ( key.type !== 'alert' ) {
-					alert = false;
-				}
+                if ( key.type !== 'alert' ) {
+                    alert = false;
+                }
             }
         }
 
-		const addToEvent = numSelected != 0 && alert && this.props.type === 'event';
+        const addToEvent = numSelected != 0 && alert && this.props.type === 'event';
 
-		const { reparseButton, deleteButton, promoteButton, pendingDelete } = this.state;
+        const { reparseButton, deleteButton, promoteButton, pendingDelete } = this.state;
 
-		let deleteThings = null;
-		if ( pendingDelete ) {
-			deleteThings = this.props.data.filter( thing => thing.selected )
-				.map( thing => { return { type: thing.type, id: thing.id }; } );
-		}
+        let deleteThings = null;
+        if ( pendingDelete ) {
+            deleteThings = this.props.data.filter( thing => thing.selected )
+                .map( thing => { return { type: thing.type, id: thing.id }; } );
+        }
 
          
         return (
@@ -310,7 +310,7 @@ class Actions extends Component {
                         <Button bsStyle='success' onClick={this.RemoveSelected}>Action Successful! Remove Mark?</Button>
                         <Button onClick={this.ToggleActionSuccess}>Keep Marked</Button>
                     </div>
-                :
+                    :
                     <div style={{ display: 'grid' }}>
                         <div>
                             { thing || entry ? <h4 style={{float: 'left'}}>Actions</h4> : <div> { this.props.data.length > 0 ? <h4 style={{float: 'left'}}>Select a Marked Object</h4> : null } </div> }
@@ -318,10 +318,10 @@ class Actions extends Component {
                                 {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.MoveEntry}>Move to {this.props.type} {this.props.id}</Button> : null }
                                 {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.CopyEntry}>Copy to {this.props.type} {this.props.id}</Button> : null }
                                 {thing || entry ? <Button onClick={this.ExpandLinkToggle} >Link to {this.props.type} {this.props.id}</Button> : null }
-								{addToEvent && <Button bsStyle={promoteButton.style} onClick={this.Promote} disabled={promoteButton.disabled} >{promoteButton.text ? promoteButton.text : `Add to ${this.props.type} ${this.props.id}`}</Button> }
-								{(thing || entry) && <Button bsStyle={reparseButton.style} onClick={this.Reparse} disabled={reparseButton.disabled} >{reparseButton.text ? reparseButton.text : "Reparse Flair"}</Button> }
-                                {(thing || entry) && <Button bsStyle='warning' onClick={this.RemoveSelected} >Unmark</Button> }
-								{(thing || entry) && <Button bsStyle='danger' onClick={this.StartDelete} disabled={deleteButton.disabled} >{deleteButton.text ? deleteButton.text : "Delete"}</Button> }
+                                {addToEvent && <Button bsStyle={promoteButton.style} onClick={this.Promote} disabled={promoteButton.disabled} >{promoteButton.text ? promoteButton.text : `Add to ${this.props.type} ${this.props.id}`}</Button> }
+                                {( thing || entry ) && <Button bsStyle={reparseButton.style} onClick={this.Reparse} disabled={reparseButton.disabled} >{reparseButton.text ? reparseButton.text : 'Reparse Flair'}</Button> }
+                                {( thing || entry ) && <Button bsStyle='warning' onClick={this.RemoveSelected} >Unmark</Button> }
+                                {( thing || entry ) && <Button bsStyle='danger' onClick={this.StartDelete} disabled={deleteButton.disabled} >{deleteButton.text ? deleteButton.text : 'Delete'}</Button> }
                             </ButtonGroup>
                         </div>
                         { this.state.linkPanel && ( thing || entry ) ? 
@@ -343,26 +343,26 @@ class Actions extends Component {
                                     </Col>
                                 </Form>
                             </Panel>
-                        :
+                            :
                             null
                         }
-						{ pendingDelete && <DeleteModal things={deleteThings} errorToggle={this.props.errorToggle} callback={this.deleteCallback} /> }
+                        { pendingDelete && <DeleteModal things={deleteThings} errorToggle={this.props.errorToggle} callback={this.deleteCallback} /> }
                     </div>                
                 }   
             </div>
-        )
+        );
     }
     
-    LinkContextChange(e) {
-        this.setState({ linkContextString: e.target.value });
+    LinkContextChange( e ) {
+        this.setState( { linkContextString: e.target.value } );
     }
 
     ExpandLinkToggle( newState ) {
         if ( newState == true || newState == false ) {
-            this.setState({ linkPanel: newState, linkContextString: '' });
+            this.setState( { linkPanel: newState, linkContextString: '' } );
         } else {
             let linkPanel = !this.state.linkPanel;
-            this.setState({ linkPanel: linkPanel, linkContextString: '' });
+            this.setState( { linkPanel: linkPanel, linkContextString: '' } );
         }
     }
 
@@ -378,18 +378,18 @@ class Actions extends Component {
         
         //turn off the action success buttons after removal
         if ( this.state.actionSuccess ) {
-            this.setState({ actionSuccess: false });
+            this.setState( { actionSuccess: false } );
         }
     }
 	
-	StartDelete() {
-		this.setState( {
-			pendingDelete: true,
-		} );
-	}
+    StartDelete() {
+        this.setState( {
+            pendingDelete: true,
+        } );
+    }
     
     MoveEntry() {
-        for (let key of this.props.data ) {
+        for ( let key of this.props.data ) {
             if ( key.selected && key.type =='entry' ) {
                 this.EntryAjax( key.id, true ); 
             }
@@ -397,7 +397,7 @@ class Actions extends Component {
     }
     
     CopyEntry() {
-        for (let key of this.props.data ) {
+        for ( let key of this.props.data ) {
             if ( key.selected && key.type =='entry' ) {
                 this.EntryAjax( key.id, false );
             }
@@ -443,96 +443,96 @@ class Actions extends Component {
         
     }
 
-	Reparse() {
-		this.setState({
-			reparseButton: ACTION_BUTTONS.LOADING,
-		});
+    Reparse() {
+        this.setState( {
+            reparseButton: ACTION_BUTTONS.LOADING,
+        } );
 
-		$.when( ...this.props.data.filter( ( thing ) => thing.selected )
-			.map( ( thing ) => {
-				return this.ReparseAjax( thing );
-			} )
-		).then(
-			// Success
-			() => {
-				this.setState({
-					reparseButton: ACTION_BUTTONS.SUCCESS,
-				});
-			},
-			// Failure
-			( error ) => {
-				console.error( error );
-				this.setState({
-					reparseButton: ACTION_BUTTONS.ERROR,
-				});
-				this.props.errorToggle( 'error reparsing', error );
-			}
-		).always( () => {
-			setTimeout( () => {
-				this.setState({
-					reparseButton: ACTION_BUTTONS.READY,
-				});
-			}, 2000 );
-		} );
-	}
+        $.when( ...this.props.data.filter( ( thing ) => thing.selected )
+            .map( ( thing ) => {
+                return this.ReparseAjax( thing );
+            } )
+        ).then(
+            // Success
+            () => {
+                this.setState( {
+                    reparseButton: ACTION_BUTTONS.SUCCESS,
+                } );
+            },
+            // Failure
+            ( error ) => {
+                console.error( error );
+                this.setState( {
+                    reparseButton: ACTION_BUTTONS.ERROR,
+                } );
+                this.props.errorToggle( 'error reparsing', error );
+            }
+        ).always( () => {
+            setTimeout( () => {
+                this.setState( {
+                    reparseButton: ACTION_BUTTONS.READY,
+                } );
+            }, 2000 );
+        } );
+    }
 
-	ReparseAjax( thing ) {
-        return $.ajax({
+    ReparseAjax( thing ) {
+        return $.ajax( {
             type: 'put',
             url: '/scot/api/v2/'+ thing.type +'/'+ thing.id,
-            data: JSON.stringify({parsed:0}),
+            data: JSON.stringify( {parsed:0} ),
             contentType: 'application/json; charset=UTF-8',
-        });
-	}
+        } );
+    }
 
-	Promote() {
-		this.setState({
-			promoteButton: ACTION_BUTTONS.LOADING,
-		});
+    Promote() {
+        this.setState( {
+            promoteButton: ACTION_BUTTONS.LOADING,
+        } );
 
-		let success = true;
+        let success = true;
 
-		$.when( ...this.props.data.filter( ( thing ) => thing.selected )
-			.map( ( thing ) => {
-				return this.PromoteAjax( thing );
-			} )
-		).then(
-			// Success
-			() => {
-				this.setState({
-					promoteButton: ACTION_BUTTONS.SUCCESS,
-				});
-			},
-			// Failure
-			( error ) => {
-				success = false;
-				console.error( error );
-				this.setState({
-					promoteButton: ACTION_BUTTONS.ERROR,
-				});
-				this.props.errorToggle( 'error adding alerts to event', error );
-			}
-		).always( () => {
-			setTimeout( () => {
-				this.setState({
-					promoteButton: ACTION_BUTTONS.READY,
-				});
+        $.when( ...this.props.data.filter( ( thing ) => thing.selected )
+            .map( ( thing ) => {
+                return this.PromoteAjax( thing );
+            } )
+        ).then(
+            // Success
+            () => {
+                this.setState( {
+                    promoteButton: ACTION_BUTTONS.SUCCESS,
+                } );
+            },
+            // Failure
+            ( error ) => {
+                success = false;
+                console.error( error );
+                this.setState( {
+                    promoteButton: ACTION_BUTTONS.ERROR,
+                } );
+                this.props.errorToggle( 'error adding alerts to event', error );
+            }
+        ).always( () => {
+            setTimeout( () => {
+                this.setState( {
+                    promoteButton: ACTION_BUTTONS.READY,
+                } );
 
-				if ( success ) {
-					window.location.reload();
-				}
-			}, 2000 );
-		} );
-	}
+                if ( success ) {
+                    window.location.reload();
+                }
+            }, 2000 );
+        } );
+    }
 
-	PromoteAjax( thing ) {
-        return $.ajax({
+    PromoteAjax( thing ) {
+        return $.ajax( {
             type: 'put',
             url: '/scot/api/v2/alert/'+ thing.id,
-            data: JSON.stringify({promote:parseInt(this.props.id)}),
+            data: JSON.stringify( {promote:parseInt( this.props.id )} ),
             contentType: 'application/json; charset=UTF-8',
-        });
-	}
+        } );
+    }
 
     LinkAjax( arrayToLink ) {
         let data = {};
@@ -540,10 +540,10 @@ class Actions extends Component {
         data.vertices = arrayToLink; //link to current thing
         
         if ( this.state.linkContextString ) {           //add context string if one was submitted
-            data.context = this.state.linkContextString
+            data.context = this.state.linkContextString;
         }
 
-        $.ajax({
+        $.ajax( {
             type: 'post',
             url: '/scot/api/v2/link',
             data: JSON.stringify( data ),
@@ -551,27 +551,27 @@ class Actions extends Component {
             dataType: 'json',
             success: function( response ) {
                 console.log( 'successfully linked' );
-                this.ExpandLinkToggle(false);                          //disable link panel
-                this.ToggleActionSuccess(true);
-            }.bind(this),
+                this.ExpandLinkToggle( false );                          //disable link panel
+                this.ToggleActionSuccess( true );
+            }.bind( this ),
             error: function( data ) {
                 this.props.errorToggle( 'failed to link', data );
-            }.bind(this)
-        })
+            }.bind( this )
+        } );
     }
 
-    EntryAjax(id, removeOriginal) {
+    EntryAjax( id, removeOriginal ) {
         
-        $.ajax({
+        $.ajax( {
             type: 'get',
             url: '/scot/api/v2/entry/' + id,
             success: function( response ) {
                 let data ={};
-                data= {parent: 0, body: response.body, target_id: parseInt(this.props.id), target_type: this.props.type}; 
-                $.ajax({
+                data= {parent: 0, body: response.body, target_id: parseInt( this.props.id ), target_type: this.props.type}; 
+                $.ajax( {
                     type: 'post',
                     url: '/scot/api/v2/entry',
-                    data: JSON.stringify(data),
+                    data: JSON.stringify( data ),
                     contentType: 'application/json; charset=UTF-8',
                     dataType: 'json',
                     success: function( response ) {
@@ -581,43 +581,43 @@ class Actions extends Component {
                             this.RemoveSelected();
                         } else {
                             if ( !this.state.actionSuccess ) {
-                                this.ToggleActionSuccess(true);
+                                this.ToggleActionSuccess( true );
                             }
                         }
 
-                    }.bind(this),
+                    }.bind( this ),
                     error: function ( data ) {
-                        this.props.errorToggle('failed to create new entry', data);
-                    }.bind(this)
-                })
-            }.bind(this),
+                        this.props.errorToggle( 'failed to create new entry', data );
+                    }.bind( this )
+                } );
+            }.bind( this ),
             error: function( data ) {
-                this.props.errorToggle('failed to get entry data', data);
-            }.bind(this)
-        })
+                this.props.errorToggle( 'failed to get entry data', data );
+            }.bind( this )
+        } );
         
     }
     
     RemoveEntryAfterMove( id ) {
-        $.ajax({
+        $.ajax( {
             type: 'delete',
             url: '/scot/api/v2/entry/' + id,
             success: function( response ) {
-                console.log('removed original entry');
-            }.bind(this),
+                console.log( 'removed original entry' );
+            }.bind( this ),
             error: function( data ) {
-                this.props.errorToggle('Failed to remove original entry', data);
-            }.bind(this),
-        });
+                this.props.errorToggle( 'Failed to remove original entry', data );
+            }.bind( this ),
+        } );
     }
 
-    ToggleActionSuccess(status) {
+    ToggleActionSuccess( status ) {
         
         if ( status == true || status == false ) {
-            this.setState({ actionSuccess: status });
+            this.setState( { actionSuccess: status } );
         } else {
             let newActionSuccess = !this.state.actionSuccess;
-            this.setState({ actionSuccess: newActionSuccess });    
+            this.setState( { actionSuccess: newActionSuccess } );    
         }
         
     }
@@ -625,18 +625,18 @@ class Actions extends Component {
 
 Actions.propTypes = {
     data: PropTypes.object
-}
+};
 
 Actions.defaultProps = {
     data: {}
-}
+};
 
 Mark.propTypes = {
     modalActive: PropTypes.bool
-}
+};
 
 Mark.defaultProps = {
     modalActive: true
-}
+};
 
 export default Mark;
