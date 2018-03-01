@@ -58,7 +58,11 @@ my $remote = "$srcdir/$file";
 my $local  = "$downdir/$file";
 
 my $sftp = Net::SFTP->new($host, user => $user, password => $pass);
-   $sftp->get($remote, $local);
+   $sftp->get($remote, $local, sub {
+        my ($sftp, $data, $offset, $size) = @_;
+        print "Read $offset / $size bytes\r";
+    });
+print "\n";
 
 system("cd $downdir; tar xzvf $file");
 
