@@ -4,6 +4,7 @@ FROM sandialabs/scot_perl
 ENV DEBIAN_FRONTEND="noninteractive" \
     NO_PROXY="elastic,mongodb,activemq"
 
+
 RUN apt-get update && \
     apt-get install apt-utils ca-certificates curl vim  -y -f  && \
     update-ca-certificates && \ 
@@ -30,12 +31,17 @@ COPY docker-configs/scot/restore.cfg.pl /opt/scot/etc/
 RUN groupadd -g 2060 scot && \
     useradd -r -u 1060 -g scot scot
 
+RUN mkdir /home/scot
+
 COPY demo/ /opt/scot/demo/
 
 #scot permissions
 RUN chown -R scot:scot /opt/scot/
+RUN chown -R scot:scot /home/scot/
+RUN chmod -R 0777 /tmp/
 
 EXPOSE 3000 
 
 USER scot
+ENV HOME /home/scot
 CMD /usr/local/bin/hypnotoad -f /opt/scot/script/Scot
