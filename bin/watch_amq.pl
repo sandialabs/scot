@@ -12,7 +12,7 @@ use JSON;
 use Data::Dumper;
 use DateTime;
 
-my $stomp   = AnyEvent::STOMP::Client->new();
+my $stomp   = AnyEvent::STOMP::Client->new("as3002snllx");
 
 $stomp->connect();
 $stomp->on_connected(
@@ -20,6 +20,13 @@ $stomp->on_connected(
         my $stomp   = shift;
         $stomp->subscribe('/topic/scot');
 
+    }
+);
+
+$stomp->on_error(
+    sub {
+        say "ERROR";
+        say Dumper(\@_);
     }
 );
 
