@@ -95,17 +95,17 @@ sub process_html {
             $attr,
             $tag   ) = @{ $aref };
 
-        my ($fqn, $fname);
+        my ($fqn, $fname, $orig_name);
 
         if ($link =~ m/^data:/) {
             $log->debug("Link contains data uri");
             ($fqn,$fname)   =  $self->extract_data_image($link, $id);
         }
         else {
-            ($fqn,$fname) = $self->download_image($link);
+            ($fqn,$fname, $orig_name) = $self->download_image($link);
         }
         $log->debug("NOW UPDATING the HTML");
-        $self->update_html($element, $fqn, $fname);
+        $self->update_html($element, $fqn, $fname, $orig_name);
     }
 
     my $new_html;
@@ -135,7 +135,7 @@ sub extract_data_image {
     $log->debug("data is : $data");
 
     my $decoded         = decode_base64($data);
-    my ($fqn, $fname)   = $self->create_file($decoded, $id, $ext);
+    my ($fqn, $fname)   = $self->create_file("datauri.".$ext, $decoded);
 
     return $fqn, $fname;
 }
@@ -156,8 +156,8 @@ sub download_image {
 
     if ( $response->is_success() ) {
         my $filename        = ( split(/\//, $link) )[-1];
-        my ($fqn, $fname)   = $self->create_file($response->content, $filename);
-        return $fqn, $fname;
+        my ($fqn, $fname,$orig)   = $self->create_file($filename, $response->content);
+        return $fqn, $fname, $orig;
     }
     else {
         $log->error("Failed download of image $link");
@@ -175,9 +175,9 @@ sub download_image {
 
 sub create_file {
     my $self        = shift;
-    my $data        = shift;
     my $name        = shift;
-    my $ext         = shift; 
+    my $data        = shift;
+
     my $log         = $self->log;
     my $dir         = $self->img_dir;
     my $storage     = $self->storage;
@@ -185,32 +185,43 @@ sub create_file {
     $log->debug("Creating File: $name");
     $log->debug("Storage method is ".$storage);
 
-    if ( $storage eq 'local' ) {
-        if ($name =~ /^\d+$/ ) {
-            # create a name with low chance of collision
-            $name   = md5_hex($data);
-        }
-        $name = $name . ".". $ext if ( $ext );
-        $log->debug("dir = $dir name = $name");
-        my $fqn = join('/',$dir,$name);
-        $log->debug("file at $fqn");
-        open my $fh, ">", "$fqn" or die $!;
-        binmode $fh;
-        print   $fh $data;
-        close   $fh;
-        return $fqn, $name;
+    my @parts   = split(/\./,$name);
+    my $ext     = '';
+
+    if ( $parts[-1] ne join('',@parts) ) {
+        $ext    = ".".pop @parts;
     }
-    # do api upload
-    # mojo ua -> upload img
-    # get the Scot::Model::CachedImage return code
-    # return the $fqn, $name
+    my $newname = $self->create_file_unique_stem($data) . $ext;
+    my $fqn     = join('/', $dir, $newname);
+    $self->write_img_file($fqn, $data);
+    return $fqn, $newname, $name;
 }
+
+sub create_file_unique_stem {
+    my $self    = shift;
+    my $data    = shift;
+    return md5_hex($data);
+}
+
+sub write_img_file {
+    my $self    = shift;
+    my $fqn     = shift;
+    my $data    = shift;
+
+    open my $fh, ">", "$fqn" or die $!;
+    binmode $fh;
+    print $fh $data;
+    close $fh;
+}
+
+
 
 sub update_html {
     my $self    = shift;
     my $element = shift;
     my $fqn     = shift;
     my $fname   = shift;
+    my $orig_name   = shift;
     my $log     = $self->log;
 
     $log->debug("html root is ".$self->html_root);
@@ -219,10 +230,10 @@ sub update_html {
     my $source  = $self->html_root . "/". $fname;
     my $alt     = $element->attr('alt');
     if ( $alt ) {
-        $alt    = "ScotCopy of $alt";
+        $alt    = "ScotCopy of $orig_name";
     }
     else {
-        $alt    = "Scot Cached Image";
+        $alt    = "Scot Cached Image of $orig_name";
     }
     my $newimg  = HTML::Element->new('img', 'src'   => $source, 'alt' => $alt);
     $element->replace_with($newimg);

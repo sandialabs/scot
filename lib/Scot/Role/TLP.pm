@@ -23,4 +23,14 @@ has tlp    => (
     default     => 'unset',
 );
 
+sub tlp_permits_sharing {
+    my $self    = shift;
+    
+    if ( $self->tlp eq "black" ) {
+        return undef;
+    }
+    return 1;
+}
+
+
 1;
