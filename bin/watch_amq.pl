@@ -23,6 +23,13 @@ $stomp->on_connected(
     }
 );
 
+$stomp->on_error(
+    sub {
+        say "ERROR";
+        say Dumper(\@_);
+    }
+);
+
 $stomp->on_message(
     sub {
         my ( $stomp, $header, $body ) = @_;
