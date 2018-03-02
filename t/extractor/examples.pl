@@ -889,4 +889,30 @@ EOF
         userdef => [],
     },
 
+    {
+        testname    => "email",
+        testgroup   => "email",
+        testnumber  => 36,
+        source  => << 'EOF',
+user@thedomain[.]biz
+EOF
+        plain   => << 'EOF',
+user@thedomain.biz
+EOF
+        flair   => << 'EOF',
+<div><span class="entity email" data-entity-type="email" data-entity-value="user@thedomain.biz">user@<span class="entity domain" data-entity-type="domain" data-entity-value="thedomain.biz">thedomain.biz</span></span>
+</div>
+EOF
+        entities    => [
+            {
+                'value' => 'thedomain.biz',
+                'type' => 'domain'
+            },
+            {
+                'value' => 'user@thedomain.biz',
+                'type' => 'email'
+            },
+        ],
+    },
+
 );
