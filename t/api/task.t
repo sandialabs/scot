@@ -112,9 +112,12 @@ $t  ->get_ok("/scot/api/v2/event/$event_id/entry")
     ->json_is('/records/1/id'   => $entry2);
 
 $t  ->get_ok("/scot/api/v2/task")
-    ->status_is(200);
+    ->status_is(200)
+    ->json_is('/totalRecordCount'   => 1)
+    ->json_is('/records/0/subject'  => 'Entry Test Event 1')
+    ->json_is('/records/0/target/id'    => 1);
 
-#   print Dumper($t->tx->res->json);
+# print Dumper($t->tx->res->json);
  done_testing();
  exit 0;
 

@@ -550,7 +550,7 @@ sub _build_EMAIL {
                 (?!\d+\.\d+)
                 (?=.{4,255})
                 (?:
-                    (?:[a-zA-Z0-9-]{1,63}(?<!-)\.)+
+                    (?:[a-zA-Z0-9-]{1,63}(?<!-)\(*\[*\{*\.\}*\]*\)*)+
                     [a-zA-Z0-9-]{2,63}
                 )
             )
@@ -630,6 +630,31 @@ sub _build_COMMON_FILE_EXT {
         regex   => $regex,
         type    => "filename",
         order   => 100,
+        options => { multiword => "no" },
+    };
+}
+
+has regex_python_file_ext => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_PYTHON_FILE_EXT',
+);
+
+sub _build_PYTHON_FILE_EXT {
+    my $self    = shift;
+    my $regex   = qr{
+        \b
+        [0-9a-zA-Z_\-\.]+
+        \.
+        py
+        \b
+    }xims;
+    return {
+        regex   => $regex,
+        type    => "filename",
+        order   => 9,
         options => { multiword => "no" },
     };
 }
