@@ -52,7 +52,7 @@ override 'create' => sub {
         $self->get_group_permissions(\@args);
     }
 
-    $log->debug("creating with : ",{filter=>\&Dumper, value=>\@args});
+    $log->trace("creating with : ",{filter=>\&Dumper, value=>\@args});
 
     my $obj = $self->class->new( @args, _collection => $self );
     $self->_save($obj);
