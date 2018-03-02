@@ -915,4 +915,27 @@ EOF
         ],
     },
 
+    {
+        testname    => "file2",
+        testgroup   => "filenames",
+        testnumber  => 37,
+        source      => <<'EOF',
+haxor.py
+EOF
+        plain       => <<'EOF',
+haxor.py
+EOF
+    flair           => <<'EOF',
+<div><span class="entity filename" data-entity-type="filename" data-entity-value="haxor.py">haxor.py</span>
+</div>
+EOF
+    entities    => [
+            {
+                value   => 'haxor.py',
+                type    => 'filename',
+            }
+    ],
+    userdef => [],
+    },
+
 );
