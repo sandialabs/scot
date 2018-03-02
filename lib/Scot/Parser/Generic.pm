@@ -24,8 +24,9 @@ sub parse_message {
         body_plain  => $href->{body_plain},
         body        => $href->{body_html},
         data        => [{
+            sender  => $href->{from},
             alert   => $href->{body_plain},
-            columns => [qw(alert)],
+            columns => [qw(sender alert)],
         }],
         source      => [ qw(email generic) ],
     );
