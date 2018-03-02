@@ -70,9 +70,27 @@ sub upload {
                            $target_type,
                            $target_id);
         
+        my $err;
+        my %opts = (
+            error   => $err,
+            mode    => 0775,
+        );
         unless ( -d $dir ) {
-            make_path($dir, 0775);
+            make_path($dir, \%opts);
         }
+        if ( @$err ) {
+            for my $diag (@$err) {
+                my ($file, $message) = %$diag;
+                if ( $file eq '') {
+                    $log->error("general make_path error: $message");
+                }
+                else {
+                    $log->error("problem make_path($file): $message");
+                }
+            }
+        }
+
+
         my $fqn = $dir . '/' . $name;
         if ( -e $fqn ) {
             $fqn .= ".".time();
