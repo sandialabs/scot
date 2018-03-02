@@ -78,7 +78,7 @@ sub upload {
         unless ( -d $dir ) {
             make_path($dir, \%opts);
         }
-        if ( @$err ) {
+        if ( defined $err && @$err ) {
             for my $diag (@$err) {
                 my ($file, $message) = %$diag;
                 if ( $file eq '') {
