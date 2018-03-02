@@ -291,6 +291,16 @@ sub post_list_process {
             push @records, $href;
         }
     }
+    elsif ( $thing      eq "entry" && $req_href->{task_search} ) {
+        while ( my $obj = $cursor->next ) {
+            my $href    = $obj->as_hash;
+            my $target  = $href->{target};
+            my $tobj    = $self->env->mongo->collection(ucfirst($target->{type}))->find_iid($target->{id});
+            my $subject = $tobj->subject // '';
+            $href->{subject} = $subject;
+            push @records, $href;
+        }
+    }
     elsif ( $thing      eq "alertgroup" ) {
         while ( my $obj = $cursor->next ) {
             my $agid = $obj->id;
