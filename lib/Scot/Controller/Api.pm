@@ -1364,11 +1364,37 @@ sub delete {
     try {
         my $req_href    = $self->get_request_params;
         my $collection  = $self->get_collection_req($req_href);
-        if ($self->id_is_invalid($req_href)) { 
-            die "Invalid id"; 
+
+        $log->debug("request is ",{filter=>\&Dumper, value=>$req_href});
+
+        my $object;
+        if (defined $req_href->{request}->{json}->{vertices}) {
+            $log->debug("Deleting Link by vertices");
+            # this will occurr during a delink operation
+            # json will be {vertices:[ {id:a,type:x},{id:b,type:y} ]}
+            my ($a,$b)  = @{$req_href->{request}->{json}->{vertices}};
+
+            if ( defined $a and defined $b and ref($a) eq "HASH" and ref($b) eq "HASH" ) {
+                my $match   = {
+                    vertices    => {
+                        '$all'  => [
+                            { '$elemMatch'  => $a },
+                            { '$elemMatch'  => $b },
+                        ]
+                    }
+                };
+                $log->debug("looking for link matching: ",{filter=>\&Dumper, value=>$match});
+                $object = $collection->find_one($match);
+            }
         }
-        my $id          = $req_href->{id};
-        my $object      = $collection->find_iid($id);
+        else {
+            if ($self->id_is_invalid($req_href)) { 
+                die "Invalid id"; 
+            }
+            my $id          = $req_href->{id};
+            $object      = $collection->find_iid($id);
+        }
+
         if ( ! defined $object ) {
             die "Object Not Found";
         }
