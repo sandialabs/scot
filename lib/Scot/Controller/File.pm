@@ -72,7 +72,7 @@ sub upload {
         
         my $err;
         my %opts = (
-            error   => $err,
+            error   => \$err,
             mode    => 0775,
         );
         unless ( -d $dir ) {
