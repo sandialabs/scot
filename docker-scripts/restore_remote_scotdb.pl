@@ -58,14 +58,18 @@ my $remote = "$srcdir/$file";
 my $local  = "$downdir/$file";
 
 my $sftp = Net::SFTP->new($host, user => $user, password => $pass);
-   $sftp->get($remote, $local);
+   $sftp->get($remote, $local, sub {
+        my ($sftp, $data, $offset, $size) = @_;
+        print "Read $offset / $size bytes\r";
+    });
+print "\n";
 
 system("cd $downdir; tar xzvf $file");
 
 my $dbname = prompt("Enter Database Name to restore to > ", -d => "scot-prod" );
 #my $cmd = "/usr/bin/mongorestore --db $dbname --dir $downdir/opt/scotbackup/mongo/scot-prod --drop";
-
 my $cmd = "mongorestore  -d $dbname --dir $downdir/opt/scotbackup/mongo/scot-prod --host=mongodb:27017 --drop";
+
 
 say "Executing $cmd...";
 system($cmd);
@@ -73,6 +77,8 @@ system($cmd);
 say "Restoring Cached images...";
 system("cp -r $downdir/opt/scotbackup/cached_images/ /opt/scot/public/");
 
+say "Now fixing IDs in mongodb";
+system("perl fix_last_id.pl");
 
 
 
