@@ -861,7 +861,10 @@
     .signature_quality_color {
         color: #f0ad4e;
     }
-
+    
+    .list-buttons {
+        display: inline-flex;
+    }
 }
 
 /* PRINTING */
@@ -1087,5 +1090,9 @@
         cursor:pointer;
         top:5px;
         width:20px;
+    }
+
+    #list-view-container {
+        display: none;
     }
 }    
