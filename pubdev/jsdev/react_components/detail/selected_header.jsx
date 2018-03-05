@@ -704,6 +704,9 @@ let EntryDataSubject = React.createClass( {
     componentDidMount: function() {
         this.calculateWidth( this.state.value ); 
     },
+    onChange: function( e ) {
+        this.setState({ value: e.target.value });
+    },
     handleEnterKey: function( e ) {
         if ( e.key == 'Enter' ) {
             this.handleChange( e );
@@ -715,6 +718,17 @@ let EntryDataSubject = React.createClass( {
         newWidth = ( $( '#invisible' ).width() + 25 ) + 'px';
         this.setState( {width:newWidth} );
     },
+    componentWillReceiveProps: function ( nextProps ) {
+        let value = nextProps.data.subject;
+        if ( nextProps.type == 'signature' ) {
+            value = nextProps.data.name;
+        } else if ( nextProps.type == 'entity' ) {
+            value = nextProps.data.value;
+        }
+        this.setState({ value : value });
+        this.calculateWidth( value );
+    },
+
     render: function() {
         //only disable the subject editor on an entity with a non-blank subject as editing it could damage flair.
         let isDisabled = false;
@@ -722,7 +736,7 @@ let EntryDataSubject = React.createClass( {
             isDisabled = true;
         }
         return (
-            <div>{this.props.subjectType} {this.props.id}: <input type='text' defaultValue={this.state.value} onKeyPress={this.handleEnterKey} onBlur={this.handleChange} style={{width:this.state.width,lineHeight:'normal'}} className='detail-header-input' disabled={isDisabled} /></div>
+            <div>{this.props.subjectType} {this.props.id}: <input type='text' value={this.state.value} onKeyPress={this.handleEnterKey} onChange={this.onChange} onBlur={this.handleChange} style={{width:this.state.width,lineHeight:'normal'}} className='detail-header-input' disabled={isDisabled} /></div>
         );
     }
 } );
