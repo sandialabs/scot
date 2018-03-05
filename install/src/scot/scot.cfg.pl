@@ -41,6 +41,10 @@
 
     share_after_time    => 10, # minutes
 
+    stomp_host  => "localhost",
+    stomp_port  => 61613,
+    topic       => "/topic/scot",
+
     # mojo defaults are values for the mojolicious startup
     mojo_defaults   => {
         # change this after install and restart scot
