@@ -295,7 +295,15 @@ sub post_list_process {
         while ( my $obj = $cursor->next ) {
             my $href    = $obj->as_hash;
             my $target  = $href->{target};
-            my $tobj    = $self->env->mongo->collection(ucfirst($target->{type}))->find_iid($target->{id});
+            my $tobj;
+            if ( ucfirst($target->{type}) eq "Alert" ) {
+                my $aobj    = $self->env->mongo->collection(ucfirst($target->{type}))->find_iid($target->{id});
+                my $agid    = $aobj->alertgroup;
+                $tobj       = $self->env->mongo->collection('Alertgroup')->find_iid($agid);
+            }
+            else {
+                $tobj    = $self->env->mongo->collection(ucfirst($target->{type}))->find_iid($target->{id});
+            }
             my $subject = $tobj->subject // '';
             $href->{subject} = $subject;
             push @records, $href;
