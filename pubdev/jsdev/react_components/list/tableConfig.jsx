@@ -412,7 +412,7 @@ const typeColumns = {
             title: 'Tags',
             options: { minWidth: 200, maxWidth: 250 },
         }, 'Owner', 'Entries', 'Views', ],
-    task: [ 'Id', 'Location', 'TargetType', 'TargetId', 
+    task: [ 'Id', 'Location', 'Subject', 'TargetType', 'TargetId',
         {
             title: 'TaskOwner',
             options: { minWidth: 150, maxWidth: 500 },
