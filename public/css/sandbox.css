@@ -72,7 +72,7 @@
     border-radius: 5px;
     border: 1px solid black;
     width:99.5%;
-    margin-bottom:10px;
+    padding-bottom:40px;
     /*adding in other sizing things not normally in alertTableHorizontal but normally found in the .tablesorter-default*/
     font: 12px/18px Arial, Sans-serif;
     color: #333;
@@ -200,9 +200,8 @@
     }
 
     blockquote {
-        max-height: 500px;
-        overflow-y: auto;
-        display: inline-flex;
+        overflow-y: visible;
+        /*display: inline-flex;*/
         background-color: #f5f5f5;
         width: 90%;
     } 
