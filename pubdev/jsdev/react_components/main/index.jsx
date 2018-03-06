@@ -29,6 +29,7 @@ import { ReportDashboard, ReportPage, SingleReport } from '../components/dashboa
 var Notification    = require('react-notification-system');
 var Login           = require('../modal/login.jsx').default;
 import Home from './home';
+import { ReportPage, SingleReport } from '../components/dashboard/report';
 
 import { NOTIFICATION_TYPES } from '../components/dashboard/activity';
 
