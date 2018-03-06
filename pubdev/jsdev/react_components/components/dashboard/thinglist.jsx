@@ -24,14 +24,15 @@ export default class ThingList extends PureComponent {
 	}
 
 	static propTypes = {
-		thingType: PropTypes.string.isRequired,
-		title: PropTypes.string.isRequired,
-		queryOptions: PropTypes.object,
-		processData: PropTypes.func,
-		getSummary: PropTypes.func,
-		getLink: PropTypes.func,
-		emptyString: PropTypes.string,
-		newBadge: PropTypes.bool,
+		thingType: PropTypes.string.isRequired,		// Type to query
+		title: PropTypes.string.isRequired,			// Title of Widget
+		queryOptions: PropTypes.object,				// Search query options (sort & filter)
+		processData: PropTypes.func,				// Function to process data
+		getSummary: PropTypes.func,					// Function to create a summary from data entry
+		getLink: PropTypes.func,					// Funciton to create a link from data entry
+		emptyString: PropTypes.string,				// String to show when no data returned
+		emptyStyle: PropTypes.oneOf( [ 'success', 'info', 'warning', 'danger' ] ),	// Style of emptyString
+		newBadge: PropTypes.bool,					// Display a badge if the data entry is newer than a day
 		errorToggle: PropTypes.func,
 	}
 
@@ -54,6 +55,7 @@ export default class ThingList extends PureComponent {
 			return `${thingType}/${thing.id}`;
 		},
 		emptyString: 'No Data',
+		emptyStyle: 'warning',
 		newBadge: true,
 	}
 
@@ -117,7 +119,7 @@ export default class ThingList extends PureComponent {
 	render() {
 		let things = this.state.data.map( ( thing, i ) => this.genThingItem( thing, i ) );
 		if ( things.length === 0 ) {
-			things = <div className="list-group-item list-group-item-success">{this.props.emptyString}</div>
+			things = <div className={`list-group-item list-group-item-${this.props.emptyStyle}`}>{this.props.emptyString}</div>
 		}
 
 		return (
@@ -212,6 +214,8 @@ export const OpenTasks = {
 				let target = thing.target;
 				return `${thingType}/${target.type}/${target.id}/${thing.id}`;
 			},
+			emptyString: 'None',
+			emptyStyle: 'info',
 		},
 	},
 }
@@ -244,6 +248,7 @@ export const YourTasks = {
 				return `${thingType}/${target.type}/${target.id}/${thing.id}`;
 			},
 			emptyString: 'None!',
+			emptyStyle: 'success',
 		},
 	},
 }
@@ -270,6 +275,7 @@ export const UnviewedAlerts = {
 			},
 			newBadge: false,
 			emptyString: 'None!',
+			emptyStyle: 'success',
 		},
 	},
 }
@@ -301,6 +307,7 @@ export const TopEvents = {
 			},
 			newBadge: false,
 			emptyString: 'None!',
+			emptyStyle: 'success',
 		},
 	},
 }
