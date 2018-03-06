@@ -132,6 +132,20 @@ sub get_time_range {
         $edt->set(hour => 23, minute => 59, second => 59);
         @range = ( $sdt, $edt );
     }
+    if ( $rvalue eq "thisweek" ) {
+        my $sdt = $targetdt;
+        my $edt = $sdt->clone();
+        $edt->subtract(days => 7);
+        $edt->truncate(to => "day");
+        @range = ( $sdt, $edt );
+    }
+    if ( $rvalue eq "lastweek" ) {
+        my $sdt = $targetdt;
+        $sdt->subtract(days => 7);
+        my $edt = $sdt->clone();
+        $edt->subtract(days => 7);
+        @range = ( $sdt, $edt );
+    }
     if ( $rvalue eq "thismonth" ) {
         my $sdt = $targetdt;
         $sdt->truncate(to => "month");
