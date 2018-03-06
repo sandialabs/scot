@@ -16,7 +16,7 @@ const Wrapper = ( { children, onRemove, editable, title } ) => (
 		{ !editable && children }
 		{ editable &&
 			<Panel header={PanelHeader( title, onRemove )}>
-				{children}
+				{React.cloneElement(children, { editMode: editable })}
 			</Panel>
 		}
 	</div>
