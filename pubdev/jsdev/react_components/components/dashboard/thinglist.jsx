@@ -19,7 +19,7 @@ export default class ThingList extends PureComponent {
 
 		this.state = {
 			data: [],
-			loading: true,
+			loading: false,
 		}
 	}
 
@@ -33,6 +33,7 @@ export default class ThingList extends PureComponent {
 		emptyString: PropTypes.string,				// String to show when no data returned
 		emptyStyle: PropTypes.oneOf( [ 'success', 'info', 'warning', 'danger' ] ),	// Style of emptyString
 		newBadge: PropTypes.bool,					// Display a badge if the data entry is newer than a day
+		editMode: PropTypes.bool,					// Whether the dashboard is in edit mode
 		errorToggle: PropTypes.func,
 	}
 
@@ -60,6 +61,10 @@ export default class ThingList extends PureComponent {
 	}
 
 	fetchData() {
+		this.setState( {
+			loading: true,
+		} );
+
 		// Force deep copy
 		let data = $.extend( true, {}, this.props.queryOptions );
 		if ( data.sort ) {
@@ -100,7 +105,9 @@ export default class ThingList extends PureComponent {
 	}
 
 	componentDidMount() {
-		this.fetchData();
+		if ( !this.props.editMode ) {
+			this.fetchData();
+		}
 	}
 
 	genThingItem( thing, i ) {
@@ -118,13 +125,17 @@ export default class ThingList extends PureComponent {
 
 	render() {
 		let things = this.state.data.map( ( thing, i ) => this.genThingItem( thing, i ) );
-		if ( things.length === 0 ) {
+		if ( this.props.editMode ) {
+			things = [ 1, 2, 3, 4, 5 ].map( thing => <div className="list-group-item">{this.props.thingType} - {thing}</div> )
+		} else if ( things.length === 0 ) {
 			things = <div className={`list-group-item list-group-item-${this.props.emptyStyle}`}>{this.props.emptyString}</div>
 		}
 
 		return (
 			<div className="ThingList">
-				<h1>{this.props.title}</h1>
+				{ !this.props.editMode &&
+					<h1>{this.props.title}</h1>
+				}
 				{ this.state.loading ?
 					<LoadingContainer loading={true} />
 					:
