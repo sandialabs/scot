@@ -46,6 +46,7 @@ sub _build_share_strategy {
     return $self->get_config_value($attr, $default, $envname);
 }
 
+# not sure this is needed
 has upstream_scot   => (
     is          => 'ro',
     isa         => 'Str',
@@ -106,7 +107,7 @@ sub process_message {
         return;
     }
 
-    if ( $action eq "update" or $action eq "delete" ) {
+    if ( $action eq "updated" or $action eq "delete" ) {
         if ( $self->can_share($type, $id) ) {
             $self->beam($action, $type, $id);
         }
