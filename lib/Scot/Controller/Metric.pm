@@ -111,11 +111,14 @@ sub generate_range_match {
     my $self        = shift;
     my $range       = shift;
     my $metric      = shift;
+    my $rtype       = shift;
+
     my $match       = {
-        year    => {'$lte' => $range->[1]->year, '$gte' => $range->[0]->year },
-        month   => {'$lte' => $range->[1]->month,'$gte' => $range->[0]->month },
-        day     => {'$lte' => $range->[1]->day,  '$gte' => $range->[0]->day },
-        hour    => {'$lte' => $range->[1]->hour, '$gte' => $range->[0]->hour },
+    #    year    => {'$lte' => $range->[1]->year, '$gte' => $range->[0]->year },
+    #    month   => {'$lte' => $range->[1]->month,'$gte' => $range->[0]->month },
+    #    day     => {'$lte' => $range->[1]->day,  '$gte' => $range->[0]->day },
+    #    hour    => {'$lte' => $range->[1]->hour, '$gte' => $range->[0]->hour },
+        epoch   => { '$lte' => $range->[0]->epoch, '$gte' => $range->[1]->epoch },
     };
     if ( defined $metric ) {
         $match->{metric} = $metric;
@@ -281,7 +284,7 @@ sub response_time {
     return $json;
 }
 
-sub get_statistics {
+sub get_statistics_nogood {
     my $self    = shift;
     my $href    = shift; # { sum => [ x,y,z...], count => [a,b,c...] }
     my @values  = ();
@@ -312,6 +315,23 @@ sub get_statistics {
     };
 }
 
+sub get_statistics {
+    my $self    = shift;
+    my $aref    = shift; # array of values
+    my $util    = Statistics::Descriptive::Sparse->new();
+    
+    $util->add_data(@{$aref});
+
+    return {
+        avg     => $util->mean,
+        min     => $util->min,
+        max     => $util->max,
+        stddev  => $util->standard_deviation,
+        count   => $util->count,
+    };
+}
+
+
 
 sub creation_bullet {
     my $self    = shift;
@@ -335,12 +355,13 @@ sub creation_bullet {
         my $type    = lc($w[0]);
         my $value   = $stat->value;
         next if ($value == 0);
-
+        $log->debug("Pushing $value onto \$results{$type}");
         push @{ $results{$type} }, $value;
     }
     my @json    = ();
 
-    foreach my $t (qw(alert event incident entry)) {
+    foreach my $t (qw(alertgroups event incident entry)) {
+        $log->debug("getting stats on ",{filter=>\&Dumper, value=>$results{$t}});
         my $stat = $self->get_statistics($results{$t});
         push @json, {
             title   => ucfirst($t). " Creation",
@@ -352,6 +373,70 @@ sub creation_bullet {
         };
     }
     return \@json;
+}
+
+sub create_histo {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+    my @range   = $env->date_util->get_time_range({range => "thisweek"});
+    my $dt      = DateTime->now();
+    my $hour    = $dt->hour;
+
+    $log->debug("creation histo");
+
+    my $collection  = $mongo->collection('Stat');
+    my $regex       = qr/created$/;
+    my $match       = $self->generate_range_match(\@range,$regex, "thisweek");
+
+    $log->debug("mongo query is ",{filter=>\&Dumper, value=>$match});
+    my $cursor      = $collection->find($match);
+
+    my %results     = ();
+
+    $log->debug("got ".$cursor->count." results");
+
+    while (my $stat = $cursor->next ) {
+        my $metric  = $stat->metric;
+        my $type    = lc( (split(/ /,$metric))[0] );
+        my $value   = $stat->value;
+
+        next if ($value == 0);
+
+        my $epochdt   = DateTime->new(
+            year    => $stat->year,
+            month   => $stat->month,
+            day     => $stat->day,
+        );
+        $results{$type}{$epochdt->epoch} += $value;
+    }
+
+    $log->debug("results are ",{filter=>\&Dumper, value=>\%results});
+
+    my @json    = ();
+
+    foreach my $type (sort keys %results) {
+        my @vals = ();
+
+        foreach my $epoch (sort keys %{$results{$type}}) {
+            push @vals, {
+                time    => $epoch,
+                value   => $results{$type}{$epoch},
+            };
+        }
+
+        my $href    = {
+            name    => $type,
+            data    => \@vals,
+        };
+        $log->debug("pushing ",{filter=>\&Dumper, value=>$href});
+        push @json, $href;
+    }
+
+    $log->debug("json ",{filter=>\&Dumper, value=>\@json});
+    return \@json;
+
 }
 
 sub alert_breakdown_last_x_days {

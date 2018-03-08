@@ -248,7 +248,22 @@ let SelectedHeaderOptions = React.createClass( {
             }        
         }
     },
-
+    PrintPrepare: function() {
+        $('iframe').contents().each( function(x, y) {
+            $(y).find('blockquote').each( function( index, block) {
+                $(block).css({'max-height': '5000px'})
+            })
+        });
+        setTimeout( function() {
+            this.forceUpdate();
+        }.bind(this), 500);
+        setTimeout( function() {
+            $('#print-button').click();
+        }, 1000);
+    },
+    Print: function() {
+        window.print();
+    },
     componentDidMount: function() {
         //open, close SELECTED alerts
         if ( this.props.type == 'alertgroup' || this.props.type == 'alert' ) { 
@@ -267,8 +282,7 @@ let SelectedHeaderOptions = React.createClass( {
             if ( event.keyCode == 84 && ( event.ctrlKey != true && event.metaKey != true ) ) {
                 this.toggleFlair();
             }
-        }.bind( this ) );
-    },
+        }.bind( this ) ); },
 
     componentWillUnmount: function() {
         $( '#main-detail-container' ).unbind( 'keydown' );
@@ -380,6 +394,8 @@ let SelectedHeaderOptions = React.createClass( {
                     {showPromote ? <Promote type={type} id={id} updated={this.props.updated} errorToggle={this.props.errorToggle} /> : null}
                     {type != 'signature' ? <Button bsSize='xsmall' onClick={this.createLinkSignature}><i className="fa fa-pencil" aria-hidden="true"></i> Create & Link Signature</Button> : null}
                     {type == 'signature' ? <Button eventKey='11' onClick={this.props.showSignatureOptionsToggle} bsSize='xsmall' bsStyle='warning'>View Custom Options</Button> : null}
+                    <Button onClick={this.PrintPrepare} bsSize='xsmall' bsStyle='info'><i className='fa fa-print' aria-hidden='true'></i> Print</Button>
+                    <Button onClick={this.Print} style={{display:'none'}} id="print-button"></Button>
                     <Button bsStyle='danger' eventKey="9" onClick={this.props.deleteToggle} bsSize='xsmall'><i className="fa fa-trash" aria-hidden="true"></i> Delete {subjectType}</Button>
                     <ButtonGroup style={{float:'right'}}>
                         <Marker type={type} id={id} string={string} />
@@ -411,6 +427,8 @@ let SelectedHeaderOptions = React.createClass( {
                         <Button onClick={this.props.linksModalToggle} bsSize='xsmall'><i className='fa fa-link' aria-hidden='true'></i> Links</Button>
                         <Marker type={type} id={id} string={string} isAlert={true} getSelectedAlerts={this.getSelectedAlerts} />
                         <Button bsSize='xsmall' onClick={this.createLinkSignature}><i className="fa fa-pencil" aria-hidden="true"></i> Create & Link Signature</Button>
+                        <Button onClick={this.PrintPrepare} bsSize='xsmall' bsStyle='info'><i className='fa fa-print' aria-hidden='true'></i> Print</Button>
+                        <Button onClick={this.Print} style={{display:'none'}} id="print-button"></Button>
                         <Button eventKey='15' onClick={this.alertDeleteSelected} bsSize='xsmall' bsStyle='danger'><i className="fa fa-trash" aria-hidden="true"></i> Delete Selected</Button>
                         <Button bsStyle='danger' eventKey="17" onClick={this.props.deleteToggle} bsSize='xsmall'><i className="fa fa-trash" aria-hidden="true"></i> Delete {subjectType}</Button> 
                         <ButtonGroup style={{float:'right'}}>
@@ -433,6 +451,8 @@ let SelectedHeaderOptions = React.createClass( {
                         <TrafficLightProtocol type={type} id={id} tlp={this.props.headerData.tlp} />
                         <Button onClick={this.props.linksModalToggle} bsSize='xsmall'><i className='fa fa-link' aria-hidden='true'></i> Links</Button>
                         <Button bsSize='xsmall' onClick={this.createLinkSignature}><i className="fa fa-pencil" aria-hidden="true"></i> Create & Link Signature</Button>
+                        <Button onClick={this.PrintPrepare} bsSize='xsmall' bsStyle='info'><i className='fa fa-print' aria-hidden='true'></i> Print</Button>
+                        <Button onClick={this.Print} style={{display:'none'}} id="print-button"></Button>
                         <Button bsStyle='danger' eventKey="8" onClick={this.props.deleteToggle} bsSize='xsmall'><i className="fa fa-trash" aria-hidden="true"></i> Delete {subjectType}</Button>
                         <ButtonGroup style={{float:'right'}}>
                             <Marker type={type} id={id} string={string} />
