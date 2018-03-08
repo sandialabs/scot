@@ -78,7 +78,7 @@ class ReportCreated extends Component {
 
 		this.statusLine = d3.line()
 			.curve( d3.curveBasis )
-			.x( d => this.xScale( d.time ) )
+			.x( d => this.xScale( new Date( d.time * 1000 ) ) )
 			.y( d => this.yScale( d.value ) );
 
 		this.lineHolder = this.svg.append( 'g' )
@@ -187,7 +187,7 @@ class ReportCreated extends Component {
 	}
 
 	loadData() {
-		let url = '/scot/api/v2/metric/creation_bullet';
+		let url = '/scot/api/v2/metric/create_histo';
 		let opts = `?range=7`;
 
 		// Use dummy data while dashboard is in editMode
@@ -227,22 +227,7 @@ class ReportCreated extends Component {
 			} catch ( e ) {
 				console.log( "Malformed data" )
 				console.log( dataset )
-				console.log( "Replacing with random data" )
-				
-				dataset = this.genData();
-
-				// Add line visibility to data
-				dataset = dataset.map( line => {
-					line.shown = this.state.chartData.reduce( ( shown, d ) => {
-						return shown && ( d.name === line.name ? d.shown : true );
-					}, true );
-
-					return line;
-				} );
-
-				this.setState( {
-					chartData: dataset,
-				} )
+				console.error( e );
 			}
 		} );
 	}
@@ -270,7 +255,7 @@ class ReportCreated extends Component {
 		for( ; date <= now; date = new Date( date.getTime() + 6 * 3600 * 1000 ) ) {
 			lineData.forEach( line => {
 				line.data.push( {
-					time: date,
+					time: date.getTime() / 1000,
 					value: Math.random() * dataMaxes[ line.name ],
 				} );
 			} );
