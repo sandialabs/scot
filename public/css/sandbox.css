@@ -7,13 +7,12 @@
     /*  padding: 1px; */
     }
 
-
     .entity:active {
     background-color: red;
     }
 
     a:active {
-    color: red;
+    color: red !important;
     }
 
     body {
