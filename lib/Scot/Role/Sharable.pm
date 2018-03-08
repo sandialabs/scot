@@ -1,4 +1,4 @@
-package Scot::Role::Federation;
+package Scot::Role::Sharable;
 
 use Moose::Role;
 use namespace::autoclean;
