@@ -1,8 +1,9 @@
 package Scot::App::Responder::BeamUp;
-
+use lib '../../../../lib';
 use Try::Tiny;
 use Data::Dumper;
 use Moose;
+use Scot::Util::ScotClient;
 extends 'Scot::App::Responder';
 
 ##
@@ -46,22 +47,6 @@ sub _build_share_strategy {
     return $self->get_config_value($attr, $default, $envname);
 }
 
-# not sure this is needed
-has upstream_scot   => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-    builder     => '_build_upstream_scot',
-);
-
-sub _build_upstream_scot {
-    my $self    = shift;
-    my $attr    = "upstream_scot";
-    my $default = "localhost";  # localhost will do nothing
-    my $envname = "scot_app_responder_beamup_upstream_scot";
-    return $self->get_config_value($attr, $default, $envname);
-}
-
 has scot_client => (
     is          => 'ro',
     isa         => 'Scot::Util::ScotClient',
@@ -73,7 +58,7 @@ has scot_client => (
 sub _build_scot_client {
     my $self    = shift;
     my $config  = $self->env->scot_client;
-    my $client  = Scot::Util::ScotClient->new(%$config);
+    my $client  = Scot::Util::ScotClient->new({config => $config});
     return $client;
 }
 
@@ -88,30 +73,26 @@ sub process_message {
 
     $log->debug("[Wkr $$] Processing Message $action $type $id");
 
-    if ( $action eq "create" ) {
-        
-        if ( $self->share_strategy eq "all" ) {
-            $self->beam($action, $type, $id);
-        }
-        elsif ( $self->share_strategy eq "most" ) {
-            sleep $self->wait_timeout;
-            if ( $self->can_share($type, $id) ) {
-                $self->beam($action, $type, $id);
-            }
-        }
-        else {
-            if ( $self->can_share($type, $id) ) {
-                $self->beam($action, $type, $id);
-            }
-        }
-        return;
-    }
+    my @permitted_actions   = qw(created updated deleted);
 
-    if ( $action eq "updated" or $action eq "delete" ) {
-        if ( $self->can_share($type, $id) ) {
-            $self->beam($action, $type, $id);
+    if ( grep {/$action/} @permitted_actions ) {
+        my $strategy    = $self->share_strategy;
+        $log->debug("Permitted action, share strategy = $strategy");
+        if ( $strategy eq "all" or $strategy eq "explicit" ) {
+            # immediately share
+            return $self->beam($action, $type, $id);
         }
-        return;
+        if ( $strategy eq "delay" ) {
+            # share after a delay period
+            $log->debug("sleeping until wait_timeout is reached");
+            sleep $self->wait_timeout;
+            return $self->beam($action, $type, $id);
+        }
+
+        $log->error("Unexpected sharing strategy: $strategy");
+    }
+    else {
+        $log->error("Action $action not a permitted action.");
     }
 
 }
@@ -122,9 +103,11 @@ sub can_share {
     my $id      = shift;
     my $obj     = $self->get_obj($type, $id);
 
-    if ( $obj->is_sharable ) {
-        if ( $obj->tlp_permits_sharing ) {
-            return 1;
+    if ( $obj->meta->does_role("Scot::Role::Sharable") ) {
+        if ( $obj->is_sharable ) {
+            if ( $obj->tlp_permits_sharing ) {
+                return 1;
+            }
         }
     }
     return undef;
@@ -148,32 +131,48 @@ sub beam {
     my $client  = $self->scot_client;
     my $obj     = $self->get_obj($type,$id);
     my $location    = $self->env->location;
+    my $log     = $self->env->log;
 
-    my $uri = "/scot/api/v2/" . $type;
-    my $href    = $obj->as_hash;
-    
-    if (! defined $href->{location} ) {
-        $href->{location} = $location;
-    }
+    $log->debug("Attempting to beam up record");
 
-    my $json;
+    # check if object is marked ok to share
+    if ( $self->can_share($type, $id, $obj) ) {
 
-    if ( $action eq "create" ) {
-        $json = $client->post($uri, $href);
-    }
-    elsif ( $action eq "update" ) {
-        $uri .= "/$id";
-        $json = $client->put($uri, $href);
-    }
-    elsif ( $action eq "delete" ) {
-        $uri .= "/$id";
-        $json = $client->delete($uri,$href);
+        $log->debug("sharing is permitted");
+
+        my $uri = "/scot/api/v2/" . $type;
+        my $href    = $obj->as_hash;
+        
+        if (! defined $href->{location} ) {
+            $href->{location} = $location;
+        }
+
+        my $json;
+
+        if ( $action eq "create" ) {
+            $json = $client->post($uri, $href);
+            return $id;
+        }
+        elsif ( $action eq "update" ) {
+            $uri .= "/$id";
+            $json = $client->put($uri, $href);
+            return $id;
+        }
+        elsif ( $action eq "delete" ) {
+            $uri .= "/$id";
+            $json = $client->delete($uri,$href);
+            return $id;
+        }
+        else {
+            return "Unsupported API action $action";
+        }
+
+        # Error checking
     }
     else {
-        die "Unsupported API action $action";
+        $log->error("Object is marked do not share or bad tlp, not shared");
+        return "Sharing not permitted";
     }
-
-    # Error checking
 
 }
 
