@@ -22,6 +22,7 @@ extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
     Scot::Role::Hashable
+    Scot::Role::Sharable
     Scot::Role::Times
 );
 
