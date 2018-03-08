@@ -390,31 +390,7 @@ let SelectedHeader = React.createClass( {
     alertSelected: function( aIndex,aID,aType,aStatus ){
         this.setState( {alertSelected:true,aIndex:aIndex,aID:aID,aType:aType,aStatus:aStatus} );
     },
-    sourceToggle: function() {
-        $.ajax( {
-            type: 'GET',
-            url: '/scot/api/v2/alertgroup/'+this.props.id,
-            success: function( response ){
-                let win = window.open( '/libs/viewSource.html' ); //, '_blank')
-                let html =  response.body;
-                let plain = response.body_plain;
-                win.onload = function() {   
-                    if( html != undefined ){
-                        $( win.document ).find( '#html' ).text( html );
-                    } else {
-                        $( win.document ).find( '.html' ).remove(); }
-                    if( plain != undefined ) {
-                        $( win.document ).find( '#plain' ).text( plain );
-                    }
-                    else {
-                        $( win.document ).find( '.plain' ).remove(); }
-                };
-            }.bind( this ),
-            error: function( data ) {
-                this.props.errorToggle( 'failed to get data for source popup' , data );
-            }.bind( this )
-        } );
-    },
+
     Watcher: function() {
         if( this.props.type != 'alertgroup' ) {
             $( 'iframe' ).each( function( index,ifr ) {
@@ -646,7 +622,7 @@ let SelectedHeader = React.createClass( {
                     </div>
                     {this.state.showEventData && type != 'entity' ? <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} entryData={this.state.entryData} entityData={this.state.entityData} headerData={this.state.headerData} showEntryData={this.state.showEntryData} showEntityData={this.state.showEntityData} alertSelected={this.alertSelected} summaryUpdate={this.summaryUpdate} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} linkWarningToggle={this.linkWarningToggle} entryToolbar={this.state.entryToolbar} isAlertSelected={this.state.alertSelected} aType={this.state.aType} aID={this.state.aID} alertPreSelectedId={this.props.alertPreSelectedId} errorToggle={this.props.errorToggle} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar} showSignatureOptions={this.state.showSignatureOptions} flairOff={this.state.flairOff} highlightedText={this.state.highlightedText} form={this.props.form}/> : null}
                     {this.state.showEventData && type == 'entity' ? <EntityDetail entityid={id} entitytype={'entity'} id={id} type={'entity'} fullScreen={true} errorToggle={this.props.errorToggle} linkWarningToggle={this.linkWarningToggle}/> : null} 
-                    {this.state.flairToolbar ? <EntityDetail key={this.state.entityDetailKey} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle} entityoffset={this.state.entityoffset} entityobj={this.state.entityobj} linkWarningToggle={this.linkWarningToggle}/> : null}    
+                    {this.state.flairToolbar ? <EntityDetail key={this.state.entityDetailKey} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} linkWarningToggle={this.linkWarningToggle} entityid={parseInt(this.state.entityid)} data={this.state.headerData} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle} entityoffset={this.state.entityoffset} entityobj={this.state.entityobj} linkWarningToggle={this.linkWarningToggle}/> : null}
                 </div>
             }
             </div>
