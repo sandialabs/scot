@@ -8,7 +8,7 @@ use Scot::Env;
 use Data::Dumper;
 use v5.18;
 
-my $configfile  = './configs/scot.test.cfg.pl';
+my $configfile  = './scot.cfg.pl';
 my $env     = Scot::Env->new(
     config_file => $configfile,
 );
@@ -26,9 +26,8 @@ my @modules = (
     { attr => "imap", class => "Scot::Util::Imap"},
     { attr => "enrichments", class => "Scot::Util::Enrichments"},
     { attr => "ldap", class => "Scot::Util::Ldap"},
-    { attr => "extractor", class => "Scot::Util::EntityExtractor"},
-    { attr => "img_munger", class => "Scot::Util::ImgMunger"},
-    { attr => "scot", class => "Scot::Util::Scot2"},
+#    { attr => "img_munger", class => "Scot::Util::ImgMunger"},
+#    { attr => "scot", class => "Scot::Util::Scot2"},
     { attr => "mq", class => "Scot::Util::Messageq"},
 );
 
@@ -37,7 +36,21 @@ foreach my $href (@modules) {
     my $class= $href->{class};
     my $obj = $env->$attr;
     is (ref($obj), $class, "$attr is the correct class");
+#    my $handle  = $env->get_handle($attr);
+#    is (ref($handle), $class, "get_handle $attr worked");
 }
+
+print Dumper($env);
+
+$env->log->debug("grabbing directly");
+my $l1  = $env->ldap;
+print "l1 = ".ref($l1)."\n";
+
+$env->log->debug("grabbing via handle");
+my $l2  = $env->get_config_item('ldap');
+print "l2 = ".ref($l2)."\n";
+
+
 
 done_testing();
 
