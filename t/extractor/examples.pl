@@ -937,5 +937,27 @@ EOF
     ],
     userdef => [],
     },
+    {
+        testname    => "message_id_1",
+        testgroup   => "message_id",
+        testnumber  => 38,
+        source      => <<'EOF',
+&lt;CAEr1S5-HuU1MjnUQtqT6Ri-i2ZaYcTm_+cjf6mkmOgwGJHjPJA@mail.gmail.com&gt;
+EOF
+        plain       => <<'EOF',
+<CAEr1S5-HuU1MjnUQtqT6Ri-i2ZaYcTm_+cjf6mkmOgwGJHjPJA@mail.gmail.com>
+EOF
+    flair           => <<'EOF',
+<div><span class="entity message_id" data-entity-type="message_id" data-entity-value="&lt;caer1s5-huu1mjnuqtqt6ri-i2zayctm_+cjf6mkmogwgjhjpja@mail.gmail.com&gt;">&lt;CAEr1S5-HuU1MjnUQtqT6Ri-i2ZaYcTm_+cjf6mkmOgwGJHjPJA@mail.gmail.com&gt;</span></div>
+EOF
+    entities    => [
+            {
+                value   => '<caer1s5-huu1mjnuqtqt6ri-i2zayctm_+cjf6mkmogwgjhjpja@mail.gmail.com>',
+                type    => 'message_id',
+            }
+    ],
+    userdef => [],
+    debug   => 1,
+    },
 
 );
