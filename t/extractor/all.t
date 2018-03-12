@@ -77,7 +77,13 @@ foreach my $test (sort { $a->{testnumber} <=> $b->{testnumber} } @$aref) {
         ok (! defined($r_entities), "no entities ok") or $errorcount++;
     }
     else {
-        cmp_bag($entities, $result->{entities}, "entities correct") or $errorcount++;
+        unless (cmp_bag($entities, $result->{entities}, "entities correct")) {
+            $errorcount++;
+            if (defined $debug) {
+                print "expected entities: ".Dumper($entities)."\n";
+            }
+        }
+
     }
 
     if ( scalar(@$userdef) == 0 ) {

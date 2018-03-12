@@ -560,7 +560,7 @@ sub _build_EMAIL {
     return {
         regex   => $regex,
         type    => "email",
-        order   => 5,
+        order   => 9,
         options => { multiword => "no" },
     };
 }
@@ -707,6 +707,31 @@ sub _build_UUID1 {
         type    => "uuid1",
         order   => 20,
         options => { multiword => "no" },
+    };
+}
+
+has regex_angle_bracket_message_id => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_angle_bracket_message_id',
+);
+
+sub _build_angle_bracket_message_id {
+    my $self    = shift;
+    my $regex   = qr{
+        (
+        (<|&lt;)
+        .*?
+        (>|&gt;)
+        )
+    }xms;
+    return {
+        regex   => $regex,
+        type    => "message_id",
+        order   => 5,
+        options => { multiword => "yes" },
     };
 }
 
