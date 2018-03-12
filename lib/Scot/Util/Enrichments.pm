@@ -103,7 +103,7 @@ sub BUILD {
         }
     }
     $meta->make_immutable;
-    $log->debug("Enrichment is ",{filter=>\&Dumper,value=>$self});
+    $log->trace("Enrichment is ",{filter=>\&Dumper,value=>$self});
 }
 
 sub enrich {
