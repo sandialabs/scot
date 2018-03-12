@@ -34,7 +34,7 @@ sub create_from_promoted_alert {
         type                  => 'event',
         id                    => $event->id,
     };
-    my $id  = $alert->id;
+    my $id      = $alert->id;
     my $agcol   = $mongo->collection('Alertgroup');
     my $agobj   = $agcol->find_iid($alert->alertgroup+0);
     my $subject = $agobj->subject;
@@ -168,6 +168,10 @@ sub build_table {
     foreach my $key ( @{$columns} ) {
         next if ($key eq "columns");
         my $value   = $data->{$key};
+        if ( $key =~ /^message[_-]id$/i ) {
+            $value =~ s{<(.*?)>}{&lt;$1&gt;};
+        }
+
         $html .= qq|<td>|;
         if ( ref($value) eq "ARRAY" ) {
 #            $html .= join("<br>\n",@$value)."</td>";
