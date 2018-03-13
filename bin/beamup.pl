@@ -11,8 +11,8 @@ use Scot::App::Responder::BeamUp;
 use Scot::Env;
 
 my $config_file = $ENV{'scot_beamup_config_file'} // 
-    '/opt/scot/etc/replicate.cfg.pl';
-my $env         = SCOT::Env->new({
+    '/opt/scot/etc/beamup.cfg.pl';
+my $env         = Scot::Env->new({
     config_file => $config_file
 });
 
