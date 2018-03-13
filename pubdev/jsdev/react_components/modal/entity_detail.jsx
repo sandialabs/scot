@@ -220,7 +220,7 @@ let EntityDetail = React.createClass( {
                 }
             });
         });
-        this.Watcher();
+        this.props.watcher();
     },
 
 
@@ -323,7 +323,7 @@ let EntityDetail = React.createClass( {
                             });
                             Store.storeKey(nextProps.entityid);
                             Store.addChangeListener(this.updated);
-                            this.Watcher();
+                            this.props.watcher();
                         }
                     }.bind(this)
                 };
@@ -393,7 +393,6 @@ let EntityDetail = React.createClass( {
     checkFlairHover: function( ifr ) {
         if( ifr.contentDocument != null ) {
             $( ifr ).contents().find( 'a' ).each( function( index,a ) {
-                console.log("aM I getting here? ");
                 if( $( a ).css( 'color' ) == 'rgb(255, 0, 0)' ) {
                     $( a ).data( 'state','down' );
                 } else if ( $( a ).data( 'state' ) == 'down' ) {
@@ -404,50 +403,6 @@ let EntityDetail = React.createClass( {
             }.bind( this ) );
         }
     },
-
-    //bemonta - Added for allowing link click
-    Watcher: function() {
-        $( 'iframe' ).each( function( index,ifr ) {
-        //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
-            ifr.contentWindow.requestAnimationFrame( function() {
-                if( ifr.contentDocument != null ) {
-                    let arr = [];
-                    //arr.push(this.props.type);
-                    arr.push( this.checkFlairHover );
-                    $( ifr ).off( 'mouseenter' );
-                    $( ifr ).off( 'mouseleave' );
-                    $( ifr ).on( 'mouseenter', function( v,type ) {
-                        let intervalID = setInterval( this[0], 50, ifr );// this.flairToolbarToggle, type, this.props.linkWarningToggle, this.props.id);
-                        $( ifr ).data( 'intervalID', intervalID );
-                        console.log( 'Now watching iframe ' + intervalID );
-                    }.bind( arr ) );
-                    $( ifr ).on( 'mouseleave', function() {
-                        let intervalID = $( ifr ).data( 'intervalID' );
-                        window.clearInterval( intervalID );
-                        console.log( 'No longer watching iframe ' + intervalID );
-                    } );
-                }
-            }.bind( this ) );
-        }.bind( this ) );
-        $( '#source-popup').find( 'a, .entity' ).not( '.not_selectable' ).each( function( index,tr ) {
-            $( tr ).off( 'mousedown' );
-            $( tr ).on( 'mousedown', function( index ) {
-                let thing = index.target;
-                if ( $( thing )[0].className == 'extras' ) { thing = $( thing )[0].parentNode;} //if an extra is clicked reference the parent element
-                if ( $( thing ).attr( 'url' ) ) {  //link clicked
-                    let url = $( thing ).attr( 'url' );
-                    this.linkWarningToggle( url );
-                } else { //entity clicked
-                    let entityid = $( thing ).attr( 'data-entity-id' );
-                    let entityvalue = $( thing ).attr( 'data-entity-value' );
-                    let entityoffset = $( thing ).offset();
-                    let entityobj = $( thing );
-                    this.flairToolbarToggle( entityid, entityvalue, 'entity', entityoffset, entityobj );
-                }
-            }.bind( this ) );
-        }.bind( this ) );
-    },
-
 
     initDrag: function( e ) {
         //remove the entityPopUpMaxSizeDefault class so it can be resized.
@@ -613,7 +568,7 @@ let TabContents = React.createClass( {
         } else if ( this.props.entitytype == 'guide' ) {
             let guideurl = '/' + 'guide/' + this.props.entityid;
             return (
-                <div className='tab-content'> 
+                <div className='tab-content'>
                     <div style={{flex: '0 1 auto',marginLeft: '10px'}}>
                         <Link to={guideurl} target="_blank"><h4 id="myModalLabel">{this.props.data != null ? <span><span><EntityValue value={this.props.entityid} errorToggle={this.props.errorToggle} /></span><div><EntityValue value={this.props.data.applies_to} errorToggle={this.props.errorToggle} /></div></span> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h4></Link>
                     </div>
