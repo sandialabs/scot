@@ -6,7 +6,7 @@ use warnings;
 
 use lib '../../lib';
 #use lib '../../../lib';
-#use lib '../../../Scot-Internal-Modules/lib';
+use lib '../../../Scot-Internal-Modules/lib';
 #use lib '../../../../Scot-Internal-Modules/lib';
 
 use Safe;
@@ -130,9 +130,11 @@ sub BUILD {
         my $config  = $href->{config};
 
         print "Building module $class\n" if $self->debug;
+        $log->debug("Building module $class");
 
         unless (defined $config) {
             warn "No Config for  $class!\n";
+            $log->warn("No config for module $class");
         }
 
         require_module($class);
@@ -145,6 +147,7 @@ sub BUILD {
         my $instance    = $class->new($instance_vars);
 
         unless (defined $instance) {
+            $log->error("Creating class $class failed!");
             die "Creating $class instance FAILED!\n";
         }
 
@@ -323,8 +326,10 @@ sub get_config_item {
     my $meta    = $self->meta;
     my $method  = $meta->get_method($name);
 
-    if ( defined $method && ref($method) eq "Class::MOP::Class") {
-        return $method->execute;
+    $log->trace("method: ",{filter=>\&Dumper, value => $method});
+
+    if ( defined $method ) {
+        return $self->$name;
     }
 
     $log->error("The env obj does not have an accessor for $name");

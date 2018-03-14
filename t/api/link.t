@@ -173,11 +173,20 @@ $t->get_ok("/scot/api/v2/link/$linkid")
 
 cmp_deeply(\@linkedvertices, @gotvertices, "link created correctly");
 
-#$t->get_ok("/scot/api/v2/alertgroup/$agid/link")
-#  ->status_is(200);
-
+$t->delete_ok(
+    '/scot/api/v2/link',
+    { Accept => '*/*' },
+    json => {
+        vertices    => \@linkedvertices
+    }
+)->status_is(200);
 
  say Dumper($t->tx->res->json);
+
+$t->get_ok("/scot/api/v2/link/$linkid")
+  ->status_is(404);
+
+# say Dumper($t->tx->res->json);
 done_testing();
 exit 0;
 

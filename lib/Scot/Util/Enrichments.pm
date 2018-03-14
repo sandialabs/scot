@@ -55,7 +55,7 @@ sub BUILD {
         my $href    = $confs->{$name};
         my $type    = $href->{type};
 
-        $log->debug("Type is $type");
+        $log->trace("Type is $type");
 
         if ( $type eq "native" ) {
 
@@ -69,7 +69,7 @@ sub BUILD {
 
             $config->{log}  = $log;
 
-            $log->debug("Module $module with config ",{filter=>\&Dumper, value=>$config});
+            $log->trace("Module $module with config ",{filter=>\&Dumper, value=>$config});
 
             require_module($module);
             $meta->add_attribute(
@@ -103,7 +103,7 @@ sub BUILD {
         }
     }
     $meta->make_immutable;
-    $log->debug("Enrichment is ",{filter=>\&Dumper,value=>$self});
+    $log->trace("Enrichment is ",{filter=>\&Dumper,value=>$self});
 }
 
 sub enrich {

@@ -22,6 +22,12 @@ use Data::Dumper;
 
 use Moose;
 
+has env     => (
+    is      => 'ro',
+    isa     => 'Scot::Env',
+    required    => 1,
+);
+
 has config  => (
     is          => 'ro',
     isa         => 'HashRef',
@@ -55,25 +61,9 @@ has log => (
 );
 
 sub _build_log {
-    my $self        = shift;
-    my $config      = $self->config;    # from scot::role::configurable
-    my $logconfig   = $config->{log};
-
-    print "in Scot::Util config is ".Dumper($logconfig)."\n";
-
-
-    unless ( $logconfig ) {
-        print "no logconfig, using defaults...\n";
-        $logconfig  = {
-            logger_name     => 'SCOT',
-            layout          => '%d %7p [%P] %15F{1}: %4L %m%n',
-            appender_name   => 'scot_log',
-            logfile         => '/var/log/scot/scot.log',
-            log_level       => 'DEBUG',
-        };
-    }
-    my $logfactory = Scot::Util::LoggerFactory->new($logconfig);
-    return $logfactory->get_logger;
+    my $self    = shift;
+    my $env     = $self->env;
+    return $env->log;
 }
 
 1;

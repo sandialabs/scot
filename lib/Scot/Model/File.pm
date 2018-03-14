@@ -18,6 +18,7 @@ extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
     Scot::Role::Permission
+    Scot::Role::Sharable
     Scot::Role::Target
     Scot::Role::Times
     Scot::Role::TLP
