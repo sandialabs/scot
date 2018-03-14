@@ -95,6 +95,8 @@ override api_create => sub {
     my @requests        = $self->split_alertgroups($href);
     my @alertgroups     = ();
 
+    $log->debug("REQUEST BE LIKE: ",{filter=>\&Dumper, value =>\@requests});
+
     REQUEST:
     foreach my $request (@requests) {
         my $tags        = $request->{request}->{json}->{tag};

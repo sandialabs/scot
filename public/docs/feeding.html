@@ -113,32 +113,32 @@ password, or an apikey from SCOT.  Then you will have to configure your detector
 Alternatively, you could write your own wrapper to do the REST calls.</p>
 <p>Here&#8217;s a sample curl command to insert an alertgroup:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Authorization: apikey $SCOT_KEY&quot;</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Content-Type: application/json&quot;</span> <span class="o">-</span><span class="n">X</span> <span class="n">POST</span> <span class="o">-</span><span class="n">d</span> <span class="s1">&#39;{</span>
-            <span class="n">source</span>  <span class="p">:</span> <span class="p">[</span> <span class="s2">&quot;email_examinr&quot;</span> <span class="p">],</span>
-            <span class="n">subject</span> <span class="p">:</span> <span class="s2">&quot;External HREF in Email&quot;</span><span class="p">,</span>
-            <span class="n">tag</span>     <span class="p">:</span> <span class="p">[</span><span class="s2">&quot;email href&quot;</span> <span class="p">],</span>
-            <span class="n">groups</span>  <span class="p">:</span> <span class="p">{</span>
-                <span class="n">read</span><span class="p">:</span> <span class="p">[</span> <span class="s2">&quot;wg-scot-ir&quot;</span> <span class="p">],</span>
-                <span class="n">modify</span><span class="p">:</span> <span class="p">[</span> <span class="s2">&quot;wg-scot-ir&quot;</span> <span class="p">],</span>
+            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">[</span> <span class="s2">&quot;email_examinr&quot;</span> <span class="p">],</span>
+            <span class="s2">&quot;subject&quot;</span><span class="p">:</span> <span class="s2">&quot;External HREF in Email&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tag&quot;</span><span class="p">:</span> <span class="p">[</span> <span class="s2">&quot;email href&quot;</span> <span class="p">],</span>
+            <span class="s2">&quot;groups&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;read&quot;</span><span class="p">:</span> <span class="p">[</span> <span class="s2">&quot;wg-scot-ir&quot;</span> <span class="p">],</span>
+                <span class="s2">&quot;modify&quot;</span><span class="p">:</span> <span class="p">[</span> <span class="s2">&quot;wg-scot-ir&quot;</span> <span class="p">],</span>
             <span class="p">},</span>
-            <span class="n">columns</span>   <span class="p">:</span> <span class="p">[</span> <span class="s2">&quot;MAIL_FROM&quot;</span><span class="p">,</span> <span class="s2">&quot;MAIL_TO&quot;</span><span class="p">,</span> <span class="s2">&quot;HREFS&quot;</span><span class="p">,</span> <span class="s2">&quot;SUBJECT&quot;</span> <span class="p">],</span>
-            <span class="n">data</span>      <span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;columns&quot;</span><span class="p">:</span> <span class="p">[</span> <span class="s2">&quot;MAIL_FROM&quot;</span><span class="p">,</span> <span class="s2">&quot;MAIL_TO&quot;</span><span class="p">,</span> <span class="s2">&quot;HREFS&quot;</span><span class="p">,</span> <span class="s2">&quot;SUBJECT&quot;</span> <span class="p">],</span>
+            <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">[</span>
                 <span class="p">{</span>
-                    <span class="n">MAIL_FROM</span>   <span class="p">:</span> <span class="s2">&quot;amlegit\@partner.net&quot;</span><span class="p">,</span>
-                    <span class="n">MAIL_TO</span>     <span class="p">:</span> <span class="s2">&quot;br549\@watermellon.com&quot;</span><span class="p">,</span>
-                    <span class="n">HREFS</span>       <span class="p">:</span> <span class="s2">&quot;http://spmiller.org/news/please_read.html&quot;</span><span class="p">,</span>
-                    <span class="n">SUBJECT</span>     <span class="p">:</span> <span class="s2">&quot;Groundbreaking research!&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;MAIL_FROM&quot;</span><span class="p">:</span> <span class="s2">&quot;amlegit@partner.net&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;MAIL_TO&quot;</span><span class="p">:</span> <span class="s2">&quot;br549@watermellon.com&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;HREFS&quot;</span><span class="p">:</span> <span class="s2">&quot;http://spmiller.org/news/please_read.html&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;SUBJECT&quot;</span><span class="p">:</span> <span class="s2">&quot;Groundbreaking research!&quot;</span>
                 <span class="p">},</span>
                 <span class="p">{</span>
-                    <span class="n">MAIL_FROM</span>   <span class="p">:</span> <span class="s2">&quot;scbrb\@aa.edu&quot;</span><span class="p">,</span>
-                    <span class="n">MAIL_TO</span>     <span class="p">:</span> <span class="s2">&quot;tbruner\@watermellon.com&quot;</span><span class="p">,</span>
-                    <span class="n">HREFS</span>       <span class="p">:</span> <span class="s2">&quot;https://www.aa.edu/athletics/schedule&quot;</span><span class="p">,</span>
-                    <span class="n">SUBJECT</span>     <span class="p">:</span> <span class="s2">&quot;Schedule for next week&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;MAIL_FROM&quot;</span><span class="p">:</span> <span class="s2">&quot;scbrb@aa.edu&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;MAIL_TO&quot;</span><span class="p">:</span> <span class="s2">&quot;tbruner@watermellon.com&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;HREFS&quot;</span><span class="p">:</span> <span class="s2">&quot;https://www.aa.edu/athletics/schedule&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;SUBJECT&quot;</span><span class="p">:</span> <span class="s2">&quot;Schedule for next week&quot;</span>
                 <span class="p">},</span>
                 <span class="p">{</span>
-                    <span class="n">MAIL_FROM</span>   <span class="p">:</span> <span class="s2">&quot;bubba\@bbn.com&quot;</span><span class="p">,</span>
-                    <span class="n">MAIL_TO</span>     <span class="p">:</span> <span class="s2">&quot;fmilszx\@watermellon.com&quot;</span><span class="p">,</span>
-                    <span class="n">HREFS</span>       <span class="p">:</span> <span class="s2">&quot;https://youtu.be/JAUoeqvedMo&quot;</span><span class="p">,</span>
-                    <span class="n">SUBJECT</span>     <span class="p">:</span> <span class="s2">&quot;Can not wait!&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;MAIL_FROM&quot;</span><span class="p">:</span> <span class="s2">&quot;bubba@bbn.com&quot;</span>
+                    <span class="s2">&quot;MAIL_TO&quot;</span><span class="p">:</span> <span class="s2">&quot;fmilszx@watermellon.com&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;HREFS&quot;</span><span class="p">:</span> <span class="s2">&quot;https://youtu.be/JAUoeqvedMo&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;SUBJECT&quot;</span><span class="p">:</span> <span class="s2">&quot;Can not wait!&quot;</span>
                 <span class="p">}</span>
             <span class="p">],</span>
     <span class="p">}</span><span class="s1">&#39; https://scot.yourdomain.com/scot/api/v2/alertgroup</span>
