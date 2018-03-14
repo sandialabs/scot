@@ -74,32 +74,32 @@ Alternatively, you could write your own wrapper to do the REST calls.
 Here's a sample curl command to insert an alertgroup::
 
     curl -H "Authorization: apikey $SCOT_KEY" -H "Content-Type: application/json" -X POST -d '{
-                source  : [ "email_examinr" ],
-                subject : "External HREF in Email",
-                tag     : ["email href" ],
-                groups  : {
-                    read: [ "wg-scot-ir" ],
-                    modify: [ "wg-scot-ir" ],
+                "source": [ "email_examinr" ],
+                "subject": "External HREF in Email",
+                "tag": [ "email href" ],
+                "groups": {
+                    "read": [ "wg-scot-ir" ],
+                    "modify": [ "wg-scot-ir" ],
                 },
-                columns   : [ "MAIL_FROM", "MAIL_TO", "HREFS", "SUBJECT" ],
-                data      : [
+                "columns": [ "MAIL_FROM", "MAIL_TO", "HREFS", "SUBJECT" ],
+                "data": [
                     {
-                        MAIL_FROM   : "amlegit\@partner.net",
-                        MAIL_TO     : "br549\@watermellon.com",
-                        HREFS       : "http://spmiller.org/news/please_read.html",
-                        SUBJECT     : "Groundbreaking research!",
+                        "MAIL_FROM": "amlegit@partner.net",
+                        "MAIL_TO": "br549@watermellon.com",
+                        "HREFS": "http://spmiller.org/news/please_read.html",
+                        "SUBJECT": "Groundbreaking research!"
                     },
                     {
-                        MAIL_FROM   : "scbrb\@aa.edu",
-                        MAIL_TO     : "tbruner\@watermellon.com",
-                        HREFS       : "https://www.aa.edu/athletics/schedule",
-                        SUBJECT     : "Schedule for next week",}
+                        "MAIL_FROM": "scbrb@aa.edu",
+                        "MAIL_TO": "tbruner@watermellon.com",
+                        "HREFS": "https://www.aa.edu/athletics/schedule",
+                        "SUBJECT": "Schedule for next week"
                     },
                     {
-                        MAIL_FROM   : "bubba\@bbn.com",
-                        MAIL_TO     : "fmilszx\@watermellon.com",
-                        HREFS       : "https://youtu.be/JAUoeqvedMo",
-                        SUBJECT     : "Can not wait!",
+                        "MAIL_FROM": "bubba@bbn.com"
+                        "MAIL_TO": "fmilszx@watermellon.com",
+                        "HREFS": "https://youtu.be/JAUoeqvedMo",
+                        "SUBJECT": "Can not wait!"
                     }
                 ],
         }' https://scot.yourdomain.com/scot/api/v2/alertgroup

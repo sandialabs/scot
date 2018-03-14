@@ -565,7 +565,11 @@ to resart SCOT for any changes to be recognized.</p>
 486
 487
 488
-489</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+489
+490
+491
+492
+493</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
     
     time_zone   =&gt; &#39;America/Denver&#39;,
     # scot version
@@ -607,6 +611,10 @@ to resart SCOT for any changes to be recognized.</p>
     default_share_policy =&gt; 1,
 
     share_after_time    =&gt; 10, # minutes
+
+    stomp_host  =&gt; &quot;localhost&quot;,
+    stomp_port  =&gt; 61613,
+    topic       =&gt; &quot;/topic/scot&quot;,
 
     # mojo defaults are values for the mojolicious startup
     mojo_defaults   =&gt; {

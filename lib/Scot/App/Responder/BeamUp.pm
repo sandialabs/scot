@@ -58,7 +58,10 @@ has scot_client => (
 sub _build_scot_client {
     my $self    = shift;
     my $config  = $self->env->scot_client;
-    my $client  = Scot::Util::ScotClient->new({config => $config});
+    my $client  = Scot::Util::ScotClient->new(
+        config => $config,
+        env    => $self->env,
+    );
     return $client;
 }
 
@@ -104,7 +107,7 @@ sub can_share {
     my $obj     = $self->get_obj($type, $id);
 
     if ( $obj->meta->does_role("Scot::Role::Sharable") ) {
-        if ( $obj->is_sharable ) {
+        if ( $obj->is_shareable ) {
             if ( $obj->tlp_permits_sharing ) {
                 return 1;
             }
@@ -140,27 +143,35 @@ sub beam {
 
         $log->debug("sharing is permitted");
 
-        my $uri = "/scot/api/v2/" . $type;
+        my $endpt =  $type;
         my $href    = $obj->as_hash;
+
         
         if (! defined $href->{location} ) {
             $href->{location} = $location;
         }
 
+        $log->debug("object hash is ",{filter=>\&Dumper,value=>$href});
+
         my $json;
 
-        if ( $action eq "create" ) {
-            $json = $client->post($uri, $href);
+        $log->trace("action is $action");
+
+        if ( $action eq "created" ) {
+            $json = $client->post($endpt, $href);
+            $log->trace("returned json ",{filter=>\&Dumper,value=>$json});
             return $id;
         }
-        elsif ( $action eq "update" ) {
-            $uri .= "/$id";
-            $json = $client->put($uri, $href);
+        elsif ( $action eq "updated" ) {
+            $endpt .= "/$id";
+            $json = $client->put($endpt, $href);
+            $log->trace("returned json ",{filter=>\&Dumper,value=>$json});
             return $id;
         }
         elsif ( $action eq "delete" ) {
-            $uri .= "/$id";
-            $json = $client->delete($uri,$href);
+            $endpt .= "/$id";
+            $json = $client->delete($endpt,$href);
+            $log->trace("returned json ",{filter=>\&Dumper,value=>$json});
             return $id;
         }
         else {
