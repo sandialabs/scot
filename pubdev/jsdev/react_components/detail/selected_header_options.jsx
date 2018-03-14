@@ -253,6 +253,9 @@ let SelectedHeaderOptions = React.createClass( {
             $(y).find('blockquote').each( function( index, block) {
                 $(block).css({'max-height': '5000px'})
             })
+            $(y).find('pre').each( function( index, pre) {
+                $(pre).css({'max-height': '5000px', 'word-wrap': 'break-word' })
+            })
         });
         setTimeout( function() {
             this.forceUpdate();
