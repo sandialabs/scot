@@ -640,6 +640,12 @@ other events.
             ->to    ('controller-api#breaklink')
             ->name  ('delete');
 
+    # delete via params, only supported for links
+    $scot   ->route ('/api/v2/:thing')
+            ->via   ('delete')
+            ->to    ('controller-api#delete')
+            ->name  ('delete-link');
+
 =pod
 
 @api {delete} /scot/api/v2/:thing/:id Delete Record

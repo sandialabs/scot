@@ -1,6 +1,7 @@
 package Scot::Parser::Generic;
 
 use lib '../../../lib';
+use HTML::TreeBuilder;
 use Moose;
 
 extends 'Scot::Parser';
@@ -18,14 +19,26 @@ sub parse_message {
     my $self    = shift;
     my $href    = shift;
     my $log     = $self->log;
+    my $body;
+    if ( defined $href->{body_plain} ) {
+        $body   = $href->{body_plain};
+    }
+    else {
+        my $html    = $href->{body_html};
+        my $tree    = HTML::TreeBuilder->new;
+        $tree->parse_content($html);
+        $body   = $tree->as_text;
+    }
+
     my %json    = (
         subject     => $href->{subject},
         message_id  => $href->{message_id},
         body_plain  => $href->{body_plain},
-        body        => $href->{body_html},
+        body        => $body,
         data        => [{
-            alert   => $href->{body_plain},
-            columns => [qw(alert)],
+            sender  => $href->{from},
+            alert   => $body,
+            columns => [qw(sender alert)],
         }],
         source      => [ qw(email generic) ],
     );

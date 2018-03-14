@@ -453,6 +453,7 @@ sub email_action {
     my $match   = shift;
     my $dbhref  = shift;
     my ($user, $domain) = split(/\@/,$match);
+    $domain = $self->deobsfucate_ipdomain($domain);
     my $dspan   = $self->span($domain, "domain");
     push @{$dbhref->{entities}}, {
         value   => lc($domain),

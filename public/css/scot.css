@@ -148,9 +148,10 @@
     }
 
     .entry-header {
-    background-color: #DDD;
+        background-color: #DDD;
         box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.9);
-    border-radius: 5px 5px 0px 0px;
+        border-radius: 5px 5px 0px 0px;
+        display: flow-root;
     }
 
     .entry-header-inner, .entry-body-inner {
@@ -838,8 +839,10 @@
     }
 
     .signature-entry-header-inner {
-    height:25px;
+    height: 25px;
+    display: inline-table;
     }
+
     .not_saved_signature_entry {
         width: 100%;
         display: block;
@@ -861,7 +864,10 @@
     .signature_quality_color {
         color: #f0ad4e;
     }
-
+    
+    .list-buttons {
+        display: inline-flex;
+    }
 }
 
 /* PRINTING */
@@ -1087,5 +1093,9 @@
         cursor:pointer;
         top:5px;
         width:20px;
+    }
+
+    #list-view-container {
+        display: none;
     }
 }    

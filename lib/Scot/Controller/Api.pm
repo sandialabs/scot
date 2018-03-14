@@ -291,6 +291,24 @@ sub post_list_process {
             push @records, $href;
         }
     }
+    elsif ( $thing      eq "entry" && $req_href->{task_search} ) {
+        while ( my $obj = $cursor->next ) {
+            my $href    = $obj->as_hash;
+            my $target  = $href->{target};
+            my $tobj;
+            if ( ucfirst($target->{type}) eq "Alert" ) {
+                my $aobj    = $self->env->mongo->collection(ucfirst($target->{type}))->find_iid($target->{id});
+                my $agid    = $aobj->alertgroup;
+                $tobj       = $self->env->mongo->collection('Alertgroup')->find_iid($agid);
+            }
+            else {
+                $tobj    = $self->env->mongo->collection(ucfirst($target->{type}))->find_iid($target->{id});
+            }
+            my $subject = $tobj->subject // '';
+            $href->{subject} = $subject;
+            push @records, $href;
+        }
+    }
     elsif ( $thing      eq "alertgroup" ) {
         while ( my $obj = $cursor->next ) {
             my $agid = $obj->id;
@@ -1354,11 +1372,37 @@ sub delete {
     try {
         my $req_href    = $self->get_request_params;
         my $collection  = $self->get_collection_req($req_href);
-        if ($self->id_is_invalid($req_href)) { 
-            die "Invalid id"; 
+
+        $log->debug("request is ",{filter=>\&Dumper, value=>$req_href});
+
+        my $object;
+        if (defined $req_href->{request}->{json}->{vertices}) {
+            $log->debug("Deleting Link by vertices");
+            # this will occurr during a delink operation
+            # json will be {vertices:[ {id:a,type:x},{id:b,type:y} ]}
+            my ($a,$b)  = @{$req_href->{request}->{json}->{vertices}};
+
+            if ( defined $a and defined $b and ref($a) eq "HASH" and ref($b) eq "HASH" ) {
+                my $match   = {
+                    vertices    => {
+                        '$all'  => [
+                            { '$elemMatch'  => $a },
+                            { '$elemMatch'  => $b },
+                        ]
+                    }
+                };
+                $log->debug("looking for link matching: ",{filter=>\&Dumper, value=>$match});
+                $object = $collection->find_one($match);
+            }
         }
-        my $id          = $req_href->{id};
-        my $object      = $collection->find_iid($id);
+        else {
+            if ($self->id_is_invalid($req_href)) { 
+                die "Invalid id"; 
+            }
+            my $id          = $req_href->{id};
+            $object      = $collection->find_iid($id);
+        }
+
         if ( ! defined $object ) {
             die "Object Not Found";
         }
@@ -1513,6 +1557,9 @@ sub get_request_params  {
     my $self    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
+
+    my $mreq    = $self->req;
+    $log->debug("mojolicious request obj: ",{filter=>\&Dumper, value=>$mreq});
 
     my $params  = $self->req->params->to_hash;
     my $json    = $self->req->json;

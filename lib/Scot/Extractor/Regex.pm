@@ -550,7 +550,7 @@ sub _build_EMAIL {
                 (?!\d+\.\d+)
                 (?=.{4,255})
                 (?:
-                    (?:[a-zA-Z0-9-]{1,63}(?<!-)\.)+
+                    (?:[a-zA-Z0-9-]{1,63}(?<!-)\(*\[*\{*\.\}*\]*\)*)+
                     [a-zA-Z0-9-]{2,63}
                 )
             )
@@ -560,7 +560,7 @@ sub _build_EMAIL {
     return {
         regex   => $regex,
         type    => "email",
-        order   => 5,
+        order   => 9,
         options => { multiword => "no" },
     };
 }
@@ -634,6 +634,31 @@ sub _build_COMMON_FILE_EXT {
     };
 }
 
+has regex_python_file_ext => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_PYTHON_FILE_EXT',
+);
+
+sub _build_PYTHON_FILE_EXT {
+    my $self    = shift;
+    my $regex   = qr{
+        \b
+        [0-9a-zA-Z_\-\.]+
+        \.
+        py
+        \b
+    }xims;
+    return {
+        regex   => $regex,
+        type    => "filename",
+        order   => 9,
+        options => { multiword => "no" },
+    };
+}
+
 has regex_appkey => (
     is          => 'ro',
     isa         => 'HashRef',
@@ -682,6 +707,31 @@ sub _build_UUID1 {
         type    => "uuid1",
         order   => 20,
         options => { multiword => "no" },
+    };
+}
+
+has regex_angle_bracket_message_id => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_angle_bracket_message_id',
+);
+
+sub _build_angle_bracket_message_id {
+    my $self    = shift;
+    my $regex   = qr{
+        (
+        (<|&lt;)
+        .*?
+        (>|&gt;)
+        )
+    }xms;
+    return {
+        regex   => $regex,
+        type    => "message_id",
+        order   => 5,
+        options => { multiword => "yes" },
     };
 }
 

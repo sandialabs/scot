@@ -9,11 +9,13 @@ let DetailDataStatus        = require( '../components/detail_data_status.jsx' );
 let Link                    = require( 'react-router-dom' ).Link;
 let Store                   = require( '../activemq/store.jsx' );
 let Marker                  = require( '../components/marker.jsx' ).default;
-
+let Frame                   = require( 'react-frame' );
 let startX;
 let startY;
 let startWidth;
 let startHeight;
+let AddFlair                = require( '../components/add_flair.jsx' ).AddFlair;
+
 
 let EntityDetail = React.createClass( {
     getInitialState: function() {
@@ -45,71 +47,113 @@ let EntityDetail = React.createClass( {
             isMounted: false,
         };
     },
-    componentDidMount: function () {
+    componentWillMount: function () {
         this.setState( {isMounted: true} );
         let currentTabArray = this.state.tabs;
         let valueClicked = this.props.entityvalue;
-        if ( this.state.entityid == undefined ) {
-            $.ajax( {
-                type: 'GET',
-                url: 'scot/api/v2/' + this.props.entitytype + '/byname',
-                data: {name:valueClicked},
-                success: function( result ) {
-                    let entityid = result.id;
-                    if ( this.state.isMounted ) {
-                        this.setState( {entityid:entityid} );
-                        $.ajax( {
-                            type: 'GET',
-                            url: 'scot/api/v2/' + this.props.entitytype + '/' + entityid,
-                            success: function( result ) {
-                                //this.setState({entityData:result})
-                                let newTab = {data:result, entityid:entityid, entitytype:this.props.entitytype, valueClicked:result.value};
-                                currentTabArray.push( newTab );
-                                if ( this.state.isMounted ) {
-                                    let entityidsarray = [];
-                                    entityidsarray.push( entityid );
-                                    this.setState( {tabs:currentTabArray,currentKey:entityid,initialLoad:true,processedIds:entityidsarray} );
-                                    Store.storeKey( entityid );
-                                    Store.addChangeListener( this.updated );
-                                }
-                            }.bind( this ),
-                            error: function( data ) {
-                                this.props.errorToggle( 'failed to get entity detail information', data );
-                            }.bind( this )
-                        } );
-                    }
-                }.bind( this ),
-                error: function( data ) {
-                    this.props.errorToggle( 'failed to get entity detail id information ', data );
-                }.bind( this )
-            } );
-        } else {
-            let id = this.state.entityid;
-            if ( !Array.isArray( id ) ) { 
-                id = [ parseInt( id ) ];       
-            }
-            
-            for ( let i=0; i < id.length; i++ ) {
-                $.ajax( {
+        if (this.props.entitytype != 'source') {
+            if (this.state.entityid == undefined) {
+                $.ajax({
                     type: 'GET',
-                    url: 'scot/api/v2/' + this.props.entitytype + '/' + id[i],
-                    success: function( result ) {
-                        //this.setState({entityData:result})
-                        let newTab = {data:result, entityid:result.id, entitytype:this.props.entitytype, valueClicked:result.value};
-                        currentTabArray.push( newTab );
-                        if ( this.state.isMounted ) {
-                            let entityidsarray = [];
-                            entityidsarray.push( result.id );
-                            this.setState( {tabs:currentTabArray,currentKey:result.id,initialLoad:true, processedIds:entityidsarray} );
-                            Store.storeKey( id[i] );
-                            Store.addChangeListener( this.updated );
+                    url: 'scot/api/v2/' + this.props.entitytype + '/byname',
+                    data: {name: valueClicked},
+                    success: function (result) {
+                        let entityid = result.id;
+                        if (this.state.isMounted) {
+                            this.setState({entityid: entityid});
+                            $.ajax({
+                                type: 'GET',
+                                url: 'scot/api/v2/' + this.props.entitytype + '/' + entityid,
+                                success: function (result) {
+                                    //this.setState({entityData:result})
+                                    let newTab = {
+                                        data: result,
+                                        entityid: entityid,
+                                        entitytype: this.props.entitytype,
+                                        valueClicked: result.value
+                                    };
+                                    currentTabArray.push(newTab);
+                                    if (this.state.isMounted) {
+                                        let entityidsarray = [];
+                                        entityidsarray.push(entityid);
+                                        this.setState({
+                                            tabs: currentTabArray,
+                                            currentKey: entityid,
+                                            initialLoad: true,
+                                            processedIds: entityidsarray
+                                        });
+                                        Store.storeKey(entityid);
+                                        Store.addChangeListener(this.updated);
+                                    }
+                                }.bind(this),
+                                error: function (data) {
+                                    this.props.errorToggle('failed to get entity detail information', data);
+                                }.bind(this)
+                            });
                         }
-                    }.bind( this ),
-                    error: function( data ) {
-                        this.props.errorToggle( 'failed to get entity detail information', data );
-                    }.bind( this )
-                } );
+                    }.bind(this),
+                    error: function (data) {
+                        this.props.errorToggle('failed to get entity detail id information ', data);
+                    }.bind(this)
+                });
+            } else {
+                let id = this.state.entityid;
+                if (!Array.isArray(id)) {
+                    id = [parseInt(id)];
+                }
+
+                for (let i = 0; i < id.length; i++) {
+                    $.ajax({
+                        type: 'GET',
+                        url: 'scot/api/v2/' + this.props.entitytype + '/' + id[i],
+                        success: function (result) {
+                            //this.setState({entityData:result})
+                            let newTab = {
+                                data: result,
+                                entityid: result.id,
+                                entitytype: this.props.entitytype,
+                                valueClicked: result.value
+                            };
+                            currentTabArray.push(newTab);
+                            if (this.state.isMounted) {
+                                let entityidsarray = [];
+                                entityidsarray.push(result.id);
+                                this.setState({
+                                    tabs: currentTabArray,
+                                    currentKey: result.id,
+                                    initialLoad: true,
+                                    processedIds: entityidsarray
+                                });
+                                Store.storeKey(id[i]);
+                                Store.addChangeListener(this.updated);
+                            }
+                        }.bind(this),
+                        error: function (data) {
+                            this.props.errorToggle('failed to get entity detail information', data);
+                        }.bind(this)
+                    });
+                }
             }
+        } else {
+            let newTab = {
+                data: this.props.data,
+                entityid: this.props.entityid,
+                entitytype: this.props.entitytype,
+                valueClicked: this.props.entitytype
+            };
+            currentTabArray.push(newTab);
+            // if (this.state.isMounted) {
+            let entityidsarray = [];
+            entityidsarray.push(this.props.entityid);
+            this.setState({
+                tabs: currentTabArray,
+                currentKey: parseInt( this.props.entityid),
+                initialLoad: true,
+                processedIds: entityidsarray
+            });
+            Store.storeKey(this.props.entityid);
+            Store.addChangeListener(this.updated);
+            // }
         }
         //Esc key closes popup
         function escHandler( event ){
@@ -126,8 +170,60 @@ let EntityDetail = React.createClass( {
         $( document ).keydown( escHandler.bind( this ) );
         this.containerHeightAdjust();
         window.addEventListener( 'resize',this.containerHeightAdjust );
-
+        this.onLoad();
     },
+
+    onLoad: function() {
+        if ( document.getElementById( 'iframe_'+this.props.id ) != undefined ){
+            if ( document.getElementById( 'iframe_'+this.props.id ).contentDocument.readyState === 'complete' ) {
+                let ifr = $( '#iframe_'+this.props.id );
+                let ifrContents = $( ifr ).contents();
+                let ifrContentsHead = $( ifrContents ).find( 'head' );
+                if ( ifrContentsHead ) {
+                    if ( !$( ifrContentsHead ).find( 'link' ) ) {
+                        ifrContentsHead.append( $( '<link/>', {rel: 'stylesheet', href: 'css/sandbox.css', type: 'text/css'} ) );
+                    }
+                }
+                setTimeout( function() {
+                    if ( document.getElementById( 'iframe_'+this.props.id ) != undefined ) {
+                        document.getElementById( 'iframe_'+this.props.id ).contentWindow.requestAnimationFrame( function() {
+                            let newheight;
+                            newheight = document.getElementById( 'iframe_'+this.props.id ).contentWindow.document.body.scrollHeight;
+                            newheight = newheight + 'px';
+                            if ( this.state.height != newheight ) {
+                                this.setState( {height:newheight} );
+                            }
+                        }.bind( this ) );
+                    }
+                }.bind( this ),250 );
+                //}
+            } else {
+                setTimeout( this.onLoad,0 );
+            }
+        }
+    },
+
+
+    componentDidMount: function(){
+        $( 'iframe' ).each( function( index,ifr ) {
+            //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
+            ifr.contentWindow.requestAnimationFrame(function () {
+                if (ifr.contentDocument != null) {
+                    let ifrContents = $(ifr).contents();
+                    //This makes all href point to blank so they don't reload the iframe
+                    $(ifr.contentDocument.body).find('a').attr('target', '_blank');
+                    //Copies href to a new attribute, url, before we make href an anchor (so it doesn't go anywhere when clicked)
+                    ifrContents.find('a').each(function (index, a) {
+                        let url = $(a).attr('href');
+                        $(a).attr('url', url);
+                    }.bind(this));
+                }
+            });
+        });
+        this.props.watcher();
+    },
+
+
     componentWillUnmount: function() {
         this.setState( {isMounted: false} );
         //removes escHandler bind
@@ -139,61 +235,97 @@ let EntityDetail = React.createClass( {
         entityPopUpWidth = width;*/
     },
     componentWillReceiveProps: function( nextProps ) {
+        this.onLoad();
         let checkForInitialLoadComplete = {
             checkForInitialLoadComplete: function() {
                 let addNewEntity = { //Initializing Function for adding an entry to be used later.
                     addNewEntity: function() {
                         let currentTabArray = this.state.tabs;
-                        if ( nextProps.entityid == undefined ) {
-                            $.ajax( {
-                                type: 'GET',
-                                url: 'scot/api/v2/' + nextProps.entitytype + '/byname',
-                                data: {name:nextProps.entityvalue},
-                                success: function( result ) {
-                                    let entityid = result.id;
-                                    if ( this.state.isMounted ) {
-                                        this.setState( {entityid:entityid} );
-                                        $.ajax( {
-                                            type: 'GET',
-                                            url: 'scot/api/v2/' + nextProps.entitytype + '/' + entityid,
-                                            success: function( result ) {
-                                                let newTab = {data:result, entityid:entityid, entitytype:nextProps.entitytype, valueClicked:nextProps.entityvalue};
-                                                currentTabArray.push( newTab );
-                                                if ( this.state.isMounted ) {
-                                                    this.setState( {tabs:currentTabArray,currentKey:nextProps.entityid} );
-                                                    Store.storeKey( nextProps.entityid );
-                                                    Store.addChangeListener( this.updated );
-                                                }
-                                            }.bind( this ),
-                                            error: function( data ) {
-                                                this.props.errorToggle( 'failed to get entity detail information', data );
-                                            }.bind( this )
-                                        } );
-                                    }
-                                }.bind( this ),
-                                error: function( data ) {
-                                    this.props.errorToggle( 'failed to get entity id detail information', data );
-                                }.bind( this )
-                            } );
+                        if (nextProps.entitytype != 'source') {
+                            if (nextProps.entityid == undefined) {
+                                $.ajax({
+                                    type: 'GET',
+                                    url: 'scot/api/v2/' + nextProps.entitytype + '/byname',
+                                    data: {name: nextProps.entityvalue},
+                                    success: function (result) {
+                                        let entityid = result.id;
+                                        if (this.state.isMounted) {
+                                            this.setState({entityid: entityid});
+                                            $.ajax({
+                                                type: 'GET',
+                                                url: 'scot/api/v2/' + nextProps.entitytype + '/' + entityid,
+                                                success: function (result) {
+                                                    let newTab = {
+                                                        data: result,
+                                                        entityid: entityid,
+                                                        entitytype: nextProps.entitytype,
+                                                        valueClicked: nextProps.entityvalue
+                                                    };
+                                                    currentTabArray.push(newTab);
+                                                    if (this.state.isMounted) {
+                                                        this.setState({
+                                                            tabs: currentTabArray,
+                                                            currentKey: nextProps.entityid
+                                                        });
+                                                        Store.storeKey(nextProps.entityid);
+                                                        Store.addChangeListener(this.updated);
+                                                    }
+                                                }.bind(this),
+                                                error: function (data) {
+                                                    this.props.errorToggle('failed to get entity detail information', data);
+                                                }.bind(this)
+                                            });
+                                        }
+                                    }.bind(this),
+                                    error: function (data) {
+                                        this.props.errorToggle('failed to get entity id detail information', data);
+                                    }.bind(this)
+                                });
+                            } else {
+                                $.ajax({
+                                    type: 'GET',
+                                    url: 'scot/api/v2/' + nextProps.entitytype + '/' + nextProps.entityid,
+                                    success: function (result) {
+                                        let newTab = {
+                                            data: result,
+                                            entityid: nextProps.entityid,
+                                            entitytype: nextProps.entitytype,
+                                            valueClicked: nextProps.entityvalue
+                                        };
+                                        currentTabArray.push(newTab);
+                                        if (this.state.isMounted) {
+                                            this.setState({tabs: currentTabArray, currentKey: nextProps.entityid});
+                                            Store.storeKey(nextProps.entityid);
+                                            Store.addChangeListener(this.updated);
+                                        }
+                                    }.bind(this),
+                                    error: function (data) {
+                                        this.props.errorToggle('failed to get entity detail information', data);
+                                    }.bind(this)
+                                });
+                            }
                         } else {
-                            $.ajax( {
-                                type: 'GET',
-                                url: 'scot/api/v2/' + nextProps.entitytype + '/' + nextProps.entityid,
-                                success: function( result ) {
-                                    let newTab = {data:result, entityid:nextProps.entityid, entitytype:nextProps.entitytype, valueClicked:nextProps.entityvalue};
-                                    currentTabArray.push( newTab );
-                                    if ( this.state.isMounted ) {
-                                        this.setState( {tabs:currentTabArray,currentKey:nextProps.entityid} );
-                                        Store.storeKey( nextProps.entityid );
-                                        Store.addChangeListener( this.updated );
-                                    }
-                                }.bind( this ),
-                                error: function( data ) {
-                                    this.props.errorToggle( 'failed to get entity detail information', data );
-                                }.bind( this )
-                            } );
+                            let newTab = {
+                                data: nextProps.data,
+                                entityid: nextProps.entityid,
+                                entitytype: nextProps.entitytype,
+                                valueClicked: nextProps.entitytype
+                            };
+                            currentTabArray.push(newTab);
+                            // if (this.state.isMounted) {
+                            let entityidsarray = [];
+                            entityidsarray.push(nextProps.entityid);
+                            this.setState({
+                                tabs: currentTabArray,
+                                currentKey: parseInt( nextProps.entityid),
+                                initialLoad: true,
+                                processedIds: entityidsarray
+                            });
+                            Store.storeKey(nextProps.entityid);
+                            Store.addChangeListener(this.updated);
+                            this.props.watcher();
                         }
-                    }.bind( this )
+                    }.bind(this)
                 };
                 if ( this.state.initialLoad == false ) {
                     setTimeout( checkForInitialLoadComplete.checkForInitialLoadComplete,50 );
@@ -257,6 +389,21 @@ let EntityDetail = React.createClass( {
             }
         }
     },
+
+    checkFlairHover: function( ifr ) {
+        if( ifr.contentDocument != null ) {
+            $( ifr ).contents().find( 'a' ).each( function( index,a ) {
+                if( $( a ).css( 'color' ) == 'rgb(255, 0, 0)' ) {
+                    $( a ).data( 'state','down' );
+                } else if ( $( a ).data( 'state' ) == 'down' ) {
+                    $( a ).data( 'state','up' );
+                    let url = $( a ).attr( 'url' );
+                    this.props.linkWarningToggle( url );
+                }
+            }.bind( this ) );
+        }
+    },
+
     initDrag: function( e ) {
         //remove the entityPopUpMaxSizeDefault class so it can be resized.
         if ( $( '#dragme' ).hasClass( 'entityPopUpMaxSizeDefault' ) ) {
@@ -348,6 +495,8 @@ let EntityDetail = React.createClass( {
             let title = 'tab';
             if ( this.state.tabs[i].entitytype == 'guide' ) {
                 title = 'guide';
+            } else if ( this.state.tabs[i].entitytype == 'source' ) {
+                title = 'source';
             } else {
                 if ( this.state.tabs[i].valueClicked != undefined ) {
                     title = this.state.tabs[i].valueClicked.slice( 0,15 );
@@ -419,13 +568,25 @@ let TabContents = React.createClass( {
         } else if ( this.props.entitytype == 'guide' ) {
             let guideurl = '/' + 'guide/' + this.props.entityid;
             return (
-                <div className='tab-content'> 
+                <div className='tab-content'>
                     <div style={{flex: '0 1 auto',marginLeft: '10px'}}>
                         <Link to={guideurl} target="_blank"><h4 id="myModalLabel">{this.props.data != null ? <span><span><EntityValue value={this.props.entityid} errorToggle={this.props.errorToggle} /></span><div><EntityValue value={this.props.data.applies_to} errorToggle={this.props.errorToggle} /></div></span> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h4></Link>
                     </div>
                     <div style={{overflow:'auto',flex:'1 1 auto', marginLeft:'10px'}}>
                         {this.props.data != null ? <GuideBody entityid={this.props.entityid} entitytype={this.props.entitytype}/> : <div>Loading...</div>}
                     </div> 
+                </div>
+            );
+        } else if ( this.props.entitytype == 'source' ) {
+            return (
+                <div className='tab-content'>
+                    <div style={{flex: '0 1 auto',marginLeft: '10px'}}>
+                        {/*<h4 id="myModalLabel">{this.props.data != null ? <span><span><EntityValue value={this.props.entityid} errorToggle={this.props.errorToggle} /></span><div>*/}
+                            {/*<EntityValue value={this.props.data} errorToggle={this.props.errorToggle} /></div></span> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h4>*/}
+                    </div>
+                    <div id="source-popup" style={{overflow:'auto',flex:'1 1 auto', marginLeft:'10px'}}>
+                        {this.props.entitytype != null ? <SourceBody data={this.props.data} entityid={this.props.entityid} entitytype={this.props.entitytype}/> : <div>Loading...</div>}
+                    </div>
                 </div>
             );
         }
@@ -1062,7 +1223,6 @@ let GuideBody = React.createClass ( {
         }
     },
     render: function() {
-        //Lazy Loading SelectedEntry as it is not actually loaded when placed at the top of the page due to the calling order. 
         let SelectedEntry = require( '../detail/selected_entry.jsx' );
         return (
             <Tabs className='tab-content' defaultActiveKey={1} bsStyle='pills'>
@@ -1077,5 +1237,34 @@ let GuideBody = React.createClass ( {
         );
     }
 } );
+
+
+let SourceBody = React.createClass ( {
+    getInitialState: function() {
+        return {
+        };
+    },
+    render: function() {
+        return (
+            <div>
+                <h2>Source</h2>
+                <Tabs className='tab-content' defaultActiveKey={1} bsStyle='tabs'>
+                    <Tab eventKey={1} className='entityPopUpButtons'  style={{overflow:'auto', maxHeight:'70vh'}} title='Rendered'>
+                        <Frame frameBorder={'0'} id={'iframe_' + this.props.entityid} sandbox={'allow-same-origin'} styleSheets={['/css/sandbox.css']} style={{width:'100%',height:'500px'}}>
+                                <div dangerouslySetInnerHTML={{ __html: this.props.data.body}}/>
+                        </Frame>
+                    </Tab>
+                    <Tab eventKey={2} className='entityPopUpButtons'  style={{overflow:'auto', maxHeight:'70vh'}} title='Raw Text'>
+                        <Frame frameBorder={'0'} id={'iframe_' + this.props.entityid} sandbox={'allow-same-origin'} styleSheets={['/css/sandbox.css']} style={{width:'100%',height:'500px'}}>
+                                <div dangerouslySetInnerHTML={{ __html: this.props.data.body_plain}}/>
+                        </Frame>
+                    </Tab>
+                </Tabs>
+            </div>
+        );
+    }
+} );
+
+
 
 module.exports = EntityDetail;

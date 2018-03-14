@@ -23,6 +23,7 @@ with    qw(
     Scot::Role::Historable
     Scot::Role::Parsed
     Scot::Role::Permission
+    Scot::Role::Sharable
     Scot::Role::Target
     Scot::Role::Times
     Scot::Role::TLP

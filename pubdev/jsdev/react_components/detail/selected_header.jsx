@@ -390,61 +390,36 @@ let SelectedHeader = React.createClass( {
     alertSelected: function( aIndex,aID,aType,aStatus ){
         this.setState( {alertSelected:true,aIndex:aIndex,aID:aID,aType:aType,aStatus:aStatus} );
     },
-    sourceToggle: function() {
-        $.ajax( {
-            type: 'GET',
-            url: '/scot/api/v2/alertgroup/'+this.props.id,
-            success: function( response ){
-                let win = window.open( '/libs/viewSource.html' ); //, '_blank')
-                let html =  response.body;
-                let plain = response.body_plain;
-                win.onload = function() {   
-                    if( html != undefined ){
-                        $( win.document ).find( '#html' ).text( html );
-                    } else {
-                        $( win.document ).find( '.html' ).remove(); }
-                    if( plain != undefined ) {
-                        $( win.document ).find( '#plain' ).text( plain );
-                    }
-                    else {
-                        $( win.document ).find( '.plain' ).remove(); }
-                };
-            }.bind( this ),
-            error: function( data ) {
-                this.props.errorToggle( 'failed to get data for source popup' , data );
-            }.bind( this )
-        } );
-    },
+
     Watcher: function() {
-        if( this.props.type != 'alertgroup' ) {
-            $( 'iframe' ).each( function( index,ifr ) {
-            //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!! 
-                ifr.contentWindow.requestAnimationFrame( function() {
-                    if( ifr.contentDocument != null ) {
-                        let arr = [];
-                        //arr.push(this.props.type);
-                        arr.push( this.checkFlairHover );
-                        arr.push( this.checkHighlight );
-                        $( ifr ).off( 'mouseenter' );
-                        $( ifr ).off( 'mouseleave' );
-                        $( ifr ).on( 'mouseenter', function( v,type ) {
-                            let intervalID = setInterval( this[0], 50, ifr );// this.flairToolbarToggle, type, this.props.linkWarningToggle, this.props.id);
-                            let intervalID1 = setInterval( this[1], 50, ifr );// this.flairToolbarToggle, type, this.props.linkWarningToggle, this.props.id);
-                            $( ifr ).data( 'intervalID', intervalID );
-                            $( ifr ).data( 'intervalID1', intervalID1 );
-                            console.log( 'Now watching iframe ' + intervalID );
-                        }.bind( arr ) );
-                        $( ifr ).on( 'mouseleave', function() {
-                            let intervalID = $( ifr ).data( 'intervalID' );
-                            let intervalID1 = $( ifr ).data( 'intervalID1' );
-                            window.clearInterval( intervalID );
-                            window.clearInterval( intervalID1 );
-                            console.log( 'No longer watching iframe ' + intervalID );
-                        } ); 
-                    }
-                }.bind( this ) );
+        $( 'iframe' ).each( function( index,ifr ) {
+        //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
+            ifr.contentWindow.requestAnimationFrame( function() {
+                if( ifr.contentDocument != null ) {
+                    let arr = [];
+                    //arr.push(this.props.type);
+                    arr.push( this.checkFlairHover );
+                    arr.push( this.checkHighlight );
+                    $( ifr ).off( 'mouseenter' );
+                    $( ifr ).off( 'mouseleave' );
+                    $( ifr ).on( 'mouseenter', function( v,type ) {
+                        let intervalID = setInterval( this[0], 50, ifr );// this.flairToolbarToggle, type, this.props.linkWarningToggle, this.props.id);
+                        let intervalID1 = setInterval( this[1], 50, ifr );// this.flairToolbarToggle, type, this.props.linkWarningToggle, this.props.id);
+                        $( ifr ).data( 'intervalID', intervalID );
+                        $( ifr ).data( 'intervalID1', intervalID1 );
+                        console.log( 'Now watching iframe ' + intervalID );
+                    }.bind( arr ) );
+                    $( ifr ).on( 'mouseleave', function() {
+                        let intervalID = $( ifr ).data( 'intervalID' );
+                        let intervalID1 = $( ifr ).data( 'intervalID1' );
+                        window.clearInterval( intervalID );
+                        window.clearInterval( intervalID1 );
+                        console.log( 'No longer watching iframe ' + intervalID );
+                    } );
+                }
             }.bind( this ) );
-        } else {
+        }.bind( this ) );
+        if( this.props.type == 'alertgroup' ) {
             $( '#detail-container' ).find( 'a, .entity' ).not( '.not_selectable' ).each( function( index,tr ) {
                 $( tr ).off( 'mousedown' );
                 $( tr ).on( 'mousedown', function( index ) { 
@@ -478,38 +453,34 @@ let SelectedHeader = React.createClass( {
         }
     },
  
-    checkFlairHover: function( ifr ) {
+    checkFlairHover: function( ifr, nicktype ) {
         function returnifr() {
             return ifr;
         }
-        if( this.props.type != 'alertgroup' ) {
-            if( ifr.contentDocument != null ) {
-                $( ifr ).contents().find( '.entity' ).each( function( index, entity ) {
-                    if( $( entity ).css( 'background-color' ) == 'rgb(255, 0, 0)' ) {
-                        $( entity ).data( 'state', 'down' );
-                    } else if ( $( entity ).data( 'state' ) == 'down' ) {
-                        $( entity ).data( 'state', 'up' );
-                        let entityid = $( entity ).attr( 'data-entity-id' );
-                        let entityvalue = $( entity ).attr( 'data-entity-value' );
-                        let entityobj = $( entity );
-                        let ifr = returnifr();
-                        let entityoffset = {top: $( entity ).offset().top+$( ifr ).offset().top, left: $( entity ).offset().left+$( ifr ).offset().left};
-                        this.flairToolbarToggle( entityid,entityvalue,'entity',entityoffset, entityobj );
-                    }
-                }.bind( this ) );
-            }
-            if( ifr.contentDocument != null ) {
-                $( ifr ).contents().find( 'a' ).each( function( index,a ) {
-                    if( $( a ).css( 'color' ) == 'rgb(255, 0, 0)' ) {
-                        $( a ).data( 'state','down' );
-                    } else if ( $( a ).data( 'state' ) == 'down' ) {
-                        $( a ).data( 'state','up' );
-                        let url = $( a ).attr( 'url' );
-                        this.linkWarningToggle( url );
-                    }
-                }.bind( this ) );
-            }
-        } 
+        if( ifr.contentDocument != null ) {
+            $( ifr ).contents().find( '.entity' ).each( function( index, entity ) {
+                if( $( entity ).css( 'background-color' ) == 'rgb(255, 0, 0)' ) {
+                    $( entity ).data( 'state', 'down' );
+                } else if ( $( entity ).data( 'state' ) == 'down' ) {
+                    $( entity ).data( 'state', 'up' );
+                    let entityid = $( entity ).attr( 'data-entity-id' );
+                    let entityvalue = $( entity ).attr( 'data-entity-value' );
+                    let entityobj = $( entity );
+                    let ifr = returnifr();
+                    let entityoffset = {top: $( entity ).offset().top+$( ifr ).offset().top, left: $( entity ).offset().left+$( ifr ).offset().left};
+                    this.flairToolbarToggle( entityid,entityvalue,'entity',entityoffset, entityobj );
+                }
+            }.bind( this ) );
+            $( ifr ).contents().find( 'a' ).each( function( index,a ) {
+                if( $( a ).css( 'color' ) == 'rgb(255, 0, 0)' ) {
+                    $( a ).data( 'state','down' );
+                } else if ( $( a ).data( 'state' ) == 'down' ) {
+                    $( a ).data( 'state','up' );
+                    let url = $( a ).attr( 'url' );
+                    this.linkWarningToggle( url );
+                }
+            }.bind( this ) );
+        }
     },
 
     summaryUpdate: function() {
@@ -646,7 +617,7 @@ let SelectedHeader = React.createClass( {
                     </div>
                     {this.state.showEventData && type != 'entity' ? <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} entryData={this.state.entryData} entityData={this.state.entityData} headerData={this.state.headerData} showEntryData={this.state.showEntryData} showEntityData={this.state.showEntityData} alertSelected={this.alertSelected} summaryUpdate={this.summaryUpdate} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} linkWarningToggle={this.linkWarningToggle} entryToolbar={this.state.entryToolbar} isAlertSelected={this.state.alertSelected} aType={this.state.aType} aID={this.state.aID} alertPreSelectedId={this.props.alertPreSelectedId} errorToggle={this.props.errorToggle} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar} showSignatureOptions={this.state.showSignatureOptions} flairOff={this.state.flairOff} highlightedText={this.state.highlightedText} form={this.props.form}/> : null}
                     {this.state.showEventData && type == 'entity' ? <EntityDetail entityid={id} entitytype={'entity'} id={id} type={'entity'} fullScreen={true} errorToggle={this.props.errorToggle} linkWarningToggle={this.linkWarningToggle}/> : null} 
-                    {this.state.flairToolbar ? <EntityDetail key={this.state.entityDetailKey} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle} entityoffset={this.state.entityoffset} entityobj={this.state.entityobj} linkWarningToggle={this.linkWarningToggle}/> : null}    
+                    {this.state.flairToolbar ? <EntityDetail key={this.state.entityDetailKey} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} linkWarningToggle={this.linkWarningToggle} entityid={parseInt(this.state.entityid)} data={this.state.headerData} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle} entityoffset={this.state.entityoffset} watcher={this.Watcher} entityobj={this.state.entityobj} linkWarningToggle={this.linkWarningToggle}/> : null}
                 </div>
             }
             </div>
@@ -704,6 +675,9 @@ let EntryDataSubject = React.createClass( {
     componentDidMount: function() {
         this.calculateWidth( this.state.value ); 
     },
+    onChange: function( e ) {
+        this.setState({ value: e.target.value });
+    },
     handleEnterKey: function( e ) {
         if ( e.key == 'Enter' ) {
             this.handleChange( e );
@@ -715,6 +689,17 @@ let EntryDataSubject = React.createClass( {
         newWidth = ( $( '#invisible' ).width() + 25 ) + 'px';
         this.setState( {width:newWidth} );
     },
+    componentWillReceiveProps: function ( nextProps ) {
+        let value = nextProps.data.subject;
+        if ( nextProps.type == 'signature' ) {
+            value = nextProps.data.name;
+        } else if ( nextProps.type == 'entity' ) {
+            value = nextProps.data.value;
+        }
+        this.setState({ value : value });
+        this.calculateWidth( value );
+    },
+
     render: function() {
         //only disable the subject editor on an entity with a non-blank subject as editing it could damage flair.
         let isDisabled = false;
@@ -722,7 +707,7 @@ let EntryDataSubject = React.createClass( {
             isDisabled = true;
         }
         return (
-            <div>{this.props.subjectType} {this.props.id}: <input type='text' defaultValue={this.state.value} onKeyPress={this.handleEnterKey} onBlur={this.handleChange} style={{width:this.state.width,lineHeight:'normal'}} className='detail-header-input' disabled={isDisabled} /></div>
+            <div>{this.props.subjectType} {this.props.id}: <input type='text' value={this.state.value} onKeyPress={this.handleEnterKey} onChange={this.onChange} onBlur={this.handleChange} style={{width:this.state.width,lineHeight:'normal'}} className='detail-header-input' disabled={isDisabled} /></div>
         );
     }
 } );
