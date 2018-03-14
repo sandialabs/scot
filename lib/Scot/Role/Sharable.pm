@@ -45,7 +45,13 @@ sub is_shareable {
     my $self            = shift;
     my $env             = Scot::Env->instance;
     my $log             = $env->log;
-    return $self->sharable
+    return $self->shareable
+}
+
+# typo is several places
+sub is_sharable {
+    my $self    = shift;
+    return $self->is_shareable;
 }
 
 1;
