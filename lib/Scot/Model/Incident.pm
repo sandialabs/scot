@@ -29,7 +29,6 @@ with    qw(
     Scot::Role::Permission
     Scot::Role::Promotable
     Scot::Role::Sources
-    Scot::Role::Sharable
     Scot::Role::Subject
     Scot::Role::Tags
     Scot::Role::Type

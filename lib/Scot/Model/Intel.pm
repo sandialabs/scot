@@ -21,7 +21,6 @@ with    qw(
     Scot::Role::Hashable
     Scot::Role::Historable
     Scot::Role::Permission
-    Scot::Role::Sharable
     Scot::Role::Sources
     Scot::Role::Subject
     Scot::Role::Tags
