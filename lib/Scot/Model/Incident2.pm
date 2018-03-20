@@ -85,6 +85,21 @@ has data_fmt_ver    => (
     default     => 'incident_v1',
 );
 
+=item B<promoted_from>
+
+the event id that promted this incident
+[] implies not as a result from promotion
+
+=cut
+
+has promoted_from => (
+    is          => 'ro',
+    isa         => 'ArrayRef',
+    traits      => ['Array'],
+    required    => 1,
+    default     => sub {[]},
+);
+
 =item B<data>
 
 Now the data about the incident is stored inside this attribute.  

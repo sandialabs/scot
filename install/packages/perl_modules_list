@@ -15,7 +15,6 @@ CGI::PSGI
 CGI::Emulate::PSGI
 CGI::Compile
 HTTP::Server::Simple::PSGI
-JSON
 Number::Bytes::Human
 Sys::RunAlone
 Parallel::ForkManager
