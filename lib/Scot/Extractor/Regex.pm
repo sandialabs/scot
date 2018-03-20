@@ -723,7 +723,7 @@ sub _build_angle_bracket_message_id {
     my $regex   = qr{
         (
         (<|&lt;)
-        .*?
+        .*?@.*?
         (>|&gt;)
         )
     }xms;

@@ -959,5 +959,56 @@ EOF
     userdef => [],
     debug   => 1,
     },
+    {
+        testname    => "not_message_id_1",
+        testgroup   => "message_id",
+        testnumber  => 39,
+        source      => <<'EOF',
+<div>
+<body>
+Foo
+</body>
+</div>
+EOF
+        plain       => <<'EOF',
+ Foo
+EOF
+    flair           => <<'EOF',
+<div><div></div>
+Foo
+</div>
+EOF
+    entities    => [
+    ],
+    userdef => [],
+    debug   => 1,
+    },
+    {
+        testname    => "not_message_id_2",
+        testgroup   => "message_id",
+        testnumber  => 40,
+        source      => <<'EOF',
+&lt;div&gt;
+&lt;body&gt;
+Foo
+&lt;/body&gt;
+&lt;/div&gt;
+EOF
+        plain       => <<'EOF',
+<div> <body> Foo </body> </div>
+EOF
+    flair           => <<'EOF',
+<div>&lt;div&gt;
+&lt;body&gt;
+Foo
+&lt;/body&gt;
+&lt;/div&gt;
+</div>
+EOF
+    entities    => [
+    ],
+    userdef => [],
+    debug   => 1,
+    },
 
 );
