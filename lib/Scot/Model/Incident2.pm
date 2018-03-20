@@ -30,7 +30,6 @@ with    qw(
     Scot::Role::Historable
     Scot::Role::Permission
     Scot::Role::Sources
-    Scot::Role::Sharable
     Scot::Role::Subject
     Scot::Role::Tags
     Scot::Role::Type
