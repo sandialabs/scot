@@ -1010,5 +1010,43 @@ EOF
     userdef => [],
     debug   => 1,
     },
+    {
+        testname    => "not_message_id_3",
+        testgroup   => "message_id",
+        testnumber  => 40,
+        source      => <<'EOF',
+EOF
+        plain       => <<'EOF',
+EOF
+    flair           => <<'EOF',
+<div></div>
+EOF
+    entities    => [
+    ],
+    userdef => [],
+    debug   => 1,
+    },
+    {
+        testname    => "SLIMHTTP/1.1",
+        testgroup   => "userdef",
+        testnumber  => 41,
+        source      => <<'EOF',
+SLIMHTTP/1.1
+EOF
+        plain       => <<'EOF',
+SLIMHTTP/1.1
+EOF
+    flair           => <<'EOF',
+<div><span class="entity user_agent" data-entity-type="user_agent" data-entity-value="slimhttp/1.1">SLIMHTTP/1.1</span></div>
+EOF
+    entities    => [
+            {
+                value   => 'slimhttp/1.1',
+                type    => 'user_agent',
+            }
+    ],
+    userdef => [],
+    debug   => 1,
+    },
 
 );
