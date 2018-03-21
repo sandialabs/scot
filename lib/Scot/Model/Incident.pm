@@ -247,6 +247,18 @@ sub _get_deadline_status {
     return "missed";
 }
 
+=item B<data_fmt_ver>
+
+Incidents might change over time, this value must match a key in scot.cfg.pl "forms" section.
+
+=cut
+
+has data_fmt_ver    => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => 'incident_v2',
+);
 
 __PACKAGE__->meta->make_immutable;
 1;

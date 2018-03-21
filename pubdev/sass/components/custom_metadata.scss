@@ -13,8 +13,9 @@
     }
 
     .custom-metadata-tableWidth {
-        width: 200px;
+        width: 240px;
         display: inline-flex;
+        word-wrap: break-word;
     }
 
     .custom-metadata-table {
@@ -70,4 +71,11 @@
         display: initial;
         padding-left: 5px;
     }
+
+    .tooltip-inner {
+        th, td {
+            border: 1px solid white;
+        }
+    }
+
 }
