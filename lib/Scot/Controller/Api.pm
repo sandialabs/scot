@@ -1878,23 +1878,12 @@ sub get_form {
     my $self    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
-    my $type    = $self->stash('type');
 
     my $form    = $env->forms;
 
     $log->debug("Forms is ",{filter=>\&Dumper, value=>$form});
-    $log->debug("type is $type");
-    $log->debug("form is type: ".ref($form));
 
-    my $aref    = $form->{$type};
-
-    $log->debug("aref is ".ref($aref));
-    $log->debug("aref contains ",{filter=>\&Dumper, value=>$aref});
-
-        my $return = {
-            form    => $aref,
-        };
-        $self->do_render($return);
+    $self->do_render($form);
 }
 
 sub undelete {
