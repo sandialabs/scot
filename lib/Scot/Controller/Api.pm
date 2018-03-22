@@ -1559,7 +1559,7 @@ sub get_request_params  {
     my $log     = $env->log;
 
     my $mreq    = $self->req;
-    $log->debug("mojolicious request obj: ",{filter=>\&Dumper, value=>$mreq});
+    $log->trace("mojolicious request obj: ",{filter=>\&Dumper, value=>$mreq});
 
     my $params  = $self->req->params->to_hash;
     my $json    = $self->req->json;

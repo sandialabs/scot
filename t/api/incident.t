@@ -44,7 +44,6 @@ my $event_id = $t->tx->res->json->{id};
 
 $t  ->post_ok('/scot/api/v2/incident' => json => {
         events  => [ $event_id ],
-        reportable  => 1,
         status      => 'open',
         category    => 'IMI-1',
         sensitivity => 'very',
@@ -59,8 +58,6 @@ my $incident1 = $t->tx->res->json->{id};
 
 $t  ->get_ok("/scot/api/v2/incident/$incident1")
     ->status_is(200)
-    ->json_is('/reportable' => 1)
-    ->json_is('/deadline_status'    => 'future')
     ->json_is('/occurred'   => 1444309925)
     ->json_is('/events/0'   => $event_id);
 
