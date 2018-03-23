@@ -13,8 +13,6 @@
     # authentication can be "Remoteuser", "Local", or "Ldap"
     auth_type   => 'Local', 
 
-    authclass   => 'Controller::Auth::Local',
-
     # group mode can be "local" or "ldap"
     group_mode  => 'local',
 
@@ -43,6 +41,15 @@
 
     share_after_time    => 10, # minutes
 
+    stomp_host  => "localhost",
+    stomp_port  => 61613,
+    topic       => "/topic/scot",
+
+    # location and site_identifier (future use)
+    location                => 'demosite',
+    site_identifier         => "demosite",
+    default_share_policy    => "none",
+
     # mojo defaults are values for the mojolicious startup
     mojo_defaults   => {
         # change this after install and restart scot
@@ -54,7 +61,7 @@
         # hypnotoad workers, 50-100 heavy use, 20 - 50 light
         # hypnotoad_workers   => 75,
         hypnotoad => {
-            listen  => [ 'http://scot:3000?reuse=1' ],
+            listen  => [ 'http://0.0.0.0:3000?reuse=1' ],
             workers => 20,
             clients => 1,
             proxy   => 1,
@@ -199,24 +206,24 @@
         }, # end enrichments stanza
         #{
         #    attr    => 'ldap',
-        #    class   => 'Scot::Util::Ldap',
-        #    config  => {
-        #        servername  => 'ldap.domain.tld',
-        #        dn          => 'cn=cn_name,ou=local config,dc=tld',
-        #        password    => 'changemenow',
-        #        scheme      => 'ldap',
-        #        group_search    => {
-        #            base    => 'ou=groups,ou=orgname1,dc=dcname1,dc=dcname2,dc=dcname3',
-        #            filter  => '(| (cn=wg-scot*))',
-        #            attrs   => [ 'cn' ],
-        #        },
-        #        user_groups => {
-        #            base    => 'ou=accounts,ou=ouname,dc=dcname1,dc=dcname1,dc=dcname1',
-        #            filter  => 'uid=%s',
-        #            attrs   => ['memberOf'],
-        #        }
-        #    }, # end ldap config
-        #}, # end ldap
+       #     class   => 'Scot::Util::Ldap',
+       #     config  => {
+       #         servername  => 'ldap.domain.tld',
+       #         dn          => 'cn=cn_name,ou=local config,dc=tld',
+       #         password    => 'changemenow',
+       #         scheme      => 'ldap',
+       #         group_search    => {
+       #             base    => 'ou=groups,ou=orgname1,dc=dcname1,dc=dcname2,dc=dcname3',
+       #             filter  => '(| (cn=wg-scot*))',
+       #             attrs   => [ 'cn' ],
+       #         },
+       #         user_groups => {
+       #             base    => 'ou=accounts,ou=ouname,dc=dcname1,dc=dcname1,dc=dcname1',
+       #             filter  => 'uid=%s',
+       #             attrs   => ['memberOf'],
+       #         }
+       #     }, # end ldap config
+       # }, # end ldap
     ],
     entity_regexes  => [],
     #
@@ -309,7 +316,7 @@
                 help    => 'The id of the SCOT datatype that originated this sig',
                 label   => "Reference ID",
             },
-            {
+			{
                 type    => "multi_select",
                 key     => "action",
                 value   => [
@@ -465,6 +472,59 @@
                 help    => "Select Date/Time Incident was closed",
             },
         ],
+        incident_v2 => [
+            {
+                type    => 'dropdown',
+                key     => 'type',
+                value   => [
+                    # place your types here...
+                    { value => "none",      selected => 1 },
+                    { value => "intrusion", selected => 0 },
+                    { value => "malware",   selected => 0 },
+                ],
+                value_type  => {
+                    type    => "static",
+                    url     => undef,
+                    key     => 'type',
+                },
+                label   => "Incident Type",
+                help    => <<'EOF',
+<table>
+  <tr> <th>intrusion</th><td>An intrusion occurred</td> </tr>
+  <tr> <th>malware</th>  <td>Malware detected</td>      </tr>
+</table>
+EOF
+            },
+            {
+                type    => "calendar",
+                key     => "discovered",
+                value   => "",
+                value_type  => {
+                    type    => "static",
+                    url     => undef,
+                    key     => 'discovered',
+                },
+                label   => "Date/Time Discovered",
+                help    => "Select Date/Time Incident was discovered",
+            },
+            {
+                type    => "dropdown",
+                key     => "severity",
+                value   => [
+                    {value => 'NONE', selected => 1},
+                    {value => 'Low', selected => 0},
+                    {value => 'Moderate', selected => 0},
+                    {value => 'High', selected => 0},
+                ],
+                value_type  => {
+                    type    => "static",
+                    url     => undef,
+                    key     => 'severity',
+                },
+                label   => 'Incident severity',
+                help    => "Select best match for incident severity",
+            }, 
+        ],
         guide   => [
             {
                 type    => "input_multi",
@@ -480,4 +540,23 @@
             },
         ],
     }, 
+    dailybrief  => {
+        mail    => {
+            from    => 'scot@yourdomain.com',
+            to      => 'tbruner@scotdemo.com',
+            host    => 'smtp.yourdomain.com',
+        },
+        url     => 'https://scot.yourdomain.com/'
+    },
+    incident_summary_template   => <<EOF,
+<table>
+    <tr><th>Description</th><td><i>place description of the incident here</i></td></tr>
+    <tr><th>Related Indicators</th><td><i>Place IOC's here</i></td></tr>
+    <tr><th>Source Details</th><td><i>Place wource port, ip, protocol, etc. here</i></td></tr>
+    <tr><th>Compromised System Details</th><td><i>Place details about compromised System here</i></td></tr>
+    <tr><th>Recovery/Mitigation Actions</th><td><i>Place recovery/mitigation details here</i></td></tr>
+    <tr><th>Physical Location of System</th><td><i>Place the city and State of system location</i></td></tr>
+    <tr><th>Detection Details</th><td><i>Place Source, methods, or tools used to identify incident</i></td></tr>
+</table>
+EOF
 );

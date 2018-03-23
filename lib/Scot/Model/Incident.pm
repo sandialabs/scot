@@ -3,19 +3,21 @@ package Scot::Model::Incident;
 use lib '../../../lib';
 use Moose;
 use Moose::Util::TypeConstraints;
-use namespace::autoclean;
 use DateTime;
 use Switch;
 use DateTime::Format::Natural;
 use Date::Parse;
+use namespace::autoclean;
 
 =head1 Name
 
-Scot::Model::Incident
+Scot::Model::Incident2
 
 =head1 Description
 
-The model of an individual incident
+The model for an individual incident.
+(This is a replacement for old, sandia specific incident. it
+can handle changes to the incident data more gracefully)
 
 =cut
 
@@ -29,7 +31,6 @@ with    qw(
     Scot::Role::Permission
     Scot::Role::Promotable
     Scot::Role::Sources
-    Scot::Role::Sharable
     Scot::Role::Subject
     Scot::Role::Tags
     Scot::Role::Type
@@ -42,13 +43,6 @@ enum 'valid_status', [ qw(open closed) ];
 =head1 Attributes
 
 =over 4
-
-=item B<promotable>
-
-events that generated this incident
-frm Scot::Role::Promotable
-
-=cut
 
 =item B<promoted_from>
 
@@ -65,44 +59,30 @@ has promoted_from => (
     default     => sub {[]},
 );
 
-has doe_report_id => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-    default     => 'n/a'
-);
+=item B<status>
 
-has closed  => (
-    is      => 'ro',
-    isa     => 'Maybe[Epoch]',
-);
-
-
-=item B<reportable>
-
-is it?
+The status (open, closed...) 
 
 =cut
 
-has reportable  => (
+has status  => ( 
     is          => 'ro',
-    isa         => 'Bool',
-    traits      => ['Bool'],
+    isa         => 'valid_status',
     required    => 1,
-    default     => 1,
-    handles     => {
-        make_reportable         => 'set',
-        make_not_reportaable    => 'unset',
-    },
+    default     => 'open',
 );
+
+=item B<created, updated, when>
+
+The creation time, the last updated time, and a user modifiable time stamp all in seconds since unix epoch
 
 =item B<occurred, discovered, reported>
 
-epoch times all
+The time the incident occurred, the time it was discovered, and the time it was reported all in seconds since unix epoch
 
 =cut
 
-has [qw(occurred discovered reported)]  => (
+has [qw(occurred discovered reported closed)] => (
     is          => 'ro',
     isa         => 'Epoch',
     required    => 1,
@@ -111,143 +91,33 @@ has [qw(occurred discovered reported)]  => (
 
 =item B<subject>
 
-the incident subject line
-from Scot::Role::Subject
+from Scot::Role::Subject.  String representing a subject line for this incident
+
+=item B<data_fmt_ver>
+
+Incidents might change over time, this value must match a key in scot.cfg.pl "forms" section.
 
 =cut
 
-=item B<status>
-
-the status of the incident
-
-=cut
-
-has status => (
+has data_fmt_ver    => (
     is          => 'ro',
-    isa         => 'valid_status',
+    isa         => 'Str',
     required    => 1,
-    default     => 'open',
+    default     => 'incident_v2',
 );
 
-=item B<type>
+=item B<data>
 
-the type
-from Scot::Role::Type
+Now the data about the incident is stored inside this attribute.  
 
 =cut
 
-=item B<category>
-
-the doie category
-
-=cut
-
-has category  => (
-    is              => 'ro',
-    isa             => 'Str',
-    required        => 1,
-    default         => 'none',
+has data    => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    required    => 1,
+    default     => sub { {} },
 );
-
-has security_category => (
-    is              => 'ro',
-    isa             => 'Str',
-    required        => 1,
-    default         => 'NONE',
-);
-
-=item B<sensitivity>
-
-the security sensitivity
-
-=cut
-
-has sensitivity  => (
-    is              => 'ro',
-    isa             => 'Str',
-    required        => 1,
-    default         => 'other',
-);
-
-=item B<deadline_status>
-
-Possible statuses: Met, Missed, Future, No deadline, Error
-
-=cut
-
-has deadline_status     => (
-    is              => 'ro',
-    isa             => 'Str',
-    traits          => ['DoNotSerialize'],
-    required        => 1,
-    lazy            => 1,
-    builder         => '_get_deadline_status',
-);
-
-sub _get_deadline_status {
-    my $self    = shift;
-    my $delta   = DateTime::Duration->new(seconds=>0);
-
-    if ( $self->sensitivity eq "PII" ) {
-        $delta  = DateTime::Duration->new(minutes=>35);
-    }
-
-    if ( $self->category ne "none" ) {
-        if ( $self->category =~ m/1/ ) {
-            $delta  = DateTime::Duration->new(hours=>1);
-        }
-        else {
-            $delta  = DateTime::Duration->new(hours=>8);
-        }
-    }
-    else {
-        if ( $self->type =~ m/1/ ) {
-            switch( $self->category ) {
-                case 'Low' {
-                    $delta = DateTime::Duration->new(hours=>4);
-                }
-                case 'Moderate' {
-                    $delta = DateTime::Duration->new(hours=>1);
-                }
-                case 'High' {
-                    $delta = DateTime::Duration->new(hours=>1);
-                }
-            }
-        }
-        elsif ( $self->type =~ m/2/ ) {
-            switch ($self->category ) {
-                case 'Low'  {
-                    $delta  = DateTime::Duration->new(weeks=>1);
-                }
-                case 'Moderate' {
-                    $delta  = DateTime::Duration->new(hours=>24);
-                }
-                case 'High' {
-                    $delta  = DateTime::Duration->new(hours=>24);
-                }
-            }
-        }
-    }
-
-    my $discovery_dt    = DateTime->from_epoch(epoch => $self->discovered);
-    my $reported_dt     = DateTime->from_epoch(epoch => $self->reported);
-    my $due_dt          = $discovery_dt + $delta;
-
-    if ( $self->type =~ m/FYI|^Other/ or $delta->is_zero) {
-        return "no deadline";
-    }
-
-    if ( DateTime->compare($due_dt, $reported_dt) >= 0 ) {
-        if ( $self->reported ) {
-            return "met";
-        }
-        else {
-            return "future";
-        }
-    }
-    return "missed";
-}
-
 
 __PACKAGE__->meta->make_immutable;
 1;
@@ -264,3 +134,10 @@ Todd Bruner.
 
 =cut
     
+
+
+
+
+
+
+

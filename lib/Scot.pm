@@ -217,7 +217,7 @@ relies on the browser BasicAuth popup.
 
 =pod
 
-@api {get} /scot/api/v2/form/:type SCOT Form server
+@api {get} /scot/api/v2/form SCOT Form server
 @apiName form
 @apiGroup Form
 @apiVersion 2.0.0
@@ -226,7 +226,7 @@ relies on the browser BasicAuth popup.
 
 =cut
 
-    $scot   ->route ('/api/v2/form/:type')
+    $scot   ->route ('/api/v2/form')
             ->to    ('controller-api#get_form')
             ->name  ('form');
 

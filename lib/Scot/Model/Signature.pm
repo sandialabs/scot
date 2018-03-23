@@ -24,7 +24,6 @@ with    qw(
     Scot::Role::Target
     Scot::Role::Times
     Scot::Role::Permission
-    Scot::Role::Sharable
     Scot::Role::Sources
     Scot::Role::Tags
     Scot::Role::TLP

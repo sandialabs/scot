@@ -23,7 +23,6 @@ with    qw(
     Scot::Role::Historable
     Scot::Role::Permission
     Scot::Role::Promotable
-    Scot::Role::Sharable
     Scot::Role::Status
     Scot::Role::Sources
     Scot::Role::Subject

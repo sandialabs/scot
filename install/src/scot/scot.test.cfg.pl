@@ -174,4 +174,8 @@
             }, # end ldap config
         }, # end ldap
     ],
+    # future use:
+    location                => "scot_demo",
+    site_identifier         => "scot_demo",
+    default_share_policy    => "none",
 );

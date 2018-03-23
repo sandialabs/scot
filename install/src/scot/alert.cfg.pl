@@ -126,4 +126,9 @@
     # approve_accounts => [ 'user@email.addr' ];
     # account in this domain can also send to scot
     approved_accounts   => [ 'user@server.domain.tld' ],
+
+    # future use:
+    location                => "scot_demo",
+    site_identifier         => "scot_demo",
+    default_share_policy    => "none",
 );
