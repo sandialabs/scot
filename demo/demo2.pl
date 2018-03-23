@@ -2,6 +2,7 @@
 
 use lib '/opt/scot/lib';
 use Scot::Util::ScotClient;
+use Scot::Env;
 use MIME::Base64;
 use Data::Dumper;
 use JSON;
@@ -9,6 +10,9 @@ use strict;
 use warnings;
 use v5.18;
 
+my $env = Scot::Env->new({
+    config_file => '/opt/scot/etc/scot.cfg.pl',
+});
 
 my %users = (
     admin       => '61E4663E-6CAB-11E7-B011-FEE80D183886',
@@ -26,6 +30,7 @@ foreach my $user (sort keys %users) {
         auth_type   => 'apikey',
         api_key => $users{$user},
         servername => 'scotdemo.com',
+        env         => $env,
         config  => {
 
        },
