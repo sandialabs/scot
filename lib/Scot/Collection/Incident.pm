@@ -106,24 +106,14 @@ sub create_promotion {
     my $req     = shift;
     my $user    = $req->{user};
 
-    my $reportable      = $self->get_value_from_request($req, "reportable");
-    my $subject         = $object->subject // 
-                            $self->get_value_from_request($req, "subject");
+    my $subject         = $object->subject // $self->get_value_from_request($req, "subject");
     my $href    = {
-        reportable  => $reportable ? 1 : 0,
         subject     => $subject,
         owner       => $user,
     };
-    my $category        = $self->get_value_from_request($req, "category");
-    $href->{category}   = $category if (defined($category));
-    my $sensitivity     = $self->get_value_from_request($req, "sensitivity");
-    $href->{sensitivity} = $sensitivity if (defined $sensitivity);
-    my $occurred        = $self->get_value_from_request($req, "occurred");
-    $href->{occurred}   = $occurred if (defined $occurred);
-    my $discovered      = $self->get_value_from_request($req, "discovered");
-    $href->{discovered} = $occurred if (defined $discovered);
 
     my $incident = $self->create($href);
+    $self->create_incident_summary($req, $incident);
     return $incident;
 }
 
