@@ -277,5 +277,19 @@ sub get_cidr_ipaddrs {
 
 }
 
+sub api_create {
+    my $self    = shift;
+    my $req     = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+    my $user    = $req->{user};
+    my $json    = $req->{request}->{json};
+    
+    $log->debug("req is ",{filter=> \&Dumper, value => $req});
+
+    return $self->create($json);
+}
+
 
 1;

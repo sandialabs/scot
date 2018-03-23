@@ -54,8 +54,51 @@ override api_create => sub {
     if ( scalar(@tags) > 0 ) {
         $self->upssert_links("Tag", "incident", $id, @tags);
     }
+    $self->create_incident_summary($request, $incident);
+
+
     return $incident;
 };
+
+sub create_incident_summary {
+    my $self        = shift;
+    my $request     = shift;
+    my $incident    = shift;
+    my $env         = $self->env;
+    my $log         = $env->log;
+    my $mongo       = $env->mongo;
+
+    $log->debug("creating incident summary entry");
+
+    my $envmeta         = $env->meta;
+    my $summary_method  = $envmeta->get_method("incident_summary_template");
+
+    if ( defined $summary_method ) {
+        my $template    = $env->incident_summary_template;
+        my $entrycol    = $mongo->collection('Entry');
+        my $href        = {
+            user    => $request->{user},
+            class   => "summary",
+            parent  => 0,
+            target  => {
+                type    => "incident",
+                id      => $incident->id,
+            },
+            body        => $env->incident_summary_template,
+        };
+        $log->debug("with data ",{filter=>\&Dumper, value=>$href});
+        my $entry = $entrycol->create($href);
+        if (! defined $entry) {
+            $log->error("failed to create summary entry");
+        }
+        else {
+            $log->debug("entry ".$entry->id." created");
+        }
+    }
+    else {
+        $log->warn("incident_summary_template not defined.  please add to scot.cfg.pl");
+    }
+}
 
 sub create_promotion {
     my $self    = shift;
@@ -63,24 +106,14 @@ sub create_promotion {
     my $req     = shift;
     my $user    = $req->{user};
 
-    my $reportable      = $self->get_value_from_request($req, "reportable");
-    my $subject         = $object->subject // 
-                            $self->get_value_from_request($req, "subject");
+    my $subject         = $object->subject // $self->get_value_from_request($req, "subject");
     my $href    = {
-        reportable  => $reportable ? 1 : 0,
         subject     => $subject,
         owner       => $user,
     };
-    my $category        = $self->get_value_from_request($req, "category");
-    $href->{category}   = $category if (defined($category));
-    my $sensitivity     = $self->get_value_from_request($req, "sensitivity");
-    $href->{sensitivity} = $sensitivity if (defined $sensitivity);
-    my $occurred        = $self->get_value_from_request($req, "occurred");
-    $href->{occurred}   = $occurred if (defined $occurred);
-    my $discovered      = $self->get_value_from_request($req, "discovered");
-    $href->{discovered} = $occurred if (defined $discovered);
 
     my $incident = $self->create($href);
+    $self->create_incident_summary($req, $incident);
     return $incident;
 }
 

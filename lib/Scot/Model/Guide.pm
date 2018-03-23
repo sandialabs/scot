@@ -22,7 +22,6 @@ with    qw(
     Scot::Role::Entriable
     Scot::Role::Hashable
     Scot::Role::Permission
-    Scot::Role::Sharable
     Scot::Role::Subject
     Scot::Role::Times
     Scot::Role::TLP

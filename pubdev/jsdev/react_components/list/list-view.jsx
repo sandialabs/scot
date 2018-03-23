@@ -80,9 +80,9 @@ module.exports = React.createClass( {
     
         $.ajax( { 
             type: 'get',
-            url: '/scot/api/v2/form/' + this.props.type,
+            url: '/scot/api/v2/form',
             success: function( data ) {
-                this.setState( {form: data.form} );
+                this.setState( {form: data} );
             }.bind( this ),
             error: function( data ) {
                 this.props.errorToggle( 'Failed to get form structure', data );

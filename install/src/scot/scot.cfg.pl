@@ -45,6 +45,11 @@
     stomp_port  => 61613,
     topic       => "/topic/scot",
 
+    # location and site_identifier (future use)
+    location                => 'demosite',
+    site_identifier         => "demosite",
+    default_share_policy    => "none",
+
     # mojo defaults are values for the mojolicious startup
     mojo_defaults   => {
         # change this after install and restart scot
@@ -467,6 +472,59 @@
                 help    => "Select Date/Time Incident was closed",
             },
         ],
+        incident_v2 => [
+            {
+                type    => 'dropdown',
+                key     => 'type',
+                value   => [
+                    # place your types here...
+                    { value => "none",      selected => 1 },
+                    { value => "intrusion", selected => 0 },
+                    { value => "malware",   selected => 0 },
+                ],
+                value_type  => {
+                    type    => "static",
+                    url     => undef,
+                    key     => 'type',
+                },
+                label   => "Incident Type",
+                help    => <<'EOF',
+<table>
+  <tr> <th>intrusion</th><td>An intrusion occurred</td> </tr>
+  <tr> <th>malware</th>  <td>Malware detected</td>      </tr>
+</table>
+EOF
+            },
+            {
+                type    => "calendar",
+                key     => "discovered",
+                value   => "",
+                value_type  => {
+                    type    => "static",
+                    url     => undef,
+                    key     => 'discovered',
+                },
+                label   => "Date/Time Discovered",
+                help    => "Select Date/Time Incident was discovered",
+            },
+            {
+                type    => "dropdown",
+                key     => "severity",
+                value   => [
+                    {value => 'NONE', selected => 1},
+                    {value => 'Low', selected => 0},
+                    {value => 'Moderate', selected => 0},
+                    {value => 'High', selected => 0},
+                ],
+                value_type  => {
+                    type    => "static",
+                    url     => undef,
+                    key     => 'severity',
+                },
+                label   => 'Incident severity',
+                help    => "Select best match for incident severity",
+            }, 
+        ],
         guide   => [
             {
                 type    => "input_multi",
@@ -490,4 +548,15 @@
         },
         url     => 'https://scot.yourdomain.com/'
     },
+    incident_summary_template   => <<EOF,
+<table>
+    <tr><th>Description</th><td><i>place description of the incident here</i></td></tr>
+    <tr><th>Related Indicators</th><td><i>Place IOC's here</i></td></tr>
+    <tr><th>Source Details</th><td><i>Place wource port, ip, protocol, etc. here</i></td></tr>
+    <tr><th>Compromised System Details</th><td><i>Place details about compromised System here</i></td></tr>
+    <tr><th>Recovery/Mitigation Actions</th><td><i>Place recovery/mitigation details here</i></td></tr>
+    <tr><th>Physical Location of System</th><td><i>Place the city and State of system location</i></td></tr>
+    <tr><th>Detection Details</th><td><i>Place Source, methods, or tools used to identify incident</i></td></tr>
+</table>
+EOF
 );

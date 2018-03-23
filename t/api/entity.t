@@ -170,6 +170,52 @@ ok($result->{records}->[0]->{id} == 1, "id is correct");
 
 $t->get_ok("/scot/api/v2/entity/byname?name=chosun.com")
     ->status_is(200);
+
+# create entity via api
+
+$t->post_ok(
+    '/scot/api/v2/entity'   => json => {
+        value   => "10.170.217.202",
+        type    => "ipaddr",
+        data    => {
+            "sidd2" => {
+                "FOOB"  => {
+                    count   => 1,
+                    first   => "2018-03-15 19:01:04",
+                    highestpriority => "low",
+                    lastpriority    => "low",
+                    latest          => "2018-03-15 19:01:04",
+                },
+                "comment"   => [
+                    {
+                        when    => "2018-03-15 19:01:04",
+                        where   => "zbl3",
+                        who     => "FOOB",
+                        why     => "malware domain. FOOB CSIRT Ticket 99993",
+                    }
+                ],
+                history     => [
+                    {
+                        what    => "zbl3:Identifier submitted by FOOB",
+                        when    => "2018-03-15 19:47:33.012233",
+                    }
+                ],
+                indentifier => "10.170.217.202",
+                index       => [],
+                meta        => {},
+                modified    => "2018-03-15 19:47:33.012233",
+                site        => "FOOB",
+                sitesadded  => 1,
+                tags        => [ "zbl3.FOOB.1521140444" ],
+                timesadded  => 1,
+                type        => "IPv4",
+            },
+        }
+    }
+)->status_is(200);
+
+
+
  print Dumper($t->tx->res->json);
  done_testing();
  exit 0;

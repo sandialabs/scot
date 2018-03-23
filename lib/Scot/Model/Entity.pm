@@ -22,7 +22,6 @@ with    qw(
     Meerkat::Role::Document
     Scot::Role::Entriable
     Scot::Role::Hashable
-    Scot::Role::Sharable
     Scot::Role::Value
 );
 
