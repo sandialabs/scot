@@ -23,7 +23,7 @@ class Status extends PureComponent {
 		 * ]
 		 *
 		 * Service: name of service
-		 * Status: [ "ok", "error", "unknown" ]
+		 * Status: [ "ok", "error", "warn", "unknown" ]
 		 */
 		$.ajax( {
 			type: 'get',
@@ -48,13 +48,21 @@ class Status extends PureComponent {
 	render() {
 		let { className = "" } = this.props;
 
-		let statuses = [ "ok", "error", "unknown" ];
+		let statuses = [ "ok", "error", "warn", "unknown" ];
 
 		let services = [];
-		for ( let service in this.state.statusData ) {
-			let i = Math.floor( statuses.length * Math.random() );
-			let status = statuses[i];
-			services.push( <Service key={service} name={service} status={status} /> );
+		if ( Array.isArray( this.state.statusData ) ) {
+			for ( let service of this.state.statusData ) {
+				let { name, status } = service;
+				services.push( <Service key={name} name={name} status={status} /> );
+			}
+		} else {
+			// This can be removed when server is updated
+			for ( let service in this.state.statusData ) {
+				let i = Math.floor( statuses.length * Math.random() );
+				let status = statuses[i];
+				services.push( <Service key={service} name={service} status={status} /> );
+			}
 		}
 
 		let classes = [ "Status", className ];
