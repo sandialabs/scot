@@ -1,0 +1,32 @@
+
+pipes and filters:
+
+events
+    | $.hostname="foo"
+    | group $.type
+    | into {series: $.name, points: ($.items | group day | into {x: $.name | day_of_year, y: $.items | count})}
+
+fetch events 
+  | filter s -> s.hostname == "foo" 
+  > g=Graph.new(): s -> {
+      g.addNode(s.address)
+      g.edge(s.sender,s.address).inc()
+  }
+  | makeViz
+
+pythonish:
+
+  events().filter(e -> e.hostname == "foo")
+            .group(e -> e.type)
+            .map(e -> {series: e.name,
+                       points: e.items.group(e -> e.day)
+                       .map(day -> {x: day_of_year(day.name), y: len(day.items)})})
+
+  group items pred = items.fold (item,groups -> groups[pred item] += item) items
+            
+haskelly:
+
+do events <- filter getevents() \e->e.hostname ="foo"
+   types <- group events \e->e.type
+   series <- map types \e->{series: e.name,
+              points: map (group e.items \e->e.day) \day -> {x: day_of_year day.name, y: len day.items}

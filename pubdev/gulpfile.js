@@ -15,21 +15,23 @@ var paths = {
 	admin: './jsdev/react_components/administration/**/*.jsx',
 	sass: './sass/**/*.scss',
 	build: './build/',
-    buildFinal: '../public/',
+        buildFinal: '../public/',
 	scot: '/opt/scot/public/',
+        revltarget: '../public/',
+        revl: './jsdev/revl/**/*.coffee'
 }
 
 gulp.task('watch', ['build'], function () {
+    gulp.watch( paths.revl, ['buildrevl'] );
     gulp.watch( paths.admin, ['buildapi', 'buildundelete'] );
     gulp.watch( paths.scripts, ['scripts'] );
-	gulp.watch( paths.sass, ['sass'] );
+    gulp.watch( paths.sass, ['sass'] );
 });
 
 gulp.task( 'scripts', function() {
     console.log('Compiling scot.js... wait for the auto copy to complete');
 
-    return browserify({entries: './jsdev/react_components/main/index.jsx', extensions: ['.jsx','.coffee'], debug: true})
-    .transform('coffeeify', {only: './jsdev/react_components/components/visualization'})
+    return browserify({entries: './jsdev/react_components/main/index.jsx', extensions: ['.jsx'], debug: true})
     .transform('babelify', {presets: ['es2015', 'react', 'stage-2', 'stage-0']})
     .bundle()
     .on('error', err => {
@@ -129,3 +131,13 @@ gulp.task( 'build-prod', ['set-prod', 'scripts', 'sass', 'buildapi', 'buildundel
 gulp.task( 'docker-build-prod', ['copy-changed', 'set-prod', 'scripts', 'sass', 'buildapi', 'buildundelete', 'minify', 'exit'] );
 
 gulp.task('default', ['build-prod']);
+
+gulp.task( 'buildrevl', function() {
+  return browserify({entries: './jsdev/revl/index.jsx', extensions: ['.jsx','.coffee'], debug: true})
+    .transform('coffeeify', {only: './jsdev/revl'})
+    .transform('babelify', {presets: ['es2015', 'react', 'stage-2', 'stage-0']})
+    .bundle()
+    .pipe(source('revl-0.1.js'))
+    .pipe(gulp.dest( paths.revltarget ),{overwrite:true});
+});
+
