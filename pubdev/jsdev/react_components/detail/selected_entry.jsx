@@ -315,7 +315,7 @@ let SelectedEntry = React.createClass( {
         }
         return (
             <div id={divid} key={id} className={divClass} style={{height:height}}> 
-                <CustomMetaDataTable type={type} id={id} errorToggle={this.props.errorToggle} form={this.props.form} headerData={this.props.headerData}/>
+                { ( type != 'entity' && type != 'alert' ) ? <CustomMetaDataTable type={type} id={id} errorToggle={this.props.errorToggle} form={this.props.form} headerData={this.props.headerData}/> : null }
                 {/*{(type == 'incident' && this.props.headerData != null) ? <IncidentTable type={type} id={id} headerData={this.props.headerData} errorToggle={this.props.errorToggle}/> : null}*/}
                 {( type == 'signature' && this.props.headerData != null ) ? <SignatureTable type={type} id={id} headerData={this.props.headerData} errorToggle={this.props.errorToggle} showSignatureOptions={this.props.showSignatureOptions} /> : null}
                 {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId} isPopUp={this.props.isPopUp} entryToggle={this.props.entryToggle} updated={this.updatedCB} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar} errorToggle={this.props.errorToggle} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar} flairOff={this.props.flairOff}/> : <span>Loading...</span>} 
