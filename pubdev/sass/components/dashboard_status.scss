@@ -30,8 +30,12 @@
 			background: #f7788a;
 		}
 
-		&.status-unknown {
+		&.status-warn {
 			background: #e5b932;
+		}
+
+		&.status-unknown {
+			background: #999999;
 		}
 	}
 }
