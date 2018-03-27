@@ -7,6 +7,25 @@ import { Grid, Button } from 'react-bootstrap';
 import WidgetWrapper from './widgetWrapper';
 import WidgetPicker from './widgetPicker';
 
+export const defaultLayout = {
+	rows: [{
+		columns: [
+			{
+				className: 'col-sm-4',
+				widgets: [],
+			},
+			{
+				className: 'col-sm-4',
+				widgets: [],
+			},
+			{
+				className: 'col-sm-4',
+				widgets: [],
+			},
+		],
+	}],
+};
+
 class Dashboard extends PureComponent {
 	constructor( props ) {
 		super( props );
@@ -41,24 +60,7 @@ class Dashboard extends PureComponent {
 
 	static defaultProps = {
 		title: '',
-		layout: {
-			rows: [{
-				columns: [
-					{
-						className: 'col-sm-4',
-						widgets: [],
-					},
-					{
-						className: 'col-sm-4',
-						widgets: [],
-					},
-					{
-						className: 'col-sm-4',
-						widgets: [],
-					},
-				],
-			}],
-		},
+		layout: defaultLayout,
 		isNew: false,
 	}
 

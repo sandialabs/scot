@@ -4,7 +4,7 @@ import { Well, Tab, Row, Col, Nav, NavItem } from 'react-bootstrap';
 
 import { withUserConfig, UserConfigPropTypes, UserConfigKeys } from '../utils/userConfig';
 
-import Dashboard from '../components/dashboard/dazzle/dashboard';
+import Dashboard, { defaultLayout } from '../components/dashboard/dazzle/dashboard';
 
 import Status from '../components/dashboard/status';
 import Gamification from '../components/dashboard/gamification';
@@ -34,31 +34,19 @@ class HomeDashboard extends PureComponent {
 	}
 
 	defaultTab() {
-		const defaultLayout = {
-			rows: [{
-				columns: [
-					{
-						className: 'col-sm-4',
-						widgets: [{key: 'heatmap'}],
-					},
-					{
-						className: 'col-sm-4',
-						widgets: [{key: 'art'}],
-					},
-					{
-						className: 'col-sm-4',
-						widgets: [{key: 'created'}],
-					},
-				],
-			}],
-		};
+		const layout = $.extend( true, {}, defaultLayout ); // Deep copy
+
+		// Default tab has 3 charts: heatmap, ART, and created
+		layout.rows[0].columns[0].widgets.push( {key: 'heatmap'} );
+		layout.rows[0].columns[1].widgets.push( {key: 'art'} );
+		layout.rows[0].columns[2].widgets.push( {key: 'created'} );
 
 		return {
 			title: 'Default',
 			layout: <Dashboard
 				widgets={Widgets}
 				title="Default"
-				layout={defaultLayout}
+				layout={layout}
 				errorToggle={this.props.errorToggle}
 			/>
 		}
