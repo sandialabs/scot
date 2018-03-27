@@ -64,7 +64,8 @@ export class UserConfigProvider extends PureComponent {
 	}
 
 	getUserConfig() {
-		// Use localhost until backend setup
+		// Currently just uses localstorage
+		// This should be easy to change to use a backend at some point
 		return new Promise( ( resolve, reject ) => {
 			let json = getLocalStorage( UserConfigChannel )
 			if ( json ) {
@@ -77,7 +78,8 @@ export class UserConfigProvider extends PureComponent {
 	}
 
 	setUserConfig( config ) {
-		// Use localhost until backend setup
+		// Currently just uses localstorage
+		// This should be easy to change to use a backend at some point
 		return new Promise( ( resolve, reject ) => {
 			setLocalStorage( UserConfigChannel, JSON.stringify( config ) );
 
@@ -139,6 +141,11 @@ export const withUserConfig = ( configKey ) => {
 				userConfig: PropTypes.object.isRequired,
 			};
 
+			/**
+			 * This allows the wrapped component to only have to worry about its own
+			 * portion of userConfig. Its changes are automatically wrapped back into
+			 * the whole object
+			 */
 			setUserSubConfig( subConfig ) {
 				let newConfig = {
 					...this.props.userConfig,
