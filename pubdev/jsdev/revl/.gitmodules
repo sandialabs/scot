@@ -1,0 +1,3 @@
+[submodule "packages/polybooljs"]
+	path = packages/polybooljs
+	url = https://github.com/voidqk/polybooljs.git
