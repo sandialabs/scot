@@ -704,9 +704,12 @@ sub get_daemon_status {
             my ($type, $data) = split(/: /,$line);
             if ( $type =~ /Active/ ) {
                 push @statuses, $data;
-            }
-            if ( $type =~ /Main PID/ ) {
-                push @statuses, $data;
+                if ( $data =~ /running/i ) {
+                    return "ok";
+                }
+                if ( $data =~ /dead/i ) {
+                    return "error";
+                }
             }
         }
         return join(' ',reverse @statuses);
