@@ -51,25 +51,6 @@ sub _build_stomp_port {
     return $self->get_config_value($attr,$default);
 }
 
-# this is the part after /topic
-# having this as a "variable" allows us to set a different queue
-# for running tests and won't pollute any listeners to the topic
-has destination => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-    lazy        => 1,
-    builder     => '_build_destination',
-);
-
-sub _build_destination {
-    my $self    = shift;
-    my $config  = $self->config;
-    my $attr    = "destination";
-    my $default = "scot";
-    return $self->get_config_value($attr,$default);
-}
-
 has stomp   => (
     is      => 'ro',
     isa     => 'Maybe[Net::Stomp]',
@@ -114,14 +95,10 @@ sub _build_stomp {
 
 sub send {
     my $self    = shift;
-    my $dest    = shift;
+    my $dest    = shift; # /queue/* or /topic/*
     my $href    = shift;
     my $log     = $self->log;
     my $stomp   = $self->stomp;
-
-    # TODO: refactor to remove $dest as parameter
-    # but since time is tight just over write it and be happy
-    $dest = $self->destination;
 
     unless ($stomp) {
         $self->_clear_stomp

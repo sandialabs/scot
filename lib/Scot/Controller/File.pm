@@ -189,7 +189,7 @@ sub create_file_upload_entry {
                                                     $parent_id,
                                                     $target_type,
                                                     $target_id);
-    $env->mq->send("scot", {
+    $env->mq->send("/topic/scot", {
         action  => "created",
         data    => {
             type    => "entry",
@@ -198,7 +198,7 @@ sub create_file_upload_entry {
             what    => "file_uploaded",
         }
     });
-    $env->mq->send("scot", {
+    $env->mq->send("/topic/scot", {
         action  => "updated",
         data    => {
             type    => $target_type,
