@@ -539,7 +539,7 @@ sub post_alertgroup {
 
         foreach my $ag (@agobjs) {
 
-            $self->env->mq->send("scot", {
+            $self->env->mq->send("/topic/scot", {
                 action  => "created",
                 data    => {
                     type    => "alertgroup",

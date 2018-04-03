@@ -113,7 +113,9 @@ sub send_message {
     };
 
     $log->debug("Sending Notification: ", {filter=>\&Dumper, value=>$msg});
-    $mq->send("scot", $msg);
+    $mq->send("/topic/scot", $msg);
+
+    # TODO: SEND HREF to sharing queue
 }
 
 sub parse_results {
