@@ -3,8 +3,44 @@ import PropTypes from 'prop-types';
 import { getDisplayName } from 'recompose';
 import { Broadcast, Subscriber } from 'react-broadcast';
 
+/**
+ * This file defines everything needed to use user settings
+ * in components.
+ *
+ * This uses React's context API so that we don't need to have
+ * a giant prop chain
+ *
+ * The provider sets everything up and is included at the top
+ * of the application.
+ *
+ * The HOC is included with every component that wants access
+ * to the object
+ *
+ * userConfig data format:
+ * {
+ *		key1: { data },
+ *		key2: [ data, data, data, ],
+ *		key3: true,
+ *		...
+ * }
+ * where keys and data structures are defined in the UserConfigKeys
+ * object
+ *
+ * Currently components may only access one key of userConfig.
+ * 
+ * WARNING: The context API is likely to change in the future
+ * and this will need to be updated. Hopefully though, only
+ * this file will need to be updated as nothing else directly
+ * accesses context
+ */
+
 // Channel name for react-broadcast
 const UserConfigChannel = 'userConfig';
+
+const UserConfigKeyShape = {
+	key: PropTypes.string.isRequired,
+	default: PropTypes.any.isRequired,
+};
 
 /**
  * Unique keys for the structure of userConfig
@@ -12,14 +48,12 @@ const UserConfigChannel = 'userConfig';
  * Structure:
  *		KEY_ID: {
  *			key: KEY_VALUE,
- *			default: DEFAULT_VALUE_IF_UNDEFINED,
+ *			default: DEFAULT_VALUE(S),
  *		}
+ *
+ *	This is how to specify the top-level key into the userConfig object
+ *	and define the shape of the data as well as the default values
  */
-const UserConfigKeyShape = {
-	key: PropTypes.string.isRequired,
-	default: PropTypes.any.isRequired,
-};
-
 export const UserConfigKeys = {
 	DASHBOARD: {
 		key: 'dashboard',
@@ -30,16 +64,17 @@ export const UserConfigKeys = {
 	},
 }
 
-/*
- * Helper components for setting up context
- * Only provider is exported because subscriber is only used locally
- */
-
 const UserConfigContextTypes = {
-		getUserConfig: PropTypes.func,
-		setUserConfig: PropTypes.func,
-	};
+	getUserConfig: PropTypes.func,
+	setUserConfig: PropTypes.func,
+};
 
+/**
+ * This sets up the context provider for the userConfig object
+ *
+ * Only needs to be included once, somewhere at the top of the chain
+ * Currently in main/index.js
+ */
 export class UserConfigProvider extends PureComponent {
 	constructor( props ) {
 		super( props );
@@ -63,6 +98,11 @@ export class UserConfigProvider extends PureComponent {
 		}
 	}
 
+	/**
+	 * Load user config
+	 *
+	 * Return: Promise
+	 */
 	getUserConfig() {
 		// Currently just uses localstorage
 		// This should be easy to change to use a backend at some point
@@ -77,6 +117,11 @@ export class UserConfigProvider extends PureComponent {
 		} );
 	}
 
+	/**
+	 * Save user config
+	 *
+	 * Return: Promise
+	 */
 	setUserConfig( config ) {
 		// Currently just uses localstorage
 		// This should be easy to change to use a backend at some point
@@ -112,7 +157,21 @@ export class UserConfigProvider extends PureComponent {
 	}
 }
 
-// Defining shape for UserConfig props, should be imported by wrapped components
+/*
+ * Defining shape for UserConfig props.
+ *
+ * This should be imported by wrapped components:
+ * static propTypes = {
+ *		( all local propTypes ),
+ *		...UserConfigPropTypes,
+ * };
+ *
+ * Children:
+ *		config: the actual data,
+ *		setUserConfig( config ): save changes to config
+ *		getUserConfig(): load the config from source again
+ *		loading: whether the config is currently loading
+ */
 export const UserConfigPropTypes = {
 	userConfig: PropTypes.shape( {
 		config: PropTypes.any.isRequired,
@@ -122,6 +181,21 @@ export const UserConfigPropTypes = {
 	} ).isRequired,
 }
 
+/**
+ * Higher-order Component (HOC) for providing a subkey of userConfig
+ * to a component
+ *
+ * Usage: (In component file)
+ *		export default withUserConfig( KEY ) (COMPONENT);
+ * Where:
+ *		KEY: is one of the values above in UserConfigKeys
+ *		COMPONENT: is the component needing access to userConfig
+ *
+ * Example:
+ *		export default withUserConfig( UserConfigKeys.DASHBOARD ) (HomeDashboard);
+ *		
+ *		This gives HomeDashboard access to the dashboard portion of userConfig
+ */
 export const withUserConfig = ( configKey ) => {
 	PropTypes.checkPropTypes( UserConfigKeyShape, configKey, 'argument', 'withUserConfig' );
 
