@@ -685,6 +685,7 @@ sub get_status {
         { name  => "Scot App",      status => $self->get_daemon_status('scfd') },
         { name  => "Scot Reflair",  status => $self->get_daemon_status('scrfd') },
         { name  => "Scot Mongodb",  status => $self->get_daemon_status('mongod') },
+    ];
     $self->do_render($status);
 }
 
