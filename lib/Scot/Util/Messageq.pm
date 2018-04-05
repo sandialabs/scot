@@ -126,13 +126,15 @@ sub send {
     my $rcvframe;
     #if ( $self->is_connected ) {
         try {
+            $log->debug("inside try");
             $stomp->send_transactional({
-                destination         => "/topic/".$dest,
+                destination         => $dest,
                 body                => $body,
                 'amq-msg-type'      => 'text',
                 'content-length'    => $length,
                 persistent          => 'true',
             }, $rcvframe);
+            $log->debug("after send_transactional");
         }
         catch {
             $log->error("Error sending to STOMP message: $_");
