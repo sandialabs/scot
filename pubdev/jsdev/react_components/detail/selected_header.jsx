@@ -77,8 +77,6 @@ let SelectedHeader = React.createClass( {
     },
     componentWillMount: function() {
         this.setState( {loading:true} );
-    },
-    componentDidMount: function() {
         this.setState( {isMounted: true} );
         let delayFunction = {
             delay: function() {
