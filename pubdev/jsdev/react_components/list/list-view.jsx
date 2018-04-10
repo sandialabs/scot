@@ -353,7 +353,7 @@ module.exports = React.createClass( {
                                         </div>
                                     </div>
                                     <div onMouseDown={this.dragdiv} className='splitter' style={{display:'block', height:'5px', backgroundColor:'black', borderTop:'1px solid #AAA', borderBottom:'1px solid #AAA', cursor: 'row-resize', overflow:'hidden'}}/>
-                                    {this.state.showSelectedContainer ? <SelectedContainer id={this.state.id} type={this.state.queryType} alertPreSelectedId={this.state.alertPreSelectedId} taskid={this.state.entryid} handleFilter={this.handleFilter} errorToggle={this.props.errorToggle} history={this.props.history} form={this.state.form}/> : null}
+                                    {this.state.showSelectedContainer ? <SelectedContainer key={this.state.id} id={this.state.id} type={this.state.queryType} alertPreSelectedId={this.state.alertPreSelectedId} taskid={this.state.entryid} handleFilter={this.handleFilter} errorToggle={this.props.errorToggle} history={this.props.history} form={this.state.form}/> : null}
                                     {this.state.showEntityCreateModal ? <EntityCreateModal match={''} modalActive={this.state.showEntityCreateModal} ToggleCreateEntity={this.ToggleCreateEntity} errorToggle={this.props.errorToggle}/> : null }
                                 </div>
                             </div>

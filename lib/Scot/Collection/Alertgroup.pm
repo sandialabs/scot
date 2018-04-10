@@ -198,15 +198,6 @@ sub refresh_data {
         }
     });
 
-#    $log->trace("[Alertgroup $id] sending activemq update message");
-#    $env->mq->send("scot", {
-#        action  => "updated", 
-#        data    => {
-#            type    => "alertgroup",
-#            id      => $id, 
-#            who     => $user
-#        }
-#    });
 }
 
 sub api_subthing {

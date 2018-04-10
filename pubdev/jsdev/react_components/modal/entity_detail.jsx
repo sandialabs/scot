@@ -52,7 +52,7 @@ let EntityDetail = React.createClass( {
         let currentTabArray = this.state.tabs;
         let valueClicked = this.props.entityvalue;
         if (this.props.entitytype != 'source') {
-            if (this.state.entityid == undefined) {
+            if (this.state.entityid == undefined || isNaN( this.state.entityid )  ) {
                 $.ajax({
                     type: 'GET',
                     url: 'scot/api/v2/' + this.props.entitytype + '/byname',
@@ -242,7 +242,7 @@ let EntityDetail = React.createClass( {
                     addNewEntity: function() {
                         let currentTabArray = this.state.tabs;
                         if (nextProps.entitytype != 'source') {
-                            if (nextProps.entityid == undefined) {
+                            if (nextProps.entityid == undefined || isNaN( nextProps.entityid ) ) {
                                 $.ajax({
                                     type: 'GET',
                                     url: 'scot/api/v2/' + nextProps.entitytype + '/byname',

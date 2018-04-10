@@ -91,7 +91,7 @@ sub create {
             if ( ref($object) eq "Scot::Model::Entry" ) {
                 $data->{target} = $object->target;
             }
-            $self->env->mq->send("scot",{
+            $self->env->mq->send("/topic/scot",{
                 action  => "created",
                 data    => $data,
             });
@@ -142,7 +142,7 @@ sub post_create_process {
 
     if ( ref($object) eq "Scot::Model::Sigbody" ) {
         $json->{revision} = $object->revision;
-        $self->env->mq->send("scot", {
+        $self->env->mq->send("/topic/scot", {
             action  => "updated",
             data    => {
                 who     => $self->session('user'),
@@ -542,7 +542,9 @@ sub refresh_entity_enrichments {
     my ($updated, $data) = $self->env->enrichments->enrich($entity);
 
     if ( $updated > 0 ) {
-        $entity->update_set(data => $data);
+        foreach my $key (keys %$data) {
+            $entity->update_set("data.$key" => $data->{$key});
+        }
     }
     else {
         $self->env->log->debug('No entity updates');
@@ -928,7 +930,7 @@ sub promote {
         $mongo->collection('Alertgroup')->refresh_data($object->alertgroup);
         my $entry = $mongo->collection('Entry')
                           ->create_from_promoted_alert($object, $promotion_obj);
-        $self->env->mq->send("scot",{
+        $self->env->mq->send("/topic/scot",{
             action  => "created",
             data    => {
                 who => $req->{user},
@@ -952,7 +954,7 @@ sub promote {
     });
 
     # update mq and other bookkeeping
-    $env->mq->send("scot", {
+    $env->mq->send("/topic/scot", {
         action  => "created",
         data    => {
             who     => $user,
@@ -963,7 +965,7 @@ sub promote {
     my $type = $object->get_collection_name;
     my $id   = $object->id;
     if ( $type eq "alert" ) {
-        $env->mq->send("scot", {
+        $env->mq->send("/topic/scot", {
             action  => "updated",
             data    => {
                 who     => $user,
@@ -974,7 +976,7 @@ sub promote {
         });
     }
     else {
-        $env->mq->send("scot", {
+        $env->mq->send("/topic/scot", {
             action  => "updated",
             data    => {
                 who     => $user,
@@ -1025,7 +1027,7 @@ sub update_alerts {
     my $status  = $col->update_alerts_in_alertgroup($object, $req);
     if ( scalar(@{$status->{updated}}) > 0 ) {
         foreach my $aid (@{$status->{updated}}) {
-            $self->env->mq->send("scot",{
+            $self->env->mq->send("/topic/scot",{
                 action  => "updated",
                 data    => {
                     who => $self->session('user'),
@@ -1131,7 +1133,7 @@ sub post_update_process {
         data    => $mqdata,
     };
 
-    $env->mq->send("scot", $mq_msg);
+    $env->mq->send("/topic/scot", $mq_msg);
 
     if ( ref($object) eq "Scot::Model::Entry" ) {
         $mq_msg->{data} = {
@@ -1140,7 +1142,7 @@ sub post_update_process {
                          id   => $object->target->{id}, },
             what    => "Entry update",
         };
-        $env->mq->send("scot", $mq_msg);
+        $env->mq->send("/topic/scot", $mq_msg);
         $self->add_history("updated entry ".$object->id, $object);
     }
 
@@ -1151,7 +1153,7 @@ sub post_update_process {
             id      => $object->{signature_id},
             what    => "Signature Update",
         };
-        $env->mq->send("scot", $mq_msg);
+        $env->mq->send("/topic/scot", $mq_msg);
     }
     $env->mongo->collection('Stat')->put_stat("$colname updated", 1);
 }
@@ -1451,7 +1453,7 @@ sub post_delete_process {
         object  => $object,
         who     => $self->session('user'),
     };
-    $self->env->mq->send("scot",{
+    $self->env->mq->send("/topic/scot",{
         action  => "deleted",
         data    => $mqdata,
     });
@@ -1506,7 +1508,7 @@ sub mq_obj_update {
     my $target  = shift;
     my $mq      = $self->env->mq;
 
-    $mq->send("scot", {
+    $mq->send("/topic/scot", {
         action  => "updated",
         data    => {
             who     => $self->session('user'),
@@ -1741,7 +1743,7 @@ sub do_command {
     my $req_href    = $self->get_request_params;
 
 # TODO
-    $env->mq->send("scot", {
+    $env->mq->send("/topic/scot", {
         action  => "message",
         data    => {
             wall    => ""
@@ -1758,7 +1760,7 @@ sub wall {
     my $msg     = $self->param('msg');
     my $now     = $env->now;
 
-    $env->mq->send("scot", {
+    $env->mq->send("/topic/scot", {
         action  => "wall",
         data    => {
             message => $msg,
@@ -1922,7 +1924,7 @@ sub undelete {
     if ( ref($restored) eq "Scot::Model::Entry" ) {
         $data->{target} = $restored->target;
     }
-    $self->env->mq->send("scot",{
+    $self->env->mq->send("/topic/scot",{
         action  => "created",
         data    => $data,
     });

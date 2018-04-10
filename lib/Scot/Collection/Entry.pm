@@ -39,7 +39,7 @@ sub create_from_promoted_alert {
     my $agobj   = $agcol->find_iid($alert->alertgroup+0);
     my $subject = $agobj->subject;
     $json->{body}              = 
-        qq|<h3>From Alert <a href="/#/alert/$id">$id</h3><br>|.
+        qq|<h3>From Alert <a href="/#/alert/$id">$id</a></h3><br>|.
         qq|<h4>|.$subject.qq|</h4>|.
         $self->build_table($alert);
     $log->debug("Using : ",{filter=>\&Dumper, value => $json});
