@@ -673,12 +673,19 @@ sub get_status {
     my $mongo   = $env->mongo;
     my $log     = $env->log;
 
-    my $status  = {
-        'Scot Flair Daemon'         => $self->get_daemon_status('scfd'),
-        'Scot Elastic Push Daemon'  => $self->get_daemon_status('scepd'),
-        'System Uptime'             => `uptime`,
-        'MongoDB'                   => $self->get_daemon_status('mongod'),
-    };
+    #my $status  = {
+    #    'Scot Flair Daemon'         => $self->get_daemon_status('scfd'),
+    #    'Scot Elastic Push Daemon'  => $self->get_daemon_status('scepd'),
+    #    'System Uptime'             => `uptime`,
+    #    'MongoDB'                   => $self->get_daemon_status('mongod'),
+    #};
+    my $status  = [
+        { name  => "Scot Flair",    status => $self->get_daemon_status('scfd') },
+        { name  => "Scot Elastic",  status => $self->get_daemon_status('scepd') },
+        { name  => "Scot App",      status => $self->get_daemon_status('scfd') },
+        { name  => "Scot Reflair",  status => $self->get_daemon_status('scrfd') },
+        { name  => "Scot Mongodb",  status => $self->get_daemon_status('mongod') },
+    ];
     $self->do_render($status);
 }
 
@@ -698,9 +705,12 @@ sub get_daemon_status {
             my ($type, $data) = split(/: /,$line);
             if ( $type =~ /Active/ ) {
                 push @statuses, $data;
-            }
-            if ( $type =~ /Main PID/ ) {
-                push @statuses, $data;
+                if ( $data =~ /running/i ) {
+                    return "ok";
+                }
+                if ( $data =~ /dead/i ) {
+                    return "error";
+                }
             }
         }
         return join(' ',reverse @statuses);

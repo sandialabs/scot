@@ -22,7 +22,6 @@ let SelectedContainer = require( '../detail/selected_container.jsx' );
 let AMQ             = require( '../debug-components/amq.jsx' );
 let Wall            = require( '../debug-components/wall.jsx' );
 let Search          = require( '../components/esearch.jsx' );
-let Revl            = require( '../components/visualization/revl.coffee' );
 let Gamification    = require( '../components/dashboard/gamification.jsx' );
 let Status          = require( '../components/dashboard/status.jsx' );
 let Online          = require( '../components/dashboard/online.jsx' );
@@ -376,12 +375,8 @@ let App = React.createClass( {
                         null}
                     {type == 'entity' ?
                         <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={type} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
-                        :
-                        null}
-                    {type == 'visualization' ?
-                        <Revl value={type} type={this.props.match.params.type} id={this.props.match.params.id} depth={this.props.match.params.id2} viewMode={this.state.viewMode} Notification={this.state.Notification} />
-                        :
-                        null}
+                    :
+                    null}
                     {type === 'reports' && !this.props.match.params.id &&
                         <ReportPage />
                     }

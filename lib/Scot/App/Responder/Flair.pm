@@ -160,7 +160,7 @@ sub update_alertgroup {
         my $agcol      = $mongo->collection("Alertgroup");
         $agcol->update_alertgroup_with_bundled_alert($putdata);
         $log->debug("after alertgroup update");
-        $self->env->mq->send("scot", {
+        $self->env->mq->send("/topic/scot", {
             action  => "updated",
             data    => {
                 type    => "alertgroup",
@@ -433,7 +433,7 @@ sub update_entry {
                      $update_aref) = $ecol->update_entities($obj, $entity_aref);
                 $log->debug("created entities: ",join(',',@$create_aref));
                 foreach my $id (@$create_aref) {
-                    $self->env->mq->send("scot", {
+                    $self->env->mq->send("/topic/scot", {
                         action  => "created",
                         data    => {
                             type    => "entity",
@@ -445,7 +445,7 @@ sub update_entry {
                 $self->put_stat("entity created", scalar(@$create_aref));
                 $log->debug("updated entities: ",join(',',@$update_aref));
                 foreach my $id (@$update_aref) {
-                    $self->env->mq->send("scot", {
+                    $self->env->mq->send("/topic/scot", {
                         action  => "updated",
                         data    => {
                             type    => "entity",
@@ -461,7 +461,7 @@ sub update_entry {
             }
         }
 
-        $self->env->mq->send("scot", {
+        $self->env->mq->send("/topic/scot", {
             action  => "updated",
             data    => {
                 type    => "entry",
