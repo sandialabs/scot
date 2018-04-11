@@ -77,6 +77,8 @@ let SelectedHeader = React.createClass( {
     },
     componentWillMount: function() {
         this.setState( {loading:true} );
+    },
+    componentDidMount: function() {
         this.setState( {isMounted: true} );
         let delayFunction = {
             delay: function() {
@@ -190,6 +192,7 @@ let SelectedHeader = React.createClass( {
     componentWillUnmount: function() {
         this.setState( {isMounted: false} );
         clearTimeout( InitialAjaxLoad );
+        Store.removeChangeListener( this.props.id, this.updated );
     },
     componentDidUpdate: function() {
         //This runs the watcher which handles the entity popup and link warning.
