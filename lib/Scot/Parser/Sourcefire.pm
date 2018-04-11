@@ -36,7 +36,30 @@ sub parse_message {
 
     $log->trace("Parsing Sourcefire email");
 
-    my $regex   = qr{\[(?<sid>.*?)\] "(?<rule>.*?)" \[Impact: (?<impact>.*?)\] +From "(?<from>.*?)" at (?<when>.*?) +\[Classification: (?<class>.*?)\] \[Priority: (?<pri>.*?)\] {(?<proto>.*)} (?<rest>.*) *};
+#    my $regex   = qr{\[(?<sid>.*?)\] "(?<rule>.*?)" \[Impact: (?<impact>.*?)\] +From "(?<from>.*?)" at (?<when>.*?) +\[Classification: (?<class>.*?)\] \[Priority: (?<pri>.*?)\] {(?<proto>.*)} (?<rest>.*) *};
+
+    my $regex   = qr{
+        \[(?<sid>.*?)\]
+        \s
+        "(?<rule>.*?)"
+        \s
+        \[Impact: (?<impact>.*?)\]
+        \s+
+        From "(?<from>.*?)"
+        \s
+        at
+        \s
+        (?<when>.*?)
+        \s+
+        \[Classification: (?<class>.*?)\]
+        \s
+        \[Priority: (?<pri>.*?)\]
+        \s
+        \{(?<proto>.*)\}
+        \s
+        (?<rest>.*)
+        \s*
+    };
 
     my $body    = $href->{body_html} // $href->{body_plain};
        $body    =~ s/[\n\r]/ /g;
