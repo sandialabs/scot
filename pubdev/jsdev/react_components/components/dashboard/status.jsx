@@ -1,63 +1,87 @@
-let React = require( 'react' );
-let Panel = require( 'react-bootstrap/lib/Panel.js' );
-let Badge = require( 'react-bootstrap/lib/Badge.js' );
+import React, { PureComponent } from 'react';
+import { Panel, Badge } from 'react-bootstrap';
 
-let Status = React.createClass( {
-    getInitialState: function() {
-        return {
-            StatusData: null
-        };
-    },
-    componentDidMount: function() {
-        $.ajax( {
-            type: 'get',
-            url: '/scot/api/v2/status',
-            success: function( response ) {
-                this.setState( {StatusData:response} );
-            }.bind( this ),
-            error: function( data ) {
-                this.props.errorToggle( 'failed to get status', data );
-            }.bind( this )
-        } );
-    },
-    render: function() {
-        let StatusRows = [];
-        if ( this.state.StatusData != null ) {
-            for ( let key in this.state.StatusData ) {
-                let className = 'dashboardStatusDetail';
-                if ( this.state.StatusData[key] == 'Not Running' ) {
-                    className = 'dashboardStatusDetailNotRunning';
-                } else if ( this.state.StatusData[key] == 'Running' ) {
-                    className = 'dashboardStatusDetailRunning';
-                }
-                StatusRows.push(
-                    <Panel header={key} >
-                        <div className='dashboardStatusChild'>
-                            <div className={className}>{this.state.StatusData[key]}</div>
-                        </div>
-                    </Panel>
-                );
-            }
-        } else {
-            StatusRows.push(
-                <Panel header={'SCOT 3.5 Status'}>
-                    <br/>
-                    <div style={{fontWeight:'bold'}}>Coming Soon</div>
-                    <br/>
-                </Panel>
-            );
-        }
-        return (
-            <div id='status' className="dashboardStatusParent">
-                <div>
-                    <h2>Status</h2>
-                </div>
-                <div>
-                    {StatusRows}
-                </div>
-            </div>
-        );
-    }
-} );
+class Status extends PureComponent {
+	constructor( props ) {
+		super( props );
 
-module.exports = Status;
+		this.state = {
+			statusData: {},
+			error: null,
+		};
+
+		this.updateData = this.updateData.bind( this );
+		this.fetchError = this.fetchError.bind( this );
+	}
+
+	componentDidMount() {
+		/*
+		 * Expected structure:
+		 * [
+		 *		{ name: "SERVICE", status: "STATUS" },
+		 *		...
+		 * ]
+		 *
+		 * Service: name of service
+		 * Status: [ "ok", "error", "warn", "unknown" ]
+		 */
+		$.ajax( {
+			type: 'get',
+			url: 'scot/api/v2/status',
+			success: this.updateData,
+			error: this.fetchError,
+		} );
+	}
+
+	updateData( response ) {
+		this.setState( {
+			statusData: response,
+		} );
+	}
+
+	fetchError( error ) {
+		this.setState( {
+			error: error,
+		} );
+	}
+
+	render() {
+		let { className = "" } = this.props;
+
+		let statuses = [ "ok", "error", "warn", "unknown" ];
+
+		let services = [];
+		if ( Array.isArray( this.state.statusData ) ) {
+			for ( let service of this.state.statusData ) {
+				let { name, status } = service;
+				if ( !status ) {
+					status = "unknown";
+				}
+
+				services.push( <Service key={name} name={name} status={status} /> );
+			}
+		}
+
+		let classes = [ "Status", className ];
+		if ( services.length > 4 ) {
+			classes.push( 'cols-2' );
+		}
+
+		return (
+			<div className={classes.join(' ')}>
+				{ this.state.error &&
+					<Panel bsStyle="danger" header="Error">{this.state.error}</Panel>
+				}
+				{services}
+			</div>
+		)
+	}
+}
+
+const Service = ( { name, status } ) => (
+	<div className={`service status-${status}`} title={`Status: ${status}`}>
+		{name}
+	</div>
+)
+
+export default Status;
