@@ -673,28 +673,38 @@ sub get_status {
     my $mongo   = $env->mongo;
     my $log     = $env->log;
 
-    #my $status  = {
-    #    'Scot Flair Daemon'         => $self->get_daemon_status('scfd'),
-    #    'Scot Elastic Push Daemon'  => $self->get_daemon_status('scepd'),
-    #    'System Uptime'             => `uptime`,
-    #    'MongoDB'                   => $self->get_daemon_status('mongod'),
-    #};
-    my $status  = [
-        { name  => "Scot Flair",    status => $self->get_daemon_status('scfd') },
-        { name  => "Scot Elastic",  status => $self->get_daemon_status('scepd') },
-        { name  => "Scot App",      status => $self->get_daemon_status('scfd') },
-        { name  => "Scot Reflair",  status => $self->get_daemon_status('scrfd') },
-        { name  => "Scot Mongodb",  status => $self->get_daemon_status('mongod') },
-    ];
-    $self->do_render($status);
+    my $status_file = "/opt/scot/data/status.txt";
+    my @statuses    = ();
+
+    try {
+        @statuses = read_file($status_file);
+    }
+    catch {
+        $log->error("Unable to read file $status_file: $_");
+    };
+
+    my @return  = ();
+    foreach my $line (@statuses) {
+        my ($daemon, $status) = split(/=/,$line);
+        push @return, { name => $daemon, status => $status };
+    }
+
+    $self->do_render(\@return);
 }
+#    my $status  = [
+#        { name  => "Scot Flair",    status => $self->get_daemon_status('scfd') },
+#       { name  => "Scot Elastic",  status => $self->get_daemon_status('scepd') },
+#        { name  => "Scot App",      status => $self->get_daemon_status('scfd') },
+#        { name  => "Scot Reflair",  status => $self->get_daemon_status('scrfd') },
+#        { name  => "Scot Mongodb",  status => $self->get_daemon_status('mongod') },
+#    ];
 
 sub get_daemon_status {
     my $self    = shift;
     my $daemon  = shift;
     my $log     = $self->env->log;
 
-    my $systemd = `systemctl | grep "\-.mount"`;
+    my $systemd = `systemctl | grep "\-\.mount"`;
 
     if ( $systemd =~ /-\.mount/ ) {
         $log->debug("systemd style services!");
