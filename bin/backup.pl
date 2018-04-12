@@ -20,7 +20,7 @@ my $env  = Scot::Env->new({
 # $env has
 #   
 #   pidfile  = the pid file for runnign dump
-#   location = directory to dump the mongodump
+#   bkuplocation = directory to dump the mongodump
 #   tarloc  = directory to place tar file
 #   cleanup  = true if you wish to remove the dumped directory
 #   user     = if needed, set to user name for db access
@@ -42,7 +42,7 @@ open my $pidfh, ">", $pidfile or die "Unable to create PID file $pidfile!";
 print $pidfh "$$";
 close $pidfh;
 
-my $dumpdir = $env->location;
+my $dumpdir = $env->bkuplocation;
 unless ($dumpdir) {
     warn "$dumpdir is missing! Setting to /tmp/dump";
     $dumpdir = "/tmp/dump";
@@ -197,8 +197,8 @@ if ( $env->cleanup ) {
     print "removing $esdir\n";
     system("rm -rf $esdir/*");
 }
-print "finding and removing old ".$env->location."\n";
-system("find ".$env->location." -ctime 7 -print0 | xargs -0 /bin/rm -f");
+print "finding and removing old ".$env->bkuplocation."\n";
+system("find ".$env->bkuplocation." -ctime 7 -print0 | xargs -0 /bin/rm -f");
 print "done";
 system("rm -f $pidfile");
 
