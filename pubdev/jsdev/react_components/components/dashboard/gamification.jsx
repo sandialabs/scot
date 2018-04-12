@@ -1,62 +1,89 @@
-let React = require( 'react' );
-let Panel = require( 'react-bootstrap/lib/Panel.js' );
-let Badge = require( 'react-bootstrap/lib/Badge.js' );
-let Tooltip = require( 'react-bootstrap/lib/Tooltip.js' );
-let OverlayTrigger = require( 'react-bootstrap/lib/OverlayTrigger.js' );
+import React, { PureComponent } from 'react';
+import { Well, Panel, Badge, Tooltip, OverlayTrigger } from 'react-bootstrap';
 
-let Gamification = React.createClass( {
-    getInitialState: function() {
-        return {
-            GameData: null
-        };
-    },
-    componentDidMount: function() {
-        $.ajax( {
+const titleCase = ( str ) => str.charAt(0).toUpperCase() + str.slice(1);
+
+const CATEGORY_INTERVAL = 5000;
+
+class Gamification extends PureComponent {
+	constructor( props ) {
+		super( props );
+
+		this.state = {
+			gameData: [],
+			gameCategories: [],
+			categoryIndex: 0,
+			error: null,
+		};
+
+		this.updateData = this.updateData.bind( this );
+		this.fetchError = this.fetchError.bind( this );
+		this.updateCategory = this.updateCategory.bind( this );
+	}
+
+	componentDidMount() {
+        $.ajax({
             type: 'get',
             url: '/scot/api/v2/game',
-            success: function( response ) {
-                this.setState( {GameData:response} );
-            }.bind( this ),
-            error: function( data ) {
-                this.props.errorToggle( 'unable to get game data', data );
-            }.bind( this )
-        } );
-    },
-    titleCase: function( string ) {
-        let newstring = string.charAt( 0 ).toUpperCase() + string.slice( 1 );
-        return (
-            newstring
-        );
-    },
-    render: function() {
-        let GameRows = [];
-        if ( this.state.GameData != null ) {
-            for ( let key in this.state.GameData ) {
-                let keyCapitalized = this.titleCase( key );
-                GameRows.push(
-                    <OverlayTrigger placement="top" overlay={<Tooltip id='tooltip'>{this.state.GameData[key][0].tooltip}</Tooltip>}>
-                        <Panel header={keyCapitalized} >
-                            <div>
-                                <div>{this.state.GameData[key][0].username} <Badge>{this.state.GameData[key][0].count}</Badge></div>
-                                <div>{this.state.GameData[key][1].username} <Badge>{this.state.GameData[key][1].count}</Badge></div>
-                                <div>{this.state.GameData[key][2].username} <Badge>{this.state.GameData[key][2].count}</Badge></div>
-                            </div>
-                        </Panel>
-                    </OverlayTrigger>
-                );
-            }
-        }
-        return (
-            <div id='gamification' className="dashboard col-md-2">
-                <div>
-                    <h2>Leader Board</h2>
-                </div>
-                <div>
-                    {GameRows}
-                </div>
-            </div>
-        );
-    }
-} );
+            success: this.updateData,
+            error: this.fetchError,
+        });
 
-module.exports = Gamification;
+		this.categoryInterval = setInterval( this.updateCategory, CATEGORY_INTERVAL );
+	}
+
+	componentWillUnmount() {
+		if ( this.categoryInterval ) {
+			clearInterval( this.categoryInterval );
+		}
+	}
+
+	updateCategory() {
+		let nextIndex = ( this.state.categoryIndex + 1 ) % this.state.gameCategories.length;
+		this.setState( {
+			categoryIndex: nextIndex,
+		} );
+	}
+
+	updateData( data ) {
+		let categories = [];
+		for ( let category in data ) {
+			categories.push( <Category category={category} data={data[category]} /> );
+		}
+
+		this.setState( {
+			gameData: data,
+			gameCategories: categories,
+		} );
+	}
+
+	fetchError( error ) {
+		this.setState( {
+			error: error,
+		} );
+	}
+
+	render() {
+		return (
+			<Well className="Gamification">
+				<h3>Leaders</h3>
+				{ this.state.error &&
+					<Panel bsStyle="danger" header="Error">{this.state.error}</Panel>
+				}
+				{this.state.gameCategories[this.state.categoryIndex]}
+			</Well>
+		)
+	}
+}
+
+const Category = ( { category, data } ) => (
+	<Panel header={`${titleCase(category)} - ${data[0].tooltip}`} className="category">
+		<div>
+			<div>{data[0].username} <Badge>{data[0].count}</Badge></div>
+			<div>{data[1].username} <Badge>{data[1].count}</Badge></div>
+			<div>{data[2].username} <Badge>{data[2].count}</Badge></div>
+		</div>
+	</Panel>
+)
+
+export default Gamification;
