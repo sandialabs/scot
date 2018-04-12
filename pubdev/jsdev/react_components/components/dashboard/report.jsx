@@ -2,10 +2,39 @@ import React, { PureComponent } from 'react';
 import { Panel, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
-import ReportHeatmap from './report_heatmap';
-import ReportArt from './report_art';
-import ReportAlertpower from './report_alertpower';
-import ReportCreated from './report_created';
+import ReportHeatmap, { Description as HeatmapDesc } from './report_heatmap';
+import ReportArt, { Description as ArtDesc } from './report_art';
+import ReportAlertpower, { Description as PowerDesc } from './report_alertpower';
+import ReportCreated, { Description as CreatedDesc } from './report_created';
+
+export const ReportWidgets = () => {
+	const widgetTypes = [ 'heatmap', 'art', 'alertpower', 'created' ];
+
+	let widgets = {}
+	for ( let type of widgetTypes ) {
+		widgets[ type ] = {
+			type: reportByType( type ),
+			title: reportTitleByType( type ),
+			description: reportDescriptionByType( type ),
+		};
+	}
+
+	return widgets;
+}
+
+const reportByType = ( reportType ) => {
+	switch( reportType ) {
+		default:
+		case 'heatmap':
+			return ReportHeatmap;
+		case 'alertpower':
+			return ReportAlertpower;
+		case 'art':
+			return ReportArt;
+		case 'created':
+			return ReportCreated;
+	}
+}
 
 const reportComponentByType = ( reportType ) => {
     switch( reportType ) {
@@ -35,6 +64,20 @@ const reportTitleByType = ( reportType ) => {
     }
 };
 
+const reportDescriptionByType = ( reportType ) => {
+	switch( reportType ) {
+		default:
+		case 'heatmap':
+			return HeatmapDesc;
+		case 'alertpower':
+			return PowerDesc;
+		case 'art':
+			return ArtDesc;
+		case 'created':
+			return CreatedDesc;
+	}
+}
+
 const reportPanelHeader = ( type, expandButton = false, backButton = false ) => (
     <div style={{ position: 'relative' }}>
         {reportTitleByType( type )}
@@ -48,24 +91,6 @@ const reportPanelHeader = ( type, expandButton = false, backButton = false ) => 
 				    <i className="fa fa-arrow-left" aria-hidden />
 				</Button></Link>
         }
-    </div>
-);
-
-export const ReportDashboard = () => (
-    <div id='report' className='dashboard'>
-        <div style={{textAlign:'center'}}>
-            <h2>Reports</h2>
-        </div>
-        <div id='heatmap' className="dashboard col-md-4">
-            <div>
-                <Panel header='Heatmap'>
-                    <ReportHeatmap />
-                </Panel>
-                <Panel header='Alert Response Time'>
-                    <ReportArt />
-                </Panel>
-            </div>
-        </div>
     </div>
 );
 
