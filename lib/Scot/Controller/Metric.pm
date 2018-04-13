@@ -255,6 +255,7 @@ sub response_time {
     my $collection  = $mongo->collection('Stat');
     my $regex       = qr/Alertgroup Response Times/;
     my $match       = $self->generate_range_match(\@range,$regex);
+    $log->debug("response_time match is ",{filter=>\&Dumper, value => $match});
     my $cursor      = $collection->find($match);
 
     $log->debug("There are ".$cursor->count." items in range");
