@@ -214,7 +214,8 @@ sub response_avg_last_x_days {
         my $next_end_dt     = $next_start_dt->clone();
         $next_end_dt->set(hour=>23, minute=>59, second=>59);
         my $request = {
-            range   => [ $next_start_dt, $next_end_dt ]
+            # range   => [ $next_start_dt, $next_end_dt ]
+            range   => [ $next_end_dt, $next_start_dt ]
         };
         if ( defined $limit ) {
             $request->{limit} = $limit;
@@ -276,6 +277,7 @@ sub response_time {
 
         push @{$results{$subtype}{$type}}, $stat->value;
     }
+    $log->debug("results: ",{filter=>\&Dumper, value=>\%results});
 
     my $json    = {
         all         => $self->get_statistics($results{all}),
@@ -286,7 +288,7 @@ sub response_time {
     return $json;
 }
 
-sub get_statistics_nogood {
+sub get_statistics {
     my $self    = shift;
     my $href    = shift; # { sum => [ x,y,z...], count => [a,b,c...] }
     my @values  = ();
@@ -317,7 +319,7 @@ sub get_statistics_nogood {
     };
 }
 
-sub get_statistics {
+sub get_statistics_huh {
     my $self    = shift;
     my $aref    = shift; # array of values
     my $util    = Statistics::Descriptive::Sparse->new();
