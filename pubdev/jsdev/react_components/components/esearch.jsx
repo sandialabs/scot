@@ -76,7 +76,7 @@ let Search = React.createClass( {
         return (
             <div className='esearch'>
                 <div style={{display:'flex'}}>
-                    <input id='main-search' className='esearch-query' style={{marginTop:'3px',padding:'10px 10px', backgroundColor: 'white', color:'black', float:'right', borderRadius:'50px',position:'relative'}} placeholder={'Search...'} onKeyPress={this.handleEnterKey} onChange={this.onChange}/>
+                    <input id='main-search' className='esearch-query' style={{marginTop:'3px',padding:'10px 10px', float:'right',position:'relative'}} placeholder="&#xF002; Search" charSet="utf-8" onKeyPress={this.handleEnterKey} onChange={this.onChange}/>
                     {this.state.searching ? <i className="fa fa-spinner fa-spin fa-3x fa-fw" style={{color:'white'}}/> : null}
                 </div>
                 {this.state.showSearchToolbar ? 
