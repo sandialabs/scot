@@ -326,6 +326,21 @@ sub post_list_process {
             push @records, $href;
         }
     }
+    elsif ( $thing eq "alert" ) {
+        $log->debug("post list proc of alert");
+        while ( my $obj = $cursor->next ) {
+            my $href    = $obj->as_hash;
+            my $withsub = $req_href->{request}->{params}->{withsubject};
+            if ( defined $withsub && $withsub == 1 ) {
+                $log->debug("alertgroup subject requested");
+                my $agid    = $href->{alertgroup};
+                my $agobj   = $self->env->mongo->collection('Alertgroup')->find_iid($agid);
+                $href->{subject}    = $agobj->subject // '';
+                $log->debug("subject is ".$href->{subject});
+            }
+            push @records, $href;
+        }
+    }
     else {
         @records     = $cursor->all;
     }
