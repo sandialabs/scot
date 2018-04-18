@@ -21,6 +21,12 @@ var Storeaq = assign( {}, EventEmitter.prototype, {
     },
     storeKey: function( key ){
         storekey = key;
+    },
+    removeChangeListener: function( eventName, listener ) {
+        this.removeListener( eventName, listener);  
+    },
+    countListener: function( eventName ) {
+        this.listenerCount( eventName );
     }
 } );
 

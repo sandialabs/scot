@@ -5,8 +5,7 @@ use Data::Dumper;
 use Scot::Parser::Sourcefire;
 use v5.18;
 
-my $string  = qq|[1:90020059:2] "(JIM) SCOT-5696 Traffic from/to suspicious IP" [Impact: Unknown Target] From "MrKrabs ESnet IDS Engine/MrKrabs" at Sat May 16 17:46:32 2015 UTC [Classification: Critical - Send alert to scot-alerts.sandia.gov] [Priority: 1] {icmp} 64.237.51.163->10.10.20.167
-|;
+my $string  = q|[1:90010192:2] "(SIL) Bad known IPs TCP traffic SCOT-3306" [Impact: Unknown] From "MrKrabs ESnet IDS Engine/MrKrabs" at Sat Dec 30 21:32:25 2017 UTC [Classification: Will send an alert to scort-alerts@sandia.gov] [Priority: 1] {udp} 173.192.141.126:21336->134.253.115.242:54868|;
 
 my $regex   = qr{\[(?<sid>.*?)\] "(?<rule>.*?)" \[Impact: (?<impact>.*?)\] +From "(?<from>.*?)" at (?<when>.*?) +\[Classification: (?<class>.*?)\] \[Priority: (?<pri>.*?)\] \{(?<proto>.*?)\} (?<rest>.*) *};
 
