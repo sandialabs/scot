@@ -11,7 +11,7 @@ use Scot::App::Responder::Flair;
 use Data::Dumper;
 
 my $config_file = $ENV{'scot_app_flair_config_file'} //
-                        '/opt/scot/etc/fedup.cfg.pl';
+                        '/opt/scot/etc/fedrec.cfg.pl';
 my $env = Scot::Env->new(
     config_file => $config_file,
 );
@@ -29,7 +29,7 @@ END {
 
 
 
-my $loop    = Scot::App::Responder::FederateUp->new({ 
+my $loop    = Scot::App::FedRec->new({ 
     env => $env,
 });
 $loop->run();
