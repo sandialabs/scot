@@ -255,7 +255,7 @@ sub build_match_ref {
 
     foreach my $key (keys %$params) {
 
-        next if ( grep {/$key/} @skipfields );
+        next if ( grep {/^$key$/} @skipfields );
 
         my $value   = $params->{$key};
 
