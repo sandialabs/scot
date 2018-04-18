@@ -119,7 +119,7 @@ has queues   => (
 
 sub _build_queues {
     my $self    = shift;
-    my $attr    = "topic";
+    my $attr    = "queue";
     my $default = [ '/queue/incoming' ],
     my $envname = "scot_queues";
     return $self->get_config_value($attr, $default, $envname);
