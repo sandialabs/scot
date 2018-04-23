@@ -1,6 +1,7 @@
 package Scot::App::Responder::Flair;
 
 use Data::Dumper;
+use SVG::Sparkline;
 use HTML::Entities;
 use Try::Tiny;
 use Moose;
@@ -274,6 +275,20 @@ sub flair_record {
                 $flair{$column} = $value;
                 $log->debug("Flair for $column is now ".$flair{$column});
                 next COLUMN;
+            }
+
+            if ( $column =~ /^sparkline$/i ) {
+                $log->debug("sparkline column detected!");
+                my @sparkvalues = @values;
+                $log->debug("sparkvalues: ",{filter=>\&Dumper, value=>\@sparkvalues});
+                my $head = shift @sparkvalues;
+                $log->debug("head is $head");
+                if ($head eq "##__SPARKLINE__##" ) {
+                    $log->debug("creating svg::sparkline");
+                    my $svg = SVG::Sparkline->new( Line => { values =>\@sparkvalues, color => 'blue', height =>12 } );
+                    $flair{$column} = $svg->to_string();
+                    next COLUMN; # or VALUE?
+                }
             }
 
             my $html        = '<html>'.encode_entities($value).'</html>';
