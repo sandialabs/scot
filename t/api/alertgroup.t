@@ -344,12 +344,12 @@ $t->get_ok("/scot/api/v2/alertgroup" => {},
             }, 
     )
     ->status_is(200)
-    ->json_is('/queryRecordCount'   => 2)
-    ->json_is('/totalRecordCount'   => 7);
+    ->json_is('/queryRecordCount'   => 1)
+    ->json_is('/totalRecordCount'   => 3);
 
-print Dumper($t->tx->res->json), "\n";
-done_testing();
-exit 0;
+#print Dumper($t->tx->res->json), "\n";
+#done_testing();
+#exit 0;
 
 $t->get_ok("/scot/api/v2/alertgroup/7")
     ->status_is(200);
