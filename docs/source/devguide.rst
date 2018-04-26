@@ -192,6 +192,28 @@ SCOT post API
         columns: [ 'column1', 'column2', 'column3' ],
     }'
 
+#. Create an Event::
+
+   curl -XPOST /scot/api/v2/event -d '{
+        “subject”: “Test Event”,
+        “source”: [ “Orchestration” ],
+        “tag”: [ “tag1”, “tag2” ],
+        “status”: “open”,
+        “groups”: [
+            read: [ “scot-group” ],
+            modify: [ “scot-group ],
+        ]
+    }'
+
+#. Create an Entry attached to a known event::
+
+   curl -XPOST /scot/api/v2/entry -d'{
+        "target_id": 123
+        "target_type": "event",
+        "body": "any text/html here",
+    }'
+
+
 SCOT put API
 ^^^^^^^^^^^^
 

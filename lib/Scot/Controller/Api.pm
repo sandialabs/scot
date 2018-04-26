@@ -8,6 +8,7 @@ use Mojo::JSON qw(decode_json encode_json);
 use Try::Tiny;
 use Net::IP;
 use Crypt::PBKDF2;
+use Mail::Send;
 use strict;
 use warnings;
 use base 'Mojolicious::Controller';
@@ -1854,7 +1855,7 @@ sub whoami {
             });
         }
         else {
-            $self->do_error(404, {
+            $self->render_error(404, {
                 user    => "not valid",
                 data    => { error_msg => "$user not found" },
             });
@@ -1950,5 +1951,172 @@ sub undelete {
         $self->do_render(pop @returnjson);
     }
 }
+
+=item B<export>
+
+Create an exportable report
+/scot/api/v2/export/:thing/:id
+
+=cut
+
+sub export {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+    my $user    = $self->session('user');
+
+    $log->debug("Export");
+
+    try {
+        my $collection  = $self->stash('thing');
+        my $id          = $self->stash('id') + 0;
+        my $object      = $mongo->collection(ucfirst($collection))->find_iid($id);
+        my $href        = $self->create_export($collection, $object);
+
+        $self->stash(foo => $href);
+        $self->render();
+        return;
+        my $html    = $self->render_to_string();
+
+        $log->debug("HTML is ",{filter=>\&Dumper, value=>$html});
+
+        # $self->mail_to_user($user, $html, $collection, $id);
+        # $self->do_render({ status => "Email generated and sent to user" } );
+
+
+    }
+    catch {
+        $log->error("ERROR exporting: $_");
+        $self->render_error(400, {
+            data    => { error_msg => "export error: $_" },
+        });
+        
+    };
+}
+
+sub mail_to_user {
+    my $self    = shift;
+    my $user    = shift;
+    my $html    = shift;
+    my $col     = shift;
+    my $id      = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+
+    my $addr    = $user . $env->export_email_addr_suffix;
+    my $subject = "SCOT Export of $col - $id";
+    my $msg = Mail::Send->new(Subject => $subject, To => $addr);
+    $msg->set('Content-Type',"text/html");
+    my $fh  = $msg->open;
+    print $fh $html;
+    $fh->close;
+}
+
+sub create_export {
+    my $self    = shift;
+    my $col     = shift;
+    my $object  = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+
+    my $href    = $object->as_hash;
+    $href->{export_type} = ucfirst($col);
+    $href->{entities}    = $self->build_entity_export($object->id, $col);
+    $href->{created}     = $self->stringify_epoch($href->{created});
+    $href->{updated}     = $self->stringify_epoch($href->{updated});
+
+    if ( $object->meta->does_role("Scot::Role::Entriable") ) {
+        $href->{entries}     = $self->build_entry_export($object->id, $col);
+    }
+
+    if ( $object->meta->does_role("Scot::Role::Tags") ) {
+        $href->{tags}   = $self->build_tag_export($object->id, $col);
+    }
+
+    $log->debug("export data is ",{filter=>\&Dumper,value=>$href});
+
+    return $href;
+}
+
+sub stringify_epoch {
+    my $self    = shift;
+    my $epoch   = shift;
+    my $dt      = DateTime->from_epoch(epoch => $epoch);
+    return $dt->ymd." ".$dt->hms;
+}
+
+sub build_tag_export {
+    my $self    = shift;
+    my $id      = shift;
+    my $col     = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my @appearances = map { $_->{apid} } 
+        $mongo->collection('Appearance')->find({
+            type            => 'tag',
+            'target.type'   => $col,
+            'target.id'     => $id,
+        })->all;
+    my @tags = map { $_->{value} } $mongo->collection('Tag')
+                     ->find({ id => {'$in' => \@appearances}})->all;
+    return wantarray ? @tags : \@tags;
+}
+
+
+sub build_entity_export {
+    my $self    = shift;
+    my $id      = shift;
+    my $col     = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my @results = ();
+
+    my $cursor  = $mongo->collection('Link')
+                  ->get_linked_objects_cursor({
+                        id  => $id, type => $col 
+                    }, "entity");
+
+    while ( my $entity = $cursor->next ) {
+        my $record  = {
+            value       => $entity->value,
+            type        => $entity->type,
+            location    => $entity->location,
+        };
+        my $entrycur    = $mongo->collection('Entry')
+                          ->get_entries_by_target({
+                            id => $entity->id, type => "entity"
+                          });
+
+        while ( my $entry = $entrycur->next ) {
+            push @{$record->{entry}}, $entry->body_plain;
+        }
+        push @results, $record;
+    }
+    return wantarray ? @results : \@results;
+}
+
+sub build_entry_export {
+    my $self    = shift;
+    my $id      = shift;
+    my $col     = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+    my $mygroups    = $self->get_groups;
+    my $user        = $self->session('user');
+    my @summaries   = ();
+    my $cursor = $mongo->collection('Entry')->get_entries_by_target({
+                    id      => $id,
+                    type    => $col
+                    });
+
+    $cursor->sort({id => 1});
+    
+    return $self->thread_entries($cursor);
+
+}
+
 
 1;
