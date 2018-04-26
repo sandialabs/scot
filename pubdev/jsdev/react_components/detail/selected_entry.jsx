@@ -374,8 +374,10 @@ let AlertParent = React.createClass( {
             allSelected:false,
             lastId: null,
             activeId: arr,
+            tableSorterUpdateType: 'update'
         };
     },
+
     componentDidMount: function() {
         let filterOption = false;
         let widgetOption = ['sortTbody'];
@@ -386,6 +388,8 @@ let AlertParent = React.createClass( {
                 sortTbody_primaryRow : '.main',
                 sortTbody_sortRows   : false,
                 sortTbody_noSort     : 'tablesorter-no-sort-tbody',
+                scroller_jumpToHeader : false,
+                scroller_upAfterSort : false,
 
                 // include child row content while filtering the second demo table
                 filter_childRows     : filterOption
@@ -406,13 +410,45 @@ let AlertParent = React.createClass( {
     componentWillUnmount: function() {
         $( '#main-detail-container' ).unbind( 'keydown' );
     },
-    
+
     componentDidUpdate: function() {
         //update the table, but not if a tinymce editor window is open as it will break the editing window
         if ( !$( '.mce-tinymce' )[0] && window.getSelection().toString() == '' ) {
-            $( '#sortabletable' ).trigger( 'update' );
+            $( '#sortabletable' ).trigger( this.state.tableSorterUpdateType);
         }
     },
+
+    componentWillReceiveProps: function(nextProps){
+
+        //see: http://adripofjavascript.com/blog/drips/object-equality-in-javascript.html
+        var aProps = Object.getOwnPropertyNames(this.props.headerData);
+        var bProps = Object.getOwnPropertyNames(nextProps.headerData);
+
+        // If number of properties is different,
+        // objects are not equivalent
+        if (aProps.length != bProps.length) {
+            this.setState({tableSorterUpdateType: 'update'});
+            return;
+        }
+
+        for (var i = 0; i < aProps.length; i++) {
+            var propName = aProps[i];
+
+            // If values of same property are not equal,
+            // objects are not equivalent
+            if (this.props.headerData[propName] !== nextProps.headerData[propName]) {
+                this.setState({tableSorterUpdateType: 'update'});
+                return;
+            }
+        }
+
+        // If we made it this far, objects
+        // are considered equivalent
+        this.setState({tableSorterUpdateType: 'updateCache'});
+        return;
+
+    },
+
 
     rowClicked: function( id,index,clickType,status ) {
         let array = this.state.activeIndex.slice();
