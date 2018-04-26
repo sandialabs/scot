@@ -387,6 +387,36 @@ relies on the browser BasicAuth popup.
 
 =pod
 
+@api {get} /scot/api/v2/export/:thing/:id
+@apiName Export Record
+@apiGroup Export
+@apiVersion 2.0.0
+@apiDescription Export the current Event, Incident, etc. into an HTML formatted E-mail.  
+
+=cut
+
+    $scot   ->route ('/api/v2/export/:thing/:id')
+            ->via   ('get')
+            ->to    ('controller-export#prepexport')
+            ->name  ('prepexport');
+
+=pod
+
+@api {post} /scot/api/v2/sendexport
+@apiName Export Record
+@apiGroup Export
+@apiVersion 2.0.0
+@apiDescription Post HTML to be Emailed somewhere
+
+=cut
+
+    $scot   ->route ('/api/v2/sendexport')
+            ->via   ('post')
+            ->to    ('controller-export#sendexport')
+            ->name  ('sendexport');
+
+=pod
+
 @api {get} /scot/api/v2/cidr?cidr=1.2.3.4/24 get list of ip entities in cidr block
 @apiName CIDR
 @apiGroup CIDR
