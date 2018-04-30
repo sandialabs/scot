@@ -1046,7 +1046,64 @@ EOF
             }
     ],
     userdef => [],
-    debug   => 1,
+    debug   => 0,
     },
-
+    {
+        testname    => "SRS Test One",
+        testgroup   => "SRS",
+        testnumber  => 42,
+        source      => <<'EOF',
+A129.5.5.5 A129.3.3.3 TESTING123
+EOF
+        plain       => <<'EOF',
+A129.5.5.5 A129.3.3.3 TESTING123
+EOF
+        flair        => <<'EOF',
+<div><span class="entity SRStestTwo" data-entity-type="SRStestTwo" data-entity-value="a129.5.5.5">A129.5.5.5</span> <span class="entity SRStestTwo" data-entity-type="SRStestTwo" data-entity-value="a129.3.3.3">A129.3.3.3</span> <span class="entity SRStestOne" data-entity-type="SRStestOne" data-entity-value="testing123">TESTING123</span>
+</div>
+EOF
+    entities    => [
+            {
+                type    => "SRStestTwo",
+                value   => "a129.5.5.5",
+            },
+            {
+                type    => "SRStestTwo",
+                value   => "a129.3.3.3",
+            },
+            {
+                type    => "SRStestOne",
+                value   => "testing123",
+            }
+    ],
+    userdef => [],
+    debug   => 0,
+    },
+    {
+        testname    => "event 14246 ipv6 problem",
+        testgroup   => "ipv6",
+        testnumber  => 43,
+        source      => <<'EOF',
+by BN6PR27MB2539.namprd13.prod.poutlook.org (2603:10b6:404:129::18)
+EOF
+        plain       => <<'EOF',
+by BN6PR27MB2539.namprd13.prod.poutlook.org (2603:10b6:404:129::18)
+EOF
+        flair       => <<'EOF',
+<div>by <span class="entity domain" data-entity-type="domain" data-entity-value="bn6pr27mb2539.namprd13.prod.poutlook.org">BN6PR27MB2539.namprd13.prod.poutlook.org</span> (<span class="entity ipv6" data-entity-type="ipv6" data-entity-value="2603:10b6:404:129::18">2603:10b6:404:129::18</span>)
+</div>
+EOF
+        entities    => [
+                {
+                    type    => "domain",
+                    value   => "bn6pr27mb2539.namprd13.prod.poutlook.org",
+                },
+                {
+                    type    => "ipv6",
+                    value   => "2603:10b6:404:129::18",
+                },
+        ],
+        userdef => [],
+        debug   => 1,
+    },
 );
