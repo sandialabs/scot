@@ -95,6 +95,16 @@
                         order   => 505,
                         options => { multiword => "yes" },
                     },
+                    {
+                        type    => "SRStestOne",
+                        regex   => qr{\b(TESTING123)\b}xms,
+                        order   => 506,
+                    },
+                    {
+                        type    => "SRStestTwo",
+                        regex   => qr{\b(A129\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})\b}xms,
+                        order   => 507,
+                    },
                 ],
 
             },

@@ -9,6 +9,7 @@ use Try::Tiny;
 use Net::IP;
 use Crypt::PBKDF2;
 use Mail::Send;
+use Mojo::UserAgent;
 use strict;
 use warnings;
 use base 'Mojolicious::Controller';
@@ -956,6 +957,19 @@ sub promote {
                 id  => $entry->id,
             }
         });
+
+        my $lbmem = $env->get_config_item('lb_memorialization');
+        if ( defined $lbmem ) {
+# XXX
+            my $send_url    = $lbmem->($object);
+            my $ua          = Mojo::UserAgent->new();
+            my $tx          = $ua->post($send_url);
+            my $response    = $tx->success;
+            if ( defined $response ) {
+                return $response->json;
+            }
+            die "Failed File Push to $send_url, Error: ".$tx->error->{code}." ".$tx->error->{message};
+        }
     }
 
     # update the promotee
@@ -970,6 +984,7 @@ sub promote {
     $mongo->collection('Link')->link_objects($object,$promotion_obj,{
         context => "promotion"
     });
+
 
     # update mq and other bookkeeping
     $env->mq->send("/topic/scot", {
