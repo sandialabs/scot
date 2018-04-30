@@ -290,5 +290,20 @@ sub thread_entries {
 
     return wantarray ? @threaded : \@threaded;
 }
+sub render_error {
+    my $self    = shift;
+    my $code    = shift;
+    my $href    = shift;
+    $self->render(
+        status  => $code,
+        json    => $href,
+    );
+}
+sub get_groups {
+    my $self    = shift;
+    my $aref    = $self->session('groups');
+    my @groups  = map { lc($_) } @{$aref};
+    return wantarray ? @groups : \@groups;
+}
 
 1;

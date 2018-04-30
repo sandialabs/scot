@@ -851,14 +851,16 @@ sub pre_update_process {
     if ( ref($object) eq "Scot::Model::User" ) {
         # del password and create pwhash
         my $pass_input  = delete $req->{request}->{json}->{password};
-        my $pbkdf2      = Crypt::PBKDF2->new(
-            hash_class  => 'HMACSHA2',
-            hash_args   => { sha_size => 512 },
-            iterations  => 10000,
-            salt_len    => 15,
-        );
-        my $pwhash  = $pbkdf2->generate($pass_input);
-        $req->{request}->{json}->{pwhash} = $pwhash;
+        if ( defined $pass_input ) {
+            my $pbkdf2      = Crypt::PBKDF2->new(
+                hash_class  => 'HMACSHA2',
+                hash_args   => { sha_size => 512 },
+                iterations  => 10000,
+                salt_len    => 15,
+            );
+            my $pwhash  = $pbkdf2->generate($pass_input);
+            $req->{request}->{json}->{pwhash} = $pwhash;
+        }
     }
 
     if ( ref($object) eq "Scot::Model::Alertgroup" ) {
