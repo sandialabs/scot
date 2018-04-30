@@ -387,7 +387,7 @@ relies on the browser BasicAuth popup.
 
 =pod
 
-@api {get} /scot/api/v2/export/:thing/:id
+@api {get} /scot/api/v2/prepexport/:thing/:id
 @apiName Export Record
 @apiGroup Export
 @apiVersion 2.0.0
@@ -395,7 +395,7 @@ relies on the browser BasicAuth popup.
 
 =cut
 
-    $scot   ->route ('/api/v2/export/:thing/:id')
+    $scot   ->route ('/api/v2/prepexport/:thing/:id')
             ->via   ('get')
             ->to    ('controller-export#prepexport')
             ->name  ('prepexport');
