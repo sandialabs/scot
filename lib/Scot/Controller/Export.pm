@@ -305,5 +305,14 @@ sub get_groups {
     my @groups  = map { lc($_) } @{$aref};
     return wantarray ? @groups : \@groups;
 }
+sub do_render {
+    my $self    = shift;
+    my $code    = 200;
+    my $href    = shift;
+    $self->render(
+        status  => $code,
+        json    => $href,
+    );
+}
 
 1;
