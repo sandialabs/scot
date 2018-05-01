@@ -7,6 +7,7 @@ use DateTime::Format::Strptime;
 use Mojo::JSON qw(decode_json encode_json);
 use Statistics::Descriptive;
 use File::Slurp;
+use Mail::Send;
 
 use strict;
 use warnings;
