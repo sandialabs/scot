@@ -79,7 +79,7 @@ sub mail_to_user {
     my $env     = $self->env;
     my $mongo   = $env->mongo;
 
-    my $addr    = $user . $env->export_email_addr_suffix;
+    my $addr    = $user;
     my $subject = "SCOT Export of $col - $id";
     my $msg = Mail::Send->new(Subject => $subject, To => $addr);
     $msg->set('Content-Type',"text/html");
