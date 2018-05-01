@@ -1106,4 +1106,32 @@ EOF
         userdef => [],
         debug   => 1,
     },
+    {
+        testname    => "SRS Test Two",
+        testgroup   => "SRS",
+        testnumber  => 42,
+        source      => <<'EOF',
+<div>A129.5.5.5 &nbsp;A129.3.3.3&nbsp;TESTING123</div>
+EOF
+        plain       => "A129.5.5.5 ".chr(160)."A129.3.3.3".chr(160)."TESTING123",
+        flair        => <<'EOF',
+<div><div><span class="entity SRStestTwo" data-entity-type="SRStestTwo" data-entity-value="a129.5.5.5">A129.5.5.5</span> &nbsp;<span class="entity SRStestTwo" data-entity-type="SRStestTwo" data-entity-value="a129.3.3.3">A129.3.3.3</span>&nbsp;<span class="entity SRStestOne" data-entity-type="SRStestOne" data-entity-value="testing123">TESTING123</span></div></div>
+EOF
+    entities    => [
+            {
+                type    => "SRStestTwo",
+                value   => "a129.5.5.5",
+            },
+            {
+                type    => "SRStestTwo",
+                value   => "a129.3.3.3",
+            },
+            {
+                type    => "SRStestOne",
+                value   => "testing123",
+            }
+    ],
+    userdef => [],
+    debug   => 0,
+    },
 );
