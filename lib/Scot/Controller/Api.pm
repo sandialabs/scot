@@ -961,14 +961,13 @@ sub promote {
         my $lbmem = $env->get_config_item('lb_memorialization');
         if ( defined $lbmem ) {
 # XXX
-            my $send_url    = $lbmem->($object);
-            my $ua          = Mojo::UserAgent->new();
-            my $tx          = $ua->post($send_url);
-            my $response    = $tx->success;
-            if ( defined $response ) {
-                return $response->json;
-            }
-            die "Failed File Push to $send_url, Error: ".$tx->error->{code}." ".$tx->error->{message};
+#            my $send_url    = $lbmem->($object);
+#            my $ua          = Mojo::UserAgent->new();
+#            my $tx          = $ua->post($send_url);
+#            my $response    = $tx->success;
+#            if ( defined $response ) {
+#                return $response->json;
+#            }
         }
     }
 
