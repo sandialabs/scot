@@ -399,6 +399,7 @@ let SelectedHeaderOptions = React.createClass( {
                     {type == 'signature' ? <Button eventKey='11' onClick={this.props.showSignatureOptionsToggle} bsSize='xsmall' bsStyle='warning'>View Custom Options</Button> : null}
                     <Button onClick={this.PrintPrepare} bsSize='xsmall' bsStyle='info'><i className='fa fa-print' aria-hidden='true'></i> Print</Button>
                     <Button onClick={this.Print} style={{display:'none'}} id="print-button"></Button>
+                    <Button onClick={this.props.exportToggle} bsSize='xsmall' id='export-button'><i className='fa fa-share' aria-hidden='true'></i> Export {subjectType} </Button>
                     <Button bsStyle='danger' eventKey="9" onClick={this.props.deleteToggle} bsSize='xsmall'><i className="fa fa-trash" aria-hidden="true"></i> Delete {subjectType}</Button>
                     <ButtonGroup style={{float:'right'}}>
                         <Marker type={type} id={id} string={string} />
