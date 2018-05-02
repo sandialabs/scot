@@ -18,12 +18,12 @@
             last updated <%= $updated %>
         </div>
         <div class="entry-body">
+            <%== $entry->{body} %>
 
     %   my $children    = $entry->{children};
     %   if ( scalar(@{$children}) > 0 ) {
     %==      __SUB__->($children);
     %   }
-            <%== $entry->{body} %>
         </div>
     </div>
 % }
@@ -31,26 +31,24 @@
 
 % my $ioc_block = begin
 %   my $aref    = shift;
+<div class="ioc-block" >
+    <table>
+        <tr>
+            <th>indicator value</th>
+            <th>type</th>
+            <th>location</th>
+            <th>notes</th>
+        </tr>
 %   foreach my $ioc (@$aref) {
-    <div class="ioc-block" >
-        <div class="ioc-keyval">
-            <div class="ioc-details" > indicator:</div>
-            <div class="ioc-item"><%= $ioc->{value} %></div>
-        </div>
-        <div class="ioc-keyval">
-            <div class="ioc-details" > type:</div>
-            <div class="ioc-item"><%= $ioc->{type} %></div>
-        </div>
-        <div class="ioc-keyval">
-            <div class="ioc-details" > location:</div>
-            <div class="ioc-item"><%= $ioc->{location} %></div>
-        </div>
-        <div class="ioc-keyval">
-            <div class="ioc-details" style="float: none;"> notes: </div>
-            <div class="ioc-item"><%= ($ioc->{entry})[0] %></div>
-        </div>
-    </div>
-% }
+        <tr>
+            <td><%= $ioc->{value} %></td>
+            <td><%= $ioc->{type} %></td>
+            <td><%= $ioc->{location} %></td>
+            <td><%= ($ioc->{entry})[0] %></td>
+        </tr>
+%   }
+    </table>
+</div>
 % end
 
 % my $tag_block = begin
@@ -167,14 +165,15 @@
                 border: 1px solid: darkgrey;
                 margin: 5px;
             }
-            .ioc-details {
+            .ioc-block  table {
+                width: 100%;
+            }
+            .ioc-block  th {
                 background-color: lightgrey;
-                float: left;
                 margin: 2px;
                 padding: 2px;
-                width: 10%;
             }
-            .ioc-item {
+            .ioc-block td {
                 background-color: white;
                 margin: 2px;
                 padding: 2px;
