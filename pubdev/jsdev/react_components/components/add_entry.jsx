@@ -29,6 +29,10 @@ let AddEntryModal = React.createClass( {
             content = '',
             asyncContentLoaded = false;
             break;
+        case 'Export':
+            content = this.props.content;
+            asyncContentLoaded = true;
+            break;
         default:
             content = '';
             asyncContentLoaded = true;
@@ -79,7 +83,7 @@ let AddEntryModal = React.createClass( {
                     <div className={'row-fluid entry-header'}>
                         <div className="entry-header-inner">[<Link style={{color:'black'}} to={'not_saved_0'}>Not_Saved_0</Link>]by {this.state.whoami}
                             <span className='pull-right' style={{display:'inline-flex',paddingRight:'3px'}}>
-                                <Button bsSize={'xsmall'} onClick={this.submit} bsStyle={'success'}>Submit</Button>
+                                {this.props.entryAction == 'Export'? <Button bsSize={'xsmall'} onClick={this.exportContent} bsStyle={'success'}>Export</Button> : <Button bsSize={'xsmall'} onClick={this.submit} bsStyle={'success'}>Submit</Button>}
                                 <Button bsSize={'xsmall'} onClick={this.onCancel}>Cancel</Button>
                             </span>
                         </div>
@@ -285,6 +289,54 @@ let AddEntryModal = React.createClass( {
             }
         }
     },
+
+    exportContent: function ( ){
+
+
+        if (this.props.recipients.length > 0) {
+            var data = new Object();
+            $('#tiny_' + this.state.key + '_ifr').contents().find('#tinymce').each(function (x, y) {
+                $(y).find('img').each(function (key, value) {
+                    if ($(value)[0].src.startsWith('blob')) { //Checking to see if it's a locally copied file
+                        let canvas = document.createElement('canvas');
+                        let set = new Image();
+                        set = $(value);
+                        canvas.width = set[0].width;
+                        canvas.height = set[0].height;
+                        let ctx = canvas.getContext('2d');
+                        ctx.drawImage(set[0], 0, 0);
+                        let dataURL = canvas.toDataURL('image/png');
+                        $(value).attr('src', dataURL);
+                    }
+                });
+            });
+            data = JSON.stringify({
+                body: $('#tiny_' + this.state.key + '_ifr').contents().find('#tinymce').html(),
+                to: this.props.recipients,
+                thing: this.props.type
+            });
+            $.ajax({
+                type: 'post',
+                url: '/scot/api/v2/sendexport',
+                data: data,
+                contentType: 'application/json; charset=UTF-8',
+                dataType: 'json',
+                success: function () {
+                    this.setState({leaveCatch: false});
+                    this.props.exportResponse('success');
+                }.bind(this),
+                error: function (response) {
+                    this.props.errorToggle('Failed to export ' + this.props.type, response);
+                    this.props.exportResponse('error');
+                }.bind(this)
+            });
+        } else {
+            this.props.errorToggle("Please enter a valid email address");
+        }
+    },
+
+
+
     forEdit: function( set ){
         if( set ){
             $( '#tiny_' + this.state.key + '_ifr' ).contents().find( '#tinymce' ).each( function( x,y ){
