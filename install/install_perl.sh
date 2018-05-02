@@ -418,7 +418,7 @@ function install_perl_modules {
         Lingua::EN::StopWords
         XML::Twig
         XML::Simple
-
+        SVG::Sparkline
     '
 
     # install_cpanm
