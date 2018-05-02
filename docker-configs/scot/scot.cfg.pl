@@ -41,7 +41,7 @@
 
     share_after_time    => 10, # minutes
 
-    stomp_host  => "localhost",
+    stomp_host  => "activemq",
     stomp_port  => 61613,
     topic       => "/topic/scot",
 
@@ -61,7 +61,7 @@
         # hypnotoad workers, 50-100 heavy use, 20 - 50 light
         # hypnotoad_workers   => 75,
         hypnotoad => {
-            listen  => [ 'http://0.0.0.0:3000?reuse=1' ],
+            listen  => [ 'http://scot:3000?reuse=1' ],
             workers => 20,
             clients => 1,
             proxy   => 1,
@@ -203,21 +203,21 @@
                     },
                 }, # end enrichment module enrichers
             }, # end ennrichmenst config stanza
-        }, # end enrichments stanza
+        } # end enrichments stanza
         #{
         #    attr    => 'ldap',
-       #     class   => 'Scot::Util::Ldap',
-       #     config  => {
-       #         servername  => 'ldap.domain.tld',
-       #         dn          => 'cn=cn_name,ou=local config,dc=tld',
-       #         password    => 'changemenow',
-       #         scheme      => 'ldap',
-       #         group_search    => {
-       #             base    => 'ou=groups,ou=orgname1,dc=dcname1,dc=dcname2,dc=dcname3',
-       #             filter  => '(| (cn=wg-scot*))',
-       #             attrs   => [ 'cn' ],
-       #         },
-       #         user_groups => {
+        #    class   => 'Scot::Util::Ldap',
+        #    config  => {
+        #        servername  => 'ldap.domain.tld',
+        #        dn          => 'cn=cn_name,ou=local config,dc=tld',
+        #        password    => 'changemenow',
+        #        scheme      => 'ldap',
+        #        group_search    => {
+        #            base    => 'ou=groups,ou=orgname1,dc=dcname1,dc=dcname2,dc=dcname3',
+        #            filter  => '(| (cn=wg-scot*))',
+        #            attrs   => [ 'cn' ],
+        #        },
+        #        user_groups => {
        #             base    => 'ou=accounts,ou=ouname,dc=dcname1,dc=dcname1,dc=dcname1',
        #             filter  => 'uid=%s',
        #             attrs   => ['memberOf'],
