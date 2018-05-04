@@ -269,6 +269,9 @@ sub process_message {
     my $self    = shift;
     my $pm      = shift;
     my $href    = shift;
+    my $log     = $self->env->log;
+
+    $log->debug("Processing: ",{filter=>\&Dumper, value=>$href});
 
 }
 
