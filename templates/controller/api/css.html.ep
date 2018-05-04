@@ -1,0 +1,86 @@
+    <head>
+        <style>
+            .export-head {
+                width:  100%;
+            }
+
+            .export-head table {
+                background-color: MidnightBlue;
+                color: white !important; 
+            }
+
+            .export-id  {
+                text-align: left;
+                font-size: x-large;
+            }
+
+            .export-subject {
+                text-align:  right;
+                font-size: x-large;
+            }
+
+            .export-details {
+                background-color: MediumBlue;
+            }
+
+            .export-details table {
+                color: white !important;
+                font-size: 14pt;
+                width: 100%;
+            }
+
+            .export-iocs {
+                background-color: SteelBlue;
+            }
+
+            .export-entries {
+                background-color: LightSkyBlue;
+                font-size: 12pt;
+            }
+
+            .entries-header {
+                background-color: grey;
+            }
+
+            .summary {
+                background-color: white;
+            }
+
+            .entry {
+                border-radius: 5px;
+                border: 1px solid #000000;
+                box-shadow: 0 1px 1px rgba(0,0,0,0.6);
+                margin: 10px;
+                padding: 10px;
+            }
+
+            .entry-head {
+                background-color: lightgrey;
+                color: black;
+            }
+
+            .entry-body {
+                background-color: lightyellow;
+                color: black;
+                margin: 5px;
+                padding: 5px;
+            }
+            
+            .tag-item {
+                background-color: blue;
+                color:  white;
+            }
+
+            .ioc-block {
+                border-radius: 5px;
+                border: 1px solid #000000;
+            }
+            .ioc-header {
+                background-color: grey;
+            }
+            .ioc-head {
+                width: 90%;
+            }
+            }
+        </style>
+    </head>

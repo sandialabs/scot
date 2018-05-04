@@ -18,3 +18,4 @@ package-lock.json
 #compiled scot.js
 #scot.js
 scot-debug.js
+.idea/

@@ -24,19 +24,22 @@ my $pass    = prompt("Enter Password      > ", -e => '*');
 my $downdir = prompt("Download to Dir     > ");
 my $srcdir  = "/opt/scotbackup";
 
+my ($stdout, $stderr, $exit);
+
 if ( $host eq "localhost" ) {
-    say "implement me";
-    die "do it now";
+    $stdout = `cd $downdir;ls -lh *tgz`;
 }
+else {
 
-my $ssh     = Net::SSH::Perl->new($host);
-   $ssh->login($user,$pass);
-
-my ($stdout, $stderr, $exit ) = $ssh->cmd('cd '.$srcdir.'; ls -lh *tgz');
+    my $ssh     = Net::SSH::Perl->new($host);
+    $ssh->login($user,$pass);
+    ($stdout, $stderr, $exit ) = $ssh->cmd('cd '.$srcdir.'; ls -lh *tgz');
+}
 
 printf("%3s   %14s   %s   %s\n","---","-"x14, "-"x25, "-"x4);
 printf("%3s   %14s   %s   %s\n","id","Date","Filename","Size");
 printf("%3s   %14s   %s   %s\n","---","-"x14, "-"x25, "-"x4);
+
 my $id = 0;
 my %filemap = ();
 foreach my $line (split(/\n/,$stdout)) {
@@ -53,16 +56,21 @@ my $did = prompt("SELECT ID to Download > ");
 
 my $file = $filemap{$did};
 
-say "Attempting to SCP $host:$srcdir/$file to $downdir";
-my $remote = "$srcdir/$file";
-my $local  = "$downdir/$file";
+if ( $host eq "localhost" ) {
+    say "using $downdir/$file on localhost";
+}
+else {
+    say "Attempting to SCP $host:$srcdir/$file to $downdir";
+    my $remote = "$srcdir/$file";
+    my $local  = "$downdir/$file";
 
-my $sftp = Net::SFTP->new($host, user => $user, password => $pass);
-   $sftp->get($remote, $local, sub {
-        my ($sftp, $data, $offset, $size) = @_;
-        print "Read $offset / $size bytes\r";
-    });
-print "\n";
+    my $sftp = Net::SFTP->new($host, user => $user, password => $pass);
+    $sftp->get($remote, $local, sub {
+            my ($sftp, $data, $offset, $size) = @_;
+            print "Read $offset / $size bytes\r";
+        });
+    print "\n";
+}
 
 system("cd $downdir; tar xzvf $file");
 
