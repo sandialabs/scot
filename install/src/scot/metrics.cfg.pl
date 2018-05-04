@@ -1,4 +1,5 @@
 %environment = (
+    location    => 'yourloc',
     time_zone   => 'America/Denver',
     log_config => {
         logger_name     => 'SCOT',

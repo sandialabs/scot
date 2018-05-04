@@ -6,7 +6,7 @@ ENV DEBIAN_FRONTEND="noninteractive" \
 
 
 RUN apt-get update && \
-    apt-get install apt-utils ca-certificates curl vim  -y -f  && \
+    apt-get install apt-utils ca-certificates curl vim ssmtp -y -f  && \
     update-ca-certificates && \ 
     apt-get autoclean && \
     apt-get --purge -y autoremove && \ 
@@ -27,6 +27,7 @@ COPY docker-configs/scot/scot.cfg.pl /opt/scot/etc/
 COPY docker-scripts/* /opt/scot/bin/
 COPY docker-configs/scot/backup.cfg.pl /opt/scot/etc/
 COPY docker-configs/scot/restore.cfg.pl /opt/scot/etc/
+
 
 RUN groupadd -g 2060 scot && \
     useradd -r -u 1060 -g scot scot

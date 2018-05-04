@@ -1,0 +1,231 @@
+% use v5.16;
+% use DateTime;
+
+% my $entry_block = begin
+%   my $aref    = shift;
+%   foreach my $entry (@$aref) {
+
+    <div class="entry <%= $entry->{class} %>">
+
+    % my $cdt     = DateTime->from_epoch(epoch => $entry->{created});
+    % my $created = $cdt->ymd." ".$cdt->hms;
+    % my $udt     = DateTime->from_epoch(epoch => $entry->{updated});
+    % my $updated = $udt->ymd." ".$udt->hms;
+    % my $owner   = $entry->{owner};
+    % my $id        = $entry->{id};
+        <div class="entry-head">
+            [<%= $id %>] <%= $owner %> created entry at <%= $created %><br>
+            last updated <%= $updated %>
+        </div>
+        <div class="entry-body">
+            <%== $entry->{body} %>
+
+    %   my $children    = $entry->{children};
+    %   if ( scalar(@{$children}) > 0 ) {
+    %==      __SUB__->($children);
+    %   }
+        </div>
+    </div>
+% }
+% end
+
+% my $ioc_block = begin
+%   my $aref    = shift;
+<div class="ioc-block" >
+    <table>
+        <tr>
+            <th>indicator value</th>
+            <th>type</th>
+            <th>location</th>
+            <th>notes</th>
+        </tr>
+%   foreach my $ioc (@$aref) {
+        <tr>
+            <td><%= $ioc->{value} %></td>
+            <td><%= $ioc->{type} %></td>
+            <td><%= $ioc->{location} %></td>
+            <td><%= ($ioc->{entry})[0] %></td>
+        </tr>
+%   }
+    </table>
+</div>
+% end
+
+% my $tag_block = begin
+%   my $aref    = shift;
+%   foreach my $item (@$aref) {
+        <div class="tag-item"><%= $item %></div>
+%   }
+% end
+
+% my $data    = stash('export');
+
+<html>
+    <head>
+        <style>
+            .export-head {
+                width:  100%;
+            }
+
+            .export-head table {
+                background-color: MidnightBlue;
+                color: white !important; 
+                border-radius: 5px;
+                border: 1px solid: MidnightBlue;
+            }
+
+            .export-id  {
+                text-align: left;
+                font-size: x-large;
+            }
+
+            .export-subject {
+                text-align:  right;
+                font-size: x-large;
+            }
+
+            .export-details {
+                background-color: MediumBlue;
+                border-radius: 5px;
+                border: 1px solid: MediumBlue;
+                margin: 5px;
+            }
+
+            .export-details table {
+                color: white !important;
+                font-size: 14pt;
+                width: 100%;
+            }
+
+            .export-iocs {
+                background-color: SteelBlue;
+            }
+
+            .export-entries {
+                background-color: LightSkyBlue;
+                font-size: 12pt;
+            }
+
+            .entries-header {
+                background-color: darkgrey;
+                color: white;
+                font-size: 16pt;
+                border-radius: 5px;
+                border: 1px solid: darkgrey;
+                margin: 5px;
+            }
+
+            .summary {
+                background-color: lightyellow;
+            }
+
+            .entry {
+                border-radius: 5px;
+                border: 1px solid #000000;
+                box-shadow: 0 1px 1px rgba(0,0,0,0.6);
+                margin: 10px;
+                padding: 10px;
+            }
+
+            .entry-head {
+                background-color: lightgrey;
+                color: black;
+            }
+
+            .entry-body {
+                background-color: white;
+                color: black;
+                margin: 5px;
+                padding: 5px;
+                font-size: 14pt;
+            }
+            
+            .tag-item {
+                background-color: blue;
+                color:  white;
+            }
+
+            .ioc-section {
+
+            }
+            .ioc-keyval {
+                padding: 2px;
+            }
+            .ioc-block {
+                border-radius: 5px;
+                border: 1px solid #000000;
+                margin: 5px;
+                width: 100%;
+            }
+            .ioc-header {
+                background-color: darkgrey;
+                color: white;
+                font-size: 16pt;
+                border-radius: 5px;
+                border: 1px solid: darkgrey;
+                margin: 5px;
+            }
+            .ioc-block  table {
+                width: 100%;
+            }
+            .ioc-block  th {
+                background-color: lightgrey;
+                margin: 2px;
+                padding: 2px;
+            }
+            .ioc-block td {
+                background-color: white;
+                margin: 2px;
+                padding: 2px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="export-head">
+            <table width="100%">
+                <tr>
+                    <td>
+                        <div class="export-id">
+                            SCOT <%= $data->{export_type} %> <%= $data->{id} %>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="export-subject">
+                        <%= $data->{subject} %>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="export-details">
+            <table>
+                <tr>
+                    <th>Status</th><td><%= $data->{status} %></td>
+                    <th>Updated</th><td><%= $data->{updated} %></td>
+                </tr>
+                <tr>
+                    <th>Owner</th><td><%= $data->{owner} %></td>
+                    <th>Exported</th><td><%= $data->{exported} %></td>
+                </tr>
+                <tr>
+                    <th>Tags</th>
+                    <td><%= $tag_block->($data->{tags}) %></td>
+                    <th>Sources</th>
+                    <td><%= $tag_block->($data->{exported}) %></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="entries-header"> Entries </div>
+        <div class="entry-section">
+%==          $entry_block->($data->{entries});
+        </div>
+
+
+        <div class="ioc-header"> Indicators </div>
+        <div class="ioc-section">
+%==         $ioc_block->($data->{entities});
+        </div>
+    </body>
+</html>
+
