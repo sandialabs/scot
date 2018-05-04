@@ -708,10 +708,6 @@
         display: table-row-group;
     }
 
-    .esearch-query:focus{
-        width: 300px;
-    }   
-
     .ouo-warning { 
         left: 49%;
         position: absolute;

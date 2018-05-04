@@ -6,13 +6,11 @@ class LoadingContainer extends PureComponent {
         loading: PropTypes.bool,
     }
 
-    render() {
-        return (
-            <div className='LoadingContainer'>
-                { this.props.loading ?
-    			    <i className='fa fa-spinner fa-spin fa-2x' aria-hidden='true' />	
-                    :
-                    null
+	render() {
+		return (
+			<div className='LoadingContainer'>
+				{ this.props.loading &&
+				    <i className='fa fa-spinner fa-spin fa-2x' aria-hidden='true' />	
                 }
             </div>
         );

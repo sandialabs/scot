@@ -107,6 +107,7 @@ services:
      - scot-docker-net
     container_name: scot
     image: sandialabs/scot_scot
+    hostname: ${HOSTNAME}
   
   perl:
     build: 

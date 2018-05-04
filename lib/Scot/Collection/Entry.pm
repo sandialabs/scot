@@ -68,7 +68,9 @@ sub create_from_promoted_alert {
     #XXX
 
     $log->debug("creating the promoted alert entry");
-    $json->{metadata}          = { alert => $alert->as_hash};
+    my $ahash   = $alert->as_hash;
+    $log->debug("alert has is ",{filter=>\&Dumper, value=>$ahash});
+    $json->{metadata}          = { alert => $ahash };
     my $entry_obj              = $self->create($json);
 
     $log->debug("Created Entry : ".$entry_obj->id);
