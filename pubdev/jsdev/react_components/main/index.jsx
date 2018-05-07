@@ -226,6 +226,8 @@ let App = React.createClass( {
             success: function( data ) {
                 this.setState( {login: true} );
                 console.log( 'Successfully logged out' );
+                //Call whoami so we can get a csrf token
+                this.WhoAmIQuery(); 
             }.bind( this ), 
             error: function( data ) {
                 this.error( 'Failed to log out', data );
