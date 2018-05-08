@@ -983,7 +983,7 @@ sub promote {
 ##                $log->error("error in lb_memorialization: ".$tx->result->message);
 #            }
 #        }
-#    }
+    }
 
     # update the promotee
     $object->update({
