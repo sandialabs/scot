@@ -979,11 +979,11 @@ sub promote {
 #            if ( defined $response ) {
 #                $log->debug("lb_memorialization: ",{filter=>&Dumper, value=> $response->json});
 #            }
-            else {
+    #        else {
 ##                $log->error("error in lb_memorialization: ".$tx->result->message);
 #            }
 #        }
-#    }
+    }
 
     # update the promotee
     $object->update({
