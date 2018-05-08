@@ -59,6 +59,38 @@ sub _build_stomp_port {
     return $self->get_config_value($attr, $default, $envname);
 }
 
+has stomp_user  => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_stomp_user',
+);
+
+sub _build_stomp_user {
+    my $self    = shift;
+    my $attr    = "stomp_user";
+    my $default = "scot";
+    my $envname = "scot_util_stomp_user";
+    return $self->get_config_value($attr, $default, $envname);
+}
+
+has stomp_pass  => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_stomp_pass',
+);
+
+sub _build_stomp_pass {
+    my $self    = shift;
+    my $attr    = "stomp_pass";
+    my $default = "scot1234";
+    my $envname = "scot_util_stomp_pass";
+    return $self->get_config_value($attr, $default, $envname);
+}
+
 has max_workers => (
     is          => 'ro',
     isa         => 'Int',
@@ -106,7 +138,9 @@ sub _build_stomp {
     my $self    = shift;
     my $host    = $self->stomp_host;
     my $port    = $self->stomp_port;
-    return AnyEvent::STOMP::Client->new($host,$port);
+    my $user    = $self->stomp_user;
+    my $pass    = $self->stomp_pass;
+    return AnyEvent::STOMP::Client->new($host,$port,{ login => $user, passcode => $pass});
 }
 
 has queues   => (
