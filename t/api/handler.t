@@ -39,7 +39,7 @@ my $handler1 = $t->tx->res->json->{id};
 $t  ->post_ok  ('/scot/api/v2/handler'  => json => {
         username => "foobar",
         start    => $toddtime + 9,
-        end      => $toddtime + 20,
+        end      => $toddtime + 29,
     })
     ->status_is(200)
     ->json_is('/status' => 'ok');
@@ -49,8 +49,8 @@ $t  ->get_ok("/scot/api/v2/handler?current=1")
     ->json_is('/records/0/username' => 'tbruner');
 
 print "Current Epoch is : ". $env->now()."\n";
-print "\n Sleeping for 11 secods\n";
-sleep 11;
+print "\n Sleeping for 10 secods\n";
+sleep 10;
 print "Current Epoch is : ". $env->now()."\n";
 
 
