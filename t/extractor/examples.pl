@@ -1134,4 +1134,49 @@ EOF
     userdef => [],
     debug   => 0,
     },
+    {
+        testname    => "Angle brackets suck part 2",
+        testgroup   => "anglebrackets",
+        testnumber  => 43,
+        source      => <<'EOF',
+function Invoke-InternalMonologue
+{
+    <#
+    .SYNOPSIS
+    Retrieves NTLMv1 challenge-response for all available users
+#>
+
+$Source = @"
+using System.Text.RegularExpressions;
+    if ( foo > 0 ) {
+        echo "this sux";
+    }
+EOF
+        plain      => <<'EOF',
+function Invoke-InternalMonologue { <# .SYNOPSIS Retrieves NTLMv1
+   challenge-response for all available users #> $Source = @" using
+   System.Text.RegularExpressions; if ( foo > 0 ) { echo "this sux"; }
+EOF
+    flair   => <<'EOF',
+<div>function Invoke-InternalMonologue
+{
+    &lt;#
+    .SYNOPSIS
+    Retrieves NTLMv1 challenge-response for all available users
+#&gt;
+
+$Source = @&quot;
+using System.Text.RegularExpressions;
+    if ( foo &gt; 0 ) {
+        echo &quot;this sux&quot;;
+    }
+</div>
+EOF
+        entities    => [
+        ],
+        userdef => [],
+        debug   => 1,
+    },
+    
+
 );
