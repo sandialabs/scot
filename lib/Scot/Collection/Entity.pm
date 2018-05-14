@@ -152,17 +152,22 @@ sub create_entity_links {
         # find and create links to ipaddresses in that range
         my $value   = $entity->value;
         my ($cidrbase,$cidrmask) = split(/\//,$value);
-        $log->debug("Finding IPaddrs that are in $cidrbase/$cidrmask");
-        my $ipobj   = Net::IP->new($value);
-        my $mask    = substr($ipobj->binip, 0, $cidrmask);
-        my @records = $self->get_cidr_ipaddrs($mask);
-        $log->debug("Found ".scalar(@records)." ipaddresses");
-        foreach my $rec (@records) {
-            $log->debug("upserting entity ".$rec->{id});
-            $self->upsert_link($entity, {
-                id      => $rec->{id},
-                type    => "entity",
-            });
+        if ( $cidrmask > 0 ) {
+            $log->debug("Finding IPaddrs that are in $cidrbase/$cidrmask");
+            my $ipobj   = Net::IP->new($value);
+            my $mask    = substr($ipobj->binip, 0, $cidrmask);
+            my @records = $self->get_cidr_ipaddrs($mask);
+            $log->debug("Found ".scalar(@records)." ipaddresses");
+            foreach my $rec (@records) {
+                $log->debug("upserting entity ".$rec->{id});
+                $self->upsert_link($entity, {
+                    id      => $rec->{id},
+                    type    => "entity",
+                });
+            }
+        }
+        else {
+            $log->debug("cidr mask is 0.  Skipping");
         }
     }
 }
