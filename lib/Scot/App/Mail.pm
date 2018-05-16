@@ -226,6 +226,20 @@ sub mark_some_unread {
     }
 }
 
+sub docker {
+    my $self    = shift;
+    my $log     = $self->log;
+    $log->debug("running docker (cron-less) version");
+    my $env     = $self->env;
+    my $interval    = 60;
+    while (1) {
+        $log->debug("starting mail ingest");
+        $self->run;
+        sleep $interval;
+    }
+}
+
+
 sub run {
     my $self    = shift;
     my $log     = $self->log;
