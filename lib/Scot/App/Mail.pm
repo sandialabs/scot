@@ -234,7 +234,12 @@ sub docker {
     my $interval    = 60;
     while (1) {
         $log->debug("starting mail ingest");
-        $self->run;
+        try {
+            $self->run;
+        }
+        catch {
+            $log->error("docker mail exited with error code: $_");
+        };
         sleep $interval;
     }
 }
