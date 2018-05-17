@@ -958,18 +958,31 @@ sub promote {
             }
         });
 
-        my $lbmem = $env->get_config_item('lb_memorialization');
-        if ( defined $lbmem ) {
+# disabling until we can test 
+#        my $lbmem = $env->get_config_item('lb_memorialization');
+#        if ( defined $lbmem ) {
 # XXX
-            my $send_url    = $lbmem->($object);
-            my $ua          = Mojo::UserAgent->new();
-            my $tx          = $ua->post($send_url);
-            my $response    = $tx->success;
-            if ( defined $response ) {
-                return $response->json;
-            }
-            die "Failed File Push to $send_url, Error: ".$tx->error->{code}." ".$tx->error->{message};
-        }
+#            my ($send_url,
+#                $memuser,
+#                $mempass )  = $lbmem->($object);
+#            my $ua          = Mojo::UserAgent->new();
+#            # authenticate to the webservice
+#            $ua->on(start => sub {
+#                my $ua = shift;
+#                my $tx = shift;
+#                $tx->req->headers->header(
+#                    'Authorization' => $memuser . ":" . $mempass
+#                );
+#            });
+#            my $tx          = $ua->post($send_url);
+#            my $response    = $tx->success;
+#            if ( defined $response ) {
+#                $log->debug("lb_memorialization: ",{filter=>&Dumper, value=> $response->json});
+#            }
+    #        else {
+##                $log->error("error in lb_memorialization: ".$tx->result->message);
+#            }
+#        }
     }
 
     # update the promotee
