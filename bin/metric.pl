@@ -19,7 +19,7 @@ my $m   = Scot::App::Metric->new( env => $env );
 my $todaydt = DateTime->today;
 my $stopdt  = $todaydt->clone();
 $todaydt->set(hour=>23, minute=>59, second=>59);
-$stopdt->subtract(days => 7);
+$stopdt->subtract(days => 45);
 $stopdt->set(hour=>0, minute=>0, second=>0);
 
 #$m->march([qw(alert_response_time alerttype_metrics promoted_count alert_open_closed)],

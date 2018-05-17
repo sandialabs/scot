@@ -1,4 +1,4 @@
-package Scot::App::Responder::BeamUp;
+package Scot::App::Responder::FederateUp;
 use lib '../../../../lib';
 use Try::Tiny;
 use Data::Dumper;
@@ -14,7 +14,7 @@ has name => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
-    default     => 'BeamUp',
+    default     => 'FederateUp',
 );
 
 has wait_timeout => (
@@ -28,7 +28,7 @@ sub _build_wait_timeout {
     my $self    = shift;
     my $attr    = "wait_timeout";
     my $default = 120;  # seconds
-    my $envname = "scot_app_responder_beamup_wait_timeout";
+    my $envname = "scot_app_responder_federateup_wait_timeout";
     return $self->get_config_value($attr, $default, $envname);
 }
 
@@ -43,7 +43,7 @@ sub _build_share_strategy {
     my $self    = shift;
     my $attr    = "share_strategy";
     my $default = "most"; # [ explicit, most, all ]
-    my $envname = "scot_app_responder_beamup_share_strategy";
+    my $envname = "scot_app_responder_federateup_share_strategy";
     return $self->get_config_value($attr, $default, $envname);
 }
 
@@ -91,13 +91,11 @@ sub process_message {
             sleep $self->wait_timeout;
             return $self->beam($action, $type, $id);
         }
-
         $log->error("Unexpected sharing strategy: $strategy");
     }
     else {
         $log->error("Action $action not a permitted action.");
     }
-
 }
 
 sub can_share {
@@ -131,10 +129,12 @@ sub beam {
     my $action  = shift;
     my $type    = shift;
     my $id      = shift;
-    my $client  = $self->scot_client;
-    my $obj     = $self->get_obj($type,$id);
+    my $env     = $self->env;
+    my $mq      = $env->mq;
+
+    my $obj         = $self->get_obj($type,$id);
     my $location    = $self->env->location;
-    my $log     = $self->env->log;
+    my $log         = $env->log;
 
     $log->debug("Attempting to beam up record");
 
@@ -143,7 +143,7 @@ sub beam {
 
         $log->debug("sharing is permitted");
 
-        my $endpt =  $type;
+        my $endpt   = $type;
         my $href    = $obj->as_hash;
 
         
@@ -157,35 +157,24 @@ sub beam {
 
         $log->trace("action is $action");
 
-        if ( $action eq "created" ) {
-            $json = $client->post($endpt, $href);
-            $log->trace("returned json ",{filter=>\&Dumper,value=>$json});
-            return $id;
-        }
-        elsif ( $action eq "updated" ) {
-            $endpt .= "/$id";
-            $json = $client->put($endpt, $href);
-            $log->trace("returned json ",{filter=>\&Dumper,value=>$json});
-            return $id;
-        }
-        elsif ( $action eq "delete" ) {
-            $endpt .= "/$id";
-            $json = $client->delete($endpt,$href);
-            $log->trace("returned json ",{filter=>\&Dumper,value=>$json});
-            return $id;
-        }
-        else {
-            return "Unsupported API action $action";
-        }
+        # now send to queue to upstream
+        my $stomp       = $self->stomp;
+        my $destination = $env->upstream_scot_queue;
+        my $body        = encode_json($href);
 
-        # Error checking
+        $stomp->send(
+            $destination,
+            { 'content-type'    => 'text/json',
+              'persistent'      => 'true' },
+            $body
+        );
+
+        # Error's caught in Responder.pm 
     }
     else {
         $log->error("Object is marked do not share or bad tlp, not shared");
         return "Sharing not permitted";
     }
-
 }
-
 
 1;

@@ -13,7 +13,7 @@ use Data::Dumper;
 use DateTime;
 
 
-my $stomp   = AnyEvent::STOMP::Client->new("localhost");
+my $stomp   = AnyEvent::STOMP::Client->new("localhost", 61613, {login=>"scot", passcode=>"scot1234"});
 
 $stomp->connect();
 $stomp->on_connected(
