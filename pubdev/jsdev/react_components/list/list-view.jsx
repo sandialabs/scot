@@ -619,7 +619,7 @@ module.exports = React.createClass( {
         }   
 
         let newarray = [];
-
+        
         //Update 5/17/18 - removed below check as it was breaking clicking on an alert in alert group, closing alert and then immediately switching to a new alert group would cancel ajax call and majorly lag network traffic
  //       if ( this.state.loading == true ) { listQuery.abort(); }
         listQuery = $.ajax( {
