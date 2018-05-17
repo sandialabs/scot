@@ -1,16 +1,16 @@
-package Scot::App::Responder;
+package Scot::App::FedRec;
 
 use lib '../../../lib';
 use lib '/opt/scot/lib';
 
 =head1 Name
 
-Scot::App::Responder
+Scot::App::FedRec
 
 =head1 Description
 
-Apps that listen for AMQ messages can use this as superclass
-Classes that subclass this will need to implement process_message();
+listen for AMQ queue messages from client SCOT's
+Import the data into this SCOT.
 
 =cut
 
@@ -56,6 +56,38 @@ sub _build_stomp_port {
     my $attr    = "stomp_port";
     my $default = 61613;
     my $envname = "scot_util_stompport";
+    return $self->get_config_value($attr, $default, $envname);
+}
+
+has stomp_user  => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_stomp_user',
+);
+
+sub _build_stomp_user {
+    my $self    = shift;
+    my $attr    = "stomp_user";
+    my $default = "scot";
+    my $envname = "scot_util_stomp_user";
+    return $self->get_config_value($attr, $default, $envname);
+}
+
+has stomp_pass  => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_stomp_pass',
+);
+
+sub _build_stomp_pass {
+    my $self    = shift;
+    my $attr    = "stomp_pass";
+    my $default = "scot1234";
+    my $envname = "scot_util_stomp_pass";
     return $self->get_config_value($attr, $default, $envname);
 }
 
@@ -106,21 +138,24 @@ sub _build_stomp {
     my $self    = shift;
     my $host    = $self->stomp_host;
     my $port    = $self->stomp_port;
-    return AnyEvent::STOMP::Client->new($host,$port);
+    my $user    = $self->stomp_user;
+    my $pass    = $self->stomp_pass;
+    return AnyEvent::STOMP::Client->new($host,$port,{ login => $user, passcode => $pass});
 }
 
-has topic   => (
-    is      => 'rw',
-    isa     => 'Str',
+has queues   => (
+    is          => 'rw',
+    isa         => 'ArrayRef[Str]',
+    traits      => ['Array'],
     required    => 1,
-    builder     => '_build_topic',
+    builder     => '_build_queues',
 );
 
-sub _build_topic {
+sub _build_queues {
     my $self    = shift;
-    my $attr    = "topic";
-    my $default = "/topic/scot";
-    my $envname = "scot_reflair_topic";
+    my $attr    = "queue";
+    my $default = [ '/queue/incoming' ],
+    my $envname = "scot_queues";
     return $self->get_config_value($attr, $default, $envname);
 }
 
@@ -262,6 +297,16 @@ sub run {
 
     my $cv  = AnyEvent->condvar;
     $cv->recv;
+}
+
+sub process_message {
+    my $self    = shift;
+    my $pm      = shift;
+    my $href    = shift;
+    my $log     = $self->env->log;
+
+    $log->debug("Processing: ",{filter=>\&Dumper, value=>$href});
+
 }
 
 1;
