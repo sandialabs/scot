@@ -164,11 +164,16 @@ sub run {
     my $log     = $self->log;
     my $stomp   = $self->stomp;
     my $pm      = $self->procmgr;
-    my $topic   = $self->topic;
-
-    my $name    = $self->name;
+    my $name    = $self->env->name;
+    my @queues  = @{$self->queues};
 
     $log->debug("Starting Responder $name daemon");
+    $log->debug("Queues are ",{filter=>\&Dumper, value=>\@queues});
+
+    my $topic   = pop @queues; # TODO: rename this var to avoid confusion
+
+
+    $log->debug("queue is ",{filter=>\&Dumper, value=>$topic});
 
     $stomp->connect();
     $stomp->on_connected(sub {
@@ -306,6 +311,8 @@ sub process_message {
     my $log     = $self->env->log;
 
     $log->debug("Processing: ",{filter=>\&Dumper, value=>$href});
+
+    my $action  = $href->{action};
 
 }
 
