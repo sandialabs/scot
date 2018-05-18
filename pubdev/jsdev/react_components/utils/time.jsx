@@ -38,6 +38,16 @@ export const todayRange = () => {
 }
 
 /**
+ * Return an Epoch Range for the last week
+ */
+export const lastWeekRange = () => {
+	return {
+		start: Math.floor( (new Date(Date.now() - DAY * 7)).setHours(0, 0, 0, 0) / 1000 ),
+		end: Math.floor( (new Date(Date.now() + DAY)).setHours(23, 59, 59, 999) / 1000 ),
+	}
+}
+
+/**
  * Convert an epoch to seconds ago
  *
  * epoch: epoch to convert
