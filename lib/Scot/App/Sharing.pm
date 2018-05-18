@@ -143,7 +143,7 @@ has send_queue  => (
 sub _build_send_queue {
     my $self    = shift;
     my $attr    = "send_queue",
-    my $default = "share_".$self->sitename;
+    my $default = "share_".$self->env->sitename;
     my $envname = "scot_share_sitename";
     return $self->get_config_value($attr, $default, $envname);
 }
@@ -165,7 +165,7 @@ has receive_queue => (
 sub _build_receive_queue {
     my $self    = shift;
     my $attr    = "receive_queue",
-    my $default = "share_".$self->remote_sitename;
+    my $default = "share_".$self->env->remote_sitename;
     my $envname = "scot_share_remote_sitename";
     return $self->get_config_value($attr, $default, $envname);
 }
