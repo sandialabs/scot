@@ -153,20 +153,26 @@ sub beam {
 
         $log->debug("object hash is ",{filter=>\&Dumper,value=>$href});
 
-        my $json;
-
         $log->trace("action is $action");
 
         # now send to queue to upstream
         my $stomp       = $self->stomp;
-        my $destination = $env->upstream_scot_queue;
+        my $destination = ($env->queues)[0];
         my $body        = encode_json($href);
+
+        my $json = {
+            action  => $action,
+            type    => $type,
+            id      => $id,
+            data    => $body,
+        };
+
 
         $stomp->send(
             $destination,
             { 'content-type'    => 'text/json',
               'persistent'      => 'true' },
-            $body
+            $json
         );
 
         # Error's caught in Responder.pm 
