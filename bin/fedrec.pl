@@ -7,7 +7,7 @@ use lib '../../lib';
 use lib '../../Scot-Internal-Modules/lib';
 use lib '/opt/scot/lib';
 use v5.18;
-use Scot::App::Responder::Flair;
+use Scot::App::FedRec;
 use Data::Dumper;
 
 my $config_file = $ENV{'scot_app_flair_config_file'} //
