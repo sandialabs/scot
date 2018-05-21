@@ -4,7 +4,7 @@ import { ListGroup, ListGroupItem, Label } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 import LoadingContainer from '../../list/LoadingContainer';
-import { todayRange, epochRangeToFilter, timeOlderThan } from '../../utils/time';
+import { todayRange, lastWeekRange, epochRangeToFilter, timeOlderThan } from '../../utils/time';
 
 const NEW_TIME = 24 * 60 * 60; // 1 day
 const isNew = ( created ) => {
@@ -160,6 +160,8 @@ export const Widgets = () => {
 		...YourTasks,
 		...UnviewedAlerts,
 		...TopEvents,
+		...ViewedEvents,
+		...EntryEvents,
 	}
 };
 
@@ -314,11 +316,69 @@ export const TopEvents = {
 				return data.filter( ( thing ) => thing.has_tasks );
 			},
 			getSummary: ( thing ) => {
-				return `${thing.subject} (${thing.has_tasks} open task${ thing.has_tasks > 1 ? '(s)' : ''})`;
+				return `${thing.subject} (${thing.has_tasks} open task${ thing.has_tasks > 1 ? 's' : ''})`;
 			},
 			newBadge: false,
 			emptyString: 'None!',
 			emptyStyle: 'success',
+		},
+	},
+}
+
+export const ViewedEvents = {
+	viewedEvents: {
+		type: ThingList,
+		title: "Most Viewed Events",
+		description: "Events with the most views over the last week",
+		props: {
+			thingType: 'event',
+			title: 'Most Viewed Events',
+			queryOptions: {
+				limit: 5,
+				offset: 0,
+				sort: {
+					views: -1,
+				},
+				filter: {
+					created: JSON.stringify(epochRangeToFilter( lastWeekRange() )),
+				},
+				columns: ['id', 'subject', 'views'],
+			},
+			processData: ( data ) => {
+				return data.filter( ( thing ) => thing.views > 0 );
+			},
+			getSummary: ( thing ) => {
+				return `${thing.subject} (${thing.views} view${ thing.views > 1 ? 's' : ''})`;
+			},
+		},
+	},
+}
+
+export const EntryEvents = {
+	entryEvents: {
+		type: ThingList,
+		title: "Events with Entries",
+		description: "Events with the most entries over the last week",
+		props: {
+			thingType: 'event',
+			title: 'Events with Entries',
+			queryOptions: {
+				limit: 5,
+				offset: 0,
+				sort: {
+					entry_count: -1,
+				},
+				filter: {
+					created: JSON.stringify(epochRangeToFilter( lastWeekRange() )),
+				},
+				columns: ['id', 'subject', 'entry_count'],
+			},
+			processData: ( data ) => {
+				return data.filter( ( thing ) => thing.entry_count > 0 );
+			},
+			getSummary: ( thing ) => {
+				return `${thing.subject} (${thing.entry_count} ${ thing.entry_count > 1 ? 'entries' : 'entry'})`;
+			},
 		},
 	},
 }
