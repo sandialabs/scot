@@ -445,7 +445,7 @@ sub handle_object {
     try {
         my $col = $mongo->collection(ucfirst($type));
         if ( $action =~ /create/i ) {
-            $log->debug("Create action",{filter=>\&Dupmper,value=>$href});
+            $log->debug("Create action",{filter=>\&Dumper,value=>$href});
             my $obj = $col->create($href);
             die "Failed to create object" unless ($obj);
         }
