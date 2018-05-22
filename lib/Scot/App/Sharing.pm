@@ -423,7 +423,7 @@ sub get_obj_href {
     my $mongo   = $self->env->mongo;
     my $collection  = $mongo->collection(ucfirst($type));
     my $object      = $collection->find_iid($id);
-    my $href        = $object->to_hash;
+    my $href        = $object->as_hash;
     return $href;
 }
 
