@@ -445,13 +445,16 @@ sub handle_object {
     try {
         my $col = $mongo->collection(ucfirst($type));
         if ( $action =~ /create/i ) {
-            $log->debug("Create action");
-            my $obj = $col->create($body->{object});
+            $log->debug("Create action",{filter=>\&Dupmper,value=>$href});
+            my $obj = $col->create($href);
             die "Failed to create object" unless ($obj);
         }
         elsif ( $action =~ /update/i ) {
-            $log->debug("Update action");
-            if ( $col->update({'$set' => $body->{object}}) ) {
+            my $update = {
+                '$set'  => $href,
+            };
+            $log->debug("Update action ",{filter=>\&Dumper, value=>$update});
+            if ( $col->update($update) ) {
                 $log->debug("updated object");
             }
             else {
@@ -460,8 +463,8 @@ sub handle_object {
         }
         elsif ( $action =~ /delete/i ) {
             $log->debug("Delete action");
-            my $obj = $col->find_one({id => $body->{object}->{id}, 
-                                location  => $body->{object}->{location}});
+            my $obj = $col->find_one({id => $href->{id}, 
+                                location  => $href->{location}});
             $obj->remove;
         }
         else {
