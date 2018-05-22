@@ -227,6 +227,8 @@ sub run {
         $stomp->subscribe($self->local_activity_topic);
         $log->debug("Subscribing to ".$self->receive_queue);
         $stomp->subscribe($self->receive_queue);
+        $log->debug("Subscribing to ".$self->send_queue);
+        $stomp->subscribe($self->send_queue);
     });
 
     $stomp->on_connect_error( sub {
