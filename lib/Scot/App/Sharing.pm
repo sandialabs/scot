@@ -375,7 +375,7 @@ sub process_message {
                 'content-type'    => 'text/json'
             };
 
-            $stomp->send($self->env->send_queue, $send_hdr, $data );
+            $stomp->send($self->env->send_queue, $send_hdr, encode_json($data) );
 
         }
         else {
