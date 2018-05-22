@@ -227,8 +227,6 @@ sub run {
         $stomp->subscribe($self->local_activity_topic);
         $log->debug("Subscribing to ".$self->receive_queue);
         $stomp->subscribe($self->receive_queue);
-        $log->debug("Subscribing to ".$self->send_queue);
-        $stomp->subscribe($self->send_queue);
     });
 
     $stomp->on_connect_error( sub {
@@ -355,8 +353,40 @@ sub process_message {
     my $header  = shift;
     my $data    = shift;
     my $log     = $self->env->log;
+    my $stomp   = $self->stomp;
 
     $log->trace("Process Message Begins");
+
+    my $destination = $header->{destination};
+
+    if ( $destination eq "/topic/scot" ) {
+        
+        $log->debug("Processing a Topic Broadcast");
+
+        my $hostname = $data->{hostname};
+
+        if ( $hostname eq $self->env->sitename ) {
+
+            $log->debug("This topic broadcast was on my scot instance");
+
+            $stomp->send($self->env->send_queue, {}, $data );
+
+        }
+        else {
+            
+            $log->debug("This topic was broadcast from elsewhere");
+
+        }
+    }
+    elsif ( $destination eq $self->env->receive_queue ) {
+
+        $log->debug("Queue message received from other SCOT");
+    }
+    else {
+        $log->error("ERROR: got a message I should not have");
+    }
+
+    return 1;
 
 }
 
