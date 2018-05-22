@@ -345,6 +345,13 @@ sub run {
         $log->error("    Body   : ",{filter=>\&Dumper, value=>$body});
     });
 
+    $stomp->on_send(sub {
+        my $stomp   = shift;
+        my $frame   = shift;
+
+        $log->debug("STOMP SEND: ",{filter=>\&Dumper, value=>$frame});
+    });
+
     my $cv  = AnyEvent->condvar;
     $cv->recv;
 }
@@ -375,7 +382,14 @@ sub process_message {
                 'content-type'    => 'text/json'
             };
 
-            $stomp->send($self->env->send_queue, $send_hdr, encode_json($data) );
+            my $send_dest   = $self->env->send_queue;
+            my $json        = encode_json($data);
+
+            $log->debug("Sending to queue $send_dest");
+            $log->debug("with header: ",{filter=>\&Dumper, value=>$send_hdr});
+            $log->debug("encoded json: $json");
+
+            $stomp->send($self->env->send_queue, $send_hdr, $json);
 
         }
         else {
