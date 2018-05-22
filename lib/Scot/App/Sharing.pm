@@ -383,7 +383,14 @@ sub process_message {
             };
 
             my $send_dest   = $self->env->send_queue;
-            my $json        = encode_json($data);
+            my $type        = $data->{data}->{type};
+            my $id          = $data->{data}->{id};
+            my $body        = {
+                action  => $data->{action},
+                type    => $data->{data}->{type},
+                object  => $self->get_obj_href($type,$id),
+            };
+            my $json        = encode_json($body);
 
             $log->debug("Sending to queue $send_dest");
             $log->debug("with header: ",{filter=>\&Dumper, value=>$send_hdr});
@@ -407,7 +414,44 @@ sub process_message {
     }
 
     return 1;
-
 }
+
+sub get_obj_href {
+    my $self    = shift;
+    my $type    = shift;
+    my $id      = shift;
+    my $mongo   = $self->env->mongo;
+    my $collection  = $mongo->collection(ucfirst($type));
+    my $object      = $collection->find_iid($id);
+    my $href        = $object->to_hash;
+    return $href;
+}
+
+sub handle_object {
+    my $self    = shift;
+    my $body    = shift;
+    my $action  = $body->{action};
+    my $href    = $body->{object};
+    my $type    = $body->{type};
+    my $log     = $self->env->log;
+
+    $log->debug("Handling body: ",{filter=>\&Dumper, value=>$body});
+
+    if ( $action =~ /create/i ) {
+        $log->debug("Create action");
+    }
+    elsif ( $action =~ /update/i ) {
+        $log->debug("Update action");
+
+    }
+    elsif ( $action =~ /delete/i ) {
+        $log->debug("Delete action");
+    }
+    else {
+        $log->error("ERROR: unrecognized action $action");
+    }
+}
+
+
 
 1;
