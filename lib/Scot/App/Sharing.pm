@@ -369,7 +369,11 @@ sub process_message {
 
             $log->debug("This topic broadcast was on my scot instance");
 
-            $stomp->send($self->env->send_queue, {}, $data );
+            my $send_hdr = {
+                'content-type'    => 'text/json'
+            };
+
+            $stomp->send($self->env->send_queue, $send_hdr, $data );
 
         }
         else {
