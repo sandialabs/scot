@@ -442,25 +442,35 @@ sub handle_object {
     # TODO: need to verify location and possibly reset groups permissions
     # TODO: add Stat, Audit, History and topic announcements for these actions
 
-    my $col = $mongo->collection(ucfirst($type));
-
-    if ( $action =~ /create/i ) {
-        $log->debug("Create action");
-        my $obj = $col->create($body->{object});
+    try {
+        my $col = $mongo->collection(ucfirst($type));
+        if ( $action =~ /create/i ) {
+            $log->debug("Create action");
+            my $obj = $col->create($body->{object});
+            die "Failed to create object" unless ($obj);
+        }
+        elsif ( $action =~ /update/i ) {
+            $log->debug("Update action");
+            if ( $col->update({'$set' => $body->{object}}) ) {
+                $log->debug("updated object");
+            }
+            else {
+                $log->error("Failed object update!");
+            }
+        }
+        elsif ( $action =~ /delete/i ) {
+            $log->debug("Delete action");
+            my $obj = $col->find_one({id => $body->{object}->{id}, 
+                                location  => $body->{object}->{location}});
+            $obj->remove;
+        }
+        else {
+            $log->error("ERROR: unrecognized action $action");
+        }
     }
-    elsif ( $action =~ /update/i ) {
-        $log->debug("Update action");
-        my $obj = $col->update({'$set' => $body->{object}});
-    }
-    elsif ( $action =~ /delete/i ) {
-        $log->debug("Delete action");
-        my $obj = $col->find({id => $body->{object}->{id}, 
-                              location  => $body->{object}->{location}});
-        $obj->remove;
-    }
-    else {
-        $log->error("ERROR: unrecognized action $action");
-    }
+    catch {
+        $log->error("ERROR handling Object: $_");
+    };
 }
 
 
