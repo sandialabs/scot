@@ -245,8 +245,8 @@ sub run {
         my $pid     = shift;
         my $href    = shift;
         my $action  = $href->{action};
-        my $type    = $href->{data}->{type};
-        my $id      = $href->{data}->{id};
+        my $type    = $href->{data}->{type} // '';
+        my $id      = $href->{data}->{id} // '';
 
         $log->debug(" +++ worker $pid started to handle $action on $type $id");
     });
@@ -257,8 +257,8 @@ sub run {
         my $status  = shift;
         my $href    = shift;
         my $action  = $href->{action};
-        my $type    = $href->{data}->{type};
-        my $id      = $href->{data}->{id};
+        my $type    = $href->{data}->{type} // '';
+        my $id      = $href->{data}->{id} // '';
 
         $log->debug(" +++ worker $pid finished handling $action on $type $id. STATUS = $status");
     });
@@ -396,6 +396,8 @@ sub process_message {
             $log->debug("with header: ",{filter=>\&Dumper, value=>$send_hdr});
             $log->debug("encoded json: $json");
 
+            # TODO: check sharable and tlp bits before sending
+
             $stomp->send($self->env->send_queue, $send_hdr, $json);
 
         }
@@ -406,13 +408,12 @@ sub process_message {
         }
     }
     elsif ( $destination eq $self->env->receive_queue ) {
-
         $log->debug("Queue message received from other SCOT");
+        $self->handle_object($data);
     }
     else {
         $log->error("ERROR: got a message I should not have");
     }
-
     return 1;
 }
 
@@ -434,18 +435,28 @@ sub handle_object {
     my $href    = $body->{object};
     my $type    = $body->{type};
     my $log     = $self->env->log;
+    my $mongo   = $self->env->mongo;
 
     $log->debug("Handling body: ",{filter=>\&Dumper, value=>$body});
 
+    # TODO: need to verify location and possibly reset groups permissions
+    # TODO: add Stat, Audit, History and topic announcements for these actions
+
+    my $col = $mongo->collection(ucfirst($type));
+
     if ( $action =~ /create/i ) {
         $log->debug("Create action");
+        my $obj = $col->create($body->{object});
     }
     elsif ( $action =~ /update/i ) {
         $log->debug("Update action");
-
+        my $obj = $col->update({'$set' => $body->{object}});
     }
     elsif ( $action =~ /delete/i ) {
         $log->debug("Delete action");
+        my $obj = $col->find({id => $body->{object}->{id}, 
+                              location  => $body->{object}->{location}});
+        $obj->remove;
     }
     else {
         $log->error("ERROR: unrecognized action $action");
