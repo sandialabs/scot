@@ -63,7 +63,7 @@ sub startup {
     if ( ! defined $hypno_conf ) {
         $hypno_conf = {
             listen  => ['http://localhost:3000?reuse=1'],
-            workers => 75,
+            workers => 100,
             clients => 1,
             proxy   => 1,
             pidfile => '/var/run/hypno.pid',
