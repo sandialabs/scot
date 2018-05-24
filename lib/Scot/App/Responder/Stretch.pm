@@ -2,7 +2,7 @@ package Scot::App::Responder::Stretch;
 
 use Try::Tiny;
 use Data::Dumper;
-use Data::Clean::JSON;
+use Data::Clean::FromJSON;
 use Moose;
 extends 'Scot::App::Responder';
 
@@ -104,8 +104,8 @@ sub process_all {
     my $self        = shift;
     my $collection  = shift;
     my $startid     = shift;
-    my $scot        = $self->scot;
-    my $es          = $self->es;
+    # my $scot        = $self->scot;
+    my $es          = $self->env->es;
     my $limit       = 100;
     my $last_completed = $startid;
     my $log         = $self->log;
