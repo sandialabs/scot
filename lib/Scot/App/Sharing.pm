@@ -451,15 +451,24 @@ sub handle_object {
             die "Failed to create object" unless ($obj);
         }
         elsif ( $action =~ /update/i ) {
+            my $loc = delete $href->{location};
+            my $id  = delete $href->{id};
             my $update = {
                 '$set'  => $href,
             };
             $log->debug("Update action ",{filter=>\&Dumper, value=>$update});
-            if ( $col->update($update) ) {
-                $log->debug("updated object");
+            my $obj = $col->find_one({id => $id, location => $loc});
+
+            if ( defined $obj ) {
+                if ( $obj->update($update) ) {
+                    $log->debug("updated object");
+                }
+                else {
+                    $log->error("Failed object update!");
+                }
             }
-            else {
-                $log->error("Failed object update!");
+            else{
+                die "Failed to find ".ref($col)." matching $loc $id";
             }
         }
         elsif ( $action =~ /delete/i ) {
