@@ -1,8 +1,7 @@
 #!/usr/bin/env perl
 use lib '../../lib/';
+use Scot::Env;
 use Data::Dumper;
-use Scot::Util::Config;
-use Scot::Util::Logger;
 use Scot::Parser::Sourcefire;
 use v5.18;
 
@@ -28,14 +27,11 @@ print
     "rest       = " . $+{rest} . "\n";
     
 
-
-my $confobj = Scot::Util::Config->new({
-    paths   => [ '../../../Scot-Internal-Modules', '/home/tbruner/Scot-Internal-Modules'],
-    file    => 'logger_test.cfg',
+my $env = Scot::Env->new({
+    config  => "/opt/scot/etc/scot.test.cfg.pl",
 });
-my $loghref = $confobj->get_config();
-my $log     = Scot::Util::Logger->new($loghref);
-my $parser  = Scot::Parser::Sourcefire->new({log=>$log});
+
+my $parser  = Scot::Parser::Sourcefire->new({log=>$env->log});
 
 my $msg = {
     subject => "**Auto Generated Email** -- Policy Event: High Criticaility Rule/CRITICAL ALERT EMAIL at Fri Sep  9 10:09:01 2001 UTC",

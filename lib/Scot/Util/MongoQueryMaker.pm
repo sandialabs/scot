@@ -246,7 +246,7 @@ sub build_match_ref {
     my %mquery  = ();       # ... the resulting mongo query
 
     # TODO: abstract this somewhere so these are known meta properties
-    my @skipfields   = qw(sort columns limit offset);
+    my @skipfields   = qw(sort columns limit offset withsubject);
     my @datefields   = qw(when updated created occurred discovered reported);
     my @numfields    = qw(id views entry_count alert_count);
     my @tagsrcfields = qw(tag source);
@@ -255,7 +255,7 @@ sub build_match_ref {
 
     foreach my $key (keys %$params) {
 
-        next if ( grep {/$key/} @skipfields );
+        next if ( grep {/^$key$/} @skipfields );
 
         my $value   = $params->{$key};
 

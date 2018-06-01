@@ -9,7 +9,7 @@ my $stomp = Net::STOMP::Client->new(
     host    => '127.0.0.1',
     port    => 61613,
 );
-$stomp->connect;
+$stomp->connect(login => "scot", passcode => "scot1234");
 
 for my $i (1..10) {
 
@@ -26,7 +26,7 @@ for my $i (1..10) {
 
     my $json = encode_json $href;
     $stomp->send(
-        destination => "/queue/coe",
+        destination => "/queue/incoming",
         body        => $json,
     );
 
