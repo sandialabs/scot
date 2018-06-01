@@ -38,7 +38,7 @@ my $handler1 = $t->tx->res->json->{id};
 
 $t  ->post_ok  ('/scot/api/v2/handler'  => json => {
         username => "foobar",
-        start    => $toddtime + 9,
+        start    => $toddtime + 8,
         end      => $toddtime + 29,
     })
     ->status_is(200)
@@ -63,7 +63,7 @@ $t  ->get_ok("/scot/api/v2/handler?current=$toddtime")
     ->status_is(200)
     ->json_is('/records/0/username' => 'tbruner');
 
-my $tt = $toddtime +9;
+my $tt = $toddtime +8;
 $t  ->get_ok("/scot/api/v2/handler?current=$tt")
     ->status_is(200)
     ->json_is('/records/0/username' => 'tbruner')
