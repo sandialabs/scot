@@ -6,6 +6,7 @@ use DateTime;
 use DateTime::Format::Strptime;
 use Mojo::JSON qw(decode_json encode_json);
 use Statistics::Descriptive;
+use File::Slurp;
 
 use strict;
 use warnings;
@@ -213,7 +214,8 @@ sub response_avg_last_x_days {
         my $next_end_dt     = $next_start_dt->clone();
         $next_end_dt->set(hour=>23, minute=>59, second=>59);
         my $request = {
-            range   => [ $next_start_dt, $next_end_dt ]
+            # range   => [ $next_start_dt, $next_end_dt ]
+            range   => [ $next_end_dt, $next_start_dt ]
         };
         if ( defined $limit ) {
             $request->{limit} = $limit;
@@ -254,6 +256,7 @@ sub response_time {
     my $collection  = $mongo->collection('Stat');
     my $regex       = qr/Alertgroup Response Times/;
     my $match       = $self->generate_range_match(\@range,$regex);
+    $log->debug("response_time match is ",{filter=>\&Dumper, value => $match});
     my $cursor      = $collection->find($match);
 
     $log->debug("There are ".$cursor->count." items in range");
@@ -274,6 +277,7 @@ sub response_time {
 
         push @{$results{$subtype}{$type}}, $stat->value;
     }
+    $log->debug("results: ",{filter=>\&Dumper, value=>\%results});
 
     my $json    = {
         all         => $self->get_statistics($results{all}),
@@ -284,7 +288,7 @@ sub response_time {
     return $json;
 }
 
-sub get_statistics_nogood {
+sub get_statistics {
     my $self    = shift;
     my $href    = shift; # { sum => [ x,y,z...], count => [a,b,c...] }
     my @values  = ();
@@ -315,7 +319,7 @@ sub get_statistics_nogood {
     };
 }
 
-sub get_statistics {
+sub get_statistics_huh {
     my $self    = shift;
     my $aref    = shift; # array of values
     my $util    = Statistics::Descriptive::Sparse->new();
@@ -673,28 +677,38 @@ sub get_status {
     my $mongo   = $env->mongo;
     my $log     = $env->log;
 
-    #my $status  = {
-    #    'Scot Flair Daemon'         => $self->get_daemon_status('scfd'),
-    #    'Scot Elastic Push Daemon'  => $self->get_daemon_status('scepd'),
-    #    'System Uptime'             => `uptime`,
-    #    'MongoDB'                   => $self->get_daemon_status('mongod'),
-    #};
-    my $status  = [
-        { name  => "Scot Flair",    status => $self->get_daemon_status('scfd') },
-        { name  => "Scot Elastic",  status => $self->get_daemon_status('scepd') },
-        { name  => "Scot App",      status => $self->get_daemon_status('scfd') },
-        { name  => "Scot Reflair",  status => $self->get_daemon_status('scrfd') },
-        { name  => "Scot Mongodb",  status => $self->get_daemon_status('mongod') },
-    ];
-    $self->do_render($status);
+    my $status_file = "/opt/scot/data/status.txt";
+    my @statuses    = ();
+
+    try {
+        @statuses = read_file($status_file);
+    }
+    catch {
+        $log->error("Unable to read file $status_file: $_");
+    };
+
+    my @return  = ();
+    foreach my $line (@statuses) {
+        my ($daemon, $status) = split(/=/,$line);
+        push @return, { name => $daemon, status => $status };
+    }
+
+    $self->do_render(\@return);
 }
+#    my $status  = [
+#        { name  => "Scot Flair",    status => $self->get_daemon_status('scfd') },
+#       { name  => "Scot Elastic",  status => $self->get_daemon_status('scepd') },
+#        { name  => "Scot App",      status => $self->get_daemon_status('scfd') },
+#        { name  => "Scot Reflair",  status => $self->get_daemon_status('scrfd') },
+#        { name  => "Scot Mongodb",  status => $self->get_daemon_status('mongod') },
+#    ];
 
 sub get_daemon_status {
     my $self    = shift;
     my $daemon  = shift;
     my $log     = $self->env->log;
 
-    my $systemd = `systemctl | grep "\-.mount"`;
+    my $systemd = `systemctl | grep "\-\.mount"`;
 
     if ( $systemd =~ /-\.mount/ ) {
         $log->debug("systemd style services!");

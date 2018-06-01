@@ -80,8 +80,10 @@ sub get_config_value {
             return $ENV{$envname};
         }
     }
-    if ( defined $env->$attr ) {
-        return $env->$attr;
+    my $value = $env->get_env_attr($attr);
+
+    if ( defined $value ) {
+        return $value;
     }
     return $default;
 }

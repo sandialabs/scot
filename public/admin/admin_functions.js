@@ -636,64 +636,71 @@ function save_group_changes(button) {
 		url:  url,
 		data: JSON.stringify(json),
 		contentType: 'application/json; charset=UTF-8',
-	}).done(function(response) {
+	}).done(function(data) {
 		$.ajax({
-			type: 'get',
-			url:  '/scot/api/v2/user',
-			data: {limit:0},
-		}).done(function(response) {
-			for (i=0; i < response.records.length; i++) {
-				if (selectedusersid.indexOf(response.records[i].id) !== -1) {
-					if (response.records[i].groups.indexOf(groupname) === -1) {
-						var currentGroup = response.records[i].groups;
-						currentGroup.push(groupname);
-						//todo check if group is already there and skip if it is. 
-						var url = '/scot/api/v2/user/' + response.records[i].id;
-						var json = {'groups':currentGroup};
-						$.ajax({
-							type: 'put',
-							async: true,
-							url:  url,
-							data: JSON.stringify(json),
-							contentType: 'application/json; charset=UTF-8',
-						}).done(function(response) {
-							populate_local_users_n_groups();
-						}).error(function(response) {
-							$('.loading').attr('src', '/images/close_toolbar.png');
-						});
-					}
-				}
-				if (unselectedusersid.indexOf(response.records[i].id) !== -1) {
-					console.log(i);
-					if (response.records[i].groups.indexOf(groupname) !== -1) { 
-						var currentGroup = response.records[i].groups;
-						var index = currentGroup.indexOf(groupname);
-						if (index !== -1) {
-							currentGroup.splice(index,1)
-							var url = '/scot/api/v2/user/' + response.records[i].id;
-							var json = {'groups':currentGroup}
-							$.ajax({
-								type: 'put',
-								asynx: true,
-								url: url,
-								data: JSON.stringify(json),
-								contentType: 'application/json; charset=UTF-8'
-							}).done(function(response) {
-								console.log('removing from group')
-							}).error(function(response) {
-								$('.loading').attr('src','/images/close_toolbar.png');
-							});
-						}
-					}
-				}
-			}
+            type: 'get',
+            url: '/scot/api/v2/user',
+            data: {limit: 0},
+            success: function (response) {
+                for (i = 0; i < response.records.length; i++) {
+                    if (selectedusersid.indexOf(response.records[i].id) !== -1) {
+                        if (response.records[i].groups.indexOf(groupname) === -1) {
+                            var currentGroup = response.records[i].groups;
+                            currentGroup.push(groupname);
+                            //todo check if group is already there and skip if it is.
+                            var url = '/scot/api/v2/user/' + response.records[i].id;
+                            var json = {'groups': currentGroup};
+                            $.ajax({
+                                type: 'put',
+                                async: true,
+                                url: url,
+                                data: JSON.stringify(json),
+                                contentType: 'application/json; charset=UTF-8',
+                                success: function () {
+                                    populate_local_users_n_groups();
+                                },
+                                error: function (xhr, thrownError) {
+                                    alert(xhr.status);
+                                    alert(thrownError);
+                                    $('.loading').attr('src', '/images/close_toolbar.png');
+                                }
+                            });
+                        }
+                    }
+                    if (unselectedusersid.indexOf(response.records[i].id) !== -1) {
+                        console.log(i);
+                        if (response.records[i].groups.indexOf(groupname) !== -1) {
+                            var currentGroup = response.records[i].groups;
+                            var index = currentGroup.indexOf(groupname);
+                            if (index !== -1) {
+                                currentGroup.splice(index, 1)
+                                var url = '/scot/api/v2/user/' + response.records[i].id;
+                                var json = {'groups': currentGroup};
+                                $.ajax({
+                                    type: 'put',
+                                    asynx: true,
+                                    url: url,
+                                    data: JSON.stringify(json),
+                                    contentType: 'application/json; charset=UTF-8',
+                                    success: function () {
+                                        console.log('removing from group')
+                                    },
+                                    error: function () {
+                                        $('.loading').attr('src', '/images/close_toolbar.png');
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
 
-			$('#group_modal').modal('hide');
-			populate_local_users_n_groups();
-		}).error(function(response) {
-			$('.loading').attr('src', '/images/close_toolbar.png');
-		});
-		return false;
+                $('#group_modal').modal('hide');
+                populate_local_users_n_groups();
+            },
+            error: function () {
+                $('.loading').attr('src', '/images/close_toolbar.png');
+            }
+        });
 	})
 }
 

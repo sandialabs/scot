@@ -250,6 +250,16 @@ sub run {
         );
     });
 
+    $stomp->on_error(sub {
+        my $stomp   = shift;
+        my $header  = shift;
+        my $body    = shift;
+
+        $log->error("STOMP ERROR: ");
+        $log->error("    Headers: ",{filter=>\&Dumper, value=>$header});
+        $log->error("    Body   : ",{filter=>\&Dumper, value=>$body});
+    });
+
     my $cv  = AnyEvent->condvar;
     $cv->recv;
 }

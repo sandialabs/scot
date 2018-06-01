@@ -22,12 +22,14 @@ let SelectedContainer = require( '../detail/selected_container.jsx' );
 let AMQ             = require( '../debug-components/amq.jsx' );
 let Wall            = require( '../debug-components/wall.jsx' );
 let Search          = require( '../components/esearch.jsx' );
-let Gamification    = require( '../components/dashboard/gamification.jsx' );
-let Status          = require( '../components/dashboard/status.jsx' );
-let Online          = require( '../components/dashboard/online.jsx' );
-import { ReportDashboard, ReportPage, SingleReport } from '../components/dashboard/report';
-let Notification    = require( 'react-notification-system' );
-let Login           = require( '../modal/login.jsx' ).default;
+var Notification    = require('react-notification-system');
+var Login           = require('../modal/login.jsx').default;
+import Home from './home';
+import { ReportPage, SingleReport } from '../components/dashboard/report';
+
+import { NOTIFICATION_TYPES } from '../components/dashboard/activity';
+
+import { UserConfigProvider } from '../utils/userConfig';
 
 {
     window.React = React;	
@@ -132,6 +134,11 @@ let App = React.createClass( {
         this.setState( {viewMode:viewModeSetting, notificationSetting:notificationSetting, listViewFilter:listViewFilterSetting,listViewSort:listViewSortSetting, listViewPage:listViewPageSetting} );
     },
     notification: function() {
+		// Don't show on dashboard if filtered type
+		if ( this.props.match.path === '/' && this.props.match.isExact && NOTIFICATION_TYPES.includes( activemqstate ) ) {
+			return;
+		}
+
         //Notification display in update as it will run on every amq message matching 'main'.
         let notification = this.refs.notificationSystem;
         //not showing notificaiton on entity due to "flooding" on an entry update that has many entities causing a storm of AMQ messages
@@ -150,8 +157,13 @@ let App = React.createClass( {
         }
     },
     wall: function() {
-        let notification = this.refs.notificationSystem;
-        let date = new Date( activemqwhen * 1000 );
+		// Don't show on dashboard
+		if ( this.props.match.path === '/' && this.props.match.isExact ) {
+			return;
+		}
+
+        var notification = this.refs.notificationSystem
+        var date = new Date(activemqwhen * 1000);
         date = date.toLocaleString();
         if ( activemqwall == true ) {
             notification.addNotification( {
@@ -214,6 +226,8 @@ let App = React.createClass( {
             success: function( data ) {
                 this.setState( {login: true} );
                 console.log( 'Successfully logged out' );
+                //Call whoami so we can get a csrf token
+                this.WhoAmIQuery(); 
             }.bind( this ), 
             error: function( data ) {
                 this.error( 'Failed to log out', data );
@@ -257,7 +271,7 @@ let App = React.createClass( {
         }
 
         return (
-            <div>
+            <UserConfigProvider>
                 <Navbar inverse fixedTop={true} fluid={true}>
                     <Navbar.Header>
                         <Navbar.Brand>
@@ -307,36 +321,17 @@ let App = React.createClass( {
                             <NavItem href='/incident_handler.html'>{IH}</NavItem>
                         </Nav>
                         <span id='ouo_warning' className='ouo-warning'>{this.state.sensitivity}</span>
+                        <span id='scot_version' style={{float:'right', marginTop:'3px',padding:'10px 10px', position:'relative', color:'white'}} className='scot_version'>V3.5</span>
                         <Search errorToggle={this.errorToggle} />
                     </Navbar.Collapse>
                 </Navbar>
                 <div className='mainNavPadding'>
                     <Login csrf={this.state.csrf} modalActive={this.state.login} loginToggle={this.loginToggle} WhoAmIQuery={this.WhoAmIQuery} GetHandler={this.GetHandler} errorToggle={this.errorToggle} origurl={this.state.origurl} />
                     <Notification ref='notificationSystem' />
-                    {!type || type == 'home' ? 
-                        <div className="homePageDisplay">
-                            <div className='col-md-4'>
-                                <img src='/images/scot-600h.png' style={{maxWidth:'350px',width:'100%',marginLeft:'auto', marginRight:'auto', display: 'block'}}/>
-                                <h1>Sandia Cyber Omni Tracker 3.5</h1>
-                                <h1>{this.state.sensitivity}</h1>
-                                { !this.state.login ? 
-                                    <Status errorToggle={this.errorToggle} />
-                                    :
-                                    null
-                                }
-                            </div>
-                            { !this.state.login ? 
-                                <div>
-                                    <Gamification errorToggle={this.errorToggle} />
-                                    <Online errorToggle={this.errorToggle} />
-                                    <ReportDashboard />
-                                </div>
-                                :
-                                null
-                            }
-                        </div>
-                        :
-                        null}
+					{/* Home Page Dashboard */}
+					<Route exact path='/' render={ props => (
+						<Home loggedIn={!this.state.login} sensitivity={this.state.sensitivity} errorToggle={this.errorToggle} />
+					) } />
                     { type == 'alert' ? 
                         <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={type} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
                         :
@@ -392,7 +387,7 @@ let App = React.createClass( {
                         :
                         null}
                 </div>
-            </div>
+            </UserConfigProvider>
         );
     },
 } );

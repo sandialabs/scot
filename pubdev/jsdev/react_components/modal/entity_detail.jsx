@@ -504,7 +504,7 @@ let EntityDetail = React.createClass( {
                     title = '';
                 }
             }
-            tabsArr.push( <Tab className='tab-content' eventKey={this.state.tabs[i].entityid} title={title}><TabContents data={this.state.tabs[i].data} type={this.props.type} id={this.props.id} entityid={this.state.tabs[i].entityid} entitytype={this.state.tabs[i].entitytype} valueClicked={this.state.tabs[i].valueClicked} i={z} key={z} errorToggle={this.props.errorToggle} linkWarningToggle={this.props.linkWarningToggle}/></Tab> );
+            tabsArr.push( <Tab className='tab-content' eventKey={this.state.tabs[i].entityid} title={title}><TabContents data={this.state.tabs[i].data} form={this.props.form} type={this.props.type} id={this.props.id} entityid={this.state.tabs[i].entityid} entitytype={this.state.tabs[i].entitytype} valueClicked={this.state.tabs[i].valueClicked} i={z} key={z} errorToggle={this.props.errorToggle} linkWarningToggle={this.props.linkWarningToggle}/></Tab> );
         }
         if ( this.state.defaultEntityOffset && this.state.entityobj ) {
             let positionRightBoundsValue = this.positionRightBoundsCheck();
@@ -522,7 +522,7 @@ let EntityDetail = React.createClass( {
             return (
                 <div id='popup-flex-container' style={{height: this.state.height}} className={'entity-full-screen'}>
                     <div id="entity_detail_container" style={{flexFlow: 'column', display: 'flex', width:'100%'}}>
-                        <Tabs className='tab-content' defaultActiveKey={this.props.entityid} activeKey={this.state.currentKey} onSelect={this.handleSelectTab} bsStyle='pills' animation={false}>
+                        <Tabs className='tab-content' defaultActiveKey={this.props.entityid} activeKey={this.state.currentKey} onSelect={this.handleSelectTab} bsStyle='pills'  animation={false}>
                             {tabsArr}                     
                         </Tabs>
                     </div>
@@ -573,7 +573,7 @@ let TabContents = React.createClass( {
                         <Link to={guideurl} target="_blank"><h4 id="myModalLabel">{this.props.data != null ? <span><span><EntityValue value={this.props.entityid} errorToggle={this.props.errorToggle} /></span><div><EntityValue value={this.props.data.applies_to} errorToggle={this.props.errorToggle} /></div></span> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h4></Link>
                     </div>
                     <div style={{overflow:'auto',flex:'1 1 auto', marginLeft:'10px'}}>
-                        {this.props.data != null ? <GuideBody entityid={this.props.entityid} entitytype={this.props.entitytype}/> : <div>Loading...</div>}
+                        {this.props.data != null ? <GuideBody entityid={this.props.entityid} form={this.props.form} data={this.props.data} entitytype={this.props.entitytype}/> : <div>Loading...</div>}
                     </div> 
                 </div>
             );
@@ -1231,7 +1231,7 @@ let GuideBody = React.createClass ( {
                         <Button bsSize='xsmall' onClick={this.entryToggle}>Add Entry</Button><br/>
                     </div>
                     {this.state.entryToolbar ? <AddEntry entryAction={'Add'} type='guide' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} 
-                    <SelectedEntry type={'guide'} id={this.props.entityid} isPopUp={1} errorToggle={this.props.errorToggle}/>
+                    <SelectedEntry type={'guide'}  form={this.props.form} id={this.props.entityid} isPopUp={1} headerData={this.props.data} errorToggle={this.props.errorToggle}/>
                 </Tab>
             </Tabs>
         );

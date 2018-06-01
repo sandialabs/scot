@@ -63,7 +63,7 @@ sub startup {
     if ( ! defined $hypno_conf ) {
         $hypno_conf = {
             listen  => ['http://localhost:3000?reuse=1'],
-            workers => 75,
+            workers => 100,
             clients => 1,
             proxy   => 1,
             pidfile => '/var/run/hypno.pid',
@@ -384,6 +384,36 @@ relies on the browser BasicAuth popup.
             ->via   ('post')
             ->to    ('controller-auth#get_apikey')
             ->name  ('get_apikey');
+
+=pod
+
+@api {get} /scot/api/v2/prepexport/:thing/:id
+@apiName Export Record
+@apiGroup Export
+@apiVersion 2.0.0
+@apiDescription Export the current Event, Incident, etc. into an HTML formatted E-mail.  
+
+=cut
+
+    $scot   ->route ('/api/v2/prepexport/:thing/:id')
+            ->via   ('get')
+            ->to    ('controller-export#prepexport')
+            ->name  ('prepexport');
+
+=pod
+
+@api {post} /scot/api/v2/sendexport
+@apiName Export Record
+@apiGroup Export
+@apiVersion 2.0.0
+@apiDescription Post HTML to be Emailed somewhere
+
+=cut
+
+    $scot   ->route ('/api/v2/sendexport')
+            ->via   ('post')
+            ->to    ('controller-export#sendexport')
+            ->name  ('sendexport');
 
 =pod
 

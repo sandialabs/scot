@@ -1,5 +1,8 @@
-import moment from 'moment';
-require( 'moment-range' );
+import Moment from 'moment';
+import { extendMoment } from 'moment-range';
+const moment = extendMoment( Moment );
+
+const DAY = 24 * 60 * 60 * 1000;
 
 /**
  * Calculate if a timestamp is older than a number of seconds
@@ -23,6 +26,56 @@ export const timeOlderThan = ( timestamp, secondsAgo ) => {
 export const isExpired = ( expires ) => {
     return !expires || Date.now() >= expires;
 };
+
+/**
+ * Return an Epoch Range from beginning of yesterday till end of tomorrow
+ */
+export const todayRange = () => {
+	return {
+		start: Math.floor( (new Date(Date.now() - DAY)).setHours(0, 0, 0, 0) / 1000 ),
+		end: Math.floor( (new Date(Date.now() + DAY)).setHours(23, 59, 59, 999) / 1000 ),
+	}
+}
+
+/**
+ * Return an Epoch Range for the last week
+ */
+export const lastWeekRange = () => {
+	return {
+		start: Math.floor( (new Date(Date.now() - DAY * 7)).setHours(0, 0, 0, 0) / 1000 ),
+		end: Math.floor( (new Date(Date.now() + DAY)).setHours(23, 59, 59, 999) / 1000 ),
+	}
+}
+
+/**
+ * Convert an epoch to seconds ago
+ *
+ * epoch: epoch to convert
+ */
+export const epochToTimeago = ( epoch ) => {
+	return ( Date.now() - epoch * 1000 ) / 1000;
+}
+
+/**
+ * Convert seconds ago to epoch
+ *
+ * timeago: seconds ago to convert
+ */
+export const timeagoToEpoch = ( timeago ) => {
+	return ( Date.now() - timeago * 1000 ) / 1000;
+}
+
+/**
+ * Epoch Range to filter array
+ *
+ * range: epoch range
+ */
+export const epochRangeToFilter = ( range ) => {
+	return [
+		range.start,
+		range.end,
+	];
+}
 
 /**
  * Conversion Functions for DateRangeFilter

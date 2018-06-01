@@ -303,6 +303,18 @@ sub get_config_value {
     return $default;
 }
 
+sub get_env_attr {
+    my $self    = shift;
+    my $name    = shift;
+    my $meta    = $self->meta;
+    my $method  = $meta->get_attribute($name);
+
+    if ( defined $method ) {
+        return $self->$name;
+    }
+    return undef;
+}
+
 sub build_logger {
     my $self    = shift;
     my $config  = shift;

@@ -19,7 +19,7 @@ my $harness = TAP::Harness->new(\%args);
         './env.t',
         './alertgroup.t',
         './checklist.t',
-#        './alert.t',
+        './alert.t',
         './event.t',
         './entry.t',
         './handler.t',
