@@ -35,7 +35,7 @@ sub process_message {
         return 1;
     }
 
-    my $cleanser    = Data::Clean::JSON->get_cleanser;
+    my $cleanser    = Data::Clean::FromJSON->get_cleanser;
     my $record      = $self->get_document($type, $id);
     $cleanser->clean_in_place($record);
 
