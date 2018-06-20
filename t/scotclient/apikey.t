@@ -29,6 +29,7 @@ my $obj     = $col->create({
 ok(defined($env), "Env is defined");
 
 my $client  = Scot::Util::ScotClient->new(
+    env     => $env,
     log     => $env->log,
     api_key => $apikey,
     config  => {
