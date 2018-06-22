@@ -13,7 +13,8 @@ use HTML::Entities;
 use Data::Dumper;
 use Net::IDN::Encode ':all';
 use Try::Tiny;
-use Mozilla::PublicSuffix qw(public_suffix);
+# use Mozilla::PublicSuffix qw(public_suffix);
+use Domain::PublicSuffix;
 use namespace::autoclean;
 
 use Moose;
@@ -23,6 +24,20 @@ has env => (
     isa     => 'Scot::Env',
     required    => 1,
 );
+
+has pdsuffix => (
+    is      => 'ro',
+    isa     => 'Domain::PublicSuffix',
+    lazy    => 1,
+    required    => 1,
+    builder => '_build_public_suffix',
+);
+
+sub _build_public_suffix {
+    my $self    = shift;
+    my $sfile   = $self->env->mozilla_public_suffix_file;
+    return Domain::PublicSuffix->new({ data_file => $sfile });
+}
 
 has splitre => (
     is      => 'ro',
@@ -289,6 +304,7 @@ sub do_singleword_matches {
                 my $span    = undef;
                 if ( $type eq "domain" ) {
                     $span   = $self->domain_action($match, $dbhref);
+                    # $log->debug("span is ",{filter=>\&Dumper, value=>$span});
                     if ( ! defined $span ) {
                         $log->warn("false match of domain");
                         next REGEX;
@@ -391,6 +407,7 @@ sub deobsfucate_ipdomain {
     my $self    = shift;
     my $text    = shift;
     my @parts   = split(/[\[\(\{]*\.[\]\)\}]*/, $text);
+    # $self->env->log->debug("$text parts = ",{filter=>\&Dumper,value=>\@parts});
     return join('.',@parts);
 }
 
@@ -406,7 +423,10 @@ to be a domain.
 
 =cut
 
-sub domain_action {
+### this was the old method, bbut the module it used was not easily 
+### updated, so moved to the next function
+
+sub domain_action_mozill_public_suffix {
     my $self    = shift;
     my $match   = shift;
     my $dbhref  = shift;
@@ -438,6 +458,44 @@ sub domain_action {
         return $span;
     }
     return undef;
+}
+
+# this method uses a module that is easier to update
+
+sub domain_action {
+    my $self    = shift;
+    my $match   = shift;
+    my $dbhref  = shift;
+    my $rootdom;
+    my $log     = $self->env->log;
+
+    $log->debug("Domain Action on $match");
+
+    $match = $self->deobsfucate_ipdomain($match);
+
+    $log->debug("domin is $match after deobsfucation");
+
+    return try {
+        $rootdom = $self->pdsuffix->get_root_domain($match);
+        if ( defined $rootdom ) {
+            $log->debug("We have valid domain with root: $rootdom");
+            push @{$dbhref->{entities}}, {
+                value   => lc($match),
+                type    => "domain",
+            };
+            my $span = $self->span($match, "domain");
+            $log->trace("span generated ",{filter=>\&Dumper,value=>$span});
+            return $span;
+        }
+        else {
+            $log->error("Error getting root domain: ".$self->pdsuffix->error);
+            return undef;
+        }
+    }
+    catch {
+        $log->error("Error matching root domain: $_");
+        return undef;
+    };
 }
 
 =item B<email_action>
