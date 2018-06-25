@@ -84,6 +84,11 @@
         disable_filters => [],
     },
 
+    # this file helps scot determine valid domain "entities"
+    # keep up to date, by creating a root cron job that does the following:
+    # @daily (cd /opt/scot/etc; export https_proxy=yourproxy.com; wget -q -N https://publicsuffix.org/list/public_suffix_list.dat)
+    mozilla_public_suffix_file  => '/opt/scot/etc/public_suffix_list.dat',
+
     # modules to instantiate at Env.pm startup. will be done in 
     # order of the array
     modules => [
