@@ -150,6 +150,7 @@ sub download_image {
     );
     $agent->ssl_opts( SSL_verify_mode => 1, verify_hostname => 1, SSL_ca_path => '/etc/ssl/certs' );
     $agent->proxy(['http','https'], 'http://wwwproxy.sandia.gov:80');
+    $agent->agent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.1 Safari/537.36");
 
     my $request     = HTTP::Request->new('GET', $link);
     my $response    = $agent->request($request);
