@@ -959,11 +959,12 @@ sub promote {
         });
 
 ##      use this to memorialize the likaboss object
-##      if ( $env->meta->has_attribute('lbwebservice') ) {
-##          my $rootuid = $object->data->{rootUID};
-##          $log->debug("memorializing $rootuid");
-##          $self->env->lbwebservice->memorialize($rootuid);
-##      }
+    if ( $env->meta->has_attribute('lbwebservice') ) {
+        foreach my $rootuid (@{$object->data->{rootUID}}) {
+            $log->debug("memorializing $rootuid");
+            $self->env->lbwebservice->memorialize($rootuid);
+        }
+    }
 
     }
 
