@@ -90,12 +90,12 @@ sub get_total_appearances {
     my $type    = shift;
     my $value   = shift;
 
-    my $cursor  = $self->find({
+    my $count  = $self->count({
         type    => $type,
         value   => $value,
     });
 
-    return $cursor->count;
+    return $count;
 }
 
 sub get_appearance_cursor {

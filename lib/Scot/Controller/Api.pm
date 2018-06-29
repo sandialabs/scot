@@ -1203,7 +1203,8 @@ sub process_entities {
     my $mongo   = $self->env->mongo;
     my $log     = $self->env->log;
 
-    $log->debug("PROCESSING ENTITIES ".$cursor->count);
+    # $log->debug("PROCESSING ENTITIES ".$cursor->count);
+    $log->debug("PROCESSING ENTITIES ");
 
     while ( my $entity = $cursor->next ) {
 
@@ -1254,10 +1255,14 @@ sub get_entry_count {
     my $self    = shift;
     my $entity  = shift;
     my $mongo   = $self->env->mongo;
-    return $mongo->collection('Entry')->get_entries(
-        target_id   => $entity->id,
-        target_type => 'entity',
-    )->count;
+    #return $mongo->collection('Entry')->get_entries(
+    #    target_id   => $entity->id,
+    #    target_type => 'entity',
+    #)->count;
+    return $mongo->collection('Entry')->count({
+        'target.type'   => 'entity',
+        'target.id'     => $entity->id,
+    });
 }
 
 sub changed_attributes {
@@ -1665,7 +1670,7 @@ sub thread_entries {
     my $mygroups    = $self->get_groups;
     my $user        = $self->session('user');
 
-    $log->debug("Threading ". $cursor->count . " entries...");
+    $log->debug("Threading entries...");
     $log->debug("users groups are: ", {filter=>\&Dumper, value=>$mygroups});
 
     my @threaded    = ();
