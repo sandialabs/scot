@@ -1,4 +1,5 @@
 %environment = (
+    location    => "snltest",
     servername  => 'localhost',
     serverport  => 443,
     http_method => 'https',
@@ -9,6 +10,7 @@
 
     # set this to hostname of the scot server
     servername  => '127.0.0.1',
+    serverport  => '127.0.0.1',
 
     # the mode can be prod or dev
     mode        => 'testing',

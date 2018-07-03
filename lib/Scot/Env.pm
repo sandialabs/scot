@@ -122,6 +122,8 @@ sub BUILD {
     my $log = $self->build_logger($self->log_config);
     $meta->add_attribute( log => ( is => 'rw', isa => 'Log::Log4perl::Logger'));
     $self->log($log);
+
+    $log->debug("\@INC = ",{filter=>\&Dumper, value => \@INC});
     
     # now build the modules
     foreach my $href (@{ $modules_aref }) {

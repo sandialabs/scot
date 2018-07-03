@@ -625,8 +625,8 @@ sub api_find {
     if ( $href->{collection} eq "entity" ) {
         $log->debug("finding an entity");
         if ( $href->{id} eq "byname" ) {
-            $log->debug("byname, please");
             my $name    = $href->{request}->{params}->{name};
+            $log->debug("byname $name, please");
             my $obj     = $self->find_one({ value => $name });
             return $obj;
         }

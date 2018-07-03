@@ -1177,6 +1177,52 @@ EOF
         userdef => [],
         debug   => 1,
     },
+    {
+        testname    => "puny code 1",
+        testgroup   => "punycode",
+        testnumber  => 44,
+        source      => <<'EOF',
+foo.xn--p1ai
+EOF
+        plain       => <<'EOF',
+foo.xn--p1ai
+EOF
+        flair       => <<'EOF',
+<div><span class="entity domain" data-entity-type="domain" data-entity-value="foo.xn--p1ai">foo.xn--p1ai</span>
+</div>
+EOF
+        entities    => [
+            {
+                value   => 'foo.xn--p1ai',
+                type    => 'domain',
+            },
+        ],
+        userdef => [],
+        debug   => 1,
+    },
+    {
+        testname    => "puny code 2",
+        testgroup   => "punycode",
+        testnumber  => 45,
+        source      => <<'EOF',
+xn--clapcibic1.xn--p1ai
+EOF
+        plain       => <<'EOF',
+xn--clapcibic1.xn--p1ai
+EOF
+        flair       => <<'EOF',
+<div><span class="entity domain" data-entity-type="domain" data-entity-value="xn--clapcibic1.xn--p1ai">xn--clapcibic1.xn--p1ai</span>
+</div>
+EOF
+        entities    => [
+            {
+                value   => 'xn--clapcibic1.xn--p1ai',
+                type    => 'domain',
+            },
+        ],
+        userdef => [],
+        debug   => 1,
+    },
     
 
 );

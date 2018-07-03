@@ -219,18 +219,39 @@ function configure_for_scot {
     initialize_database 
 }
 
+function install_36_mongo {
+    MONGO_KEY_SERVER="--keyserver hkp://keyserver.ubuntu.com:80"
+    MONGO_RECV="--recv 2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5"
+    MONGO_PROXY=""
+
+    if [[ -v $http_proxy ]]; then
+        MONGO_PROXY="--keyserver-options http-proxy=$http_proxy"
+    fi
+
+    apt-key adv $MONGO_PROXY $MONGO_KEY_SERVER $MONGO_RECV
+
+    if [[ $OSVERSION == "16" ]]; then
+        echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.6 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.6.list
+    else
+        echo "deb [ arch=amd64 ] https://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.6 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.6.list
+    fi
+
+    apt-get update
+    apt-get install -y mongodb-org
+}
+
+
 function install_mongodb {
 
     echo "---"
     echo "--- Installing Mongodb "
     echo "---"
 
-    ensure_mongo_repo
 
     if [[ $OS == "Ubuntu" ]]; then
-        apt-get-update
-        apt-get install -y mongodb-org
+        install_36_mongo
     else
+        ensure_mongo_repo
         yum install mongodb-org -y
     fi
 

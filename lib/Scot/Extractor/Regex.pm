@@ -477,7 +477,10 @@ sub _build_DOMAIN {
             (-[a-z0-9]+)*
             [\(\{\[]*\.[\]\}\)]*                # optional obsfucation
         )+
-        [a-z]{2,63}
+        (
+#            (xn--)?
+            [-a-z0-9]{2,63}
+        )
         \b                                      # word boundary
     }xims;
     return {

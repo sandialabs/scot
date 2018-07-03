@@ -892,6 +892,50 @@ let EntityReferences = React.createClass( {
             }.bind( this )
         } );
 
+        ///GUIDES
+        this.guidesRequest = $.ajax( {
+            type: 'get',
+            url: 'scot/api/v2/entity/' + this.props.entityid + '/guide',
+            data: {sort:JSON.stringify( {'id':-1} )},
+            traditional: true,
+            success: function( result ) {
+                var result = result.records;
+                let recordNumber = result.length;
+                let arr = [];
+                let arrPromoted = [];
+                let arrClosed = [];
+                let arrOpen = [];
+                if ( this.state.maxRecords ) { recordNumber = this.state.maxRecords; }
+                for( let i=0; i < recordNumber; i++ ) {
+                    if ( result[i] != null ) {
+                        if ( result[i].status == 'promoted' ){
+                            arrPromoted.push( <ReferencesBody type={'guide'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/> );
+                        } else if ( result[i].status == 'closed' ) {
+                            arrClosed.push( <ReferencesBody type={'guide'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/> );
+                        } else {
+                            arrOpen.push( <ReferencesBody type={'guide'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/> );
+                        }
+                    }
+                }
+                arr.push( arrPromoted );
+                arr.push( arrClosed );
+                arr.push( arrOpen );
+                if ( this.state.isMounted ) {
+                    if ( result.length >= 100 ) {
+                        this.props.showFullEntityButton();
+                    }
+                    this.props.updateAppearances( result.length );
+                    this.setState( {entityDataIncident:arr, loadingIncidents:false} );
+                    if ( this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false && this.state.loadingSignature == false ) {
+                        this.setState( {loading:false} );
+                    }
+                }
+            }.bind( this ),
+            error: function( data ) {
+                this.props.errorToggle( 'failed to get entity references for guides', data );
+            }.bind( this )
+        } );
+
         this.incidentRequest = $.ajax( {
             type: 'get',
             url: 'scot/api/v2/entity/' + this.props.entityid + '/incident',
