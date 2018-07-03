@@ -46,6 +46,8 @@
 
     alertgroup_rowlimit => 10,
 
+    mozilla_public_suffix_file => '/opt/scot/etc/effective_tld_names.dat',
+
     # mojo defaults are values for the mojolicious startup
     mojo_defaults   => {
         # change this after install and restart scot
