@@ -52,7 +52,7 @@ sub _build_splitre {
         (
             [ \t\n]                    # spaces/tabs/newline
             | \W                       # or nonword chars
-            | [\@\w\.\[\]\(\)\{\}-]+   # or words with embedded periods,dashes
+            | [\+\=\@\w\.\[\]\(\)\{\}-]+   # or words with embedded periods,dashes
                                        # with potential obsfucation [({})]
         )
     }xms;
