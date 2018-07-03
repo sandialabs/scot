@@ -1223,6 +1223,33 @@ EOF
         userdef => [],
         debug   => 1,
     },
+    {
+        testname    => "email with =",
+        testgroup   => "email",
+        testnumber  => 46,
+        source      => <<'EOF',
+bounces+182497-1c5d-xxxx=watermelon.edu@email.followmyhealth.com
+EOF
+        plain       => <<'EOF',
+bounces+182497-1c5d-xxxx=watermelon.edu@email.followmyhealth.com
+EOF
+        flair       => <<'EOF',
+<div><span class="entity email" data-entity-type="email" data-entity-value="bounces+182497-1c5d-xxxx=watermelon.edu@email.followmyhealth.com">bounces+182497-1c5d-xxxx=watermelon.edu@<span class="entity domain" data-entity-type="domain" data-entity-value="email.followmyhealth.com">email.followmyhealth.com</span></span>
+</div>
+EOF
+        entities    => [
+            {
+                value   => 'email.followmyhealth.com',
+                type    => 'domain',
+            },
+            {
+                value   => 'bounces+182497-1c5d-xxxx=watermelon.edu@email.followmyhealth.com',
+                type    => 'email',
+            },
+        ],
+        userdef => [],
+        debug   => 1,
+    },
     
 
 );

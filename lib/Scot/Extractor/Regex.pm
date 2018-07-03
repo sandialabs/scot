@@ -547,8 +547,8 @@ sub _build_EMAIL {
         \b
         (
             (?:
-                [a-z0-9!#$%&'*+/?^_`{|}~-]+             # one or more of these
-                (?:\.[a-z0-9!#=$%&'*+/?^_`{|}~-]+)*      # zero or more of these
+                [\=a-z0-9!#$%&'*+/?^_`{|}~-]+             # one or more of these
+                (?:\.[\=a-z0-9!#$%&'*+/?^_`{|}~-]+)*      # zero or more of these
             )
             @
             (?:
