@@ -1250,6 +1250,29 @@ EOF
         userdef => [],
         debug   => 1,
     },
+    {
+        testname    => "Microsoft CLSID",
+        testgroup   => "clsid",
+        testnumber  => 47,
+        source      => <<'EOF',
+"{F20DA720-C02F-11CE-927B-0800095AE340}": "OLE Package Object",
+EOF
+        plain       => <<'EOF',
+"{F20DA720-C02F-11CE-927B-0800095AE340}": "OLE Package Object",
+EOF
+        flair       => <<'EOF',
+<div>&quot;{<span class="entity clsid" data-entity-type="clsid" data-entity-value="f20da720-c02f-11ce-927b-0800095ae340">F20DA720-C02F-11CE-927B-0800095AE340</span>}&quot;: &quot;OLE Package Object&quot;,
+</div>
+EOF
+        entities    => [
+            {
+                value => "f20da720-c02f-11ce-927b-0800095ae340",
+                type  => "clsid",
+            },
+        ],
+        userdef => [],
+        debug   => 1,
+    },
     
 
 );
