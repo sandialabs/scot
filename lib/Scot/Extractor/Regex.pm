@@ -279,6 +279,45 @@ sub _build_CIDR {
     };
 }
 
+=item B<CLSID>
+
+Microsoft object CLSID
+
+=cut
+
+has regex_CLSID     => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_CLSID',
+);
+
+sub _build_CLSID {
+    my $self    = shift;
+    my $regex   = qr{
+        \b                                      # word boundary
+        (
+        [a-fA-F0-9]{8}
+        \-
+        [a-fA-F0-9]{4}
+        \-
+        [a-fA-F0-9]{4}
+        \-
+        [a-fA-F0-9]{4}
+        \-
+        [a-fA-F0-9]{12}
+        )
+        \b
+    }xims;
+    return {
+        regex   => $regex,
+        type    => "clsid",
+        order   => 100,
+        options => { multiword => "no" },
+    };
+}
+
 =item B<md5>
 
 The regex will pull out md5 out of text
