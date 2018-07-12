@@ -81,6 +81,11 @@ let AddFlair = {
                                                         }
                                                     }
                                                 }
+                                                if ( entitydata.scanner != undefined ) {
+                                                    if ( entitydata.scanner.active == 'true' ) {
+                                                        $( entity ).append( $( '<img class="extras" title="scanner">' ).attr( 'src', '/images/flair/scanner.png' ) )
+                                                    }
+                                                }
                                             }
                                             
                                             if ( entityEntryCount != undefined ) {
@@ -166,7 +171,12 @@ let AddFlair = {
                                                 }
                                             }
                                         }
-                                    }           
+                                    }
+									if ( entitydata.scanner != undefined ) {
+										if ( entitydata.scanner.active == 'true' ) {
+											$( entity ).append( $( '<img class="extras" title="scanner">' ).attr( 'src', '/images/flair/scanner.png' ) )
+										}
+									}           
                                 }
                                 
                                 if ( entityEntryCount != undefined ) {
