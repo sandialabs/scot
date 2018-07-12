@@ -608,6 +608,8 @@ let EntityValue = React.createClass( {
                         <DetailDataStatus status={this.props.data.status} id={this.props.data.id} type={'entity'} errorToggle={this.props.errorToggle} /> 
                         <span>&nbsp;</span>   
                         <Marker type='entity' id={this.props.data.id} string={this.props.value} />
+                        <span>&nbsp;</span>   
+                        { this.props.data.data ? ( this.props.data.data.scanner ? ( this.props.data.data.scanner.active == 'true' ? <img class="extras" title="scanner" src="/images/flair/scanner.png"/> : null ) : null ) : null }
                     </div>
                     <div>
                         <span>{this.props.data.type}:</span>
