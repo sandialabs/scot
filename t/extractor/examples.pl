@@ -1276,7 +1276,7 @@ EOF
     {
         testname    => "false ipv6",
         testgroup   => "ipaddr",
-        testnumber  => 46,
+        testnumber  => 48,
         source      => <<'EOF',
 toys::file
 EOF
