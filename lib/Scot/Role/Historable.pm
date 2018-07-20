@@ -1,6 +1,5 @@
-package Scot::Role::Historable;
+package Vast::Role::Historable;
 
 use Moose::Role;
-
 
 1;

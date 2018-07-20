@@ -1223,6 +1223,25 @@ EOF
         userdef => [],
         debug   => 1,
     },
+    {
+        testname    => "false ipv6",
+        testgroup   => "ipaddr",
+        testnumber  => 46,
+        source      => <<'EOF',
+toys::file
+EOF
+        plain       => <<'EOF',
+toys::file
+EOF
+        flair       => <<'EOF',
+<div>toys::file
+</div>
+EOF
+        entities    => [
+        ],
+        userdef => [],
+        debug   => 1,
+    },
     
 
 );
