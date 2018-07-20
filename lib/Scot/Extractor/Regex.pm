@@ -422,6 +422,7 @@ has regex_IPV6 => (
 sub _build_IPV6 {
     my $self    = shift;
     my $re      = qr{
+    \b
 	(?:
     # Mixed
 	(?:
@@ -430,7 +431,7 @@ sub _build_IPV6 {
 	# Compressed with at most 6 colons
 	|(?=(?:[A-F0-9]{0,4}:){0,6}
 		(?:[0-9]{1,3}\.){3}[0-9]{1,3}  # and 4 bytes
-	#	\Z)                            # and anchored
+        (?![:.\w])
     )
 	# and at most 1 double colon
 	(([0-9A-F]{1,4}:){0,5}|:)((:[0-9A-F]{1,4}){1,5}:|:)
@@ -445,13 +446,14 @@ sub _build_IPV6 {
 	(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}
 	|# Compressed with at most 7 colons
 	(?=(?:[A-F0-9]{0,4}:){0,7}[A-F0-9]{0,4}
-	#	\Z
+        (?![:.\w])
         )  # and anchored
 	# and at most 1 double colon
 	(([0-9A-F]{1,4}:){1,7}|:)((:[0-9A-F]{1,4}){1,7}|:)
 	# Compressed with 8 colons
 	|(?:[A-F0-9]{1,4}:){7}:|:(:[A-F0-9]{1,4}){7}
 	)
+    (?![:.\w]) # neg lookahead to "anchor"
     }xmis;
     return {
         regex => $re,
@@ -460,7 +462,6 @@ sub _build_IPV6 {
         options => { multiword => "yes" },
     };
 }
-        
 
 sub _build_IPV6_not {
     my $self    = shift;
