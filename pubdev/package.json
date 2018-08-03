@@ -57,7 +57,7 @@
     "react-debounce-input": "^2.4.0",
     "react-dnd": "^2.1.2",
     "react-dnd-html5-backend": "^2.1.2",
-    "react-dom": "^15.0.1",
+    "react-dom": "^16.0.1",
     "react-draggable": "^2.1.1",
     "react-dropzone": "^3.6.0",
     "react-frame": "^1.0.0",
