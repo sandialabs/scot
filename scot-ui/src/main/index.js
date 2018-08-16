@@ -1,5 +1,10 @@
-let ReactDOM	    = require( 'react-dom' );
-let React           = require( 'react' );
+import Home from './home';
+import { ReportPage, SingleReport } from '../components/dashboard/report';
+import { NOTIFICATION_TYPES } from '../components/dashboard/activity';
+import { UserConfigProvider } from '../utils/userConfig';
+import React from 'react'
+import ReactDOM from 'react-dom'
+import * as Cookies from '../components/cookies';
 let Navbar          = require( 'react-bootstrap/lib/Navbar.js' );
 let Nav             = require( 'react-bootstrap/lib/Nav.js' );
 let NavItem         = require( 'react-bootstrap/lib/NavItem.js' );
@@ -22,12 +27,6 @@ let Wall            = require( '../debug-components/wall.jsx' );
 let Search          = require( '../components/esearch.jsx' );
 var Notification    = require('react-notification-system');
 var Login           = require('../modal/login.jsx').default;
-import Home from './home';
-import { ReportPage, SingleReport } from '../components/dashboard/report';
-
-import { NOTIFICATION_TYPES } from '../components/dashboard/activity';
-
-import { UserConfigProvider } from '../utils/userConfig';
 
 {
     window.React = React;	

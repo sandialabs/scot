@@ -1,8 +1,7 @@
 import React, { PureComponent } from 'react';
 import { Well, Panel, Badge, Tooltip, OverlayTrigger } from 'react-bootstrap';
-
+import $ from 'jquery';
 const titleCase = ( str ) => str.charAt(0).toUpperCase() + str.slice(1);
-
 const CATEGORY_INTERVAL = 5000;
 
 class Gamification extends PureComponent {

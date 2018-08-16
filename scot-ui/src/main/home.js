@@ -1,17 +1,13 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { Well, Tab, Row, Col, Nav, NavItem } from 'react-bootstrap';
-
 import { withUserConfig, UserConfigPropTypes, UserConfigKeys } from '../utils/userConfig';
-
 import Dashboard, { defaultLayout } from '../components/dashboard/dazzle/dashboard';
-
 import Status from '../components/dashboard/status';
 import Gamification from '../components/dashboard/gamification';
 import Activity from '../components/dashboard/activity';
-
 import { Widgets } from '../components/dashboard/dazzle/widgets';
-
+import $ from 'jquery'
 
 const NEWTABKEY = 'new';
 

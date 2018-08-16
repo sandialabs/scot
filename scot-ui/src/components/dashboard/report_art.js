@@ -3,6 +3,7 @@ import { Button } from 'react-bootstrap';
 import DateRangePicker from 'react-daterange-picker';
 import * as d3 from 'd3'
 import debounce from '../../utils/debounce';
+import $ from 'jquery'
 
 const formatTickTime = ( domain, count = 10 ) => {
 	let start = domain[0],
@@ -310,7 +311,7 @@ class ReportArt extends PureComponent {
 
         var canvas = document.createElement( 'canvas' );
         var ctx = canvas.getContext("2d");
-        var DOMURL = self.URL || self.webkitURL || self;
+        var DOMURL = window.self.URL || window.self.webkitURL || window.self;
         var img = new Image();
         var svg = new Blob([svgString], {type: "image/svg+xml;charset=utf-8"});
         var url = DOMURL.createObjectURL(svg);

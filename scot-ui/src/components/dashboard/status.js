@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react';
 import { Panel, Badge } from 'react-bootstrap';
+import $ from 'jquery';
 
 class Status extends PureComponent {
 	constructor( props ) {
