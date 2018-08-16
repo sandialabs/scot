@@ -413,7 +413,7 @@ sub get_one {
     try {
         my $req_href        = $self->get_request_params;
         my $collection      = $self->get_collection_req($req_href);
-        my $id              = $req_href->{id};
+        my $id              = $req_href->{id}+0;
 
         # special case
         if ( $id eq "maxid" ) {
