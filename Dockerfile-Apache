@@ -24,8 +24,6 @@ ENV  APACHE_RUN_USER=www-data \
 COPY ./docker-configs/apache/run.sh /scripts/
 RUN chmod +x /scripts/run.sh
 
-
-
 RUN apt-get update && \
   apt-get install -y apache2 libldap2-dev libsasl2-dev libssl-dev apache2 libapache2-mod-wsgi \
   apache2 libapache2-mod-authnz-external libapache2-mod-rpaf && \
