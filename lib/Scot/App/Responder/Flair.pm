@@ -48,7 +48,7 @@ sub process_message {
     my $href    = shift;
     my $log     = $self->log;
 
-    $log->debug("pm : ",{filter=>\&Dumper, value=>$pm});
+    $log->trace("pm : ",{filter=>\&Dumper, value=>$pm});
     $log->debug("processing message: ",{filter=>\&Dumper, value=>$href});
 
     $log->debug("refreshing entitytypes");

@@ -46,7 +46,8 @@
 
     alertgroup_rowlimit => 10,
 
-    mozilla_public_suffix_file => '/opt/scot/etc/effective_tld_names.dat',
+    # mozilla_public_suffix_file => '/opt/scot/etc/effective_tld_names.dat',
+    mozilla_public_suffix_file => '/opt/scot/etc/public_suffix_list.dat',
 
     # mojo defaults are values for the mojolicious startup
     mojo_defaults   => {
