@@ -5,6 +5,7 @@ import { UserConfigProvider } from '../utils/userConfig';
 import React from 'react'
 import ReactDOM from 'react-dom'
 import * as Cookies from '../components/cookies';
+import * as SessionStorage from '../components/session_storage';
 let Navbar          = require( 'react-bootstrap/lib/Navbar.js' );
 let Nav             = require( 'react-bootstrap/lib/Nav.js' );
 let NavItem         = require( 'react-bootstrap/lib/NavItem.js' );
@@ -59,12 +60,12 @@ let App = React.createClass( {
     },
 
     componentWillReceiveProps: function ( nextProps ) {
-        let viewModeSetting = checkCookie( 'viewMode' );
-        let notificationSetting = checkCookie( 'notification' );
+        let viewModeSetting = Cookies.Cookies.checkCookie( 'viewMode' );
+        let notificationSetting = Cookies.Cookies.checkCookie( 'notification' );
         if ( nextProps.match.params.value ) {
-            var listViewFilterSetting = checkCookie( 'listViewFilter'+nextProps.match.params.value.toLowerCase() );
-            var listViewSortSetting = checkCookie( 'listViewSort'+nextProps.match.params.value.toLowerCase() );
-            var listViewPageSetting = checkCookie( 'listViewPage'+nextProps.match.params.value.toLowerCase() );
+            var listViewFilterSetting = Cookies.Cookies.checkCookie( 'listViewFilter'+nextProps.match.params.value.toLowerCase() );
+            var listViewSortSetting = Cookies.Cookies.checkCookie( 'listViewSort'+nextProps.match.params.value.toLowerCase() );
+            var listViewPageSetting = Cookies.Cookies.checkCookie( 'listViewPage'+nextProps.match.params.value.toLowerCase() );
         }
         if ( notificationSetting == undefined ) {
             notificationSetting = 'on';
@@ -110,25 +111,25 @@ let App = React.createClass( {
     },
 
     componentWillUnmount: function() {
-        removeSessionStorage( 'whoami' );
+        SessionStorage.removeSessionStorage( 'whoami' );
     },
 
     componentWillMount: function() {
         //Get landscape/portrait view if the cookie exists
-        let viewModeSetting = checkCookie( 'viewMode' );
-        let notificationSetting = checkCookie( 'notification' );
-        if ( this.props.match.params.value ) {
-            var listViewFilterSetting = checkCookie( 'listViewFilter'+this.props.match.params.value.toLowerCase() );
-            var listViewSortSetting = checkCookie( 'listViewSort'+this.props.match.params.value.toLowerCase() );
-            var listViewPageSetting = checkCookie( 'listViewPage'+this.props.match.params.value.toLowerCase() );
-            globalFilter = listViewFilterSetting;
-            globalPage = listViewPageSetting;
-            globalSort = listViewSortSetting;
-        }
-        if ( notificationSetting == undefined ) {
-            notificationSetting = 'on';
-        }
-        this.setState( {viewMode:viewModeSetting, notificationSetting:notificationSetting, listViewFilter:listViewFilterSetting,listViewSort:listViewSortSetting, listViewPage:listViewPageSetting} );
+        // let viewModeSetting = Cookies.Cookies.checkCookie( 'viewMode' );
+        // let notificationSetting = Cookies.checkCookie( 'notification' );
+        // if ( this.props.match.params.value ) {
+        //     var listViewFilterSetting = Cookies.checkCookie( 'listViewFilter'+this.props.match.params.value.toLowerCase() );
+        //     var listViewSortSetting = Cookies.checkCookie( 'listViewSort'+this.props.match.params.value.toLowerCase() );
+        //     var listViewPageSetting = Cookies.checkCookie( 'listViewPage'+this.props.match.params.value.toLowerCase() );
+        //     globalFilter = listViewFilterSetting;
+        //     globalPage = listViewPageSetting;
+        //     globalSort = listViewSortSetting;
+        // }
+        // if ( notificationSetting == undefined ) {
+        //     notificationSetting = 'on';
+        // }
+        // this.setState( {viewMode:viewModeSetting, notificationSetting:notificationSetting, listViewFilter:listViewFilterSetting,listViewSort:listViewSortSetting, listViewPage:listViewPageSetting} );
     },
     notification: function() {
 		// Don't show on dashboard if filtered type
@@ -195,11 +196,11 @@ let App = React.createClass( {
     notificationToggle: function() {
         if( this.state.notificationSetting == 'off' ){
             this.setState( {notificationSetting: 'on'} );
-            setCookie( 'notification','on',1000 );
+            Cookies.Cookies.setCookie( 'notification','on',1000 );
         }
         else {
             this.setState( {notificationSetting: 'off'} );
-            setCookie( 'notification','off',1000 );
+            Cookies.Cookies.setCookie( 'notification','off',1000 );
         } 
     },
 
@@ -238,7 +239,7 @@ let App = React.createClass( {
             type:'get',
             url:'scot/api/v2/whoami',
             success: function ( result ) {
-                setSessionStorage( 'whoami', result.user );
+                SessionStorage.setSessionStorage( 'whoami', result.user );
                 if ( result.data ) {
                     this.setState( {sensitivity: result.data.sensitivity, whoami: result.user} );
                 }
