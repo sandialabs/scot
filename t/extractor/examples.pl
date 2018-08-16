@@ -1223,6 +1223,75 @@ EOF
         userdef => [],
         debug   => 1,
     },
+    {
+        testname    => "email with =",
+        testgroup   => "email",
+        testnumber  => 46,
+        source      => <<'EOF',
+bounces+182497-1c5d-xxxx=watermelon.edu@email.followmyhealth.com
+EOF
+        plain       => <<'EOF',
+bounces+182497-1c5d-xxxx=watermelon.edu@email.followmyhealth.com
+EOF
+        flair       => <<'EOF',
+<div><span class="entity email" data-entity-type="email" data-entity-value="bounces+182497-1c5d-xxxx=watermelon.edu@email.followmyhealth.com">bounces+182497-1c5d-xxxx=watermelon.edu@<span class="entity domain" data-entity-type="domain" data-entity-value="email.followmyhealth.com">email.followmyhealth.com</span></span>
+</div>
+EOF
+        entities    => [
+            {
+                value   => 'email.followmyhealth.com',
+                type    => 'domain',
+            },
+            {
+                value   => 'bounces+182497-1c5d-xxxx=watermelon.edu@email.followmyhealth.com',
+                type    => 'email',
+            },
+        ],
+        userdef => [],
+        debug   => 1,
+    },
+    {
+        testname    => "Microsoft CLSID",
+        testgroup   => "clsid",
+        testnumber  => 47,
+        source      => <<'EOF',
+"{F20DA720-C02F-11CE-927B-0800095AE340}": "OLE Package Object",
+EOF
+        plain       => <<'EOF',
+"{F20DA720-C02F-11CE-927B-0800095AE340}": "OLE Package Object",
+EOF
+        flair       => <<'EOF',
+<div>&quot;{<span class="entity clsid" data-entity-type="clsid" data-entity-value="f20da720-c02f-11ce-927b-0800095ae340">F20DA720-C02F-11CE-927B-0800095AE340</span>}&quot;: &quot;OLE Package Object&quot;,
+</div>
+EOF
+        entities    => [
+            {
+                value => "f20da720-c02f-11ce-927b-0800095ae340",
+                type  => "clsid",
+            },
+        ],
+        userdef => [],
+        debug   => 1,
+    },
+    {
+        testname    => "false ipv6",
+        testgroup   => "ipaddr",
+        testnumber  => 48,
+        source      => <<'EOF',
+toys::file
+EOF
+        plain       => <<'EOF',
+toys::file
+EOF
+        flair       => <<'EOF',
+<div>toys::file
+</div>
+EOF
+        entities    => [
+        ],
+        userdef => [],
+        debug   => 1,
+    },
     
 
 );
