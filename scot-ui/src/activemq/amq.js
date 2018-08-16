@@ -4,6 +4,9 @@ import $ from "jquery";
 import * as SessionStorage from "../components/session_storage";
 import Dispatcher from "./dispatcher";
 
+let client;
+let whoami;
+
 export class AMQ extends React.Component{
 
     constructor(props) {
@@ -185,7 +188,7 @@ export class AMQ extends React.Component{
     render() {
         return (
             <Index
-                   eventemitter = {new Store()}
+                   eventemitter = {new EventEmitter()}
                    location={this.props.location} match={this.props.match}
                    history={this.props.history} activemqstate={this.state.activemqstate}
                    activemqwho={this.state.activemqwho} activemqwall={this.state.activemqwall}

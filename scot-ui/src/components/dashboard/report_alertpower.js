@@ -1,8 +1,8 @@
 import React, { PureComponent } from 'react';
 import { Button } from 'react-bootstrap';
-
+import * as d3 from 'd3'
 import debounce from '../../utils/debounce';
-
+import $ from 'jquery'
 const wrapText = ( text, width ) => {
 	// FYI: not an arrow function because of 'this' injection
 	text.each( function( value, i ) {
@@ -383,7 +383,7 @@ class ReportAlertpower extends PureComponent {
 
         var canvas = document.createElement( 'canvas' );
         var ctx = canvas.getContext('2d');
-        var DOMURL = self.URL || self.webkitURL || self;
+        var DOMURL = window.self.URL || window.self.webkitURL || window.self;
         var img = new Image();
         var svg = new Blob([svgString], {type: 'image/svg+xml;charset=utf-8'});
         var url = DOMURL.createObjectURL(svg);

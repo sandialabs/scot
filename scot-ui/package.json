@@ -5,11 +5,11 @@
   "dependencies": {
     "@material-ui/core": "latest",
     "@material-ui/icons": "latest",
-    "material-ui": "latest",
     "events": "latest",
     "flux": "^3.0.0",
     "history": "^4.7.2",
     "jquery": "^3.3.1",
+    "material-ui": "latest",
     "moment": "^2.19.1",
     "moment-range": "^3.1.0",
     "react": "latest",

@@ -1,5 +1,7 @@
 import React, { PureComponent } from 'react';
 import { Button } from 'react-bootstrap';
+import * as d3 from 'd3'
+import $ from 'jquery'
 
 class ReportHeatmap extends PureComponent {
 	constructor( props ) {
@@ -145,7 +147,7 @@ class ReportHeatmap extends PureComponent {
 
         var canvas = document.createElement("canvas");
         var ctx = canvas.getContext("2d");
-        var DOMURL = self.URL || self.webkitURL || self;
+        var DOMURL = window.self.URL || window.self.webkitURL || window.self;
         var img = new Image();
         var svg = new Blob([svgString], {type: "image/svg+xml;charset=utf-8"});
         var url = DOMURL.createObjectURL(svg);

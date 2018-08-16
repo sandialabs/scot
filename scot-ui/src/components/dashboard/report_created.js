@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { Button } from 'react-bootstrap';
-
+import * as d3 from 'd3'
 import debounce from '../../utils/debounce';
-
+import $ from 'jquery'
 const margin = {
 		top: 5, left: 40, right: 20, bottom: 60,
 	},
@@ -288,7 +288,7 @@ class ReportCreated extends Component {
 
         var canvas = document.createElement( 'canvas' );
         var ctx = canvas.getContext('2d');
-        var DOMURL = self.URL || self.webkitURL || self;
+        var DOMURL = window.self.URL || window.self.webkitURL || window.self;
         var img = new Image();
         var svg = new Blob([svgString], {type: 'image/svg+xml;charset=utf-8'});
         var url = DOMURL.createObjectURL(svg);
