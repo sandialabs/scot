@@ -1,5 +1,3 @@
-'use strict';
-
 let React                   = require( 'react' );
 let SelectedContainer       = require( '../detail/selected_container.jsx' );
 let Store                   = require( '../activemq/store.jsx' );
@@ -807,6 +805,7 @@ module.exports = React.createClass( {
     },
 
     handleRowSelection( state, rowInfo, column, instance ) {
+
         return {
             onClick: event => {
                 if ( this.state.id === rowInfo.row.id ) {
