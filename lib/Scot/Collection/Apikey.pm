@@ -48,7 +48,7 @@ override api_list => sub {
         $match->{username}  = $user;
     }
     my $cursor  = $self->find($match);
-    my $total   = $cursor->count;
+    my $total   = $self->count($match);
 
     my $limit = $self->build_limit($req);
     if ( defined $limit ) {
