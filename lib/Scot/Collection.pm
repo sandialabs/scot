@@ -204,8 +204,10 @@ sub get_subthing {
             'target.type'   => $thing,
         };
         $log->trace("searching for ",{filter=>\&Dumper, value => $match});
-        my $subcursor  = $entry_collection->find($match);
-        $log->trace("got ".$subcursor->count." entries");
+        my $subcursor   = $entry_collection->find($match);
+        # let's not occur this expense unless we need it
+        # my $entrycount  = $entry_collection->count($match);
+        # $log->trace("got ".$entrycount." entries");
         return $subcursor;
     }
 
@@ -541,7 +543,10 @@ sub api_list {
     else {
         $cursor  = $self->find($match);
     }
-    my $total   = $cursor->count;
+    # deprecated
+    # my $total   = $cursor->count;
+    # I hate this change.  means we are doing query twice
+    my $total   = $self->count($match);
 
     my $limit   = $self->build_limit($href);
     if ( defined $limit ) {

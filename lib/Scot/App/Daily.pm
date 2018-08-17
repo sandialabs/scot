@@ -93,8 +93,9 @@ sub get_incidents {
 
 
     my $incidentcur = $mongo->collection('Incident')->find($match);
+    my $inccount    = $mongo->collection('Incident')->count($match);
 
-    if ( defined $incidentcur and $incidentcur->count > 0 ) {
+    if ( defined $incidentcur and $inccount > 0 ) {
 
         my $text = qq|
 ==
@@ -135,8 +136,15 @@ sub get_events {
                         '$gte'  => $start->epoch,
                     }
                 });
+    my $eventcount  = $mongo->collection('Event')
+              ->count({
+                    created => {
+                        '$lte'  => $end->epoch,
+                        '$gte'  => $start->epoch,
+                    }
+                });
 
-    if ( defined $eventcur and $eventcur->count > 0 ) {
+    if ( defined $eventcur and $eventcount > 0 ) {
 
         my $text = qq|
 ==

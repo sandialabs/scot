@@ -259,7 +259,7 @@ sub response_time {
     $log->debug("response_time match is ",{filter=>\&Dumper, value => $match});
     my $cursor      = $collection->find($match);
 
-    $log->debug("There are ".$cursor->count." items in range");
+    # $log->debug("There are ".$cursor->count." items in range");
 
     my %results;
     while ( my $stat = $cursor->next ) {
@@ -350,7 +350,7 @@ sub creation_bullet {
     my $regex       = qr/created$/;
     my $match       = $self->generate_range_match(\@range,$regex);
     my $cursor      = $collection->find($match);
-    $log->debug("There are ".$cursor->count." items in range");
+    # $log->debug("There are ".$cursor->count." items in range");
 
     my %results = ();
     while ( my $stat    = $cursor->next ) {
@@ -399,7 +399,7 @@ sub create_histo {
 
     my %results     = ();
 
-    $log->debug("got ".$cursor->count." results");
+    # $log->debug("got ".$cursor->count." results");
 
     while (my $stat = $cursor->next ) {
         my $metric  = $stat->metric;
@@ -499,7 +499,7 @@ sub alert_breakdown {
     $log->debug("matching ",{filter=>\&Dumper, value=> $match});
     my $cursor      = $collection->find($match);
 
-    $log->debug("found ".$cursor->count." matching stat records");
+    # $log->debug("found ".$cursor->count." matching stat records");
 
     my %results = ();
     while (my $stat = $cursor->next ) {
@@ -745,7 +745,7 @@ sub get_who_online {
     my $col     = $env->mongo->collection('User');
     my $cur     = $col->find({ lastvisit => { '$gte' => $now - $ago }});
     $cur->sort({lastvisit => -1});
-    my $total   = $cur->count;
+    my $total   = $col->count({ lastvisit => { '$gte' => $now - $ago }});
     my @results = ();
 
     while (my $user = $cur->next ) {
