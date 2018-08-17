@@ -369,7 +369,8 @@ sub get_bundled_alertgroup {
     $log->debug("Looking for alerts in alertgroup $id");
 
     my $cur     = $col->find({alertgroup => $id});
-    $log->debug("Found ". $cur->count. " matches");
+    # deprecated cursor count
+    # $log->debug("Found ". $cur->count. " matches");
 
     while (my $alert = $cur->next) {
         my $ahref   = $alert->as_hash;
