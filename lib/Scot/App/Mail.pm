@@ -265,6 +265,7 @@ sub run {
         $cursor = $imap->get_since_cursor($self->since);
     }
 
+    # note: this is a Scot::Util::Imap::Cursor not a MongoDB cursor
     my $msg_to_process = $cursor->count;
 
     unless ($msg_to_process > 0) {

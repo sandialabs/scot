@@ -201,7 +201,7 @@ sub thread_entries {
     my $mygroups    = $self->get_groups;
     my $user        = $self->session('user');
 
-    $log->debug("Threading ". $cursor->count . " entries...");
+    # $log->debug("Threading ". $cursor->count . " entries...");
     $log->debug("users groups are: ", {filter=>\&Dumper, value=>$mygroups});
 
     my @threaded    = ();
