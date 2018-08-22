@@ -253,7 +253,7 @@ sub alert_response_time {
     $agcursor->immortal(1);
     $agcursor->sort({id => -1}); # work backwards
 
-    $log->debug("Got ".$agcursor->count." alertgroups");
+    # $log->debug("Got ".$agcursor->count." alertgroups");
 
     my %all         = ();
     my %promoted    = ();

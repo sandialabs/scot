@@ -294,7 +294,7 @@ sub get_links_by_target {
     my $cursor = $self->find({
          vertices    => { '$elemMatch' => { id => $id, type => $type } },
     });
-    $self->env->log->debug("found ".$cursor->count." links");
+    # $self->env->log->debug("found ".$cursor->count." links");
     return $cursor;
 }
 
@@ -310,8 +310,8 @@ sub get_display_count {
             {'vertices.type' => { '$nin' => [ 'alertgroup', 'entry' ] } },
         ],
     };
-    my $cursor  = $self->find($match);
-    return $cursor->count;
+    my $count  = $self->count($match);
+    return $count;
 }
 
 sub get_display_count_agg {
