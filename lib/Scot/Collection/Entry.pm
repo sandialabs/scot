@@ -648,8 +648,10 @@ sub tasks_not_completed_count {
         'metadata.task.status'   => { '$nin' => ['completed','closed'] }
     };
 
-    my $cursor  = $self->find($match);
-    return $cursor->count // 0;
+    #my $cursor  = $self->find($match);
+    #return $cursor->count // 0;
+    my $count   = $self->count($match);
+    return $count // 0;
 }
 
 sub get_target_summary {

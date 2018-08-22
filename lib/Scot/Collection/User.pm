@@ -74,7 +74,7 @@ override api_list => sub {
     my $match   = $self->build_match_ref($href->{request});
 
     my $cursor  = $self->find($match);
-    my $total   = $cursor->count;
+    my $total   = $self->count($match);
 
     unless ( $self->env->is_admin($user,$groups) ) {
         $cursor->fields({
