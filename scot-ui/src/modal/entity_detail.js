@@ -17,8 +17,9 @@ let startWidth;
 let startHeight;
 let AddFlair = require("../components/add_flair.js").AddFlair;
 
-let EntityDetail = React.createClass({
-  getInitialState: function() {
+export default class EntityDetail extends React.Component {
+  constructor(props) {
+    super(props);
     let tabs = [];
     let processedIdsArray = [];
     let entityHeight = "100%"; //test
@@ -30,7 +31,7 @@ let EntityDetail = React.createClass({
       entityWidth = "95%";
       entityMaxHeight = "95vh";
     }
-    return {
+    this.state = {
       entityData: null,
       entityid: this.props.entityid,
       entityHeight: entityHeight,
@@ -46,8 +47,9 @@ let EntityDetail = React.createClass({
       height: null,
       isMounted: false
     };
-  },
-  componentWillMount: function() {
+  }
+
+  componentWillMount = () => {
     this.setState({ isMounted: true });
     let currentTabArray = this.state.tabs;
     let valueClicked = this.props.entityvalue;
@@ -187,9 +189,9 @@ let EntityDetail = React.createClass({
     this.containerHeightAdjust();
     window.addEventListener("resize", this.containerHeightAdjust);
     this.onLoad();
-  },
+  };
 
-  onLoad: function() {
+  onLoad = () => {
     if (document.getElementById("iframe_" + this.props.id) != undefined) {
       if (
         document.getElementById("iframe_" + this.props.id).contentDocument
@@ -237,9 +239,9 @@ let EntityDetail = React.createClass({
         setTimeout(this.onLoad, 0);
       }
     }
-  },
+  };
 
-  componentDidMount: function() {
+  componentDidMount = () => {
     $("iframe").each(function(index, ifr) {
       //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
       ifr.contentWindow.requestAnimationFrame(function() {
@@ -260,9 +262,9 @@ let EntityDetail = React.createClass({
       });
     });
     this.props.watcher();
-  },
+  };
 
-  componentWillUnmount: function() {
+  componentWillUnmount = () => {
     this.setState({ isMounted: false });
     //removes escHandler bind
     $(document).off("keydown");
@@ -271,8 +273,9 @@ let EntityDetail = React.createClass({
         let width = $('#dragme').width();
         entityPopUpHeight = height;
         entityPopUpWidth = width;*/
-  },
-  componentWillReceiveProps: function(nextProps) {
+  };
+
+  componentWillReceiveProps = nextProps => {
     this.onLoad();
     let checkForInitialLoadComplete = {
       checkForInitialLoadComplete: function() {
@@ -438,8 +441,9 @@ let EntityDetail = React.createClass({
     };
     checkForInitialLoadComplete.checkForInitialLoadComplete();
     this.containerHeightAdjust();
-  },
-  updated: function() {
+  };
+
+  updated = () => {
     let currentTabArray = this.state.tabs;
     let valueClicked = this.props.entityvalue;
     for (let j = 0; j < currentTabArray.length; j++) {
@@ -483,9 +487,9 @@ let EntityDetail = React.createClass({
         });
       }
     }
-  },
+  };
 
-  checkFlairHover: function(ifr) {
+  checkFlairHover = ifr => {
     if (ifr.contentDocument != null) {
       $(ifr)
         .contents()
@@ -502,9 +506,9 @@ let EntityDetail = React.createClass({
           }.bind(this)
         );
     }
-  },
+  };
 
-  initDrag: function(e) {
+  initDrag = e => {
     //remove the entityPopUpMaxSizeDefault class so it can be resized.
     if ($("#dragme").hasClass("entityPopUpMaxSizeDefault")) {
       let height = $("#dragme").height() + "px";
@@ -525,13 +529,15 @@ let EntityDetail = React.createClass({
     document.documentElement.addEventListener("mousemove", this.doDrag, false);
     document.documentElement.addEventListener("mouseup", this.stopDrag, false);
     this.blockiFrameMouseEvent();
-  },
-  doDrag: function(e) {
+  };
+
+  doDrag = e => {
     let elem = document.getElementById("dragme");
     elem.style.width = startWidth + e.clientX - startX + "px";
     elem.style.height = startHeight + e.clientY - startY + "px";
-  },
-  stopDrag: function(e) {
+  };
+
+  stopDrag = e => {
     document.documentElement.removeEventListener(
       "mousemove",
       this.doDrag,
@@ -543,37 +549,43 @@ let EntityDetail = React.createClass({
       false
     );
     this.allowiFrameMouseEvent();
-  },
-  moveDivInit: function(e) {
+  };
+
+  moveDivInit = e => {
     document.documentElement.addEventListener(
       "mouseup",
       this.moveDivStop,
       false
     );
     this.blockiFrameMouseEvent();
-  },
-  moveDivStop: function(e) {
+  };
+
+  moveDivStop = e => {
     document.documentElement.removeEventListener(
       "mouseup",
       this.moveDivStop,
       false
     );
     this.allowiFrameMouseEvent();
-  },
-  blockiFrameMouseEvent: function() {
+  };
+
+  blockiFrameMouseEvent = () => {
     $("iframe").each(function(index, ifr) {
       $(ifr).addClass("pointerEventsOff");
     });
-  },
-  allowiFrameMouseEvent: function() {
+  };
+
+  allowiFrameMouseEvent = () => {
     $("iframe").each(function(index, ifr) {
       $(ifr).removeClass("pointerEventsOff");
     });
-  },
+  };
+
   handleSelectTab(key) {
     this.setState({ currentKey: key });
-  },
-  positionRightBoundsCheck: function(e) {
+  }
+
+  positionRightBoundsCheck = e => {
     if (!e) {
       return (
         $(document).width() -
@@ -587,8 +599,9 @@ let EntityDetail = React.createClass({
         this.state.entityWidthint
       );
     }
-  },
-  containerHeightAdjust: function() {
+  };
+
+  containerHeightAdjust = () => {
     //only run this if we're in /#/entity and not as a popup
     if (this.props.fullScreen == true) {
       let scrollHeight;
@@ -608,8 +621,9 @@ let EntityDetail = React.createClass({
         this.setState({ height: scrollHeight });
       }
     }
-  },
-  render: function() {
+  };
+
+  render = () => {
     //This makes the size that was last used hold for future entities
     /*if (entityPopUpHeight && entityPopUpWidth) {
             entityHeight = entityPopUpHeight;
@@ -792,11 +806,11 @@ let EntityDetail = React.createClass({
         </Draggable>
       );
     }
-  }
-});
+  };
+}
 
-let TabContents = React.createClass({
-  render: function() {
+class TabContents extends React.Component {
+  render = () => {
     if (this.props.entitytype == "entity") {
       return (
         <div className="tab-content">
@@ -910,11 +924,11 @@ let TabContents = React.createClass({
         </div>
       );
     }
-  }
-});
+  };
+}
 
-let EntityValue = React.createClass({
-  render: function() {
+class EntityValue extends React.Component {
+  render = () => {
     if (this.props.data != undefined) {
       //Entity Detail Popup showing the entity type
       let entityurl = "/" + "entity/" + this.props.data.id;
@@ -950,20 +964,22 @@ let EntityValue = React.createClass({
       //Guide Detail Popup showing the name of the guide that is being applied to
       return <div className="flair_header">{this.props.value}</div>;
     }
-  }
-});
+  };
+}
 
-let EntityBody = React.createClass({
-  getInitialState: function() {
-    return {
+class EntityBody extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       loading: "Loading Entries",
       entryToolbar: false,
       appearances: 0,
       showFullEntityButton: false,
       isMounted: false
     };
-  },
-  updateAppearances: function(appearancesNumber) {
+  }
+
+  updateAppearances = appearancesNumber => {
     if (appearancesNumber != null) {
       if (appearancesNumber != 0) {
         let newAppearancesNumber = this.state.appearances + appearancesNumber;
@@ -972,30 +988,36 @@ let EntityBody = React.createClass({
         }
       }
     }
-  },
-  entryToggle: function() {
+  };
+
+  entryToggle = () => {
     if (this.state.entryToolbar == false) {
       this.setState({ entryToolbar: true });
     } else {
       this.setState({ entryToolbar: false });
     }
-  },
-  showFullEntityButton: function() {
+  };
+
+  showFullEntityButton = () => {
     //don't show the button if in full screen entity view.
     if (this.props.type != "entity") {
       this.setState({ showFullEntityButton: true });
     }
-  },
-  linkOnClickIntercept: function(e) {
+  };
+
+  linkOnClickIntercept = e => {
     this.props.linkWarningToggle(e.target.id);
-  },
-  componentDidMount: function() {
+  };
+
+  componentDidMount = () => {
     this.setState({ isMounted: true });
-  },
-  componentWillUnmount: function() {
+  };
+
+  componentWillUnmount = () => {
     this.setState({ isMounted: false });
-  },
-  render: function() {
+  };
+
+  render = () => {
     let entityEnrichmentDataArr = [];
     let entityEnrichmentLinkArr = [];
     let entityEnrichmentGeoArr = [];
@@ -1121,31 +1143,35 @@ let EntityBody = React.createClass({
         {entityEnrichmentDataArr}
       </Tabs>
     );
-  }
-});
+  };
+}
 
-let GeoView = React.createClass({
-  getInitialState: function() {
-    return {
+class GeoView extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       copyToEntryToolbar: false,
       copyToEntityToolbar: false
     };
-  },
-  copyToEntry: function() {
+  }
+
+  copyToEntry = () => {
     if (this.state.copyToEntryToolbar == false) {
       this.setState({ copyToEntryToolbar: true });
     } else {
       this.setState({ copyToEntryToolbar: false });
     }
-  },
-  copyToEntity: function() {
+  };
+
+  copyToEntity = () => {
     if (this.state.copyToEntityToolbar == false) {
       this.setState({ copyToEntityToolbar: true });
     } else {
       this.setState({ copyToEntityToolbar: false });
     }
-  },
-  render: function() {
+  };
+
+  render = () => {
     let trArr = [];
     let copyArr = [];
     copyArr.push("<table>");
@@ -1219,11 +1245,11 @@ let GeoView = React.createClass({
         </div>
       </div>
     );
-  }
-});
+  };
+}
 
-let EntityEnrichmentButtons = React.createClass({
-  render: function() {
+class EntityEnrichmentButtons extends React.createClass {
+  render = () => {
     let dataSource = this.props.dataSource;
     return (
       <div style={{ overflowY: "auto", maxHeight: "70vh" }}>
@@ -1232,17 +1258,18 @@ let EntityEnrichmentButtons = React.createClass({
         </div>
       </div>
     );
-  }
-});
+  };
+}
 
-let EntityReferences = React.createClass({
-  getInitialState: function() {
+class EntityReferences extends React.Component {
+  constructor(props) {
+    super(props);
     let maxRecords = 100;
     //if type == entity then the url is looking for a full screen entity view with all records.
     if (this.props.type == "entity") {
       maxRecords = undefined;
     }
-    return {
+    this.state = {
       entityDataAlertGroup: null,
       entityDataEvent: null,
       entityDataIncident: null,
@@ -1257,8 +1284,9 @@ let EntityReferences = React.createClass({
       loading: true,
       isMounted: false
     };
-  },
-  componentDidMount: function() {
+  }
+
+  componentDidMount = () => {
     this.setState({ isMounted: true });
     this.alertRequest = $.ajax({
       type: "get",
@@ -1748,17 +1776,20 @@ let EntityReferences = React.createClass({
             }.bind(this)
         })*/
     $("#sortableentitytable" + this.props.entityid).tablesorter();
-  },
-  componentDidUpdate: function() {
+  };
+
+  componentDidUpdate = () => {
     let config = $("#sortableentitytable" + this.props.entityid)[0].config,
       // applies or reapplies a sort to the table; use false to not update the sort
       resort = true; // or [ [0,0], [1,0] ] etc
     $.tablesorter.updateAll(config, resort);
-  },
-  componentWillUnmount: function() {
+  };
+
+  componentWillUnmount = () => {
     this.setState({ isMounted: false });
-  },
-  render: function() {
+  };
+
+  render = () => {
     let id = "sortableentitytable" + this.props.entityid;
     return (
       <div className="entityTableWrapper">
@@ -1797,17 +1828,19 @@ let EntityReferences = React.createClass({
         </table>
       </div>
     );
-  }
-});
+  };
+}
 
-let ReferencesBody = React.createClass({
-  getIntialState: function() {
-    return {
+class ReferencesBody extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       showSummary: false,
       summaryExists: true
     };
-  },
-  onClick: function() {
+  }
+
+  onClick() {
     $.ajax({
       type: "GET",
       url:
@@ -1862,8 +1895,9 @@ let ReferencesBody = React.createClass({
         );
       }.bind(this)
     });
-  },
-  render: function() {
+  }
+
+  render = () => {
     let id = this.props.data.id;
     let trId = "entityTable" + this.props.data.id;
     let tdId = "entitySummaryRow" + this.props.data.id;
@@ -2009,24 +2043,26 @@ let ReferencesBody = React.createClass({
         </td>
       </tr>
     );
-  }
-});
+  };
+}
 
-let GuideBody = React.createClass({
-  getInitialState: function() {
-    return {
+class GuideBody extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       entryToolbar: false
     };
-  },
-  entryToggle: function() {
+  }
+
+  entryToggle = () => {
     if (this.state.entryToolbar == false) {
       this.setState({ entryToolbar: true });
     } else {
       this.setState({ entryToolbar: false });
     }
-  },
-  render: function() {
-    let SelectedEntry = require("../detail/selected_entry.jsx");
+  };
+
+  render = () => {
     return (
       <Tabs className="tab-content" defaultActiveKey={1} bsStyle="pills">
         <Tab eventKey={1} style={{ overflow: "auto", maxHeight: "70vh" }}>
@@ -2057,14 +2093,11 @@ let GuideBody = React.createClass({
         </Tab>
       </Tabs>
     );
-  }
-});
+  };
+}
 
-let SourceBody = React.createClass({
-  getInitialState: function() {
-    return {};
-  },
-  render: function() {
+class SourceBody extends React.Component {
+  render = () => {
     return (
       <div>
         <h2>Source</h2>
@@ -2106,7 +2139,5 @@ let SourceBody = React.createClass({
         </Tabs>
       </div>
     );
-  }
-});
-
-module.exports = EntityDetail;
+  };
+}

@@ -10,13 +10,14 @@ import $ from "jquery";
 import Search from "../components/esearch";
 import Wall from "../debug-components/wall";
 import SelectedContainer from "../detail/selected_container";
+import Login from "../modal/login.js";
 let Navbar = require("react-bootstrap/lib/Navbar.js");
 let Nav = require("react-bootstrap/lib/Nav.js");
 let NavItem = require("react-bootstrap/lib/NavItem.js");
 let NavDropdown = require("react-bootstrap/lib/NavDropdown.js");
 let MenuItem = require("react-bootstrap/lib/MenuItem.js");
 let LinkContainer = require("react-router-bootstrap/lib/LinkContainer.js");
-let ListView = require("../list/list-view.jsx");
+let ListView = require("../list/list-view.js");
 let Router = require("react-router-dom").Router;
 let Route = require("react-router-dom").Route;
 let Link = require("react-router-dom").Link;
@@ -26,7 +27,6 @@ let HashRouter = require("react-router-dom").HashRouter;
 let BrowserRouter = require("react-router-dom").BrowserRouter;
 
 var Notification = require("react-notification-system");
-var Login = require("../modal/login.jsx").default;
 
 class App extends React.component {
   constructor(props) {
