@@ -1,5 +1,6 @@
 import React from "react";
 import $ from "react";
+import EntityDetail from "../modal/entity_detail";
 let ReactTime = require("react-time").default;
 let SplitButton = require("react-bootstrap/lib/SplitButton.js");
 let MenuItem = require("react-bootstrap/lib/MenuItem.js");
@@ -413,7 +414,6 @@ export default class SelectedEntry extends React.Component {
       showEntryData = this.state.showEntryData;
     }
     //lazy loading flair - this needs to be done here because it is not initialized when this function is called by itself (alerts and entities)
-    let EntityDetail = require("../modal/entity_detail.jsx");
     if (type == "alert" || this.props.isPopUp == 1) {
       divid = this.props.type + "-detail-container";
       height = null;
