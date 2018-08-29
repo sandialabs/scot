@@ -42,11 +42,11 @@ class EntityCreateModal extends Component {
           }
 
           if (
-            event.keyCode == 13 &&
+            event.keyCode === 13 &&
             this.state.match.length >= 1 &&
             this.state.value >= 1
           ) {
-            if (this.state.confirmation == false) {
+            if (this.state.confirmation === false) {
               this.Confirmation();
             } else {
               this.Submit();
@@ -66,7 +66,7 @@ class EntityCreateModal extends Component {
   }
 
   HasSpacesCheck(match) {
-    if (/\s/g.test(match) == true) {
+    if (/\s/g.test(match) === true) {
       this.setState({ multiword: "yes" });
     } else {
       this.setState({ multiword: "no" });
@@ -89,7 +89,7 @@ class EntityCreateModal extends Component {
   }
 
   Confirmation() {
-    if (this.state.confirmation == false) {
+    if (this.state.confirmation === false) {
       this.GetCount();
       this.setState({ confirmation: true });
     } else {

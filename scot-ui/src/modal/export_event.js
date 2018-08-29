@@ -1,32 +1,33 @@
 import $ from "react";
 import React, { Component } from "react";
-import { Modal, Button, ButtonGroup } from "react-bootstrap";
+import { Modal } from "react-bootstrap";
 import AddEntry from "../components/add_entry.js";
 
-const ExportModal = React.createClass({
-  getInitialState() {
-    return {
+export default class ExportModal extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       showEditor: false,
       data: null,
       responseSuccess: false,
       emailField: []
     };
-  },
+  }
 
-  componentWillMount() {
+  componentWillMount = () => {
     this.getData();
-  },
+  };
 
-  onBlur(event) {
+  onBlur = event => {
     let v = event.target.value;
     if (v === "") {
       return;
     }
     let emailArray = v.split(/[ ,]+/);
     this.setState({ emailField: emailArray });
-  },
+  };
 
-  getData() {
+  getData = () => {
     $.ajax({
       type: "get",
       url: "/scot/api/v2/prepexport/" + this.props.type + "/" + this.props.id,
@@ -41,13 +42,13 @@ const ExportModal = React.createClass({
         );
       }.bind(this)
     });
-  },
+  };
 
-  exportResponse(response) {
+  exportResponse = response => {
     if (response === "success") {
       this.setState({ showEditor: false, responseSuccess: true });
     }
-  },
+  };
 
   render() {
     let disabled = false;
@@ -104,7 +105,7 @@ const ExportModal = React.createClass({
       </div>
     );
   }
-});
+}
 
 class PostResponse extends Component {
   render() {
@@ -120,5 +121,3 @@ class PostResponse extends Component {
     );
   }
 }
-
-module.exports = ExportModal;

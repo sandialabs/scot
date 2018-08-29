@@ -1,14 +1,14 @@
 import React from "react";
 import $ from "jquery";
-let Dropdown = require("react-bootstrap/lib/Dropdown");
+import Dropdown from "react-bootstrap/lib/Dropdown";
 let MenuItem = require("react-bootstrap/lib/MenuItem");
 let DropdownToggle = require("react-bootstrap/lib/DropdownToggle");
 let DropdownMenu = require("react-bootstrap/lib/DropdownMenu");
 let OverlayTrigger = require("react-bootstrap/lib/OverlayTrigger");
 let Tooltip = require("react-bootstrap/lib/Tooltip");
 
-let TrafficLightProtocol = React.createClass({
-  selectColor: function(e) {
+export default class TrafficLightProtocol extends React.Component {
+  selectColor = e => {
     let data = { tlp: e };
     this.serverRequest = $.ajax({
       type: "put",
@@ -17,17 +17,19 @@ let TrafficLightProtocol = React.createClass({
       contentType: "application/json; charset=UTF-8",
       success: function() {
         console.log("set tlp");
-      }.bind(this),
+      },
       error: function(data) {
         this.props.errorToggle("Failed to set TLP", data);
-      }.bind(this)
+      }
     });
     //this.setState({ color: e });
-  },
+  };
 
-  render: function() {
+  render = () => {
     return (
-      <span style={{ padding: this.props.type == "entry" ? "3px 20px" : null }}>
+      <span
+        style={{ padding: this.props.type === "entry" ? "3px 20px" : null }}
+      >
         <OverlayTrigger
           placement="top"
           overlay={<Tooltip id="tlp-tooltip">{this.props.tlp}</Tooltip>}
@@ -35,7 +37,7 @@ let TrafficLightProtocol = React.createClass({
           <Dropdown
             bsSize="xsmall"
             bsStyle={{
-              padding: this.props.type == "entry" ? "3px 20px" : null
+              padding: this.props.type === "entry" ? "3px 20px" : null
             }}
           >
             <DropdownToggle>
@@ -47,7 +49,7 @@ let TrafficLightProtocol = React.createClass({
                   cy="6"
                   style={{
                     fill:
-                      this.props.tlp == "red" || this.props.tlp == "white"
+                      this.props.tlp === "red" || this.props.tlp === "white"
                         ? this.props.tlp
                         : "gray",
                     stroke: "black",
@@ -63,9 +65,9 @@ let TrafficLightProtocol = React.createClass({
                   cy="6"
                   style={{
                     fill:
-                      this.props.tlp == "amber" && this.props.tlp != "white"
+                      this.props.tlp === "amber" && this.props.tlp !== "white"
                         ? "orange"
-                        : this.props.tlp == "white"
+                        : this.props.tlp === "white"
                           ? "white"
                           : "gray",
                     stroke: "black",
@@ -81,7 +83,7 @@ let TrafficLightProtocol = React.createClass({
                   cy="6"
                   style={{
                     fill:
-                      this.props.tlp == "green" || this.props.tlp == "white"
+                      this.props.tlp === "green" || this.props.tlp === "white"
                         ? this.props.tlp
                         : "gray",
                     stroke: "black",
@@ -116,7 +118,5 @@ let TrafficLightProtocol = React.createClass({
         </OverlayTrigger>
       </span>
     );
-  }
-});
-
-module.exports = TrafficLightProtocol;
+  };
+}

@@ -57,7 +57,7 @@ export default class AddEntryModal extends React.Component {
       this.setState({ whoami: whoami });
     }
 
-    if (this.props.entryAction == "Edit") {
+    if (this.props.entryAction === "Edit") {
       $.ajax({
         type: "GET",
         url: "/scot/api/v2/entry/" + this.props.id,
@@ -119,7 +119,7 @@ export default class AddEntryModal extends React.Component {
                 className="pull-right"
                 style={{ display: "inline-flex", paddingRight: "3px" }}
               >
-                {this.props.entryAction == "Export" ? (
+                {this.props.entryAction === "Export" ? (
                   <Button
                     bsSize={"xsmall"}
                     onClick={this.exportContent}
@@ -213,16 +213,16 @@ export default class AddEntryModal extends React.Component {
       $("#tiny_" + this.state.key + "_ifr")
         .contents()
         .find("#tinymce")
-        .text() == "" &&
+        .text() === "" &&
       $("#" + this.state.key + "_ifr")
         .contents()
         .find("#tinymce")
-        .find("img").length == 0
+        .find("img").length === 0
     ) {
       alert("Please Add Some Text");
     } else {
-      if (this.props.entryAction == "Reply") {
-        var data = new Object();
+      if (this.props.entryAction === "Reply") {
+        var data = {};
         $("#tiny_" + this.state.key + "_ifr")
           .contents()
           .find("#tinymce")
@@ -267,12 +267,12 @@ export default class AddEntryModal extends React.Component {
             this.props.errorToggle("Failed to add entry.", response);
           }.bind(this)
         });
-      } else if (this.props.entryAction == "Edit") {
+      } else if (this.props.entryAction === "Edit") {
         $.ajax({
           type: "GET",
           url: "/scot/api/v2/entry/" + this.props.id,
           success: function(response) {
-            if (this.state.recentlyUpdated != response.updated) {
+            if (this.state.recentlyUpdated !== response.updated) {
               this.forEdit(false);
               let set = false;
               let Confirm = {
@@ -304,8 +304,7 @@ export default class AddEntryModal extends React.Component {
             this.props.errorToggle("failed to get data for edit", data);
           }.bind(this)
         });
-      } else if (this.props.type == "alert") {
-        var data;
+      } else if (this.props.type === "alert") {
         $("#tiny_" + this.state.key + "_ifr")
           .contents()
           .find("#tinymce")
@@ -351,7 +350,6 @@ export default class AddEntryModal extends React.Component {
           }.bind(this)
         });
       } else {
-        var data = new Object();
         $("#tiny_" + this.state.key + "_ifr")
           .contents()
           .find("#tinymce")
@@ -402,7 +400,7 @@ export default class AddEntryModal extends React.Component {
 
   exportContent = () => {
     if (this.props.recipients.length > 0) {
-      var data = new Object();
+      var data = {};
       $("#tiny_" + this.state.key + "_ifr")
         .contents()
         .find("#tinymce")

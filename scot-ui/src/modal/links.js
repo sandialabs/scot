@@ -1,5 +1,4 @@
-import React, { PureComponent, Component } from "react";
-import PropTypes from "prop-types";
+import React, { Component } from "react";
 import { Modal, Button, ButtonGroup } from "react-bootstrap";
 import ReactTable from "react-table";
 import $ from "jquery";
@@ -158,8 +157,8 @@ class Links extends Component {
           verticeObject.context = data.records[i].context;
           for (let j = 0; j < data.records[i].vertices.length; j++) {
             //if ids are equal, check if the type is equal. If so, it's what is displayed so don't show it.
-            if (data.records[i].vertices[j].id == this.props.id) {
-              if (data.records[i].vertices[j].type != this.props.type) {
+            if (data.records[i].vertices[j].id === this.props.id) {
+              if (data.records[i].vertices[j].type !== this.props.type) {
                 verticeObject.id = data.records[i].vertices[j].id;
                 verticeObject.type = data.records[i].vertices[j].type;
                 verticeObject.memo = data.records[i].memo[j];
@@ -191,7 +190,7 @@ class Links extends Component {
         let data = this.state.data;
 
         for (let row of data) {
-          if (rowInfo.row.id == row.id && rowInfo.row.type == row.type) {
+          if (rowInfo.row.id === row.id && rowInfo.row.type === row.type) {
             row.selected = true;
           } else {
             row.selected = false;
@@ -203,7 +202,7 @@ class Links extends Component {
       },
       style: {
         background:
-          rowInfo != undefined
+          rowInfo !== undefined
             ? rowInfo.row.selected
               ? "rgb(174, 218, 255)"
               : null
@@ -213,13 +212,13 @@ class Links extends Component {
   }
 
   handleCheckboxSelection(state, rowInfo, column) {
-    if (column.id == "selected") {
+    if (column.id === "selected") {
       return {
         onClick: event => {
           let data = this.state.data;
 
           for (let row of data) {
-            if (rowInfo.row.id == row.id && rowInfo.row.type == row.type) {
+            if (rowInfo.row.id === row.id && rowInfo.row.type === row.type) {
               row.selected = !row.selected;
               break;
             }
@@ -247,7 +246,7 @@ class Links extends Component {
 
           for (let row of data) {
             for (let pageRow of state.pageRows) {
-              if (row.id == pageRow.id && row.type == pageRow.type) {
+              if (row.id === pageRow.id && row.type === pageRow.type) {
                 //compare displayed rows to rows in dataset and only select those
                 row.selected = allSelected;
                 break;
@@ -298,13 +297,12 @@ class Actions extends Component {
   }
 
   render() {
-    let buttons = [];
     let entry = false;
     let thing = false;
 
     for (let key of this.props.data) {
       if (key.type && key.selected) {
-        if (key.type == "entry") {
+        if (key.type === "entry") {
           entry = true;
         } else {
           thing = true;
@@ -343,6 +341,7 @@ class Actions extends Component {
   RemoveLink() {
     for (let key of this.props.data) {
       if (key.selected) {
+        // eslint-disable-next-line
         this.RemoveLinkAjax(parseInt(key.linkid));
       }
     }

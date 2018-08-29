@@ -1,38 +1,42 @@
 import React from "react";
 import $ from "jquery";
-let Button = require("react-bootstrap/lib/Button");
-let ReactTags = require("react-tag-input").WithContext;
+import Button from "react-bootstrap/lib/Button";
+import ReactTags from "react-tag-input";
 
-let SelectedPermission = React.createClass({
-  getInitialState: function() {
-    return { readPermissionEntry: false, modifyPermissionEntry: false };
-  },
-  toggleNewReadPermission: function() {
-    if (this.state.readPermissionEntry == false) {
+export default class SelectedPermission extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { readPermissionEntry: false, modifyPermissionEntry: false };
+  }
+
+  toggleNewReadPermission = () => {
+    if (this.state.readPermissionEntry === false) {
       this.setState({ readPermissionEntry: true });
-    } else if (this.state.readPermissionEntry == true) {
+    } else if (this.state.readPermissionEntry === true) {
       this.setState({ readPermissionEntry: false });
     }
-  },
-  toggleNewModifyPermission: function() {
-    if (this.state.modifyPermissionEntry == false) {
+  };
+
+  toggleNewModifyPermission = () => {
+    if (this.state.modifyPermissionEntry === false) {
       this.setState({ modifyPermissionEntry: true });
-    } else if (this.state.modifyPermissionEntry == true) {
+    } else if (this.state.modifyPermissionEntry === true) {
       this.setState({ modifyPermissionEntry: false });
     }
-  },
-  permissionsfunc: function(permissionData) {
+  };
+
+  permissionsfunc = permissionData => {
     console.log(permissionData.groups);
     let writepermissionsarr = [];
     let readpermissionsarr = [];
     let readwritepermissionsarr = [];
     for (let prop in permissionData.groups) {
       let fullprop = permissionData.groups[prop];
-      if (prop == "read") {
+      if (prop === "read") {
         permissionData.groups[prop].forEach(function(fullprop) {
           readpermissionsarr.push(fullprop);
         });
-      } else if (prop == "modify") {
+      } else if (prop === "modify") {
         permissionData.groups[prop].forEach(function(fullprop) {
           writepermissionsarr.push(fullprop);
         });
@@ -41,8 +45,9 @@ let SelectedPermission = React.createClass({
     readwritepermissionsarr.push(readpermissionsarr);
     readwritepermissionsarr.push(writepermissionsarr);
     return readwritepermissionsarr;
-  },
-  render: function() {
+  };
+
+  render = () => {
     let modifyRows = [];
     let readRows = [];
     let permissionData = this.props.permissionData;
@@ -83,7 +88,7 @@ let SelectedPermission = React.createClass({
         );
       }
     }
-    if (type == "entry") {
+    if (type === "entry") {
       return (
         <div id="" className="">
           <span style={{ display: "inline-flex" }}>
@@ -248,39 +253,34 @@ let SelectedPermission = React.createClass({
           )}
           <img
             src="/images/close_toolbar.png"
+            alt=""
             className="close_toolbar"
             onClick={this.props.permissionsToggle}
           />
         </div>
       );
     }
-  }
-});
+  };
+}
 
-let PermissionIterator = React.createClass({
-  getInitialState: function() {
-    return {
-      key: this.props.updateid
-    };
-  },
-  permissionDelete: function() {
+class PermissionIterator extends React.Component {
+  permissionDelete = () => {
     let newPermission = {};
     let tempArr = [];
     let data = this.props.data;
     let dataRead = this.props.dataRead;
     let dataModify = this.props.dataModify;
-    let toggle = this.props.permissionsToggle;
-    if (this.props.read_modify == "read") {
+    if (this.props.read_modify === "read") {
       for (let i = 0; i < dataRead.length; i++) {
-        if (dataRead[i] != data) {
+        if (dataRead[i] !== data) {
           tempArr.push(dataRead[i]);
         }
       }
       newPermission.read = tempArr;
       newPermission.modify = dataModify;
-    } else if (this.props.read_modify == "modify") {
+    } else if (this.props.read_modify === "modify") {
       for (let j = 0; j < dataModify.length; j++) {
-        if (dataModify[j] != data) {
+        if (dataModify[j] !== data) {
           tempArr.push(dataModify[j]);
         }
       }
@@ -294,16 +294,17 @@ let PermissionIterator = React.createClass({
       contentType: "application/json; charset=UTF-8",
       success: function() {
         console.log("success");
-      }.bind(this),
+      },
       error: function(data) {
         this.props.errorToggle("error Failed to delete group", data);
       }.bind(this)
     });
-  },
-  render: function() {
+  };
+
+  render = () => {
     let data = this.props.data;
     let type = this.props.type;
-    if (type == "entry") {
+    if (type === "entry") {
       return (
         <span id="permission_source" className="permissionButton">
           {data}
@@ -326,29 +327,23 @@ let PermissionIterator = React.createClass({
         </span>
       );
     }
-  }
-});
+  };
+}
 
-let NewPermission = React.createClass({
-  getInitialState: function() {
-    return {
-      suggestions: this.props.options,
-      key: this.props.updateid
-    };
-  },
-  handleAddition: function(tag) {
+class NewPermission extends React.Component {
+  handleAddition = tag => {
     let newPermission = {};
     let dataRead = this.props.dataRead;
     let dataModify = this.props.dataModify;
     let toggle = this.props.permissionsToggle;
-    if (this.props.readUpdate == 1) {
+    if (this.props.readUpdate === 1) {
       dataRead.push(tag);
-    } else if (this.props.modifyUpdate == 1) {
+    } else if (this.props.modifyUpdate === 1) {
       dataModify.push(tag);
     }
-    if (this.props.toggleNewModifyPermission != undefined) {
+    if (this.props.toggleNewModifyPermission !== undefined) {
       toggle = this.props.toggleNewModifyPermission;
-    } else if (this.props.toggleNewReadPermission != undefined) {
+    } else if (this.props.toggleNewReadPermission !== undefined) {
       toggle = this.props.toggleNewReadPermission;
     }
     newPermission.read = dataRead;
@@ -361,14 +356,15 @@ let NewPermission = React.createClass({
       success: function() {
         console.log("success: permission added");
         toggle();
-      }.bind(this),
+      },
       error: function(data) {
         toggle();
         this.props.errorToggle("error Failed to add group", data);
       }.bind(this)
     });
-  },
-  handleInputChange: function(input) {
+  };
+
+  handleInputChange = input => {
     //blank until there's a lookup for group permissions
     /*let arr = [];
         this.serverRequest = $.get('/scot/api/v2/ac/source/' + input, function (result) {
@@ -379,14 +375,17 @@ let NewPermission = React.createClass({
             }
             this.setState({suggestions:arr})
         }.bind(this));*/
-  },
-  handleDelete: function() {
+  };
+
+  handleDelete = () => {
     //blank since buttons are handled outside of this
-  },
-  handleDrag: function() {
+  };
+
+  handleDrag = () => {
     //blank since buttons are handled outside of this
-  },
-  render: function() {
+  };
+
+  render = () => {
     let suggestions = this.state.suggestions;
     return (
       <span className="tag-new">
@@ -401,6 +400,5 @@ let NewPermission = React.createClass({
         />
       </span>
     );
-  }
-});
-module.exports = SelectedPermission;
+  };
+}

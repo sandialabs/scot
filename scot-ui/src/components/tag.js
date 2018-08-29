@@ -1,31 +1,34 @@
 import React from "react";
 import $ from "jquery";
-let Button = require("react-bootstrap/lib/Button");
-let ReactTags = require("react-tag-input").WithContext;
+import Button from "react-bootstrap/lib/Button";
+import ReactTags from "react-tag-input";
 
-let Tag = React.createClass({
-  getInitialState: function() {
-    return { tagEntry: false };
-  },
-  toggleTagEntry: function() {
-    if (this.state.tagEntry == false) {
+export default class Tag extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { tagEntry: false };
+  }
+
+  toggleTagEntry = () => {
+    if (this.state.tagEntry === false) {
       this.setState({ tagEntry: true });
-    } else if (this.state.tagEntry == true) {
+    } else if (this.state.tagEntry === true) {
       this.setState({ tagEntry: false });
     }
-  },
-  render: function() {
+  };
+
+  render = () => {
     let rows = [];
     let id = this.props.id;
     let type = this.props.type;
     let data = this.props.data;
 
     //Don't show if guide
-    if (this.props.type == "guide") {
+    if (this.props.type === "guide") {
       return <th />;
     }
 
-    if (data != undefined) {
+    if (data !== undefined) {
       for (let i = 0; i < data.length; i++) {
         rows.push(
           <TagDataIterator
@@ -82,21 +85,21 @@ let Tag = React.createClass({
         </td>
       </th>
     );
-  }
-});
+  };
+}
 
-let TagDataIterator = React.createClass({
-  tagDelete: function() {
+class TagDataIterator extends React.Component {
+  tagDelete = () => {
     let data = this.props.data;
     let newTagArr = [];
     for (let i = 0; i < data.length; i++) {
-      if (data[i] != undefined) {
-        if (typeof data[i] == "string") {
-          if (data[i] != this.props.dataOne) {
+      if (data[i] !== undefined) {
+        if (typeof data[i] === "string") {
+          if (data[i] !== this.props.dataOne) {
             newTagArr.push(data[i]);
           }
         } else {
-          if (data[i].value != this.props.dataOne.value) {
+          if (data[i].value !== this.props.dataOne.value) {
             newTagArr.push(data[i].value);
           }
         }
@@ -109,19 +112,20 @@ let TagDataIterator = React.createClass({
       contentType: "application/json; charset=UTF-8",
       success: function(data) {
         console.log("deleted tag success: " + data);
-      }.bind(this),
+      },
       error: function(data) {
         this.props.errorToggle("Failed to delete tag", data);
       }.bind(this)
     });
-  },
-  render: function() {
+  };
+
+  render = () => {
     let dataOne = this.props.dataOne;
     let value;
-    if (typeof dataOne == "string") {
+    if (typeof dataOne === "string") {
       value = dataOne;
-    } else if (typeof dataOne == "object") {
-      if (dataOne != undefined) {
+    } else if (typeof dataOne === "object") {
+      if (dataOne !== undefined) {
         value = dataOne.value;
       }
     }
@@ -133,21 +137,23 @@ let TagDataIterator = React.createClass({
         </span>
       </span>
     );
-  }
-});
+  };
+}
 
-let NewTag = React.createClass({
-  getInitialState: function() {
-    return {
+class NewTag extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       suggestions: this.props.options
     };
-  },
-  handleAddition: function(tag) {
+  }
+
+  handleAddition = tag => {
     let newTagArr = [];
     let data = this.props.data;
     for (let i = 0; i < data.length; i++) {
-      if (data[i] != undefined) {
-        if (typeof data[i] == "string") {
+      if (data[i] !== undefined) {
+        if (typeof data[i] === "string") {
           newTagArr.push(data[i]);
         } else {
           newTagArr.push(data[i].value);
@@ -169,8 +175,9 @@ let NewTag = React.createClass({
         this.props.toggleTagEntry();
       }.bind(this)
     });
-  },
-  handleInputChange: function(input) {
+  };
+
+  handleInputChange = input => {
     let arr = [];
     $.ajax({
       type: "get",
@@ -185,14 +192,17 @@ let NewTag = React.createClass({
         this.props.errorToggle("Failed to get autocomplete data for tag", data);
       }.bind(this)
     });
-  },
-  handleDelete: function() {
+  };
+
+  handleDelete = () => {
     //blank since buttons are handled outside of this
-  },
-  handleDrag: function() {
+  };
+
+  handleDrag = () => {
     //blank since buttons are handled outside of this
-  },
-  render: function() {
+  };
+
+  render = () => {
     let suggestions = this.state.suggestions;
     return (
       <span className="tag-new">
@@ -207,7 +217,5 @@ let NewTag = React.createClass({
         />
       </span>
     );
-  }
-});
-
-module.exports = Tag;
+  };
+}

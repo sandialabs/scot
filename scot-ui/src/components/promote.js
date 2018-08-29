@@ -2,23 +2,26 @@ import React from "react";
 import $ from "jquery";
 let Button = require("react-bootstrap/lib/Button.js");
 
-let Promote = React.createClass({
-  getInitialState: function() {
-    return {
+export default class Promote extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       newURL: null,
       newType: null
     };
-  },
-  componentDidMount: function() {
-    if (this.props.type == "alert") {
+  }
+
+  componentDidMount = () => {
+    if (this.props.type === "alert") {
       this.setState({ newType: "Event" });
       this.setState({ newURL: "event" });
-    } else if (this.props.type == "event") {
+    } else if (this.props.type === "event") {
       this.setState({ newType: "Incident" });
       this.setState({ newURL: "incident" });
     }
-  },
-  promote: function() {
+  };
+
+  promote = () => {
     let data = JSON.stringify({ promote: "new" });
     $.ajax({
       type: "put",
@@ -33,8 +36,9 @@ let Promote = React.createClass({
         this.props.errorToggle("error", "Failed to promote", data);
       }.bind(this)
     });
-  },
-  render: function() {
+  };
+
+  render = () => {
     return (
       <Button
         bsStyle="warning"
@@ -42,11 +46,9 @@ let Promote = React.createClass({
         bsSize="xsmall"
         onClick={this.promote}
       >
-        <img src="/images/megaphone.png" />
+        <img src="/images/megaphone.png" alt="" />
         <span>Promote to {this.state.newType}</span>
       </Button>
     );
-  }
-});
-
-module.exports = Promote;
+  };
+}

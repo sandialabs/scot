@@ -3,29 +3,32 @@ import $ from "jquery";
 let Button = require("react-bootstrap/lib/Button");
 let ReactTags = require("react-tag-input").WithContext;
 
-let Source = React.createClass({
-  getInitialState: function() {
-    return { sourceEntry: false };
-  },
-  toggleSourceEntry: function() {
-    if (this.state.sourceEntry == false) {
+export default class Source extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { sourceEntry: false };
+  }
+
+  toggleSourceEntry = () => {
+    if (this.state.sourceEntry === false) {
       this.setState({ sourceEntry: true });
-    } else if (this.state.sourceEntry == true) {
+    } else if (this.state.sourceEntry === true) {
       this.setState({ sourceEntry: false });
     }
-  },
-  render: function() {
+  };
+
+  render = () => {
     let rows = [];
     let id = this.props.id;
     let type = this.props.type;
     let data = this.props.data;
 
     //Don't show if guide
-    if (this.props.type == "guide") {
+    if (this.props.type === "guide") {
       return <th />;
     }
 
-    if (data != undefined) {
+    if (data !== undefined) {
       for (let i = 0; i < data.length; i++) {
         rows.push(
           <SourceDataIterator
@@ -80,21 +83,21 @@ let Source = React.createClass({
         </td>
       </th>
     );
-  }
-});
+  };
+}
 
-let SourceDataIterator = React.createClass({
-  sourceDelete: function() {
+class SourceDataIterator extends React.Component {
+  sourceDelete = () => {
     let data = this.props.data;
     let newSourceArr = [];
     for (let i = 0; i < data.length; i++) {
-      if (data[i] != undefined) {
-        if (typeof data[i] == "string") {
-          if (data[i] != this.props.dataOne) {
+      if (data[i] !== undefined) {
+        if (typeof data[i] === "string") {
+          if (data[i] !== this.props.dataOne) {
             newSourceArr.push(data[i]);
           }
         } else {
-          if (data[i].value != this.props.dataOne.value) {
+          if (data[i].value !== this.props.dataOne.value) {
             newSourceArr.push(data[i].value);
           }
         }
@@ -107,19 +110,20 @@ let SourceDataIterator = React.createClass({
       contentType: "application/json; charset=UTF-8",
       success: function(data) {
         console.log("deleted source success: " + data);
-      }.bind(this),
+      },
       error: function(data) {
         this.props.errorToggle("Failed to delete the source", data);
       }.bind(this)
     });
-  },
-  render: function() {
+  };
+
+  render = () => {
     let dataOne = this.props.dataOne;
     let value;
-    if (typeof dataOne == "string") {
+    if (typeof dataOne === "string") {
       value = dataOne;
-    } else if (typeof dataOne == "object") {
-      if (dataOne != undefined) {
+    } else if (typeof dataOne === "object") {
+      if (dataOne !== undefined) {
         value = dataOne.value;
       }
     }
@@ -131,21 +135,23 @@ let SourceDataIterator = React.createClass({
         </span>
       </span>
     );
-  }
-});
+  };
+}
 
-let NewSource = React.createClass({
-  getInitialState: function() {
-    return {
+class NewSource extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       suggestions: this.props.options
     };
-  },
-  handleAddition: function(source) {
+  }
+
+  handleAddition = source => {
     let newSourceArr = [];
     let data = this.props.data;
     for (let i = 0; i < data.length; i++) {
-      if (data[i] != undefined) {
-        if (typeof data[i] == "string") {
+      if (data[i] !== undefined) {
+        if (typeof data[i] === "string") {
           newSourceArr.push(data[i]);
         } else {
           newSourceArr.push(data[i].value);
@@ -167,14 +173,15 @@ let NewSource = React.createClass({
         this.props.toggleSourceEntry();
       }.bind(this)
     });
-  },
-  handleInputChange: function(input) {
+  };
+
+  handleInputChange = input => {
     let arr = [];
     $.ajax({
       type: "get",
       url: "/scot/api/v2/ac/source/" + input,
       success: function(result) {
-        var result = result.records;
+        result = result.records;
         for (let i = 0; i < result.length; i++) {
           arr.push(result[i]);
         }
@@ -184,14 +191,17 @@ let NewSource = React.createClass({
         this.props.errorToggle("failed to get source autocomplete data", data);
       }.bind(this)
     });
-  },
-  handleDelete: function() {
+  };
+
+  handleDelete = () => {
     //blank since buttons are handled outside of this
-  },
-  handleDrag: function() {
+  };
+
+  handleDrag = () => {
     //blank since buttons are handled outside of this
-  },
-  render: function() {
+  };
+
+  render = () => {
     let suggestions = this.state.suggestions;
     return (
       <span className="tag-new">
@@ -206,7 +216,5 @@ let NewSource = React.createClass({
         />
       </span>
     );
-  }
-});
-
-module.exports = Source;
+  };
+}

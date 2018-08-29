@@ -1,9 +1,9 @@
 import React, { PureComponent } from "react";
 import PropTypes from "prop-types";
-import { ListGroup, ListGroupItem, Label } from "react-bootstrap";
+import { ListGroup, Label } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import $ from "jquery";
-import * as SessionStorage from "../utils/session_storage";
+import * as SessionStorage from "../../utils/session_storage";
 import LoadingContainer from "../../list/LoadingContainer";
 import {
   todayRange,

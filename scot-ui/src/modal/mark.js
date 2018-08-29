@@ -1,4 +1,4 @@
-import React, { PureComponent, Component } from "react";
+import React, { Component } from "react";
 import PropTypes from "prop-types";
 import {
   Modal,
@@ -165,7 +165,7 @@ class Mark extends Component {
         let data = this.state.data;
 
         for (let row of data) {
-          if (rowInfo.row.id == row.id && rowInfo.row.type == row.type) {
+          if (rowInfo.row.id === row.id && rowInfo.row.type === row.type) {
             row.selected = true;
           } else {
             row.selected = false;
@@ -177,7 +177,7 @@ class Mark extends Component {
       },
       style: {
         background:
-          rowInfo != undefined
+          rowInfo !== undefined
             ? rowInfo.row.selected
               ? "rgb(174, 218, 255)"
               : null
@@ -187,13 +187,13 @@ class Mark extends Component {
   }
 
   handleCheckboxSelection(state, rowInfo, column) {
-    if (column.id == "selected") {
+    if (column.id === "selected") {
       return {
         onClick: event => {
           let data = this.state.data;
 
           for (let row of data) {
-            if (rowInfo.row.id == row.id && rowInfo.row.type == row.type) {
+            if (rowInfo.row.id === row.id && rowInfo.row.type === row.type) {
               row.selected = !row.selected;
               break;
             }
@@ -221,7 +221,7 @@ class Mark extends Component {
 
           for (let row of data) {
             for (let pageRow of state.pageRows) {
-              if (row.id == pageRow.id && row.type == pageRow.type) {
+              if (row.id === pageRow.id && row.type === pageRow.type) {
                 //compare displayed rows to rows in dataset and only select those
                 row.selected = allSelected;
                 break;
@@ -318,7 +318,6 @@ class Actions extends Component {
   }
 
   render() {
-    let buttons = [];
     let entry = false,
       thing = false,
       alert = true;
@@ -340,7 +339,8 @@ class Actions extends Component {
       }
     }
 
-    const addToEvent = numSelected != 0 && alert && this.props.type === "event";
+    const addToEvent =
+      numSelected !== 0 && alert && this.props.type === "event";
 
     const {
       reparseButton,
@@ -381,12 +381,12 @@ class Actions extends Component {
                 </div>
               )}
               <ButtonGroup style={{ float: "right" }}>
-                {entry && !thing && this.props.type != "alertgroup" ? (
+                {entry && !thing && this.props.type !== "alertgroup" ? (
                   <Button onClick={this.MoveEntry}>
                     Move to {this.props.type} {this.props.id}
                   </Button>
                 ) : null}
-                {entry && !thing && this.props.type != "alertgroup" ? (
+                {entry && !thing && this.props.type !== "alertgroup" ? (
                   <Button onClick={this.CopyEntry}>
                     Copy to {this.props.type} {this.props.id}
                   </Button>
@@ -470,7 +470,7 @@ class Actions extends Component {
   }
 
   ExpandLinkToggle(newState) {
-    if (newState == true || newState == false) {
+    if (newState === true || newState === false) {
       this.setState({ linkPanel: newState, linkContextString: "" });
     } else {
       let linkPanel = !this.state.linkPanel;
@@ -502,7 +502,7 @@ class Actions extends Component {
 
   MoveEntry() {
     for (let key of this.props.data) {
-      if (key.selected && key.type == "entry") {
+      if (key.selected && key.type === "entry") {
         this.EntryAjax(key.id, true);
       }
     }
@@ -510,7 +510,7 @@ class Actions extends Component {
 
   CopyEntry() {
     for (let key of this.props.data) {
-      if (key.selected && key.type == "entry") {
+      if (key.selected && key.type === "entry") {
         this.EntryAjax(key.id, false);
       }
     }
@@ -524,10 +524,12 @@ class Actions extends Component {
         let currentobj = {};
 
         //assign new thing to link
+        // eslint-disable-next-line
         obj.id = parseInt(key.id);
         obj.type = key.type;
 
         //assign current thing to link to
+        // eslint-disable-next-line
         currentobj.id = parseInt(this.props.id);
         currentobj.type = this.props.type;
 
@@ -640,6 +642,7 @@ class Actions extends Component {
     return $.ajax({
       type: "put",
       url: "/scot/api/v2/alert/" + thing.id,
+      // eslint-disable-next-line
       data: JSON.stringify({ promote: parseInt(this.props.id) }),
       contentType: "application/json; charset=UTF-8"
     });
@@ -681,6 +684,7 @@ class Actions extends Component {
         data = {
           parent: 0,
           body: response.body,
+          // eslint-disable-next-line
           target_id: parseInt(this.props.id),
           target_type: this.props.type
         };
@@ -717,15 +721,15 @@ class Actions extends Component {
       url: "/scot/api/v2/entry/" + id,
       success: function(response) {
         console.log("removed original entry");
-      }.bind(this),
+      },
       error: function(data) {
         this.props.errorToggle("Failed to remove original entry", data);
-      }.bind(this)
+      }
     });
   }
 
   ToggleActionSuccess(status) {
-    if (status == true || status == false) {
+    if (status === true || status === false) {
       this.setState({ actionSuccess: status });
     } else {
       let newActionSuccess = !this.state.actionSuccess;

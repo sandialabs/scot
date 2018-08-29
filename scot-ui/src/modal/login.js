@@ -1,4 +1,4 @@
-import React, { PureComponent, Component } from "react";
+import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { Modal, Button } from "react-bootstrap";
 import $ from "jquery";
@@ -30,9 +30,7 @@ class Login extends Component {
     return (
       <Modal dialogClassName="login-modal" show={this.props.modalActive}>
         <Modal.Header>
-          <Modal.Title style={{ textAlign: "center" }}>
-            <h1> SCOT Login </h1>
-          </Modal.Title>
+          <Modal.Title style={{ textAlign: "center" }}>SCOT Login</Modal.Title>
         </Modal.Header>
         <Modal.Body style={{ textAlign: "center" }}>
           <img src="/images/scot_logo_473x473.png" alt="SCOT Logo" />
@@ -96,7 +94,7 @@ class Login extends Component {
     );
   }
   isEnterPressed(e) {
-    if (e.key == "Enter") {
+    if (e.key === "Enter") {
       this.NormalAuth();
     }
   }
@@ -142,7 +140,7 @@ class Login extends Component {
         this.props.loginToggle(null, true);
       }.bind(this),
       error: function(data) {
-        if (data.responseText == "Failed CSRF check") {
+        if (data.responseText === "Failed CSRF check") {
           this.props.errorToggle(
             "Failed to log in due to bad CSRF token. Please reload the page and then log in. Error: " +
               data.responseText

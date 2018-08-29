@@ -37,7 +37,7 @@ class Marker extends React.Component {
   }
 
   render() {
-    if (this.props.type == "entry") {
+    if (this.props.type === "entry") {
       return (
         <MenuItem
           onClick={
@@ -130,12 +130,10 @@ class Marker extends React.Component {
   getSelectedAlerts() {
     let array = [];
 
-    $("tr.selected").each(
-      function(index, tr) {
-        let id = $(tr).attr("id");
-        array.push(id);
-      }.bind(this)
-    );
+    $("tr.selected").each(function(index, tr) {
+      let id = $(tr).attr("id");
+      array.push(id);
+    });
 
     return array;
   }
@@ -146,7 +144,7 @@ export const removeMarkedItems = (type, id) => {
 
   if (currentMarked) {
     for (let i = 0; i < currentMarked.length; i++) {
-      if (currentMarked[i].type == type && currentMarked[i].id == id) {
+      if (currentMarked[i].type === type && currentMarked[i].id === id) {
         currentMarked.splice(i, 1);
         break;
       }
@@ -170,7 +168,7 @@ export const setMarkedItems = (type, id, string) => {
 
   if (currentMarked) {
     for (let key of currentMarked) {
-      if (key.type != type || key.id != id) {
+      if (key.type !== type || key.id !== id) {
         nextMarked.push(key);
       }
     }

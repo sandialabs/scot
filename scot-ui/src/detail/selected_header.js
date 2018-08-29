@@ -1,5 +1,6 @@
 import React from "react";
 import $ from "jquery";
+import DetailDataStatus from "../components/detail_data_status";
 let ReactTime = require("react-time").default;
 let SelectedHeaderOptions = require("./selected_header_options.js");
 let DeleteEvent = require("../modal/delete.js").DeleteEvent;
@@ -16,16 +17,16 @@ let AddFlair = require("../components/add_flair.js").AddFlair;
 let EntityDetail = require("../modal/entity_detail.js");
 let LinkWarning = require("../modal/link_warning.js");
 let Links = require("../modal/links.js").default;
-let DetailDataStatus = require("../components/detail_data_status.js");
 let Mark = require("../modal/mark.js").default;
 let ExportModal = require("../modal/export_event.js");
 let PromotedData = require("../modal/promoted_data.js").default;
 let InitialAjaxLoad;
 
-let SelectedHeader = React.createClass({
-  getInitialState: function() {
+export default class SelectedHeader extends React.Component {
+  constructor(props) {
+    super(props);
     let entityDetailKey = Math.floor(Math.random() * 1000);
-    return {
+    this.state = {
       showEventData: false,
       headerData: {},
       sourceData: "",
@@ -76,16 +77,18 @@ let SelectedHeader = React.createClass({
       flairing: false,
       isMounted: false
     };
-  },
-  componentWillMount: function() {
+  }
+
+  componentWillMount = () => {
     this.setState({ loading: true });
-  },
-  componentDidMount: function() {
+  };
+
+  componentDidMount = () => {
     this.setState({ isMounted: true });
     let delayFunction = {
       delay: function() {
         let entryType = "entry";
-        if (this.props.type == "alertgroup") {
+        if (this.props.type === "alertgroup") {
           entryType = "alert";
         }
         //Main Type Load
@@ -103,14 +106,14 @@ let SelectedHeader = React.createClass({
                 sourceData: eventResult.source
               });
               if (
-                this.state.showEventData == true &&
-                this.state.showEntryData == true &&
-                this.state.showEntityData == true
+                this.state.showEventData === true &&
+                this.state.showEntryData === true &&
+                this.state.showEntityData === true
               ) {
                 this.setState({ loading: false });
               }
               if (
-                this.props.type == "alertgroup" &&
+                this.props.type === "alertgroup" &&
                 eventResult.parsed === -1
               ) {
                 this.setState({ flairing: true });
@@ -122,9 +125,9 @@ let SelectedHeader = React.createClass({
           error: function(result) {
             this.setState({ showEventData: true, isNotFound: true });
             if (
-              this.state.showEventData == true &&
-              this.state.showEntryData == true &&
-              this.state.showEntityData == true
+              this.state.showEventData === true &&
+              this.state.showEntryData === true &&
+              this.state.showEntityData === true
             ) {
               this.setState({ loading: false });
             }
@@ -155,9 +158,9 @@ let SelectedHeader = React.createClass({
               });
               this.Watcher();
               if (
-                this.state.showEventData == true &&
-                this.state.showEntryData == true &&
-                this.state.showEntityData == true
+                this.state.showEventData === true &&
+                this.state.showEntryData === true &&
+                this.state.showEntityData === true
               ) {
                 this.setState({ loading: false });
               }
@@ -166,9 +169,9 @@ let SelectedHeader = React.createClass({
           error: function(result) {
             this.setState({ showEntryData: true });
             if (
-              this.state.showEventData == true &&
-              this.state.showEntryData == true &&
-              this.state.showEntityData == true
+              this.state.showEventData === true &&
+              this.state.showEntryData === true &&
+              this.state.showEntityData === true
             ) {
               this.setState({ loading: false });
             }
@@ -190,7 +193,7 @@ let SelectedHeader = React.createClass({
               this.setState({ showEntityData: true, entityData: entityResult });
               var waitForEntry = {
                 waitEntry: function() {
-                  if (this.state.showEntryData == false) {
+                  if (this.state.showEntryData === false) {
                     setTimeout(waitForEntry.waitEntry, 50);
                   } else {
                     setTimeout(
@@ -206,9 +209,9 @@ let SelectedHeader = React.createClass({
                       }.bind(this)
                     );
                     if (
-                      this.state.showEventData == true &&
-                      this.state.showEntryData == true &&
-                      this.state.showEntityData == true
+                      this.state.showEventData === true &&
+                      this.state.showEntryData === true &&
+                      this.state.showEntityData === true
                     ) {
                       this.setState({ loading: false });
                     }
@@ -221,9 +224,9 @@ let SelectedHeader = React.createClass({
           error: function(result) {
             this.setState({ showEntityData: true });
             if (
-              this.state.showEventData == true &&
-              this.state.showEntryData == true &&
-              this.state.showEntityData == true
+              this.state.showEventData === true &&
+              this.state.showEntryData === true &&
+              this.state.showEntityData === true
             ) {
               this.setState({ loading: false });
             }
@@ -234,7 +237,7 @@ let SelectedHeader = React.createClass({
           }.bind(this)
         });
         //guide load
-        if (this.props.type == "alertgroup") {
+        if (this.props.type === "alertgroup") {
           $.ajax({
             type: "get",
             url:
@@ -259,29 +262,35 @@ let SelectedHeader = React.createClass({
           });
         }
         //TODO: Ask Nick about this
+        this.props.createCallbackObject(this.props.id, this.updated);
         // Store.storeKey(this.props.id);
         // Store.addChangeListener(this.updated);
       }.bind(this)
     };
     InitialAjaxLoad = setTimeout(delayFunction.delay, 400);
-  },
-  componentWillUnmount: function() {
+  };
+
+  componentWillUnmount = () => {
     this.setState({ isMounted: false });
     clearTimeout(InitialAjaxLoad);
     //TODO: Ask Nick about this
     //Store.removeChangeListener(this.props.id, this.updated);
-  },
-  componentDidUpdate: function() {
+    this.removeCallbackObject(this.props.id);
+  };
+
+  componentDidUpdate = () => {
     //This runs the watcher which handles the entity popup and link warning.
-    if (this.state.runWatcher == true) {
+    if (this.state.runWatcher === true) {
       this.Watcher();
     }
-  },
-  componentWillReceiveProps: function() {
+  };
+
+  componentWillReceiveProps = () => {
     //resets the watcher flag to false. This will only get set to true if a call for entries is made.
     this.setState({ runWatcher: false });
-  },
-  updated: function(_type, _message) {
+  };
+
+  updated = (_type, _message) => {
     if (!this.state.isDeleted) {
       this.setState({
         refreshing: true,
@@ -290,7 +299,7 @@ let SelectedHeader = React.createClass({
         entityLoaded: false
       });
       let entryType = "entry";
-      if (this.props.type == "alertgroup") {
+      if (this.props.type === "alertgroup") {
         entryType = "alert";
       }
       //main type load
@@ -309,13 +318,13 @@ let SelectedHeader = React.createClass({
               sourceData: eventResult.source
             });
             if (
-              this.state.eventLoaded == true &&
-              this.state.entryLoaded == true &&
-              this.state.entityLoaded == true
+              this.state.eventLoaded === true &&
+              this.state.entryLoaded === true &&
+              this.state.entityLoaded === true
             ) {
               this.setState({ refreshing: false });
             }
-            if (this.props.type == "alertgroup" && eventResult.parsed === -1) {
+            if (this.props.type === "alertgroup" && eventResult.parsed === -1) {
               this.setState({ flairing: true });
             } else {
               this.setState({ flairing: false });
@@ -329,9 +338,9 @@ let SelectedHeader = React.createClass({
             isNotFound: true
           });
           if (
-            this.state.eventLoaded == true &&
-            this.state.entryLoaded == true &&
-            this.state.entityLoaded == true
+            this.state.eventLoaded === true &&
+            this.state.entryLoaded === true &&
+            this.state.entityLoaded === true
           ) {
             this.setState({ refreshing: false });
           }
@@ -363,9 +372,9 @@ let SelectedHeader = React.createClass({
             });
             this.Watcher();
             if (
-              this.state.eventLoaded == true &&
-              this.state.entryLoaded == true &&
-              this.state.entityLoaded == true
+              this.state.eventLoaded === true &&
+              this.state.entryLoaded === true &&
+              this.state.entityLoaded === true
             ) {
               this.setState({ refreshing: false });
             }
@@ -374,9 +383,9 @@ let SelectedHeader = React.createClass({
         error: function(result) {
           this.setState({ showEntryData: true, entryLoaded: true });
           if (
-            this.state.eventLoaded == true &&
-            this.state.entryLoaded == true &&
-            this.state.entityLoaded == true
+            this.state.eventLoaded === true &&
+            this.state.entryLoaded === true &&
+            this.state.entityLoaded === true
           ) {
             this.setState({ refreshing: false });
           }
@@ -401,7 +410,7 @@ let SelectedHeader = React.createClass({
             });
             var waitForEntry = {
               waitEntry: function() {
-                if (this.state.entryLoaded == false) {
+                if (this.state.entryLoaded === false) {
                   setTimeout(waitForEntry.waitEntry, 50);
                 } else {
                   setTimeout(
@@ -416,9 +425,9 @@ let SelectedHeader = React.createClass({
                     }.bind(this)
                   );
                   if (
-                    this.state.eventLoaded == true &&
-                    this.state.entryLoaded == true &&
-                    this.state.entityLoaded == true
+                    this.state.eventLoaded === true &&
+                    this.state.entryLoaded === true &&
+                    this.state.entityLoaded === true
                   ) {
                     this.setState({ refreshing: false });
                   }
@@ -431,9 +440,9 @@ let SelectedHeader = React.createClass({
         error: function(result) {
           this.setState({ showEntityData: true });
           if (
-            this.state.eventLoaded == true &&
-            this.state.entryLoaded == true &&
-            this.state.entityLoaded == true
+            this.state.eventLoaded === true &&
+            this.state.entryLoaded === true &&
+            this.state.entityLoaded === true
           ) {
             this.setState({ refreshing: false });
           }
@@ -444,12 +453,13 @@ let SelectedHeader = React.createClass({
         }.bind(this)
       });
       //error popup if an error occurs
-      if (_type != undefined && _message != undefined) {
+      if (_type !== undefined && _message !== undefined) {
         this.props.errorToggle(_message);
       }
     }
-  },
-  flairToolbarToggle: function(id, value, type, entityoffset, entityobj) {
+  };
+
+  flairToolbarToggle = (id, value, type, entityoffset, entityobj) => {
     this.setState({
       flairToolbar: true,
       entityid: id,
@@ -458,8 +468,9 @@ let SelectedHeader = React.createClass({
       entityoffset: entityoffset,
       entityobj: entityobj
     });
-  },
-  flairToolbarOff: function() {
+  };
+
+  flairToolbarOff = () => {
     if (this.state.isMounted) {
       let newEntityDetailKey = this.state.entityDetailKey + 1;
       this.setState({
@@ -467,34 +478,36 @@ let SelectedHeader = React.createClass({
         entityDetailKey: newEntityDetailKey
       });
     }
-  },
-  linkWarningToggle: function(href) {
-    if (this.state.linkWarningToolbar == false) {
+  };
+
+  linkWarningToggle = href => {
+    if (this.state.linkWarningToolbar === false) {
       this.setState({ linkWarningToolbar: true, link: href });
     } else {
       this.setState({ linkWarningToolbar: false });
     }
-  },
+  };
 
-  exportToggle: function() {
-    if (this.state.exportModal == false) {
+  exportToggle = () => {
+    if (this.state.exportModal === false) {
       this.setState({ exportModal: true });
     } else {
       this.setState({ exportModal: false });
     }
-  },
+  };
 
-  viewedbyfunc: function(headerData) {
+  viewedbyfunc = headerData => {
     let viewedbyarr = [];
-    if (headerData != null) {
+    if (headerData !== null) {
       for (let prop in headerData.view_history) {
         viewedbyarr.push(prop);
       }
     }
     return viewedbyarr;
-  },
-  entryToggle: function() {
-    if (this.state.entryToolbar == false) {
+  };
+
+  entryToggle = () => {
+    if (this.state.entryToolbar === false) {
       this.setState({ entryToolbar: true });
     } else {
       this.setState({ entryToolbar: false });
@@ -504,9 +517,10 @@ let SelectedHeader = React.createClass({
                 $('#refresh-detail').click();
             }*/
     }
-  },
-  deleteToggle: function(isDeleted) {
-    if (this.state.deleteToolbar == false) {
+  };
+
+  deleteToggle = isDeleted => {
+    if (this.state.deleteToolbar === false) {
       this.setState({ deleteToolbar: true });
     } else {
       this.setState({ deleteToolbar: false });
@@ -515,54 +529,62 @@ let SelectedHeader = React.createClass({
     if (isDeleted) {
       this.setState({ isDeleted: true });
     }
-  },
-  changeHistoryToggle: function() {
-    if (this.state.changeHistoryToolbar == false) {
+  };
+
+  changeHistoryToggle = () => {
+    if (this.state.changeHistoryToolbar === false) {
       this.setState({ changeHistoryToolbar: true });
     } else {
       this.setState({ changeHistoryToolbar: false });
     }
-  },
-  viewedByHistoryToggle: function() {
-    if (this.state.viewedByHistoryToolbar == false) {
+  };
+
+  viewedByHistoryToggle = () => {
+    if (this.state.viewedByHistoryToolbar === false) {
       this.setState({ viewedByHistoryToolbar: true });
     } else {
       this.setState({ viewedByHistoryToolbar: false });
     }
-  },
-  permissionsToggle: function() {
-    if (this.state.permissionsToolbar == false) {
+  };
+
+  permissionsToggle = () => {
+    if (this.state.permissionsToolbar === false) {
       this.setState({ permissionsToolbar: true });
     } else {
       this.setState({ permissionsToolbar: false });
     }
-  },
-  entitiesToggle: function() {
-    if (this.state.entitiesToolbar == false) {
+  };
+
+  entitiesToggle = () => {
+    if (this.state.entitiesToolbar === false) {
       this.setState({ entitiesToolbar: true });
     } else {
       this.setState({ entitiesToolbar: false });
     }
-  },
-  promoteToggle: function() {
-    if (this.state.promoteToolbar == false) {
+  };
+
+  promoteToggle = () => {
+    if (this.state.promoteToolbar === false) {
       this.setState({ promoteToolbar: true });
     } else {
       this.setState({ promoteToolbar: false });
     }
-  },
-  fileUploadToggle: function() {
-    if (this.state.fileUploadToolbar == false) {
+  };
+
+  fileUploadToggle = () => {
+    if (this.state.fileUploadToolbar === false) {
       this.setState({ fileUploadToolbar: true });
     } else {
       this.setState({ fileUploadToolbar: false });
     }
-  },
-  titleCase: function(string) {
+  };
+
+  titleCase = string => {
     let newstring = string.charAt(0).toUpperCase() + string.slice(1);
     return newstring;
-  },
-  alertSelected: function(aIndex, aID, aType, aStatus) {
+  };
+
+  alertSelected = (aIndex, aID, aType, aStatus) => {
     this.setState({
       alertSelected: true,
       aIndex: aIndex,
@@ -570,9 +592,9 @@ let SelectedHeader = React.createClass({
       aType: aType,
       aStatus: aStatus
     });
-  },
+  };
 
-  Watcher: function() {
+  Watcher = () => {
     $("iframe").each(
       function(index, ifr) {
         //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
@@ -607,7 +629,7 @@ let SelectedHeader = React.createClass({
         );
       }.bind(this)
     );
-    if (this.props.type == "alertgroup") {
+    if (this.props.type === "alertgroup") {
       $("#detail-container")
         .find("a, .entity")
         .not(".not_selectable")
@@ -618,7 +640,7 @@ let SelectedHeader = React.createClass({
               "mousedown",
               function(index) {
                 let thing = index.target;
-                if ($(thing)[0].className == "extras") {
+                if ($(thing)[0].className === "extras") {
                   thing = $(thing)[0].parentNode;
                 } //if an extra is clicked reference the parent element
                 if ($(thing).attr("url")) {
@@ -644,22 +666,22 @@ let SelectedHeader = React.createClass({
           }.bind(this)
         );
     }
-  },
+  };
 
-  checkHighlight: function(ifr) {
+  checkHighlight = ifr => {
     let content;
     if (ifr) {
       content = ifr.contentWindow.getSelection().toString();
-      if (this.state.highlightedText != content) {
+      if (this.state.highlightedText !== content) {
         //this only tells the lower components to run their componentWIllReceiveProps methods to check for highlighted text.
         this.setState({ highlightedText: content });
       } else {
         return;
       }
     }
-  },
+  };
 
-  checkFlairHover: function(ifr, nicktype) {
+  checkFlairHover = (ifr, nicktype) => {
     function returnifr() {
       return ifr;
     }
@@ -669,9 +691,9 @@ let SelectedHeader = React.createClass({
         .find(".entity")
         .each(
           function(index, entity) {
-            if ($(entity).css("background-color") == "rgb(255, 0, 0)") {
+            if ($(entity).css("background-color") === "rgb(255, 0, 0)") {
               $(entity).data("state", "down");
-            } else if ($(entity).data("state") == "down") {
+            } else if ($(entity).data("state") === "down") {
               $(entity).data("state", "up");
               let entityid = $(entity).attr("data-entity-id");
               let entityvalue = $(entity).attr("data-entity-value");
@@ -696,9 +718,9 @@ let SelectedHeader = React.createClass({
         .find("a")
         .each(
           function(index, a) {
-            if ($(a).css("color") == "rgb(255, 0, 0)") {
+            if ($(a).css("color") === "rgb(255, 0, 0)") {
               $(a).data("state", "down");
-            } else if ($(a).data("state") == "down") {
+            } else if ($(a).data("state") === "down") {
               $(a).data("state", "up");
               let url = $(a).attr("url");
               this.linkWarningToggle(url);
@@ -706,22 +728,23 @@ let SelectedHeader = React.createClass({
           }.bind(this)
         );
     }
-  },
+  };
 
-  summaryUpdate: function() {
+  summaryUpdate = () => {
     this.forceUpdate();
-  },
+  };
 
-  scrollTo: function() {
-    if (this.props.taskid != undefined) {
+  scrollTo = () => {
+    if (this.props.taskid !== undefined) {
       $(".entry-wrapper").scrollTop(
         $(".entry-wrapper").scrollTop() +
           $("#iframe_" + this.props.taskid).position().top -
           30
       );
     }
-  },
-  guideRedirectToAlertListWithFilter: function() {
+  };
+
+  guideRedirectToAlertListWithFilter = () => {
     RegExp.escape = function(text) {
       return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
     };
@@ -739,31 +762,33 @@ let SelectedHeader = React.createClass({
       "alertgroup"
     );
     window.open("#/alertgroup/");
-  },
-  showSignatureOptionsToggle: function() {
-    if (this.state.showSignatureOptions == false) {
+  };
+
+  showSignatureOptionsToggle = () => {
+    if (this.state.showSignatureOptions === false) {
       this.setState({ showSignatureOptions: true });
     } else {
       this.setState({ showSignatureOptions: false });
     }
-  },
-  markModalToggle: function() {
-    if (this.state.showMarkModal == false) {
+  };
+  markModalToggle = () => {
+    if (this.state.showMarkModal === false) {
       this.setState({ showMarkModal: true });
     } else {
       this.setState({ showMarkModal: false });
     }
-  },
-  ToggleProcessingMessage: function(status) {
-    this.setState({ processing: status });
-  },
+  };
 
-  linksModalToggle: function() {
+  ToggleProcessingMessage = status => {
+    this.setState({ processing: status });
+  };
+
+  linksModalToggle = () => {
     let showLinksModal = !this.state.showLinksModal;
     this.setState({ showLinksModal: showLinksModal });
-  },
+  };
 
-  toggleFlair: function() {
+  toggleFlair = () => {
     if (this.state.flairOff) {
       this.setState({ flairOff: false, runWatcher: true });
       setTimeout(
@@ -780,9 +805,9 @@ let SelectedHeader = React.createClass({
     } else {
       this.setState({ flairOff: true });
     }
-  },
+  };
 
-  render: function() {
+  render = () => {
     let headerData = this.state.headerData;
     let viewedby = this.viewedbyfunc(headerData);
     let type = this.props.type;
@@ -839,7 +864,7 @@ let SelectedHeader = React.createClass({
                     <span style={{ color: "lightblue" }}>Flairing...</span>
                   ) : null}
                 </div>
-                {type != "entity" ? (
+                {type !== "entity" ? (
                   <div
                     className="details-table toolbar"
                     style={{ display: "flex" }}
@@ -861,8 +886,8 @@ let SelectedHeader = React.createClass({
                               ) : null}
                             </div>
                           </td>
-                          {type != "entity" ? <th>Owner: </th> : null}
-                          {type != "entity" ? (
+                          {type !== "entity" ? <th>Owner: </th> : null}
+                          {type !== "entity" ? (
                             <td>
                               <span>
                                 {this.state.showEventData ? (
@@ -878,8 +903,8 @@ let SelectedHeader = React.createClass({
                               </span>
                             </td>
                           ) : null}
-                          {type != "entity" ? <th>Updated: </th> : null}
-                          {type != "entity" ? (
+                          {type !== "entity" ? <th>Updated: </th> : null}
+                          {type !== "entity" ? (
                             <td>
                               <span id="event_updated">
                                 {this.state.showEventData ? (
@@ -890,12 +915,12 @@ let SelectedHeader = React.createClass({
                               </span>
                             </td>
                           ) : null}
-                          {(type == "event" || type == "incident") &&
+                          {(type === "event" || type === "incident") &&
                           this.state.showEventData &&
                           this.state.headerData.promoted_from.length > 0 ? (
                             <th>Promoted From:</th>
                           ) : null}
-                          {(type == "event" || type == "incident") &&
+                          {(type === "event" || type === "incident") &&
                           this.state.showEventData &&
                           this.state.headerData.promoted_from.length > 0 ? (
                             <PromotedData
@@ -904,7 +929,7 @@ let SelectedHeader = React.createClass({
                               id={id}
                             />
                           ) : null}
-                          {type != "entity" && this.state.showEventData ? (
+                          {type !== "entity" && this.state.showEventData ? (
                             <Tag
                               data={this.state.tagData}
                               id={id}
@@ -913,7 +938,7 @@ let SelectedHeader = React.createClass({
                               errorToggle={this.props.errorToggle}
                             />
                           ) : null}
-                          {type != "entity" && this.state.showEventData ? (
+                          {type !== "entity" && this.state.showEventData ? (
                             <Source
                               data={this.state.sourceData}
                               id={id}
@@ -1037,6 +1062,8 @@ let SelectedHeader = React.createClass({
                   ToggleProcessingMessage={this.ToggleProcessingMessage}
                   errorToggle={this.props.errorToggle}
                   toggleFlair={this.toggleFlair}
+                  createCallbackObject={this.props.createCallbackObject}
+                  removeCallbackObject={this.props.removeCallbackObject}
                 />
               ) : null}
               {this.state.permissionsToolbar ? (
@@ -1051,7 +1078,7 @@ let SelectedHeader = React.createClass({
                 />
               ) : null}
             </div>
-            {this.state.showEventData && type != "entity" ? (
+            {this.state.showEventData && type !== "entity" ? (
               <SelectedEntry
                 id={id}
                 type={type}
@@ -1079,9 +1106,11 @@ let SelectedHeader = React.createClass({
                 flairOff={this.state.flairOff}
                 highlightedText={this.state.highlightedText}
                 form={this.props.form}
+                createCallbackObject={this.props.createCallbackObject}
+                removeCallbackObject={this.props.removeCallbackObject}
               />
             ) : null}
-            {this.state.showEventData && type == "entity" ? (
+            {this.state.showEventData && type === "entity" ? (
               <EntityDetail
                 entityid={id}
                 form={this.props.form}
@@ -1091,6 +1120,8 @@ let SelectedHeader = React.createClass({
                 fullScreen={true}
                 errorToggle={this.props.errorToggle}
                 linkWarningToggle={this.linkWarningToggle}
+                createCallbackObject={this.props.createCallbackObject}
+                removeCallbackObject={this.props.removeCallbackObject}
               />
             ) : null}
             {this.state.flairToolbar ? (
@@ -1100,7 +1131,7 @@ let SelectedHeader = React.createClass({
                 flairToolbarToggle={this.flairToolbarToggle}
                 flairToolbarOff={this.flairToolbarOff}
                 linkWarningToggle={this.linkWarningToggle}
-                entityid={parseInt(this.state.entityid)}
+                entityid={parseInt(this.state.entityid, 10)}
                 data={this.state.headerData}
                 entityvalue={this.state.entityvalue}
                 entitytype={this.state.entitytype}
@@ -1110,35 +1141,37 @@ let SelectedHeader = React.createClass({
                 entityoffset={this.state.entityoffset}
                 watcher={this.Watcher}
                 entityobj={this.state.entityobj}
-                linkWarningToggle={this.linkWarningToggle}
+                createCallbackObject={this.props.createCallbackObject}
+                removeCallbackObject={this.props.removeCallbackObject}
               />
             ) : null}
           </div>
         )}
       </div>
     );
-  }
-});
+  };
+}
 
-let EntryDataUpdated = React.createClass({
-  render: function() {
+class EntryDataUpdated extends React.Component {
+  render = () => {
     let data = this.props.data;
     return (
       <div>
         <ReactTime value={data * 1000} format="MM/DD/YY hh:mm:ss a" />
       </div>
     );
-  }
-});
+  };
+}
 
-let EntryDataSubject = React.createClass({
-  getInitialState: function() {
+class EntryDataSubject extends React.Component {
+  constructor(props) {
+    super(props);
     let keyName = "subject";
     let value = this.props.data.subject;
-    if (this.props.type == "signature") {
+    if (this.props.type === "signature") {
       keyName = "name";
       value = this.props.data.name;
-    } else if (this.props.type == "entity") {
+    } else if (this.props.type === "entity") {
       keyName = "value";
       value = this.props.data.value;
     }
@@ -1147,9 +1180,10 @@ let EntryDataSubject = React.createClass({
       width: "",
       keyName: keyName
     };
-  },
-  handleChange: function(event) {
-    if (event != null) {
+  }
+
+  handleChange = event => {
+    if (event !== null) {
       let keyName = this.state.keyName;
       let json = { [keyName]: event.target.value };
       let newValue = event.target.value;
@@ -1171,39 +1205,44 @@ let EntryDataSubject = React.createClass({
         }.bind(this)
       });
     }
-  },
-  componentDidMount: function() {
+  };
+
+  componentDidMount = () => {
     this.calculateWidth(this.state.value);
-  },
-  onChange: function(e) {
+  };
+
+  onChange = e => {
     this.setState({ value: e.target.value });
-  },
-  handleEnterKey: function(e) {
-    if (e.key == "Enter") {
+  };
+
+  handleEnterKey = e => {
+    if (e.key === "Enter") {
       this.handleChange(e);
     }
-  },
-  calculateWidth: function(input) {
+  };
+
+  calculateWidth = input => {
     let newWidth;
     $("#invisible").html($("<span></span>").text(input));
     newWidth = $("#invisible").width() + 25 + "px";
     this.setState({ width: newWidth });
-  },
-  componentWillReceiveProps: function(nextProps) {
+  };
+
+  componentWillReceiveProps = nextProps => {
     let value = nextProps.data.subject;
-    if (nextProps.type == "signature") {
+    if (nextProps.type === "signature") {
       value = nextProps.data.name;
-    } else if (nextProps.type == "entity") {
+    } else if (nextProps.type === "entity") {
       value = nextProps.data.value;
     }
     this.setState({ value: value });
     this.calculateWidth(value);
-  },
+  };
 
-  render: function() {
+  render = () => {
     //only disable the subject editor on an entity with a non-blank subject as editing it could damage flair.
     let isDisabled = false;
-    if (this.props.type == "entity" && this.state.value != "") {
+    if (this.props.type === "entity" && this.state.value !== "") {
       isDisabled = true;
     }
     return (
@@ -1221,7 +1260,5 @@ let EntryDataSubject = React.createClass({
         />
       </div>
     );
-  }
-});
-
-module.exports = SelectedHeader;
+  };
+}

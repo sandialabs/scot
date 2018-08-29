@@ -1,8 +1,9 @@
 import React from "react";
 import $ from "jquery";
-let ReactTime = require("react-time").default;
-let Modal = require("react-modal");
-let Button = require("react-bootstrap/lib/Button");
+import ReactTime from "react-time";
+import Modal from "react-modal";
+import Button from "react-bootstrap/lib/Button";
+
 const customStyles = {
   content: {
     top: "50%",
@@ -14,14 +15,16 @@ const customStyles = {
   }
 };
 
-let ChangeHistory = React.createClass({
-  getInitialState: function() {
-    return {
+export default class ChangeHistory extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       historyBody: false,
       data: ""
     };
-  },
-  componentDidMount: function() {
+  }
+
+  componentDidMount = () => {
     $.ajax({
       type: "get",
       url: "/scot/api/v2/" + this.props.type + "/" + this.props.id + "/history",
@@ -32,8 +35,9 @@ let ChangeHistory = React.createClass({
         this.props.errorToggle("Failed to get change history", data);
       }.bind(this)
     });
-  },
-  render: function() {
+  };
+
+  render = () => {
     return (
       <div>
         <Modal
@@ -43,6 +47,7 @@ let ChangeHistory = React.createClass({
         >
           <div className="modal-header">
             <img
+              alt=""
               src="/images/close_toolbar.png"
               className="close_toolbar"
               onClick={this.props.changeHistoryToggle}
@@ -63,22 +68,22 @@ let ChangeHistory = React.createClass({
         </Modal>
       </div>
     );
-  }
-});
+  };
+}
 
-let ChangeHistoryData = React.createClass({
-  render: function() {
+class ChangeHistoryData extends React.Component {
+  render = () => {
     let rows = [];
     let data = this.props.data;
     for (let prop in data) {
       rows.push(<ChangeHistoryDataIterator data={data[prop]} />);
     }
     return <div>{rows}</div>;
-  }
-});
+  };
+}
 
-let ChangeHistoryDataIterator = React.createClass({
-  render: function() {
+class ChangeHistoryDataIterator extends React.Component {
+  render = () => {
     let data = this.props.data;
     return (
       <div>
@@ -87,7 +92,5 @@ let ChangeHistoryDataIterator = React.createClass({
         {data.who} - {data.what}
       </div>
     );
-  }
-});
-
-module.exports = ChangeHistory;
+  };
+}

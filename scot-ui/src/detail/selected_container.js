@@ -2,8 +2,8 @@ import React from "react";
 import $ from "jquery";
 let SelectedHeader = require("./selected_header");
 
-let SelectedContainer = React.createClass({
-  render: function() {
+export default class SelectedContainer extends React.Component {
+  render = () => {
     let datarows = [];
     datarows.push(
       <SelectedHeader
@@ -17,11 +17,13 @@ let SelectedContainer = React.createClass({
         errorToggle={this.props.errorToggle}
         history={this.props.history}
         form={this.props.form}
+        createCallbackObject={this.props.createCallbackObject}
+        removeCallbackObject={this.props.removeCallbackObject}
       />
     );
     let width = "100%";
-    if ($("#list-view")[0] != undefined) {
-      width = "calc(100% " + "- " + $("#list-view").width() + "px)";
+    if ($("#list-view")[0] !== undefined) {
+      width = "calc(100% - " + $("#list-view").width() + "px)";
     }
     return (
       <div
@@ -33,7 +35,5 @@ let SelectedContainer = React.createClass({
         {datarows}
       </div>
     );
-  }
-});
-
-module.exports = SelectedContainer;
+  };
+}

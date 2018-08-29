@@ -7,15 +7,10 @@ let DropdownButton = require("react-bootstrap/lib/DropdownButton");
 let Popover = require("react-bootstrap/lib/Popover");
 let Link = require("react-router-dom").Link;
 
-let DetailDataStatus = React.createClass({
-  getInitialState: function() {
-    return {
-      key: this.props.id
-    };
-  },
-  componentDidMount: function() {
+export default class DetailDataStatus extends React.Component {
+  componentDidMount = () => {
     //Adds open/close hot keys for alertgroup
-    if (this.props.type == "alertgroup") {
+    if (this.props.type === "alertgroup") {
       $("#list-view").keydown(
         function(event) {
           //prevent from working when in input
@@ -23,15 +18,15 @@ let DetailDataStatus = React.createClass({
             return;
           }
           //check for character "o" for 79 or "c" for 67
-          if (this.props.status != "promoted") {
+          if (this.props.status !== "promoted") {
             if (
-              event.keyCode == 79 &&
-              (event.ctrlKey != true && event.metaKey != true)
+              event.keyCode === 79 &&
+              (event.ctrlKey !== true && event.metaKey !== true)
             ) {
               this.statusAjax("open");
             } else if (
-              event.keyCode == 67 &&
-              (event.ctrlKey != true && event.metaKey != true)
+              event.keyCode === 67 &&
+              (event.ctrlKey !== true && event.metaKey !== true)
             ) {
               this.statusAjax("closed");
             }
@@ -39,10 +34,12 @@ let DetailDataStatus = React.createClass({
         }.bind(this)
       );
     }
-  },
-  componentWillUnmount: function() {
+  };
+
+  componentWillUnmount = () => {
     $("#list-view").unbind("keydown");
-  },
+  };
+
   /*eventStatusToggle: function () {
         if (this.props.status == 'open') {
             this.statusAjax('closed');
@@ -50,25 +47,31 @@ let DetailDataStatus = React.createClass({
             this.statusAjax('open');
         }
     },*/
-  trackAll: function() {
+  trackAll = () => {
     this.statusAjax("tracked");
-  },
-  untrackAll: function() {
+  };
+
+  untrackAll = () => {
     this.statusAjax("untracked");
-  },
-  closeAll: function() {
+  };
+
+  closeAll = () => {
     this.statusAjax("closed");
-  },
-  openAll: function() {
+  };
+
+  openAll = () => {
     this.statusAjax("open");
-  },
-  enableAll: function() {
+  };
+
+  enableAll = () => {
     this.statusAjax("enabled");
-  },
-  disableAll: function() {
+  };
+
+  disableAll = () => {
     this.statusAjax("disabled");
-  },
-  statusAjax: function(newStatus) {
+  };
+
+  statusAjax = newStatus => {
     console.log(newStatus);
     let json = { status: newStatus };
     $.ajax({
@@ -78,13 +81,14 @@ let DetailDataStatus = React.createClass({
       contentType: "application/json; charset=UTF-8",
       success: function(data) {
         console.log("success status change to: " + data);
-      }.bind(this),
+      },
       error: function(data) {
         this.props.errorToggle("Failed to change status", data);
       }.bind(this)
     });
-  },
-  render: function() {
+  };
+
+  render = () => {
     let buttonStyle = "";
     let open = "";
     let closed = "";
@@ -93,40 +97,40 @@ let DetailDataStatus = React.createClass({
     let classStatus = "";
     let href;
     if (
-      this.props.status == "open" ||
-      this.props.status == "disabled" ||
-      this.props.status == "untracked"
+      this.props.status === "open" ||
+      this.props.status === "disabled" ||
+      this.props.status === "untracked"
     ) {
       buttonStyle = "danger";
       classStatus = "alertgroup_open";
     } else if (
-      this.props.status == "closed" ||
-      this.props.status == "enabled" ||
-      this.props.status == "tracked"
+      this.props.status === "closed" ||
+      this.props.status === "enabled" ||
+      this.props.status === "tracked"
     ) {
       buttonStyle = "success";
       classStatus = "alertgroup_closed";
-    } else if (this.props.status == "promoted") {
+    } else if (this.props.status === "promoted") {
       buttonStyle = "default";
       classStatus = "alertgroup_promoted";
     }
 
-    if (this.props.type == "alertgroup") {
+    if (this.props.type === "alertgroup") {
       open = this.props.data.open_count;
       closed = this.props.data.closed_count;
       promoted = this.props.data.promoted_count;
       title = open + " / " + closed + " / " + promoted;
     }
 
-    if (this.props.type == "event") {
+    if (this.props.type === "event") {
       href = "/incident/" + this.props.data.promotion_id;
-    } else if (this.props.type == "intel") {
+    } else if (this.props.type === "intel") {
       href = "/event/" + this.props.data.promotion_id;
     }
 
-    if (this.props.type == "guide" || this.props.type == "intel") {
+    if (this.props.type === "guide" || this.props.type === "intel") {
       return <div />;
-    } else if (this.props.type == "alertgroup") {
+    } else if (this.props.type === "alertgroup") {
       return (
         <ButtonToolbar>
           <OverlayTrigger
@@ -152,7 +156,7 @@ let DetailDataStatus = React.createClass({
           </OverlayTrigger>
         </ButtonToolbar>
       );
-    } else if (this.props.type == "incident") {
+    } else if (this.props.type === "incident") {
       return (
         <DropdownButton
           bsSize="xsmall"
@@ -170,7 +174,7 @@ let DetailDataStatus = React.createClass({
           </MenuItem>
         </DropdownButton>
       );
-    } else if (this.props.type == "signature") {
+    } else if (this.props.type === "signature") {
       return (
         <DropdownButton
           bsSize="xsmall"
@@ -188,7 +192,7 @@ let DetailDataStatus = React.createClass({
           </MenuItem>
         </DropdownButton>
       );
-    } else if (this.props.type == "entity") {
+    } else if (this.props.type === "entity") {
       return (
         <DropdownButton
           bsSize="xsmall"
@@ -209,7 +213,7 @@ let DetailDataStatus = React.createClass({
     } else {
       return (
         <div>
-          {this.props.status == "promoted" ? (
+          {this.props.status === "promoted" ? (
             <Link to={href} role="button" className={"btn btn-warning"}>
               {this.props.status}
             </Link>
@@ -233,7 +237,5 @@ let DetailDataStatus = React.createClass({
         </div>
       );
     }
-  }
-});
-
-module.exports = DetailDataStatus;
+  };
+}

@@ -1,9 +1,7 @@
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
-import PropTypes from "prop-types";
 import $ from "jquery";
 import * as SessionStorage from "../../utils/session_storage";
-import * as AMQ from "../../activemq/amq";
 import { Well, Label, Badge } from "react-bootstrap";
 import timeSince from "../../utils/timesince";
 import {
@@ -60,30 +58,8 @@ class Activity extends Component {
   componentDidMount() {
     this.refreshTimer = setInterval(this.updateActivity, REFRESH_RATE);
     this.updateActivity();
-    //TODO: Get data
-    const amqClientPromise = AMQ.register_client();
-    console.log("will be pending when logged", amqClientPromise);
-    amqClientPromise
-      .then(function getData(client) {
-        console.log(
-          "when resolve is found it comes here with the response, in this case users ",
-          client
-        );
-        // return Promise.all(
-        //   list.map(function(user) {
-        //     return request(user.repos_url);
-        //   })
-        // );
-      })
-      // .then(function dosomething(param) {
-      //   console.log('blah blh ', param)
-      // })
-      .catch(function handleErrors(error) {
-        console.log(
-          "when a reject is executed it will come here ignoring the then statement ",
-          error
-        );
-      });
+    // this.props.createCallbackObject("wall", this.wallMessage);
+    // this.props.createCallbackObject("notification", this.notification);
   }
 
   componentWillUnmount() {
@@ -248,7 +224,8 @@ class Activity extends Component {
     if (this.marquee && this.well) {
       let marqueeValues = window.getComputedStyle(this.marquee);
       if (
-        parseInt(marqueeValues.width) - parseInt(marqueeValues.paddingLeft) >
+        parseInt(marqueeValues.width, 10) -
+          parseInt(marqueeValues.paddingLeft, 10) >
         this.well.offsetWidth
       ) {
         stopped = false;

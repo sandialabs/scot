@@ -15,14 +15,15 @@ const customStyles = {
   }
 };
 
-let ViewedByHistory = React.createClass({
-  getInitialState: function() {
+export default class ViewedByHistory extends React.Component {
+  constructor(props) {
+    super(props);
     return {
       historyBody: false,
       data: ""
     };
-  },
-  componentDidMount: function() {
+  }
+  componentDidMount = () => {
     $.ajax({
       type: "get",
       url: "/scot/api/v2/" + this.props.type + "/" + this.props.id,
@@ -33,8 +34,9 @@ let ViewedByHistory = React.createClass({
         this.props.errorToggle("failed to get user change history", data);
       }.bind(this)
     });
-  },
-  render: function() {
+  };
+
+  render = () => {
     return (
       <div>
         <Modal
@@ -44,6 +46,7 @@ let ViewedByHistory = React.createClass({
         >
           <div className="modal-header">
             <img
+              alt=""
               src="/images/close_toolbar.png"
               className="close_toolbar"
               onClick={this.props.viewedByHistoryToggle}
@@ -64,11 +67,11 @@ let ViewedByHistory = React.createClass({
         </Modal>
       </div>
     );
-  }
-});
+  };
+}
 
-let ViewedByHistoryData = React.createClass({
-  render: function() {
+class ViewedByHistoryData extends React.Component {
+  render = () => {
     let rows = [];
     let data = this.props.data;
     for (let prop in data.view_history) {
@@ -80,11 +83,11 @@ let ViewedByHistoryData = React.createClass({
       );
     }
     return <div>{rows}</div>;
-  }
-});
+  };
+}
 
-let ViewedByHistoryDataIterator = React.createClass({
-  render: function() {
+class ViewedByHistoryDataIterator extends React.Component {
+  render = () => {
     let data = this.props.data;
     let prop = this.props.prop;
     return (
@@ -94,7 +97,5 @@ let ViewedByHistoryDataIterator = React.createClass({
         from IP: {data.where}
       </div>
     );
-  }
-});
-
-module.exports = ViewedByHistory;
+  };
+}

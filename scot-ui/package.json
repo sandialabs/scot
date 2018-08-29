@@ -5,6 +5,8 @@
   "dependencies": {
     "@material-ui/core": "latest",
     "@material-ui/icons": "latest",
+    "@types/jquery": "^3.3.6",
+    "d3": "^5.7.0",
     "events": "latest",
     "flux": "^3.0.0",
     "history": "^4.7.2",
@@ -13,21 +15,30 @@
     "moment": "^2.19.1",
     "moment-range": "^3.1.0",
     "react": "latest",
+    "react-ace": "^6.1.4",
     "react-addons-pure-render-mixin": "^15.6.2",
     "react-autocomplete": "^1.7.2",
     "react-bootstrap": "latest",
     "react-broadcast": "^0.6.1",
+    "react-d3-basic": "^1.6.11",
     "react-daterange-picker": "^1.0.0",
     "react-datetime": "^2.5.0",
+    "react-dazzle": "^1.4.0",
     "react-debounce-input": "latest",
     "react-dom": "latest",
+    "react-draggable": "^3.0.5",
+    "react-dropzone": "^5.0.1",
     "react-frame": "latest",
+    "react-highlight-words": "^0.14.0",
+    "react-inspector": "^2.3.0",
     "react-modal": "latest",
     "react-notification-system": "latest",
     "react-router-bootstrap": "latest",
     "react-router-dom": "latest",
     "react-scripts": "1.1.4",
     "react-table": "^6.5.1",
+    "react-tag-autocomplete": "^5.6.0",
+    "react-tag-input": "^5.1.2",
     "react-time": "^4.0.0",
     "react-tinymce": "latest",
     "recompose": "^0.26.0",
@@ -38,5 +49,11 @@
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
+  },
+  "proxy": {
+    "/(api|scotaq|login|sso)": {
+      "target": "https://as3016snllx.sandia.gov",
+      "secure": false
+    }
   }
 }

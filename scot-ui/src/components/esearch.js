@@ -1,8 +1,10 @@
 import React from "react";
 import $ from "jquery";
+import "jquery/src/jquery";
+import Highlighter from "react-highlight-words";
 let Link = require("react-router-dom").Link;
 
-export default class Search extends React.component {
+export default class Search extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -16,8 +18,8 @@ export default class Search extends React.component {
 
   componentDidMount = () => {
     function searchEscHandler(event) {
-      if ($("#main-search-results")[0] != undefined) {
-        if (event.keyCode == 27) {
+      if ($("#main-search-results")[0] !== undefined) {
+        if (event.keyCode === 27) {
           this.closeSearch();
           event.preventDefault();
         }
@@ -36,7 +38,7 @@ export default class Search extends React.component {
       url: "/scot/api/v2/esearch",
       data: { qstring: string },
       success: function(response) {
-        if (string == $("#main-search")[0].value) {
+        if (string === $("#main-search")[0].value) {
           this.setState({
             results: response.records,
             showSearchToolbar: true,
@@ -54,7 +56,7 @@ export default class Search extends React.component {
   };
 
   handleEnterKey = e => {
-    if (e.key == "Enter") {
+    if (e.key === "Enter") {
       this.doSearch(e.target.value);
     }
   };
@@ -67,22 +69,22 @@ export default class Search extends React.component {
   };
 
   componentDidUpdate = () => {
-    if (this.state.searchString != undefined) {
+    if (this.state.searchString !== undefined) {
       //var re = new RegExp(this.state.searchString,"gi");
       //$(".search-snippet").html(function(_, html) {
       //    return html.replace(re, '<span class="search_highlight">$&</span>');
       //});
-      $(".search-snippet").mark(this.state.searchString, {
-        element: "span",
-        className: "search_highlight"
-      });
+      // $(".search-snippet").mark(this.state.searchString, {
+      //   element: "span",
+      //   className: "search_highlight"
+      // });
     }
   };
 
   render = () => {
     let tableRows = [];
-    if (this.state.results != undefined) {
-      if (this.state.results[0] != undefined) {
+    if (this.state.results !== undefined) {
+      if (this.state.results[0] !== undefined) {
         for (let i = 0; i < this.state.results.length; i++) {
           tableRows.push(
             <SearchDataEachRows
@@ -152,6 +154,13 @@ export default class Search extends React.component {
             </div>
           </div>
         ) : null}
+        //TODO IMPLMENT HIGHLIGHTER SEARCH
+        {/* <Highlighter
+          highlightClassName="YourHighlightClass"
+          searchWords={["and", "or", "the"]}
+          autoEscape={true}
+          textToHighlight="The dog is chasing the cat. Or perhaps they're just playing?"
+        />, */}
       </div>
     );
   };
@@ -161,7 +170,7 @@ export default class Search extends React.component {
   };
 }
 
-class SearchDataEachHeader extends React.component {
+class SearchDataEachHeader extends React.Component {
   render = () => {
     /*return (
             <div className="table-row header" style={{color:'black', display:'flex'}}>
@@ -210,7 +219,7 @@ class SearchDataEachHeader extends React.component {
   };
 }
 
-class SearchDataEachRows extends React.component {
+class SearchDataEachRows extends React.Component {
   render = () => {
     let type = this.props.dataOne.type;
     let id = this.props.dataOne.id;
@@ -226,12 +235,12 @@ class SearchDataEachRows extends React.component {
     let rowClassName = "search_result_row list-view-row" + rowEvenOdd;
 
     let href = "/" + type + "/" + id;
-    if (entryid != undefined) {
+    if (entryid !== undefined) {
       href = "/" + type + "/" + id + "/" + entryid;
     }
 
-    if (this.props.dataOne.highlight != undefined) {
-      if (typeof this.props.dataOne.highlight == "string") {
+    if (this.props.dataOne.highlight !== undefined) {
+      if (typeof this.props.dataOne.highlight === "string") {
         highlight.push(
           <span className="search_snippet_container panel col">
             <span className="search_snippet_header">Snippet:</span>
@@ -325,7 +334,5 @@ class SearchDataEachRows extends React.component {
 }
 
 function isEven(n) {
-  return n % 2 == 0;
+  return n % 2 === 0;
 }
-
-module.exports = Search;

@@ -73,6 +73,7 @@ export class DeleteEvent extends PureComponent {
       >
         <div className="modal-header">
           <img
+            alt=""
             src="images/close_toolbar.png"
             className="close_toolbar"
             onClick={this.props.deleteToggle}
@@ -130,6 +131,7 @@ export class DeleteEntry extends PureComponent {
       >
         <div className="modal-header">
           <img
+            alt=""
             src="images/close_toolbar.png"
             className="close_toolbar"
             onClick={this.props.deleteToggle}
@@ -246,6 +248,7 @@ export class DeleteModal extends PureComponent {
       >
         <div className="modal-header">
           <img
+            alt=""
             src="images/close_toolbar.png"
             className="close_toolbar"
             onClick={this.props.callback}

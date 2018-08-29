@@ -1,13 +1,15 @@
 import React from "react";
 import $ from "jquery";
 
-let Summary = React.createClass({
-  getInitialState: function() {
-    return {
+export default class Summary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       key: this.props.id
     };
-  },
-  toggle: function() {
+  }
+
+  toggle = () => {
     let newClass;
     if (this.props.summary === 1) {
       newClass = "entry";
@@ -22,19 +24,20 @@ let Summary = React.createClass({
       contentType: "application/json; charset=UTF-8",
       success: function(data) {
         console.log("success: " + data);
-      }.bind(this),
+      },
       error: function(data) {
         this.props.errorToggle("Failed to make summary", data);
       }.bind(this)
     });
-  },
-  render: function() {
+  };
+
+  render = () => {
     let summaryDisplay = "Summary Loading...";
     let onClick;
-    if (this.props.summary == 0) {
+    if (this.props.summary === 0) {
       summaryDisplay = "Make Summary";
       onClick = this.toggle;
-    } else if (this.props.summary == 1) {
+    } else if (this.props.summary === 1) {
       summaryDisplay = "Remove Summary";
       onClick = this.toggle;
     }
@@ -43,7 +46,5 @@ let Summary = React.createClass({
         {summaryDisplay}
       </span>
     );
-  }
-});
-
-module.exports = Summary;
+  };
+}

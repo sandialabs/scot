@@ -1,10 +1,10 @@
 import $ from "jquery";
 import * as SessionStorage from "../utils/session_storage";
-let React = require("react");
-let Modal = require("react-modal");
-let Button = require("react-bootstrap/lib/Button");
-let DropdownButton = require("react-bootstrap/lib/DropdownButton");
-let MenuItem = require("react-bootstrap/lib/MenuItem");
+import React from "react";
+import Modal from "react-modal";
+import Button from "react-bootstrap/lib/Badge";
+import DropdownButton from "react-bootstrap/lib/DropdownButton";
+import MenuItem from "react-bootstrap/lib/MenuItem";
 
 const customStyles = {
   content: {
@@ -17,35 +17,36 @@ const customStyles = {
   }
 };
 
-let Owner = React.createClass({
-  getInitialState: function() {
-    return {
+export default class Owner extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       currentOwner: this.props.data,
       whoami: undefined,
-      ownerToolbar: false,
-      key: this.props.id
+      ownerToolbar: false
     };
-  },
-  componentDidMount: function() {
+  }
+
+  componentDidMount = () => {
     let whoami = SessionStorage.getSessionStorage("whoami");
     if (whoami) {
       this.setState({ whoami: whoami });
     }
-  },
-  componentWillReceiveProps: function() {
+  };
+
+  componentWillReceiveProps = () => {
     this.setState({ currentOwner: this.props.data });
-  },
-  toggle: function() {
-    if (this.state.whoami != undefined) {
+  };
+
+  toggle = () => {
+    if (this.state.whoami !== undefined) {
       let json = { owner: this.state.whoami };
       $.ajax({
         type: "put",
         url: "scot/api/v2/" + this.props.type + "/" + this.props.id,
         data: JSON.stringify(json),
         contentType: "application/json; charset=UTF-8",
-        success: function(data) {
-          let key = this.state.key;
-        }.bind(this),
+        success: function(data) {},
         error: function(data) {
           this.props.errorToggle("Failed to change owner", data);
         }.bind(this)
@@ -54,15 +55,17 @@ let Owner = React.createClass({
       this.props.errorToggle("Failed to detect current user");
     }
     this.ownerToggle();
-  },
-  ownerToggle: function() {
-    if (this.state.ownerToolbar == false) {
+  };
+
+  ownerToggle = () => {
+    if (this.state.ownerToolbar === false) {
       this.setState({ ownerToolbar: true });
     } else {
       this.setState({ ownerToolbar: false });
     }
-  },
-  render: function() {
+  };
+
+  render = () => {
     return (
       <div>
         <DropdownButton
@@ -83,6 +86,7 @@ let Owner = React.createClass({
             <div className="modal-header">
               <img
                 src="images/close_toolbar.png"
+                alt=""
                 className="close_toolbar"
                 onClick={this.ownerToggle}
               />
@@ -103,7 +107,5 @@ let Owner = React.createClass({
         ) : null}
       </div>
     );
-  }
-});
-
-module.exports = Owner;
+  };
+}

@@ -24,7 +24,7 @@ export default class SelectedHeaderOptions extends React.Component {
           let ifrContents = $(ifr).contents();
           let off = ifrContents.find(".entity-off");
           let on = ifrContents.find(".entity");
-          if (this.state.globalFlairState == false) {
+          if (this.state.globalFlairState === false) {
             ifrContents.find(".extras").show();
             ifrContents.find(".flair-off").hide();
             off.each(function(index, entity) {
@@ -48,12 +48,10 @@ export default class SelectedHeaderOptions extends React.Component {
   //All methods containing alert are only used by selected_entry when viewing an alertgroupand interacting with an alert.
   alertOpenSelected = () => {
     let array = [];
-    $("tr.selected").each(
-      function(index, tr) {
-        let id = $(tr).attr("id");
-        array.push({ id: id, status: "open" });
-      }.bind(this)
-    );
+    $("tr.selected").each(function(index, tr) {
+      let id = $(tr).attr("id");
+      array.push({ id: id, status: "open" });
+    });
     let data = JSON.stringify({ alerts: array });
 
     this.props.ToggleProcessingMessage(true);
@@ -77,12 +75,10 @@ export default class SelectedHeaderOptions extends React.Component {
   alertCloseSelected = () => {
     let time = Math.round(new Date().getTime() / 1000);
     let array = [];
-    $("tr.selected").each(
-      function(index, tr) {
-        let id = $(tr).attr("id");
-        array.push({ id: id, status: "closed", closed: time });
-      }.bind(this)
-    );
+    $("tr.selected").each(function(index, tr) {
+      let id = $(tr).attr("id");
+      array.push({ id: id, status: "closed", closed: time });
+    });
     let data = JSON.stringify({ alerts: array });
 
     this.props.ToggleProcessingMessage(true);
@@ -106,12 +102,10 @@ export default class SelectedHeaderOptions extends React.Component {
   alertPromoteSelected = () => {
     let data = JSON.stringify({ promote: "new" });
     let array = [];
-    $("tr.selected").each(
-      function(index, tr) {
-        let id = $(tr).attr("id");
-        array.push(id);
-      }.bind(this)
-    );
+    $("tr.selected").each(function(index, tr) {
+      let id = $(tr).attr("id");
+      array.push(id);
+    });
 
     this.props.ToggleProcessingMessage(true);
 
@@ -141,7 +135,7 @@ export default class SelectedHeaderOptions extends React.Component {
                 promoteRemaining: this.state.promoteRemaining - 1
               });
 
-              if (this.state.promoteRemaining == 0) {
+              if (this.state.promoteRemaining === 0) {
                 this.props.ToggleProcessingMessage(false);
               }
             }.bind(this),
@@ -188,17 +182,15 @@ export default class SelectedHeaderOptions extends React.Component {
   alertSelectExisting = () => {
     let text = prompt("Please Enter Event ID to promote into");
     let array = [];
-    if (text != "" && text != null) {
-      $("tr.selected").each(
-        function(index, tr) {
-          let id = $(tr).attr("id");
-          array.push(id);
-        }.bind(this)
-      );
+    if (text !== "" && text !== null) {
+      $("tr.selected").each(function(index, tr) {
+        let id = $(tr).attr("id");
+        array.push(id);
+      });
       for (let i = 0; i < array.length; i++) {
         if ($.isNumeric(text)) {
           let data = {
-            promote: parseInt(text)
+            promote: parseInt(text, 10)
           };
           $.ajax({
             type: "PUT",
@@ -209,7 +201,7 @@ export default class SelectedHeaderOptions extends React.Component {
               if ($.isNumeric(text)) {
                 window.location = "#/event/" + text;
               }
-            }.bind(this),
+            },
             error: function(data) {
               this.props.errorToggle(
                 "failed to promote into existing event",
@@ -281,19 +273,17 @@ export default class SelectedHeaderOptions extends React.Component {
     //   }
     // }
     let array = [];
-    $("tr.selected").each(
-      function(index, tr) {
-        let id = $(tr).attr("id");
-        array.push(id);
-      }.bind(this)
-    );
+    $("tr.selected").each(function(index, tr) {
+      let id = $(tr).attr("id");
+      array.push(id);
+    });
     for (let i = 0; i < array.length; i++) {
       $.ajax({
         type: "delete",
         url: "/scot/api/v2/alert/" + array[i],
         success: function() {
           console.log("success");
-        }.bind(this),
+        },
         error: function(data) {
           this.props.errorToggle("failed to delete selected alerts", data);
         }.bind(this)
@@ -333,21 +323,21 @@ export default class SelectedHeaderOptions extends React.Component {
 
   componentDidMount = () => {
     //open, close SELECTED alerts
-    if (this.props.type == "alertgroup" || this.props.type == "alert") {
+    if (this.props.type === "alertgroup" || this.props.type === "alert") {
       $("#main-detail-container").keydown(
         function(event) {
           if ($("input").is(":focus")) {
             return;
           }
           if (
-            event.keyCode == 79 &&
-            (event.ctrlKey != true && event.metaKey != true)
+            event.keyCode === 79 &&
+            (event.ctrlKey !== true && event.metaKey !== true)
           ) {
             this.alertOpenSelected();
           }
           if (
-            event.keyCode == 67 &&
-            (event.ctrlKey != true && event.metaKey != true)
+            event.keyCode === 67 &&
+            (event.ctrlKey !== true && event.metaKey !== true)
           ) {
             this.alertCloseSelected();
           }
@@ -360,8 +350,8 @@ export default class SelectedHeaderOptions extends React.Component {
           return;
         }
         if (
-          event.keyCode == 84 &&
-          (event.ctrlKey != true && event.metaKey != true)
+          event.keyCode === 84 &&
+          (event.ctrlKey !== true && event.metaKey !== true)
         ) {
           this.toggleFlair();
         }
@@ -407,7 +397,7 @@ export default class SelectedHeaderOptions extends React.Component {
       contentType: "application/json; charset=UTF-8",
       success: function(response) {
         window.open("/#/guide/" + response.id);
-      }.bind(this),
+      },
       error: function(data) {
         this.props.errorToggle("failed to create a new guide", data);
       }.bind(this)
@@ -421,7 +411,7 @@ export default class SelectedHeaderOptions extends React.Component {
       contentType: "application/json; charset=UTF-8",
       success: function() {
         console.log("reparsing started");
-      }.bind(this),
+      },
       error: function(data) {
         this.props.errorToggle("failed to reparse flair", data);
       }.bind(this)
@@ -441,7 +431,7 @@ export default class SelectedHeaderOptions extends React.Component {
       success: function(response) {
         const url = "/#/signature/" + response.id;
         window.open(url, "_blank");
-      }.bind(this),
+      },
       error: function(data) {
         this.props.errorToggle("failed to create a signature", data);
       }.bind(this)
@@ -470,20 +460,20 @@ export default class SelectedHeaderOptions extends React.Component {
       string = this.props.headerData.body;
     }
 
-    if (type != "alertgroup") {
+    if (type !== "alertgroup") {
       let newType;
       let showPromote = true;
-      if (status != "promoted") {
-        if (type == "alert") {
+      if (status !== "promoted") {
+        if (type === "alert") {
           newType = "Event";
-        } else if (type == "event") {
+        } else if (type === "event") {
           newType = "Incident";
         } else if (
-          type == "incident" ||
-          type == "guide" ||
-          type == "intel" ||
-          type == "signature" ||
-          type == "entity"
+          type === "incident" ||
+          type === "guide" ||
+          type === "intel" ||
+          type === "signature" ||
+          type === "entity"
         ) {
           showPromote = false;
         }
@@ -492,7 +482,7 @@ export default class SelectedHeaderOptions extends React.Component {
       }
       return (
         <div className="entry-header detail-buttons">
-          {type != "entity" ? (
+          {type !== "entity" ? (
             <Button
               eventKey="1"
               bsStyle="success"
@@ -502,7 +492,7 @@ export default class SelectedHeaderOptions extends React.Component {
               <i className="fa fa-plus-circle" aria-hidden="true" /> Add Entry
             </Button>
           ) : null}
-          {type != "entity" ? (
+          {type !== "entity" ? (
             <Button
               eventKey="2"
               onClick={this.props.fileUploadToggle}
@@ -514,13 +504,13 @@ export default class SelectedHeaderOptions extends React.Component {
           <Button eventKey="3" onClick={this.toggleFlair} bsSize="xsmall">
             <i className="fa fa-eye-slash" aria-hidden="true" /> Toggle Flair
           </Button>
-          {type == "alertgroup" || type == "event" || type == "intel" ? (
+          {type === "alertgroup" || type === "event" || type === "intel" ? (
             <Button
               eventKey="4"
               onClick={this.props.viewedByHistoryToggle}
               bsSize="xsmall"
             >
-              <img src="/images/clock.png" /> Viewed By History
+              <img src="/images/clock.png" alt="" /> Viewed By History
             </Button>
           ) : null}
           <Button
@@ -528,9 +518,9 @@ export default class SelectedHeaderOptions extends React.Component {
             onClick={this.props.changeHistoryToggle}
             bsSize="xsmall"
           >
-            <img src="/images/clock.png" /> {subjectType} History
+            <img src="/images/clock.png" alt="" /> {subjectType} History
           </Button>
-          {type != "entity" ? (
+          {type !== "entity" ? (
             <Button
               eventKey="6"
               onClick={this.props.permissionsToggle}
@@ -551,7 +541,7 @@ export default class SelectedHeaderOptions extends React.Component {
           >
             <span className="entity">__</span> View Entities
           </Button>
-          {type == "guide" ? (
+          {type === "guide" ? (
             <Button
               eventKey="8"
               onClick={this.props.guideRedirectToAlertListWithFilter}
@@ -572,13 +562,13 @@ export default class SelectedHeaderOptions extends React.Component {
               errorToggle={this.props.errorToggle}
             />
           ) : null}
-          {type != "signature" ? (
+          {type !== "signature" ? (
             <Button bsSize="xsmall" onClick={this.createLinkSignature}>
               <i className="fa fa-pencil" aria-hidden="true" /> Create & Link
               Signature
             </Button>
           ) : null}
-          {type == "signature" ? (
+          {type === "signature" ? (
             <Button
               eventKey="11"
               onClick={this.props.showSignatureOptionsToggle}
@@ -632,7 +622,7 @@ export default class SelectedHeaderOptions extends React.Component {
         </div>
       );
     } else {
-      if (this.props.aIndex != undefined) {
+      if (this.props.aIndex !== undefined) {
         return (
           <div className="entry-header second-menu detail-buttons">
             <Button eventKey="1" onClick={this.toggleFlair} bsSize="xsmall">
@@ -641,19 +631,19 @@ export default class SelectedHeaderOptions extends React.Component {
             <Button eventKey="2" onClick={this.reparseFlair} bsSize="xsmall">
               <i className="fa fa-refresh" aria-hidden="true" /> Reparse Flair
             </Button>
-            {this.props.guideID == null ? null : this.props.guideID != 0 ? (
+            {this.props.guideID === null ? null : this.props.guideID !== 0 ? (
               <Button eventKey="3" onClick={this.guideToggle} bsSize="xsmall">
-                <img src="/images/guide.png" /> Guide
+                <img src="/images/guide.png" alt="" /> Guide
               </Button>
             ) : (
               <Button eventKey="3" onClick={this.createGuide} bsSize="xsmall">
-                <img src="/images/guide.png" /> Create Guide
+                <img src="/images/guide.png" alt="" /> Create Guide
               </Button>
             )}
             }
             {this.props.headerData == null ? null : (
               <Button eventKey="4" onClick={this.sourceToggle} bsSize="xsmall">
-                <img src="/images/code.png" /> View Source
+                <img src="/images/code.png" alt="" /> View Source
               </Button>
             )}
             <Button
@@ -663,13 +653,13 @@ export default class SelectedHeaderOptions extends React.Component {
             >
               <span className="entity">__</span> View Entities
             </Button>
-            {type == "alertgroup" || type == "event" || type == "intel" ? (
+            {type === "alertgroup" || type === "event" || type === "intel" ? (
               <Button
                 eventKey="6"
                 onClick={this.props.viewedByHistoryToggle}
                 bsSize="xsmall"
               >
-                <img src="/images/clock.png" /> Viewed By History
+                <img src="/images/clock.png" alt="" /> Viewed By History
               </Button>
             ) : null}
             <Button
@@ -677,7 +667,7 @@ export default class SelectedHeaderOptions extends React.Component {
               onClick={this.props.changeHistoryToggle}
               bsSize="xsmall"
             >
-              <img src="/images/clock.png" /> {subjectType} History
+              <img src="/images/clock.png" alt="" /> {subjectType} History
             </Button>
             <TrafficLightProtocol
               type={type}
@@ -690,7 +680,7 @@ export default class SelectedHeaderOptions extends React.Component {
               bsSize="xsmall"
               bsStyle="danger"
             >
-              <img src="/images/open.png" /> Open Selected
+              <img src="/images/open.png" alt="" /> Open Selected
             </Button>
             <Button
               eventKey="9"
@@ -707,14 +697,14 @@ export default class SelectedHeaderOptions extends React.Component {
               bsSize="xsmall"
               bsStyle="warning"
             >
-              <img src="/images/megaphone.png" /> Promote Selected
+              <img src="/images/megaphone.png" alt="" /> Promote Selected
             </Button>
             <Button
               eventKey="11"
               onClick={this.alertSelectExisting}
               bsSize="xsmall"
             >
-              <img src="/images/megaphone_plus.png" /> Add Selected to{" "}
+              <img src="/images/megaphone_plus.png" alt="" /> Add Selected to{" "}
               <b>Existing Event</b>
             </Button>
             <Button
@@ -732,7 +722,7 @@ export default class SelectedHeaderOptions extends React.Component {
               <i className="fa fa-upload" aria-hidden="true" /> Upload File
             </Button>
             <Button eventKey="14" onClick={this.alertExportCSV} bsSize="xsmall">
-              <img src="/images/csv_text.png" /> Export to CSV
+              <img src="/images/csv_text.png" alt="" /> Export to CSV
             </Button>
             <Button onClick={this.props.linksModalToggle} bsSize="xsmall">
               <i className="fa fa-link" aria-hidden="true" /> Links
@@ -801,13 +791,13 @@ export default class SelectedHeaderOptions extends React.Component {
             </Button>
             {this.props.guideID == null ? null : (
               <span>
-                {this.props.guideID != 0 ? (
+                {this.props.guideID !== 0 ? (
                   <Button
                     eventKey="3"
                     onClick={this.guideToggle}
                     bsSize="xsmall"
                   >
-                    <img src="/images/guide.png" /> Guide
+                    <img src="/images/guide.png" alt="" /> Guide
                   </Button>
                 ) : (
                   <Button
@@ -815,14 +805,14 @@ export default class SelectedHeaderOptions extends React.Component {
                     onClick={this.createGuide}
                     bsSize="xsmall"
                   >
-                    <img src="/images/guide.png" /> Create Guide
+                    <img src="/images/guide.png" alt="" /> Create Guide
                   </Button>
                 )}
               </span>
             )}
             {this.props.headerData == null ? null : (
               <Button eventKey="4" onClick={this.sourceToggle} bsSize="xsmall">
-                <img src="/images/code.png" /> View Source
+                <img src="/images/code.png" alt="" /> View Source
               </Button>
             )}
             <Button
@@ -832,13 +822,13 @@ export default class SelectedHeaderOptions extends React.Component {
             >
               <span className="entity">__</span> View Entities
             </Button>
-            {type == "alertgroup" || type == "event" || type == "intel" ? (
+            {type === "alertgroup" || type === "event" || type === "intel" ? (
               <Button
                 eventKey="6"
                 onClick={this.props.viewedByHistoryToggle}
                 bsSize="xsmall"
               >
-                <img src="/images/clock.png" /> Viewed By History
+                <img src="/images/clock.png" alt="" /> Viewed By History
               </Button>
             ) : null}
             <Button
@@ -846,7 +836,7 @@ export default class SelectedHeaderOptions extends React.Component {
               onClick={this.props.changeHistoryToggle}
               bsSize="xsmall"
             >
-              <img src="/images/clock.png" /> {subjectType} History
+              <img src="/images/clock.png" alt="" /> {subjectType} History
             </Button>
             <TrafficLightProtocol
               type={type}

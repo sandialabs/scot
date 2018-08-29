@@ -1,8 +1,8 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
-import { getDisplayName } from 'recompose';
-import { Broadcast, Subscriber } from 'react-broadcast';
-import * as LocalStorage from '../../components/local_storage'; 
+import React, { PureComponent } from "react";
+import PropTypes from "prop-types";
+import { getDisplayName } from "recompose";
+import { Broadcast, Subscriber } from "react-broadcast";
+import * as LocalStorage from "../components/local_storage";
 
 /**
  * This file defines everything needed to use user settings
@@ -28,7 +28,7 @@ import * as LocalStorage from '../../components/local_storage';
  * object
  *
  * Currently components may only access one key of userConfig.
- * 
+ *
  * WARNING: The context API is likely to change in the future
  * and this will need to be updated. Hopefully though, only
  * this file will need to be updated as nothing else directly
@@ -36,11 +36,11 @@ import * as LocalStorage from '../../components/local_storage';
  */
 
 // Channel name for react-broadcast
-const UserConfigChannel = 'userConfig';
+const UserConfigChannel = "userConfig";
 
 const UserConfigKeyShape = {
-	key: PropTypes.string.isRequired,
-	default: PropTypes.any.isRequired,
+  key: PropTypes.string.isRequired,
+  default: PropTypes.any.isRequired
 };
 
 /**
@@ -56,18 +56,18 @@ const UserConfigKeyShape = {
  *	and define the shape of the data as well as the default values
  */
 export const UserConfigKeys = {
-	DASHBOARD: {
-		key: 'dashboard',
-		default: {
-			curTab: 0,
-			tabs: [],
-		},
-	},
-}
+  DASHBOARD: {
+    key: "dashboard",
+    default: {
+      curTab: 0,
+      tabs: []
+    }
+  }
+};
 
 const UserConfigContextTypes = {
-	getUserConfig: PropTypes.func,
-	setUserConfig: PropTypes.func,
+  getUserConfig: PropTypes.func,
+  setUserConfig: PropTypes.func
 };
 
 /**
@@ -77,85 +77,83 @@ const UserConfigContextTypes = {
  * Currently in main/index.js
  */
 export class UserConfigProvider extends PureComponent {
-	constructor( props ) {
-		super( props );
+  constructor(props) {
+    super(props);
 
-		this.state = {
-			userConfig: {
-				loading: true,
-			},
-		}
+    this.state = {
+      userConfig: {
+        loading: true
+      }
+    };
 
-		this.update = this.update.bind(this);
-		this.setUserConfig = this.setUserConfig.bind(this);
-	}
+    this.update = this.update.bind(this);
+    this.setUserConfig = this.setUserConfig.bind(this);
+  }
 
-	static childContextTypes = UserConfigContextTypes;
+  static childContextTypes = UserConfigContextTypes;
 
-	getChildContext() {
-		return {
-			getUserConfig: this.getUserConfig,
-			setUserConfig: this.setUserConfig,
-		}
-	}
+  getChildContext() {
+    return {
+      getUserConfig: this.getUserConfig,
+      setUserConfig: this.setUserConfig
+    };
+  }
 
-	/**
-	 * Load user config
-	 *
-	 * Return: Promise
-	 */
-	getUserConfig() {
-		// Currently just uses localstorage
-		// This should be easy to change to use a backend at some point
-		return new Promise( ( resolve, reject ) => {
-			let json = LocalStorage.getLocalStorage( UserConfigChannel )
-			if ( json ) {
-				resolve( JSON.parse( json ) );
-				return;
-			}
+  /**
+   * Load user config
+   *
+   * Return: Promise
+   */
+  getUserConfig() {
+    // Currently just uses localstorage
+    // This should be easy to change to use a backend at some point
+    return new Promise((resolve, reject) => {
+      let json = LocalStorage.getLocalStorage(UserConfigChannel);
+      if (json) {
+        resolve(JSON.parse(json));
+        return;
+      }
 
-			resolve( {} );
-		} );
-	}
+      resolve({});
+    });
+  }
 
-	/**
-	 * Save user config
-	 *
-	 * Return: Promise
-	 */
-	setUserConfig( config ) {
-		// Currently just uses localstorage
-		// This should be easy to change to use a backend at some point
-		return new Promise( ( resolve, reject ) => {
-			LocalStorage.setLocalStorage( UserConfigChannel, JSON.stringify( config ) );
+  /**
+   * Save user config
+   *
+   * Return: Promise
+   */
+  setUserConfig(config) {
+    // Currently just uses localstorage
+    // This should be easy to change to use a backend at some point
+    return new Promise((resolve, reject) => {
+      LocalStorage.setLocalStorage(UserConfigChannel, JSON.stringify(config));
 
-			resolve();
-		} ).then( () => {
-			this.update();
-		} );
-	}
+      resolve();
+    }).then(() => {
+      this.update();
+    });
+  }
 
-	update() {
-		this.getUserConfig().then( ( config ) => {
-			this.setState( {
-				userConfig: config,
-			} );
-		} );
-	}
+  update() {
+    this.getUserConfig().then(config => {
+      this.setState({
+        userConfig: config
+      });
+    });
+  }
 
-	componentDidMount() {
-		this.update();
-	}
+  componentDidMount() {
+    this.update();
+  }
 
-	render() {
-		return (
-			<Broadcast value={this.state.userConfig} channel={UserConfigChannel}>
-				<div>
-					{this.props.children}
-				</div>
-			</Broadcast>
-		)
-	}
+  render() {
+    return (
+      <Broadcast value={this.state.userConfig} channel={UserConfigChannel}>
+        <div>{this.props.children}</div>
+      </Broadcast>
+    );
+  }
 }
 
 /*
@@ -174,13 +172,13 @@ export class UserConfigProvider extends PureComponent {
  *		loading: whether the config is currently loading
  */
 export const UserConfigPropTypes = {
-	userConfig: PropTypes.shape( {
-		config: PropTypes.any.isRequired,
-		setUserConfig: PropTypes.func.isRequired,
-		getUserConfig: PropTypes.func.isRequired,
-		loading: PropTypes.bool,
-	} ).isRequired,
-}
+  userConfig: PropTypes.shape({
+    config: PropTypes.any.isRequired,
+    setUserConfig: PropTypes.func.isRequired,
+    getUserConfig: PropTypes.func.isRequired,
+    loading: PropTypes.bool
+  }).isRequired
+};
 
 /**
  * Higher-order Component (HOC) for providing a subkey of userConfig
@@ -194,69 +192,73 @@ export const UserConfigPropTypes = {
  *
  * Example:
  *		export default withUserConfig( UserConfigKeys.DASHBOARD ) (HomeDashboard);
- *		
+ *
  *		This gives HomeDashboard access to the dashboard portion of userConfig
  */
-export const withUserConfig = ( configKey ) => {
-	PropTypes.checkPropTypes( UserConfigKeyShape, configKey, 'argument', 'withUserConfig' );
+export const withUserConfig = configKey => {
+  PropTypes.checkPropTypes(
+    UserConfigKeyShape,
+    configKey,
+    "argument",
+    "withUserConfig"
+  );
 
-	return ( WrappedComponent ) => {
-		class UserConfigSubscriber extends PureComponent {
-			constructor( props ) {
-				super( props );
+  return WrappedComponent => {
+    class UserConfigSubscriber extends PureComponent {
+      constructor(props) {
+        super(props);
 
-				this.state = {}
+        this.state = {};
 
-				this.setUserSubConfig = this.setUserSubConfig.bind(this);
-			}
+        this.setUserSubConfig = this.setUserSubConfig.bind(this);
+      }
 
-			static contextTypes = UserConfigContextTypes;
-			static displayName = `withUserConfig(${getDisplayName( WrappedComponent )})`;
-			static propTypes = {
-				userConfig: PropTypes.object.isRequired,
-			};
+      static contextTypes = UserConfigContextTypes;
+      static displayName = `withUserConfig(${getDisplayName(
+        WrappedComponent
+      )})`;
+      static propTypes = {
+        userConfig: PropTypes.object.isRequired
+      };
 
-			/**
-			 * This allows the wrapped component to only have to worry about its own
-			 * portion of userConfig. Its changes are automatically wrapped back into
-			 * the whole object
-			 */
-			setUserSubConfig( subConfig ) {
-				let newConfig = {
-					...this.props.userConfig,
-				}
-				newConfig[configKey.key] = subConfig;
+      /**
+       * This allows the wrapped component to only have to worry about its own
+       * portion of userConfig. Its changes are automatically wrapped back into
+       * the whole object
+       */
+      setUserSubConfig(subConfig) {
+        let newConfig = {
+          ...this.props.userConfig
+        };
+        newConfig[configKey.key] = subConfig;
 
-				this.context.setUserConfig( newConfig );
-			}
+        this.context.setUserConfig(newConfig);
+      }
 
-			render() {
-				let { userConfig, ...restProps } = this.props;
+      render() {
+        let { userConfig, ...restProps } = this.props;
 
-				let data = userConfig[ configKey.key ] || configKey.default;
-				const loading = userConfig.loading;
+        let data = userConfig[configKey.key] || configKey.default;
+        const loading = userConfig.loading;
 
-				const userConfigProps = {
-					userConfig: {
-						loading: loading === true,
-						config: data,
-						setUserConfig: this.setUserSubConfig,
-						getUserConfig: this.context.getUserConfig,
-					}
-				};
-				
-				return (
-					<WrappedComponent {...restProps} {...userConfigProps} />
-				)
-			}
-		}
+        const userConfigProps = {
+          userConfig: {
+            loading: loading === true,
+            config: data,
+            setUserConfig: this.setUserSubConfig,
+            getUserConfig: this.context.getUserConfig
+          }
+        };
 
-		const UserConfigHelper = ( props ) => (
-			<Subscriber channel={UserConfigChannel}>
-				{ data => ( <UserConfigSubscriber userConfig={data} {...props} /> ) }
-			</Subscriber>
-		)
-		return UserConfigHelper;
-	}
-}
+        return <WrappedComponent {...restProps} {...userConfigProps} />;
+      }
+    }
 
+    const UserConfigHelper = props => (
+      <Subscriber channel={UserConfigChannel}>
+        {data => <UserConfigSubscriber userConfig={data} {...props} />}
+      </Subscriber>
+    );
+    return UserConfigHelper;
+  };
+};

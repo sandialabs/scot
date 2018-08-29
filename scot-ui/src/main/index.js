@@ -1,15 +1,13 @@
+import React from "react";
 import Home from "./home";
 import { ReportPage, SingleReport } from "../components/dashboard/report";
 import { NOTIFICATION_TYPES } from "../components/dashboard/activity";
 import { UserConfigProvider } from "../utils/userConfig";
-import React from "react";
-import ReactDOM from "react-dom";
 import * as Cookies from "../utils/cookies";
 import * as SessionStorage from "../utils/session_storage";
 import $ from "jquery";
 import Search from "../components/esearch";
 import Wall from "../debug-components/wall";
-import SelectedContainer from "../detail/selected_container";
 import Login from "../modal/login.js";
 let Navbar = require("react-bootstrap/lib/Navbar.js");
 let Nav = require("react-bootstrap/lib/Nav.js");
@@ -18,17 +16,11 @@ let NavDropdown = require("react-bootstrap/lib/NavDropdown.js");
 let MenuItem = require("react-bootstrap/lib/MenuItem.js");
 let LinkContainer = require("react-router-bootstrap/lib/LinkContainer.js");
 let ListView = require("../list/list-view.js");
-let Router = require("react-router-dom").Router;
 let Route = require("react-router-dom").Route;
 let Link = require("react-router-dom").Link;
-let customHistory = require("history").createBrowserHistory;
-let Switch = require("react-router-dom").Switch;
-let HashRouter = require("react-router-dom").HashRouter;
-let BrowserRouter = require("react-router-dom").BrowserRouter;
-
 var Notification = require("react-notification-system");
 
-class App extends React.component {
+class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -59,7 +51,7 @@ class App extends React.component {
         "listViewPage" + nextProps.match.params.value.toLowerCase()
       );
     }
-    if (notificationSetting == undefined) {
+    if (notificationSetting === undefined) {
       notificationSetting = "on";
     }
 
@@ -83,39 +75,16 @@ class App extends React.component {
   componentDidMount = () => {
     this.GetHandler();
     this.WhoAmIQuery();
-
+    this.props.registerClient();
+    this.props.createCallbackObject("wall", this.notification);
     //TODO: Remove this stuff also
     // Store.storeKey( 'wall' );
     // Store.addChangeListener( this.wall );
     // Store.storeKey( 'notification' );
     // Store.addChangeListener( this.notification );
 
-    const amqClientPromise = this.register_client();
-    console.log("will be pending when logged", amqClientPromise);
-    amqClientPromise
-      .then(function getData(client) {
-        console.log(
-          "when resolve is found it comes here with the response, in this case users ",
-          client
-        );
-        // return Promise.all(
-        //   list.map(function(user) {
-        //     return request(user.repos_url);
-        //   })
-        // );
-      })
-      // .then(function dosomething(param) {
-      //   console.log('blah blh ', param)
-      // })
-      .catch(function handleErrors(error) {
-        console.log(
-          "when a reject is executed it will come here ignoring the then statement ",
-          error
-        );
-      });
-
     //ee
-    if (this.props.match.url == "/") {
+    if (this.props.match.url === "/") {
       $(document.body).keydown(
         function(e) {
           this.ee(e);
@@ -161,14 +130,14 @@ class App extends React.component {
   ee = e => {
     let ee = "837279877769847269697171";
     if (ee.includes(this.state.eestring)) {
-      if (this.state.eestring + e.keyCode == ee) {
+      if (this.state.eestring + e.keyCode === ee) {
         this.eedraw();
         setTimeout(this.eeremove, 2000);
       } else {
         if ($("input").is(":focus")) {
           return;
         }
-        if (e.ctrlKey != true && e.metaKey != true) {
+        if (e.ctrlKey !== true && e.metaKey !== true) {
           let eestring = this.state.eestring + e.keyCode;
           this.setState({ eestring: eestring });
         }
@@ -178,12 +147,12 @@ class App extends React.component {
     }
   };
 
-  notification = message => {
+  notification = () => {
     // Don't show on dashboard if filtered type
     if (
       this.props.match.path === "/" &&
       this.props.match.isExact &&
-      NOTIFICATION_TYPES.includes(message.activemqstate)
+      NOTIFICATION_TYPES.includes(this.props.stateProps.activemqstate)
     ) {
       return;
     }
@@ -192,29 +161,34 @@ class App extends React.component {
     let notification = this.refs.notificationSystem;
     //not showing notificaiton on entity due to "flooding" on an entry update that has many entities causing a storm of AMQ messages
     if (
-      message.activemqwho != "scot-alerts" &&
-      message.activemqwho !== "scot-admin" &&
-      message.activemqwho !== "scot-flair" &&
-      message.notification !== undefined &&
-      message.activemqwho !== this.state.whoami &&
-      message.activemqwho !== "" &&
-      message.activemqwho !== "api" &&
-      message.activemqwall !== true &&
-      message.activemqtype !== "entity" &&
-      this.state.notificationSetting == "on"
+      this.props.stateProps.activemqwho !== "scot-alerts" &&
+      this.props.stateProps.activemqwho !== "scot-admin" &&
+      this.props.stateProps.activemqwho !== "scot-flair" &&
+      this.props.stateProps.notification !== undefined &&
+      this.props.stateProps.activemqwho !== this.state.whoami &&
+      this.props.stateProps.activemqwho !== "" &&
+      this.props.stateProps.activemqwho !== "api" &&
+      this.props.stateProps.activemqwall !== true &&
+      this.props.stateProps.activemqtype !== "entity" &&
+      this.state.notificationSetting === "on"
     ) {
       notification.addNotification({
         message:
-          message.activemqwho + message.activemqmessage + message.activemqid,
+          this.props.stateProps.activemqwho +
+          this.props.stateProps.activemqmessage +
+          this.props.stateProps.activemqid,
         level: "info",
         autoDismiss: 5,
         action:
-          message.activemqstate != "delete"
+          this.props.stateProps.activemqstate !== "delete"
             ? {
                 label: "View",
                 callback: function() {
                   window.open(
-                    "/#/" + message.activemqtype + "/" + message.activemqid
+                    "/#/" +
+                      this.props.stateProps.activemqtype +
+                      "/" +
+                      this.props.stateProps.activemqid
                   );
                 }
               }
@@ -232,7 +206,7 @@ class App extends React.component {
     var notification = this.refs.notificationSystem;
     var date = new Date(message.activemqwhen * 1000);
     date = date.toLocaleString();
-    if (message.activemqwall == true) {
+    if (message.activemqwall === true) {
       notification.addNotification({
         message:
           date + " " + message.activemqwho + ": " + message.activemqmessage,
@@ -252,7 +226,7 @@ class App extends React.component {
           this.loginToggle(result.responseJSON.csrf);
           return;
         }
-      } else if (result.statusText == "Service Unavailable") {
+      } else if (result.statusText === "Service Unavailable") {
         errorString = result.statusText; //Use server error message if available.
       }
     }
@@ -266,7 +240,7 @@ class App extends React.component {
   };
 
   notificationToggle = () => {
-    if (this.state.notificationSetting == "off") {
+    if (this.state.notificationSetting === "off") {
       this.setState({ notificationSetting: "on" });
       Cookies.setCookie("notification", "on", 1000);
     } else {
@@ -277,11 +251,11 @@ class App extends React.component {
 
   loginToggle = (csrf, loggedin) => {
     //Only open modal once - if other requests come in to open the modal just bypass since the login page is active
-    if (!this.state.login && loggedin != true) {
+    if (!this.state.login && loggedin !== true) {
       let origurl = this.props.location.pathname;
       this.props.history.push("/");
       this.setState({ login: true, origurl: origurl });
-    } else if (this.state.login && loggedin == true) {
+    } else if (this.state.login && loggedin === true) {
       this.setState({ login: false });
       this.props.history.push(this.state.origurl);
     }
@@ -326,12 +300,14 @@ class App extends React.component {
   GetHandler = () => {
     $.ajax({
       type: "get",
-      url: "/scot/api/v2/handler?current=1"
-    }).success(
-      function(response) {
+      url: "/scot/api/v2/handler?current=1",
+      success: function(response) {
         this.setState({ handler: response.records[0].username });
+      }.bind(this),
+      error: function(data) {
+        this.errorToggle("Failed to get current user", data);
       }.bind(this)
-    );
+    });
   };
 
   render = () => {
@@ -348,7 +324,7 @@ class App extends React.component {
           <Navbar.Header>
             <Navbar.Brand>
               <Link to="/" style={{ margin: "0", padding: "0" }}>
-                <img src="/images/scot.png" style={{ width: "50px" }} />
+                <img src="/images/scot.png" alt="" style={{ width: "50px" }} />
               </Link>
             </Navbar.Brand>
             <Navbar.Toggle />
@@ -438,10 +414,12 @@ class App extends React.component {
                 sensitivity={this.state.sensitivity}
                 errorToggle={this.errorToggle}
                 clientId={this.state.clientId}
+                createCallbackObject={this.props.createCallbackObject}
+                removeCallbackObject={this.props.removeCallbackObject}
               />
             )}
           />
-          {type == "alert" ? (
+          {type === "alert" ? (
             <ListView
               id={this.props.match.params.id}
               id2={this.props.match.params.id2}
@@ -454,9 +432,11 @@ class App extends React.component {
               listViewPage={this.state.listViewPage}
               errorToggle={this.errorToggle}
               history={this.props.history}
+              createCallbackObject={this.props.createCallbackObject}
+              removeCallbackObject={this.props.removeCallbackObject}
             />
           ) : null}
-          {type == "alertgroup" ? (
+          {type === "alertgroup" ? (
             <ListView
               id={this.props.match.params.id}
               id2={this.props.match.params.id2}
@@ -469,9 +449,11 @@ class App extends React.component {
               listViewPage={this.state.listViewPage}
               errorToggle={this.errorToggle}
               history={this.props.history}
+              createCallbackObject={this.props.createCallbackObject}
+              removeCallbackObject={this.props.removeCallbackObject}
             />
           ) : null}
-          {type == "entry" ? (
+          {type === "entry" ? (
             <ListView
               id={this.props.match.params.id}
               id2={this.props.match.params.id2}
@@ -484,9 +466,11 @@ class App extends React.component {
               listViewPage={this.state.listViewPage}
               errorToggle={this.errorToggle}
               history={this.props.history}
+              createCallbackObject={this.props.create_callback_object}
+              removeCallbackObject={this.props.remove_callback_object}
             />
           ) : null}
-          {type == "event" ? (
+          {type === "event" ? (
             <ListView
               id={this.props.match.params.id}
               id2={this.props.match.params.id2}
@@ -499,9 +483,11 @@ class App extends React.component {
               listViewPage={this.state.listViewPage}
               errorToggle={this.errorToggle}
               history={this.props.history}
+              createCallbackObject={this.props.createCallbackObject}
+              removeCallbackObject={this.props.removeCallbackObject}
             />
           ) : null}
-          {type == "incident" ? (
+          {type === "incident" ? (
             <ListView
               id={this.props.match.params.id}
               id2={this.props.match.params.id2}
@@ -514,9 +500,11 @@ class App extends React.component {
               listViewPage={this.state.listViewPage}
               errorToggle={this.errorToggle}
               history={this.props.history}
+              createCallbackObject={this.props.createCallbackObject}
+              removeCallbackObject={this.props.removeCallbackObject}
             />
           ) : null}
-          {type == "task" ? (
+          {type === "task" ? (
             <ListView
               isTask={true}
               queryType={this.props.match.params.type}
@@ -531,9 +519,11 @@ class App extends React.component {
               listViewPage={this.state.listViewPage}
               errorToggle={this.errorToggle}
               history={this.props.history}
+              createCallbackObject={this.props.createCallbackObject}
+              removeCallbackObject={this.props.removeCallbackObject}
             />
           ) : null}
-          {type == "guide" ? (
+          {type === "guide" ? (
             <ListView
               id={this.props.match.params.id}
               id2={this.props.match.params.id2}
@@ -546,9 +536,11 @@ class App extends React.component {
               listViewPage={this.state.listViewPage}
               errorToggle={this.errorToggle}
               history={this.props.history}
+              createCallbackObject={this.props.createCallbackObject}
+              removeCallbackObject={this.props.removeCallbackObject}
             />
           ) : null}
-          {type == "intel" ? (
+          {type === "intel" ? (
             <ListView
               id={this.props.match.params.id}
               id2={this.props.match.params.id2}
@@ -561,9 +553,11 @@ class App extends React.component {
               listViewPage={this.state.listViewPage}
               errorToggle={this.errorToggle}
               history={this.props.history}
+              createCallbackObject={this.props.createCallbackObject}
+              removeCallbackObject={this.props.removeCallbackObject}
             />
           ) : null}
-          {type == "signature" ? (
+          {type === "signature" ? (
             <ListView
               id={this.props.match.params.id}
               id2={this.props.match.params.id2}
@@ -576,9 +570,11 @@ class App extends React.component {
               listViewPage={this.state.listViewPage}
               errorToggle={this.errorToggle}
               history={this.props.history}
+              createCallbackObject={this.props.createCallbackObject}
+              removeCallbackObject={this.props.removeCallbackObject}
             />
           ) : null}
-          {type == "entity" ? (
+          {type === "entity" ? (
             <ListView
               id={this.props.match.params.id}
               id2={this.props.match.params.id2}
@@ -591,6 +587,8 @@ class App extends React.component {
               listViewPage={this.state.listViewPage}
               errorToggle={this.errorToggle}
               history={this.props.history}
+              createCallbackObject={this.props.createCallbackObject}
+              removeCallbackObject={this.props.removeCallbackObject}
             />
           ) : null}
           {type === "reports" && !this.props.match.params.id && <ReportPage />}
@@ -601,10 +599,190 @@ class App extends React.component {
           {/* {type == "amq" ? (
             <AMQ type="amq" errorToggle={this.errorToggle} />
           ) : null} */}
-          {type == "wall" ? <Wall errorToggle={this.errorToggle} /> : null}
+          {type === "wall" ? <Wall errorToggle={this.errorToggle} /> : null}
         </div>
       </UserConfigProvider>
     );
   };
 }
-export default App;
+
+class AMQ extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      client: "",
+      whoami: "",
+      amqdebug: "",
+      activemqaction: "",
+      activemqid: "",
+      activemqwho: "",
+      activemqtype: "",
+      activemqguid: "",
+      activemqhostname: "",
+      activemqpid: "",
+      activemqwhen: "",
+      activemqwall: "",
+      cb_obj_array: []
+    };
+    this.get_guid = this.get_guid.bind(this);
+    this.create_callback_object = this.create_callback_object.bind(this);
+    this.register_client = this.register_client.bind(this);
+    this.get_data = this.get_data.bind(this);
+  }
+
+  //AMQ STUFF
+  s4 = () => {
+    return Math.floor((1 + Math.random()) * 0x10000)
+      .toString(16)
+      .substring(1);
+  };
+
+  get_guid = () => {
+    return (
+      this.s4() +
+      this.s4() +
+      this.s4() +
+      this.s4() +
+      this.s4() +
+      this.s4() +
+      this.s4() +
+      this.s4()
+    );
+  };
+
+  register_client = restart => {
+    this.setState({
+      client: this.get_guid(),
+      whoami: SessionStorage.getSessionStorage("whoami")
+    });
+    $.ajax({
+      type: "POST",
+      url: "/scotaq/amq",
+      data: {
+        message: "chat",
+        type: "listen",
+        clientId: this.client,
+        destination: "topic://scot"
+      },
+      success: function(data) {
+        console.log("Registered client as " + this.state.client);
+        if (!restart) {
+          //only start the update if this is not a restart. Restart will just use the new clientid once it is live.
+          setTimeout(function() {
+            this.get_data();
+          }, 1000);
+        }
+      }.bind(this),
+      error: function(data) {
+        console.log("Error: failed to register client, retry in 1 sec");
+        setTimeout(function() {
+          this.register_client();
+        }, 1000);
+      }.bind(this)
+    });
+  };
+
+  get_data = () => {
+    let now = new Date();
+    $.ajax({
+      type: "GET",
+      url: "/scotaq/amq",
+      data: {
+        /*loc: location.hash, */
+        clientId: this.state.client,
+        timeout: 20000,
+        d: now.getTime(),
+        r: Math.random(),
+        json: "true",
+        username: this.whoami
+      }
+    })
+      .success(function(data) {
+        console.log("Received Message");
+        setTimeout(function() {
+          this.get_data();
+        }, 40);
+        let messages = $(data)
+          .text()
+          .split("\n");
+        $.each(messages, function(key, message) {
+          if (message !== "") {
+            let json = JSON.parse(message);
+            console.log(json);
+            this.process_message(message);
+            this.handle_update(message);
+            return true;
+          }
+        });
+      })
+      .error(function() {
+        setTimeout(function() {
+          this.getData(this.client);
+        }, 1000);
+        console.log("AMQ not detected, retrying in 1 second.");
+      });
+  };
+
+  create_callback_object = (key, callback) => {
+    let newobject = Object;
+    newobject["key"] = key;
+    newobject["callback"] = callback;
+    let newArray = this.state.cb_obj_array;
+    newArray.push(newobject);
+    this.setState({ cb_obj_array: newArray });
+  };
+
+  remove_callback_object = key => {
+    for (var i = 0; i < this.cb_obj_array.length; i++)
+      if (this.cb_obj_array[i].key === key) {
+        this.cb_obj_array.splice(i, 1);
+        break;
+      }
+  };
+
+  process_message = payload => {
+    if (this.amqdebug === true) {
+      this.activemqaction = payload.action.activemq.action;
+      this.activemqid = payload.action.activemq.data.id;
+      this.activemqtype = payload.action.activemq.data.type;
+      this.activemqwho = payload.action.activemq.data.who;
+      this.activemqguid = payload.action.activemq.guid;
+      this.activemqhostname = payload.action.activemq.hostname;
+      this.activemqpid = payload.action.activemq.pid;
+    }
+
+    if (payload.action.activemq.action === "wall") {
+      this.activemqwho = payload.action.activemq.data.who;
+      this.activemqmessage = payload.action.activemq.data.message;
+      this.activemqwhen = payload.action.activemq.data.when;
+      this.activemqwall = true;
+    }
+  };
+
+  //TODO: Implment better handle update function
+  handle_update = message => {
+    let search_key =
+      message.action.activemq.type + ":" + message.action.activemq.id;
+    if (this.cb_obj_array[search_key]) {
+      this.cb_obj_array[search_key];
+    } else {
+      throw "Key: " + search_key + " doesn't exist in state.";
+    }
+  };
+
+  render = () => {
+    console.log("hey");
+    return (
+      <App
+        location={this.props.location}
+        match={this.props.match}
+        history={this.props.history}
+        createCallbackObject={this.create_callback_object}
+        removeCallbackObject={this.remove_callback_object}
+        registerClient={this.register_client}
+        getData={this.get_data}
+      />
+    );
+  };
+}
+export default AMQ;

@@ -1,10 +1,10 @@
 import React from "react";
 import $ from "jquery";
 import SelectedEntry from "../detail/selected_entry.js";
+import Inspector from "react-inspector";
 let Button = require("react-bootstrap/lib/Button");
 let Tabs = require("react-bootstrap/lib/Tabs");
 let Tab = require("react-bootstrap/lib/Tab");
-let Inspector = require("react-inspector");
 let AddEntry = require("../components/add_entry.js");
 let Draggable = require("react-draggable");
 let DetailDataStatus = require("../components/detail_data_status.js");
@@ -15,7 +15,6 @@ let startX;
 let startY;
 let startWidth;
 let startHeight;
-let AddFlair = require("../components/add_flair.js").AddFlair;
 
 export default class EntityDetail extends React.Component {
   constructor(props) {
@@ -26,7 +25,7 @@ export default class EntityDetail extends React.Component {
     let entityWidthint = 700;
     let entityWidth = entityWidthint + "px";
     let entityMaxHeight = "70vh";
-    if (this.props.fullScreen == true) {
+    if (this.props.fullScreen === true) {
       entityHeight = "95vh";
       entityWidth = "95%";
       entityMaxHeight = "95vh";
@@ -53,8 +52,8 @@ export default class EntityDetail extends React.Component {
     this.setState({ isMounted: true });
     let currentTabArray = this.state.tabs;
     let valueClicked = this.props.entityvalue;
-    if (this.props.entitytype != "source") {
-      if (this.state.entityid == undefined || isNaN(this.state.entityid)) {
+    if (this.props.entitytype !== "source") {
+      if (this.state.entityid === undefined || isNaN(this.state.entityid)) {
         $.ajax({
           type: "GET",
           url: "scot/api/v2/" + this.props.entitytype + "/byname",
@@ -84,7 +83,9 @@ export default class EntityDetail extends React.Component {
                       initialLoad: true,
                       processedIds: entityidsarray
                     });
+
                     //TODO:ASK NICK
+                    this.props.createCallbackObject(entityid, this.updated);
                     // Store.storeKey(entityid);
                     // Store.addChangeListener(this.updated);
                   }
@@ -108,7 +109,7 @@ export default class EntityDetail extends React.Component {
       } else {
         let id = this.state.entityid;
         if (!Array.isArray(id)) {
-          id = [parseInt(id)];
+          id = [parseInt(id, 10)];
         }
 
         for (let i = 0; i < id.length; i++) {
@@ -134,6 +135,7 @@ export default class EntityDetail extends React.Component {
                   processedIds: entityidsarray
                 });
                 //TODO: Ask Nick
+                this.props.createCallbackObject(id[i], this.updated);
                 // Store.storeKey(id[i]);
                 // Store.addChangeListener(this.updated);
               }
@@ -160,11 +162,11 @@ export default class EntityDetail extends React.Component {
       entityidsarray.push(this.props.entityid);
       this.setState({
         tabs: currentTabArray,
-        currentKey: parseInt(this.props.entityid),
+        currentKey: parseInt(this.props.entityid, 10),
         initialLoad: true,
         processedIds: entityidsarray
       });
-      //TODO: ASK NICK
+      this.props.createCallbackObject(this.props.entityid, this.updated);
       //   Store.storeKey(this.props.entityid);
       //   Store.addChangeListener(this.updated);
       // }
@@ -175,11 +177,11 @@ export default class EntityDetail extends React.Component {
       if ($("input").is(":focus")) {
         return;
       }
-      if ($("#main-search-results")[0] != undefined) {
+      if ($("#main-search-results")[0] !== undefined) {
         return;
       } //close search results before closing entity div
       //check for esc with keyCode
-      if (event.keyCode == 27) {
+      if (event.keyCode === 27) {
         this.props.flairToolbarOff();
         event.preventDefault();
       }
@@ -192,7 +194,7 @@ export default class EntityDetail extends React.Component {
   };
 
   onLoad = () => {
-    if (document.getElementById("iframe_" + this.props.id) != undefined) {
+    if (document.getElementById("iframe_" + this.props.id) !== undefined) {
       if (
         document.getElementById("iframe_" + this.props.id).contentDocument
           .readyState === "complete"
@@ -214,7 +216,7 @@ export default class EntityDetail extends React.Component {
         setTimeout(
           function() {
             if (
-              document.getElementById("iframe_" + this.props.id) != undefined
+              document.getElementById("iframe_" + this.props.id) !== undefined
             ) {
               document
                 .getElementById("iframe_" + this.props.id)
@@ -225,7 +227,7 @@ export default class EntityDetail extends React.Component {
                       "iframe_" + this.props.id
                     ).contentWindow.document.body.scrollHeight;
                     newheight = newheight + "px";
-                    if (this.state.height != newheight) {
+                    if (this.state.height !== newheight) {
                       this.setState({ height: newheight });
                     }
                   }.bind(this)
@@ -252,12 +254,10 @@ export default class EntityDetail extends React.Component {
             .find("a")
             .attr("target", "_blank");
           //Copies href to a new attribute, url, before we make href an anchor (so it doesn't go anywhere when clicked)
-          ifrContents.find("a").each(
-            function(index, a) {
-              let url = $(a).attr("href");
-              $(a).attr("url", url);
-            }.bind(this)
-          );
+          ifrContents.find("a").each(function(index, a) {
+            let url = $(a).attr("href");
+            $(a).attr("url", url);
+          });
         }
       });
     });
@@ -283,9 +283,9 @@ export default class EntityDetail extends React.Component {
           //Initializing Function for adding an entry to be used later.
           addNewEntity: function() {
             let currentTabArray = this.state.tabs;
-            if (nextProps.entitytype != "source") {
+            if (nextProps.entitytype !== "source") {
               if (
-                nextProps.entityid == undefined ||
+                nextProps.entityid === undefined ||
                 isNaN(nextProps.entityid)
               ) {
                 $.ajax({
@@ -317,6 +317,10 @@ export default class EntityDetail extends React.Component {
                               currentKey: nextProps.entityid
                             });
                             //TODO: ASK NICK
+                            this.props.createCallbackObject(
+                              nextProps.entityid,
+                              this.updated
+                            );
                             // Store.storeKey(nextProps.entityid);
                             // Store.addChangeListener(this.updated);
                           }
@@ -359,6 +363,10 @@ export default class EntityDetail extends React.Component {
                         currentKey: nextProps.entityid
                       });
                       //TODO: Ask NICK
+                      this.props.createCallbackObject(
+                        nextProps.entityid,
+                        this.updated
+                      );
                       //   Store.storeKey(nextProps.entityid);
                       //   Store.addChangeListener(this.updated);
                     }
@@ -384,35 +392,34 @@ export default class EntityDetail extends React.Component {
               entityidsarray.push(nextProps.entityid);
               this.setState({
                 tabs: currentTabArray,
-                currentKey: parseInt(nextProps.entityid),
+                currentKey: parseInt(nextProps.entityid, 10),
                 initialLoad: true,
                 processedIds: entityidsarray
               });
               //TODO: ASK NICK
-              //   Store.storeKey(nextProps.entityid);
-              //   Store.addChangeListener(this.updated);
+              this.props.createCallbackObject(nextProps.entiyid, this.updated);
               this.props.watcher();
             }
           }.bind(this)
         };
-        if (this.state.initialLoad == false) {
+        if (this.state.initialLoad === false) {
           setTimeout(
             checkForInitialLoadComplete.checkForInitialLoadComplete,
             50
           );
         } else {
-          if (nextProps != undefined) {
+          if (nextProps !== undefined) {
             //TODO Fix next conditional for undefined that prevents multiple calls for the same ID at load time on a nested entity
             if (
               nextProps.entitytype != null &&
-              nextProps.entityid != undefined
+              nextProps.entityid !== undefined
             ) {
-              let nextPropsEntityIdInt = parseInt(nextProps.entityid);
+              let nextPropsEntityIdInt = parseInt(nextProps.entityid, 10);
               for (let i = 0; i < this.state.tabs.length; i++) {
                 if (
-                  nextPropsEntityIdInt == this.state.tabs[i].entityid ||
-                  (this.state.tabs[i].entitytype == "guide" &&
-                    nextProps.entitytype == "guide")
+                  nextPropsEntityIdInt === this.state.tabs[i].entityid ||
+                  (this.state.tabs[i].entitytype === "guide" &&
+                    nextProps.entitytype === "guide")
                 ) {
                   if (this.state.isMounted) {
                     this.setState({ currentKey: nextPropsEntityIdInt });
@@ -422,7 +429,7 @@ export default class EntityDetail extends React.Component {
                   let array = this.state.processedIds;
                   let addEntity = true;
                   for (let i = 0; i < array.length; i++) {
-                    if (array[i] == nextPropsEntityIdInt) {
+                    if (array[i] === nextPropsEntityIdInt) {
                       // Check if entity is already being processed so we don't show it twice
                       addEntity = false;
                     }
@@ -445,47 +452,46 @@ export default class EntityDetail extends React.Component {
 
   updated = () => {
     let currentTabArray = this.state.tabs;
+    // eslint-disable-line
     let valueClicked = this.props.entityvalue;
     for (let j = 0; j < currentTabArray.length; j++) {
       //TODO: Ask Nick
       // if ( activemqid == currentTabArray[j].entityid ) {
-      if (this.props.activemqid == currentTabArray[j].entityid) {
-        let currentTabArrayIndex = j;
-        $.ajax({
-          type: "GET",
-          url:
-            "scot/api/v2/" +
-            this.props.entitytype +
-            "/" +
-            currentTabArray[j].entityid,
-          success: function(result) {
-            //this.setState({entityData:result})
-            let newTab = {
-              data: result,
-              entityid: result.id,
-              entitytype: this.props.entitytype,
-              valueClicked: result.value
-            };
-            currentTabArray[currentTabArrayIndex] = newTab;
-            if (this.state.isMounted) {
-              let entityidsarray = [];
-              entityidsarray.push(result.id);
-              this.setState({
-                tabs: currentTabArray,
-                currentKey: result.id,
-                initialLoad: true,
-                processedIds: entityidsarray
-              });
-            }
-          }.bind(this),
-          error: function(data) {
-            this.props.errorToggle(
-              "failed to get updated entity detail information",
-              data
-            );
-          }.bind(this)
-        });
-      }
+      let currentTabArrayIndex = j;
+      $.ajax({
+        type: "GET",
+        url:
+          "scot/api/v2/" +
+          this.props.entitytype +
+          "/" +
+          currentTabArray[j].entityid,
+        success: function(result) {
+          //this.setState({entityData:result})
+          let newTab = {
+            data: result,
+            entityid: result.id,
+            entitytype: this.props.entitytype,
+            valueClicked: result.value
+          };
+          currentTabArray[currentTabArrayIndex] = newTab;
+          if (this.state.isMounted) {
+            let entityidsarray = [];
+            entityidsarray.push(result.id);
+            this.setState({
+              tabs: currentTabArray,
+              currentKey: result.id,
+              initialLoad: true,
+              processedIds: entityidsarray
+            });
+          }
+        }.bind(this),
+        error: function(data) {
+          this.props.errorToggle(
+            "failed to get updated entity detail information",
+            data
+          );
+        }.bind(this)
+      });
     }
   };
 
@@ -496,9 +502,9 @@ export default class EntityDetail extends React.Component {
         .find("a")
         .each(
           function(index, a) {
-            if ($(a).css("color") == "rgb(255, 0, 0)") {
+            if ($(a).css("color") === "rgb(255, 0, 0)") {
               $(a).data("state", "down");
-            } else if ($(a).data("state") == "down") {
+            } else if ($(a).data("state") === "down") {
               $(a).data("state", "up");
               let url = $(a).attr("url");
               this.props.linkWarningToggle(url);
@@ -603,7 +609,7 @@ export default class EntityDetail extends React.Component {
 
   containerHeightAdjust = () => {
     //only run this if we're in /#/entity and not as a popup
-    if (this.props.fullScreen == true) {
+    if (this.props.fullScreen === true) {
       let scrollHeight;
       if ($("#list-view-container")[0]) {
         scrollHeight =
@@ -634,22 +640,22 @@ export default class EntityDetail extends React.Component {
     let tabsArr = [];
     let DragmeClass =
       "box react-draggable entityPopUp entityPopUpMaxSizeDefault";
-    if (this.props.fullScreen == true || $("react-draggable-dragged")) {
+    if (this.props.fullScreen === true || $("react-draggable-dragged")) {
       //Don't readd entityPopUpMaxSizeDefault if full screen or if the box has been dragged
       DragmeClass = "box react-draggable entityPopUp";
     }
-    if (this.props.fullScreen == true) {
+    if (this.props.fullScreen === true) {
       DragmeClass = DragmeClass + " height100percent";
     }
     for (let i = 0; i < this.state.tabs.length; i++) {
       let z = i + 1;
       let title = "tab";
-      if (this.state.tabs[i].entitytype == "guide") {
+      if (this.state.tabs[i].entitytype === "guide") {
         title = "guide";
-      } else if (this.state.tabs[i].entitytype == "source") {
+      } else if (this.state.tabs[i].entitytype === "source") {
         title = "source";
       } else {
-        if (this.state.tabs[i].valueClicked != undefined) {
+        if (this.state.tabs[i].valueClicked !== undefined) {
           title = this.state.tabs[i].valueClicked.slice(0, 15);
         } else {
           title = "";
@@ -690,7 +696,7 @@ export default class EntityDetail extends React.Component {
       defaultOffsetY = 50;
       defaultOffsetX = 0;
     }
-    if (this.props.fullScreen == true) {
+    if (this.props.fullScreen === true) {
       //entity detail is full screen mode
       return (
         <div
@@ -811,7 +817,7 @@ export default class EntityDetail extends React.Component {
 
 class TabContents extends React.Component {
   render = () => {
-    if (this.props.entitytype == "entity") {
+    if (this.props.entitytype === "entity") {
       return (
         <div className="tab-content">
           <div style={{ flex: "0 1 auto", marginLeft: "10px" }}>
@@ -854,8 +860,8 @@ class TabContents extends React.Component {
           </div>
         </div>
       );
-    } else if (this.props.entitytype == "guide") {
-      let guideurl = "/" + "guide/" + this.props.entityid;
+    } else if (this.props.entitytype === "guide") {
+      let guideurl = "/guide/" + this.props.entityid;
       return (
         <div className="tab-content">
           <div style={{ flex: "0 1 auto", marginLeft: "10px" }}>
@@ -900,7 +906,7 @@ class TabContents extends React.Component {
           </div>
         </div>
       );
-    } else if (this.props.entitytype == "source") {
+    } else if (this.props.entitytype === "source") {
       return (
         <div className="tab-content">
           <div style={{ flex: "0 1 auto", marginLeft: "10px" }}>
@@ -929,9 +935,9 @@ class TabContents extends React.Component {
 
 class EntityValue extends React.Component {
   render = () => {
-    if (this.props.data != undefined) {
+    if (this.props.data !== undefined) {
       //Entity Detail Popup showing the entity type
-      let entityurl = "/" + "entity/" + this.props.data.id;
+      let entityurl = "/entity/" + this.props.data.id;
 
       return (
         <div className="flair_header">
@@ -980,8 +986,8 @@ class EntityBody extends React.Component {
   }
 
   updateAppearances = appearancesNumber => {
-    if (appearancesNumber != null) {
-      if (appearancesNumber != 0) {
+    if (appearancesNumber !== null) {
+      if (appearancesNumber !== 0) {
         let newAppearancesNumber = this.state.appearances + appearancesNumber;
         if (this.state.isMounted) {
           this.setState({ appearances: newAppearancesNumber });
@@ -991,7 +997,7 @@ class EntityBody extends React.Component {
   };
 
   entryToggle = () => {
-    if (this.state.entryToolbar == false) {
+    if (this.state.entryToolbar === false) {
       this.setState({ entryToolbar: true });
     } else {
       this.setState({ entryToolbar: false });
@@ -1000,7 +1006,7 @@ class EntityBody extends React.Component {
 
   showFullEntityButton = () => {
     //don't show the button if in full screen entity view.
-    if (this.props.type != "entity") {
+    if (this.props.type !== "entity") {
       this.setState({ showFullEntityButton: true });
     }
   };
@@ -1022,11 +1028,11 @@ class EntityBody extends React.Component {
     let entityEnrichmentLinkArr = [];
     let entityEnrichmentGeoArr = [];
     let enrichmentEventKey = 4;
-    if (this.props.data != undefined) {
+    if (this.props.data !== undefined) {
       let entityData = this.props.data["data"];
       for (let prop in entityData) {
-        if (entityData[prop] != undefined) {
-          if (prop == "geoip") {
+        if (entityData[prop] !== undefined) {
+          if (prop === "geoip") {
             entityEnrichmentGeoArr.push(
               <Tab
                 eventKey={enrichmentEventKey}
@@ -1044,7 +1050,7 @@ class EntityBody extends React.Component {
               </Tab>
             );
             enrichmentEventKey++;
-          } else if (entityData[prop].type == "data") {
+          } else if (entityData[prop].type === "data") {
             entityEnrichmentDataArr.push(
               <Tab
                 eventKey={enrichmentEventKey}
@@ -1061,7 +1067,7 @@ class EntityBody extends React.Component {
               </Tab>
             );
             enrichmentEventKey++;
-          } else if (entityData[prop].type == "link") {
+          } else if (entityData[prop].type === "link") {
             entityEnrichmentLinkArr.push(
               <Button
                 bsSize="xsmall"
@@ -1081,7 +1087,7 @@ class EntityBody extends React.Component {
 
     //PopOut available
     //let href = '/#/entity/' + this.props.entityid + '/' + this.props.type + '/' + this.props.id;
-    let href = "/" + "entity/" + this.props.entityid;
+    let href = "/entity/" + this.props.entityid;
     return (
       <Tabs className="tab-content" defaultActiveKey={1} bsStyle="tabs">
         <Tab
@@ -1095,7 +1101,7 @@ class EntityBody extends React.Component {
             <span>
               <b>Appears: {this.state.appearances} times</b>
             </span>
-            {this.state.showFullEntityButton == true ? (
+            {this.state.showFullEntityButton === true ? (
               <span style={{ paddingLeft: "5px" }}>
                 <Link to={href} style={{ color: "#c400ff" }} target="_blank">
                   List truncated due to large amount of references. Click to
@@ -1156,7 +1162,7 @@ class GeoView extends React.Component {
   }
 
   copyToEntry = () => {
-    if (this.state.copyToEntryToolbar == false) {
+    if (this.state.copyToEntryToolbar === false) {
       this.setState({ copyToEntryToolbar: true });
     } else {
       this.setState({ copyToEntryToolbar: false });
@@ -1164,7 +1170,7 @@ class GeoView extends React.Component {
   };
 
   copyToEntity = () => {
-    if (this.state.copyToEntityToolbar == false) {
+    if (this.state.copyToEntityToolbar === false) {
       this.setState({ copyToEntityToolbar: true });
     } else {
       this.setState({ copyToEntityToolbar: false });
@@ -1176,7 +1182,6 @@ class GeoView extends React.Component {
     let copyArr = [];
     copyArr.push("<table>");
     for (let prop in this.props.data) {
-      let keyProp = prop;
       let value = this.props.data[prop];
       trArr.push(
         <tr>
@@ -1203,7 +1208,7 @@ class GeoView extends React.Component {
         <Button bsSize="xsmall" onClick={this.copyToEntity}>
           Copy to <b>{"entity"}</b> entry
         </Button>
-        {this.props.type != "alertgroup" ? (
+        {this.props.type !== "alertgroup" ? (
           <Button bsSize="xsmall" onClick={this.copyToEntry}>
             Copy to{" "}
             <b>
@@ -1248,7 +1253,7 @@ class GeoView extends React.Component {
   };
 }
 
-class EntityEnrichmentButtons extends React.createClass {
+class EntityEnrichmentButtons extends React.Component {
   render = () => {
     let dataSource = this.props.dataSource;
     return (
@@ -1266,7 +1271,7 @@ class EntityReferences extends React.Component {
     super(props);
     let maxRecords = 100;
     //if type == entity then the url is looking for a full screen entity view with all records.
-    if (this.props.type == "entity") {
+    if (this.props.type === "entity") {
       maxRecords = undefined;
     }
     this.state = {
@@ -1294,7 +1299,7 @@ class EntityReferences extends React.Component {
       data: { sort: JSON.stringify({ id: -1 }) },
       traditional: true,
       success: function(result) {
-        var result = result.records;
+        result = result.records;
         let recordNumber = result.length;
         let arr = [];
         let arrPromoted = [];
@@ -1305,7 +1310,7 @@ class EntityReferences extends React.Component {
         }
         for (let i = 0; i < recordNumber; i++) {
           if (result[i] != null) {
-            if (result[i].status == "promoted") {
+            if (result[i].status === "promoted") {
               arrPromoted.push(
                 <ReferencesBody
                   type={"alert"}
@@ -1314,7 +1319,7 @@ class EntityReferences extends React.Component {
                   errorToggle={this.props.errorToggle}
                 />
               );
-            } else if (result[i].status == "closed") {
+            } else if (result[i].status === "closed") {
               arrClosed.push(
                 <ReferencesBody
                   type={"alert"}
@@ -1345,11 +1350,11 @@ class EntityReferences extends React.Component {
           this.props.updateAppearances(result.length);
           this.setState({ entityDataAlertGroup: arr, loadingAlerts: false });
           if (
-            this.state.loadingAlerts == false &&
-            this.state.loadingEvents == false &&
-            this.state.loadingIncidents == false &&
-            this.state.loadingIntel == false &&
-            this.state.loadingSignature == false
+            this.state.loadingAlerts === false &&
+            this.state.loadingEvents === false &&
+            this.state.loadingIncidents === false &&
+            this.state.loadingIntel === false &&
+            this.state.loadingSignature === false
           ) {
             this.setState({ loading: false });
           }
@@ -1369,7 +1374,7 @@ class EntityReferences extends React.Component {
       data: { sort: JSON.stringify({ id: -1 }) },
       traditional: true,
       success: function(result) {
-        var result = result.records;
+        result = result.records;
         let recordNumber = result.length;
         let arr = [];
         let arrPromoted = [];
@@ -1380,7 +1385,7 @@ class EntityReferences extends React.Component {
         }
         for (let i = 0; i < recordNumber; i++) {
           if (result[i] != null) {
-            if (result[i].status == "promoted") {
+            if (result[i].status === "promoted") {
               arrPromoted.push(
                 <ReferencesBody
                   type={"event"}
@@ -1389,7 +1394,7 @@ class EntityReferences extends React.Component {
                   errorToggle={this.props.errorToggle}
                 />
               );
-            } else if (result[i].status == "closed") {
+            } else if (result[i].status === "closed") {
               arrClosed.push(
                 <ReferencesBody
                   type={"event"}
@@ -1420,10 +1425,10 @@ class EntityReferences extends React.Component {
           this.props.updateAppearances(result.length);
           this.setState({ entityDataEvent: arr, loadingEvents: false });
           if (
-            this.state.loadingAlerts == false &&
-            this.state.loadingEvents == false &&
-            this.state.loadingIncidents == false &&
-            this.state.loadingIntel == false &&
+            this.state.loadingAlerts === false &&
+            this.state.loadingEvents === false &&
+            this.state.loadingIncidents === false &&
+            this.state.loadingIntel === false &&
             this.state.loadingSignature
           ) {
             this.setState({ loading: false });
@@ -1445,7 +1450,7 @@ class EntityReferences extends React.Component {
       data: { sort: JSON.stringify({ id: -1 }) },
       traditional: true,
       success: function(result) {
-        var result = result.records;
+        result = result.records;
         let recordNumber = result.length;
         let arr = [];
         let arrPromoted = [];
@@ -1456,7 +1461,7 @@ class EntityReferences extends React.Component {
         }
         for (let i = 0; i < recordNumber; i++) {
           if (result[i] != null) {
-            if (result[i].status == "promoted") {
+            if (result[i].status === "promoted") {
               arrPromoted.push(
                 <ReferencesBody
                   type={"guide"}
@@ -1465,7 +1470,7 @@ class EntityReferences extends React.Component {
                   errorToggle={this.props.errorToggle}
                 />
               );
-            } else if (result[i].status == "closed") {
+            } else if (result[i].status === "closed") {
               arrClosed.push(
                 <ReferencesBody
                   type={"guide"}
@@ -1496,11 +1501,11 @@ class EntityReferences extends React.Component {
           this.props.updateAppearances(result.length);
           this.setState({ entityDataIncident: arr, loadingIncidents: false });
           if (
-            this.state.loadingAlerts == false &&
-            this.state.loadingEvents == false &&
-            this.state.loadingIncidents == false &&
-            this.state.loadingIntel == false &&
-            this.state.loadingSignature == false
+            this.state.loadingAlerts === false &&
+            this.state.loadingEvents === false &&
+            this.state.loadingIncidents === false &&
+            this.state.loadingIntel === false &&
+            this.state.loadingSignature === false
           ) {
             this.setState({ loading: false });
           }
@@ -1520,7 +1525,7 @@ class EntityReferences extends React.Component {
       data: { sort: JSON.stringify({ id: -1 }) },
       traditional: true,
       success: function(result) {
-        var result = result.records;
+        result = result.records;
         let recordNumber = result.length;
         let arr = [];
         let arrPromoted = [];
@@ -1531,7 +1536,7 @@ class EntityReferences extends React.Component {
         }
         for (let i = 0; i < recordNumber; i++) {
           if (result[i] != null) {
-            if (result[i].status == "promoted") {
+            if (result[i].status === "promoted") {
               arrPromoted.push(
                 <ReferencesBody
                   type={"incident"}
@@ -1540,7 +1545,7 @@ class EntityReferences extends React.Component {
                   errorToggle={this.props.errorToggle}
                 />
               );
-            } else if (result[i].status == "closed") {
+            } else if (result[i].status === "closed") {
               arrClosed.push(
                 <ReferencesBody
                   type={"incident"}
@@ -1571,11 +1576,11 @@ class EntityReferences extends React.Component {
           this.props.updateAppearances(result.length);
           this.setState({ entityDataIncident: arr, loadingIncidents: false });
           if (
-            this.state.loadingAlerts == false &&
-            this.state.loadingEvents == false &&
-            this.state.loadingIncidents == false &&
-            this.state.loadingIntel == false &&
-            this.state.loadingSignature == false
+            this.state.loadingAlerts === false &&
+            this.state.loadingEvents === false &&
+            this.state.loadingIncidents === false &&
+            this.state.loadingIntel === false &&
+            this.state.loadingSignature === false
           ) {
             this.setState({ loading: false });
           }
@@ -1595,7 +1600,7 @@ class EntityReferences extends React.Component {
       data: { sort: JSON.stringify({ id: -1 }) },
       traditional: true,
       success: function(result) {
-        var result = result.records;
+        result = result.records;
         let recordNumber = result.length;
         let arr = [];
         let arrPromoted = [];
@@ -1606,7 +1611,7 @@ class EntityReferences extends React.Component {
         }
         for (let i = 0; i < recordNumber; i++) {
           if (result[i] != null) {
-            if (result[i].status == "promoted") {
+            if (result[i].status === "promoted") {
               arrPromoted.push(
                 <ReferencesBody
                   type={"intel"}
@@ -1615,7 +1620,7 @@ class EntityReferences extends React.Component {
                   errorToggle={this.props.errorToggle}
                 />
               );
-            } else if (result[i].status == "closed") {
+            } else if (result[i].status === "closed") {
               arrClosed.push(
                 <ReferencesBody
                   type={"intel"}
@@ -1646,11 +1651,11 @@ class EntityReferences extends React.Component {
           this.props.updateAppearances(result.length);
           this.setState({ entityDataIntel: arr, loadingIntel: false });
           if (
-            this.state.loadingAlerts == false &&
-            this.state.loadingEvents == false &&
-            this.state.loadingIncidents == false &&
-            this.state.loadingIntel == false &&
-            this.state.loadingSignature == false
+            this.state.loadingAlerts === false &&
+            this.state.loadingEvents === false &&
+            this.state.loadingIncidents === false &&
+            this.state.loadingIntel === false &&
+            this.state.loadingSignature === false
           ) {
             this.setState({ loading: false });
           }
@@ -1667,7 +1672,7 @@ class EntityReferences extends React.Component {
       data: { sort: JSON.stringify({ id: -1 }) },
       traditional: true,
       success: function(result) {
-        var result = result.records;
+        result = result.records;
         let recordNumber = result.length;
         let arr = [];
         let arrPromoted = [];
@@ -1678,7 +1683,7 @@ class EntityReferences extends React.Component {
         }
         for (let i = 0; i < recordNumber; i++) {
           if (result[i] != null) {
-            if (result[i].status == "promoted") {
+            if (result[i].status === "promoted") {
               arrPromoted.push(
                 <ReferencesBody
                   type={"signature"}
@@ -1687,7 +1692,7 @@ class EntityReferences extends React.Component {
                   errorToggle={this.props.errorToggle}
                 />
               );
-            } else if (result[i].status == "closed") {
+            } else if (result[i].status === "closed") {
               arrClosed.push(
                 <ReferencesBody
                   type={"signature"}
@@ -1718,11 +1723,11 @@ class EntityReferences extends React.Component {
           this.props.updateAppearances(result.length);
           this.setState({ entityDataSignature: arr, loadingSignature: false });
           if (
-            this.state.loadingAlerts == false &&
-            this.state.loadingEvents == false &&
-            this.state.loadingIncidents == false &&
-            this.state.loadingIntel == false &&
-            this.state.loadingSignature == false
+            this.state.loadingAlerts === false &&
+            this.state.loadingEvents === false &&
+            this.state.loadingIncidents === false &&
+            this.state.loadingIntel === false &&
+            this.state.loadingSignature === false
           ) {
             this.setState({ loading: false });
           }
@@ -1849,7 +1854,7 @@ class ReferencesBody extends React.Component {
         let entryResult = result.records;
         let summary = false;
         for (let i = 0; i < entryResult.length; i++) {
-          if (entryResult[i].class == "summary") {
+          if (entryResult[i].class === "summary") {
             summary = true;
             if (this.isMounted) {
               this.setState({
@@ -1871,7 +1876,7 @@ class ReferencesBody extends React.Component {
             }
           }
         }
-        if (summary == false) {
+        if (summary === false) {
           $("#entityTable" + this.props.data.id).qtip({
             content: { text: "No Summary Found" },
             style: { classes: "qtip-scot" },
@@ -1908,28 +1913,28 @@ class ReferencesBody extends React.Component {
     let subject = this.props.data.subject;
     let updatedTime = this.props.data.updated;
     let updatedTimeHumanReadable = "";
-    if (this.props.data.status == "promoted") {
+    if (this.props.data.status === "promoted") {
       statusColor = "orange";
-    } else if (this.props.data.status == "closed") {
+    } else if (this.props.data.status === "closed") {
       statusColor = "green";
-    } else if (this.props.data.status == "open") {
+    } else if (this.props.data.status === "open") {
       statusColor = "red";
     } else {
       statusColor = "black";
     }
-    if (this.props.type == "alert") {
+    if (this.props.type === "alert") {
       aHref = "/" + this.props.type + "/" + this.props.data.id;
       //aHref = '/#/alertgroup/' + this.props.data.alertgroup;
       promotedHref = "/#/event/" + this.props.data.promotion_id;
-    } else if (this.props.type == "event") {
+    } else if (this.props.type === "event") {
       promotedHref = "/#/incident/" + this.props.data.promotion_id;
       aHref = "/" + this.props.type + "/" + this.props.data.id;
     } else {
       aHref = "/" + this.props.type + "/" + this.props.data.id;
     }
-    if (subject == undefined) {
-      if (this.props.data.data != undefined) {
-        if (this.props.data.data.alert_name != undefined) {
+    if (subject === undefined) {
+      if (this.props.data.data !== undefined) {
+        if (this.props.data.data.alert_name !== undefined) {
           subject = this.props.data.data.alert_name;
         } else {
           subject = "";
@@ -1938,7 +1943,7 @@ class ReferencesBody extends React.Component {
         subject = "";
       }
     }
-    if (updatedTime != undefined) {
+    if (updatedTime !== undefined) {
       daysSince = Math.floor(
         (Math.round(new Date().getTime() / 1000) - updatedTime) / 86400
       );
@@ -1957,7 +1962,7 @@ class ReferencesBody extends React.Component {
         >
           <i className="fa fa-eye fa-1" aria-hidden="true" />
         </td>
-        {this.props.data.status == "promoted" ? (
+        {this.props.data.status === "promoted" ? (
           <td
             style={{
               paddingRight: "4px",
@@ -2055,7 +2060,7 @@ class GuideBody extends React.Component {
   }
 
   entryToggle = () => {
-    if (this.state.entryToolbar == false) {
+    if (this.state.entryToolbar === false) {
       this.setState({ entryToolbar: true });
     } else {
       this.setState({ entryToolbar: false });
