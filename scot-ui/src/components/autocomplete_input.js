@@ -43,9 +43,9 @@ class AutoCompleteInput extends Component {
         type: "get",
         url: "/scot/api/v2/ac/" + this.props.type + "/" + input.target.value,
         success: function(result) {
-          var result = result.records;
+          result = result.records;
           for (let i = 0; i < result.length; i++) {
-            if (typeof result[i] == "string") {
+            if (typeof result[i] === "string") {
               let obj = {};
               obj.label = result[i];
               arr.push(obj);
@@ -56,7 +56,7 @@ class AutoCompleteInput extends Component {
         }.bind(this),
         error: function() {
           console.log("failed to get autocomplete data");
-        }.bind(this)
+        }
       });
     }
   }

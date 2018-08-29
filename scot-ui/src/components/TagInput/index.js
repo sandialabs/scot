@@ -78,7 +78,7 @@ class TagInput extends Component {
         type: "get",
         url: "/scot/api/v2/ac/" + this.props.type + "/" + input,
         success: function(result) {
-          var result = result.records;
+          result = result.records;
           for (let i = 0; i < result.length; i++) {
             let obj = {};
             obj.id = i + 1;
@@ -89,14 +89,14 @@ class TagInput extends Component {
         }.bind(this),
         error: function(data) {
           console.log("failed to get autocomplete data");
-        }.bind(this)
+        }
       });
     }
   }
 
   showHideInput() {
     if (
-      this.props.type == "userdef" &&
+      this.props.type === "userdef" &&
       this.props.maxTags &&
       this.state.tags.length >= this.props.maxTags
     ) {

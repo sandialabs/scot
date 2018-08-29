@@ -5,8 +5,8 @@ let ReactDateTime = require("react-datetime");
 
 //Add data into this metadata field by entering in the form layout in scot.cfg.pl.
 
-let CustomMetaDataTable = React.createClass({
-  onChange: function(event) {
+export default class CustomMetaDataTable extends React.Component {
+  onChange = event => {
     let k = event.target.id;
     let v = event.target.value;
     let json = {};
@@ -24,18 +24,18 @@ let CustomMetaDataTable = React.createClass({
         this.props.errorToggle("Failed to updated custom table data", data);
       }.bind(this)
     });
-  },
+  };
 
-  shouldComponentUpdate: function(nextProps, nextState) {
+  shouldComponentUpdate = (nextProps, nextState) => {
     //Only update the metadata if the headerData is different
     if (this.props.headerData === nextProps.headerData) {
       return false;
     } else {
       return true;
     }
-  },
+  };
 
-  render: function() {
+  render = () => {
     let multiSelectArr = [];
     let dropdownArr = [];
     let datesArr = [];
@@ -63,7 +63,7 @@ let CustomMetaDataTable = React.createClass({
 
         switch (formType[i]["type"]) {
           case "dropdown":
-            if (formType[i]["value_type"]["type"] == "static") {
+            if (formType[i]["value_type"]["type"] === "static") {
               dropdownArr.push(
                 <DropdownComponent
                   onChange={this.onChange}
@@ -91,7 +91,7 @@ let CustomMetaDataTable = React.createClass({
             break;
 
           case "input":
-            if (formType[i]["value_type"]["type"] == "static") {
+            if (formType[i]["value_type"]["type"] === "static") {
               inputArr.push(
                 <InputComponent
                   onBlur={this.onChange}
@@ -117,7 +117,7 @@ let CustomMetaDataTable = React.createClass({
             break;
 
           case "calendar":
-            if (formType[i]["value_type"]["type"] == "static") {
+            if (formType[i]["value_type"]["type"] === "static") {
               let calendarValue = value * 1000;
               datesArr.push(
                 <Calendar
@@ -146,7 +146,7 @@ let CustomMetaDataTable = React.createClass({
             break;
 
           case "textarea":
-            if (formType[i]["value_type"]["type"] == "static") {
+            if (formType[i]["value_type"]["type"] === "static") {
               textAreaArr.push(
                 <TextAreaComponent
                   id={formType[i].key}
@@ -172,7 +172,7 @@ let CustomMetaDataTable = React.createClass({
             break;
 
           case "input_multi":
-            if (formType[i]["value_type"]["type"] == "static") {
+            if (formType[i]["value_type"]["type"] === "static") {
               inputMultiArr.push(
                 <InputMultiComponent
                   id={formType[i].key}
@@ -202,7 +202,7 @@ let CustomMetaDataTable = React.createClass({
             break;
 
           case "boolean":
-            if (formType[i]["value_type"]["type"] == "static") {
+            if (formType[i]["value_type"]["type"] === "static") {
               booleanArr.push(
                 <BooleanComponent
                   id={formType[i].key}
@@ -228,7 +228,7 @@ let CustomMetaDataTable = React.createClass({
             break;
 
           case "multi_select":
-            if (formType[i]["value_type"]["type"] == "static") {
+            if (formType[i]["value_type"]["type"] === "static") {
               multiSelectArr.push(
                 <MultiSelectComponent
                   onChange={this.onChange}
@@ -279,18 +279,19 @@ let CustomMetaDataTable = React.createClass({
         ) : null}
       </div>
     );
-  }
-});
+  };
+}
 
-let DropdownComponent = React.createClass({
-  getInitialState: function() {
-    return {
+class DropdownComponent extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       selected: null,
       options: []
     };
-  },
+  }
 
-  componentWillMount: function() {
+  componentWillMount = () => {
     if (this.props.dynamic) {
       this.getDynamic();
     } else {
@@ -298,7 +299,7 @@ let DropdownComponent = React.createClass({
       let selected = "";
 
       for (let j = 0; j < this.props.dropdownValues.length; j++) {
-        if (this.props.value == this.props.dropdownValues[j]["value"]) {
+        if (this.props.value === this.props.dropdownValues[j]["value"]) {
           selected = this.props.value;
         }
 
@@ -307,9 +308,9 @@ let DropdownComponent = React.createClass({
 
       this.setState({ selected: selected, options: arr });
     }
-  },
+  };
 
-  getDynamic: function() {
+  getDynamic = () => {
     $.ajax({
       type: "get",
       url: this.props.fetchURL,
@@ -318,19 +319,19 @@ let DropdownComponent = React.createClass({
         let selected = "";
         let referenceKey = this.props.referenceKey;
         if (
-          referenceKey == "qual_sigbody_id" ||
-          referenceKey == "prod_sigbody_id"
+          referenceKey === "qual_sigbody_id" ||
+          referenceKey === "prod_sigbody_id"
         ) {
           arr.push(<option>0</option>);
           for (let key in result["version"]) {
-            if (result["version"][key]["revision"] == result[referenceKey]) {
+            if (result["version"][key]["revision"] === result[referenceKey]) {
               selected = result[referenceKey];
             }
             arr.push(<option>{result["version"][key]["revision"]}</option>);
           }
         } else {
           for (let j = 0; j < result[this.props.referenceKey].length; j++) {
-            if (result[this.props.referenceKey][j].selected == 1) {
+            if (result[this.props.referenceKey][j].selected === 1) {
               selected = result[this.props.referenceKey][j].value;
             }
 
@@ -343,22 +344,22 @@ let DropdownComponent = React.createClass({
         this.setState({ selected: selected, options: arr });
       }.bind(this)
     });
-  },
+  };
 
-  componentWillReceiveProps: function(nextProps) {
+  componentWillReceiveProps = nextProps => {
     if (nextProps.dynamic) {
       this.getDynamic();
     } else {
       this.setState({ selected: nextProps.value });
     }
-  },
+  };
 
-  onChange: function(event) {
+  onChange = event => {
     this.props.onChange(event);
     this.setState({ selected: event.target.value });
-  },
+  };
 
-  render: function() {
+  render() {
     return (
       <div className="custom-metadata-table-component-div">
         <span className="custom-metadata-tableWidth">{this.props.label}</span>
@@ -393,24 +394,25 @@ let DropdownComponent = React.createClass({
       </div>
     );
   }
-});
+}
 
-let InputComponent = React.createClass({
-  getInitialState: function() {
-    return {
+class InputComponent extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       value: ""
     };
-  },
+  }
 
-  componentWillMount: function() {
+  componentWillMount = () => {
     if (this.props.dynamic) {
       this.getDynamic();
     } else {
       this.setState({ value: this.props.value });
     }
-  },
+  };
 
-  getDynamic: function() {
+  getDynamic = () => {
     $.ajax({
       type: "get",
       url: this.props.fetchURL,
@@ -420,21 +422,21 @@ let InputComponent = React.createClass({
         this.setState({ value: value });
       }.bind(this)
     });
-  },
+  };
 
-  inputOnChange: function(event) {
+  inputOnChange = event => {
     this.setState({ value: event.target.value });
-  },
+  };
 
-  componentWillReceiveProps: function(nextProps) {
+  componentWillReceiveProps = nextProps => {
     if (nextProps.dynamic) {
       this.getDynamic();
     } else {
       this.setState({ value: nextProps.value });
     }
-  },
+  };
 
-  render: function() {
+  render = () => {
     return (
       <div className="custom-metadata-table-component-div">
         <span className="custom-metadata-tableWidth">{this.props.label}</span>
@@ -468,32 +470,33 @@ let InputComponent = React.createClass({
         </span>
       </div>
     );
-  }
-});
+  };
+}
 
-let Calendar = React.createClass({
-  getInitialState: function() {
+class Calendar extends React.Component {
+  constructor(props) {
+    super(props);
     let loading = false;
     if (this.props.dynamic) {
       loading = true;
     }
 
-    return {
+    this.state = {
       showCalendar: false,
       loading: loading,
       value: ""
     };
-  },
+  }
 
-  componentWillMount: function() {
+  componentWillMount = () => {
     if (this.props.dynamic) {
       this.getDynamic();
     } else {
       this.setState({ value: this.props.value });
     }
-  },
+  };
 
-  getDynamic: function() {
+  getDynamic = () => {
     $.ajax({
       type: "get",
       url: this.props.fetchURL,
@@ -502,17 +505,17 @@ let Calendar = React.createClass({
         this.setState({ value: value, loading: false });
       }.bind(this)
     });
-  },
+  };
 
-  componentWillReceiveProps: function(nextProps) {
+  componentWillReceiveProps = nextProps => {
     if (nextProps.dynamic) {
       this.getDynamic();
     } else {
       this.setState({ value: nextProps.value });
     }
-  },
+  };
 
-  onChange: function(event) {
+  onChange = event => {
     let k = this.props.typeLower;
     let v = event._d.getTime() / 1000;
     let json = {};
@@ -524,22 +527,22 @@ let Calendar = React.createClass({
       contentType: "application/json; charset=UTF-8",
       success: function() {
         console.log("successfully changed custom table data");
-      }.bind(this),
+      },
       error: function(data) {
         this.props.errorToggle("Failed to updated custom table data", data);
       }.bind(this)
     });
-  },
+  };
 
-  showCalendar: function() {
-    if (this.state.showCalendar == false) {
+  showCalendar = () => {
+    if (this.state.showCalendar === false) {
       this.setState({ showCalendar: true });
     } else {
       this.setState({ showCalendar: false });
     }
-  },
+  };
 
-  render: function() {
+  render = () => {
     return (
       <div
         className="custom-metadata-table-component-div"
@@ -578,25 +581,26 @@ let Calendar = React.createClass({
         </span>
       </div>
     );
-  }
-});
+  };
+}
 
-let TextAreaComponent = React.createClass({
-  getInitialState: function() {
-    return {
+class TextAreaComponent extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       value: ""
     };
-  },
+  }
 
-  componentWillMount: function() {
+  componentWillMount = () => {
     if (this.props.dynamic) {
       this.getDynamic();
     } else {
       this.setState({ value: this.props.value });
     }
-  },
+  };
 
-  getDynamic: function() {
+  getDynamic = () => {
     $.ajax({
       type: "get",
       url: this.props.fetchURL,
@@ -605,21 +609,21 @@ let TextAreaComponent = React.createClass({
         this.setState({ value: value });
       }.bind(this)
     });
-  },
+  };
 
-  componentWillReceiveProps: function(nextProps) {
+  componentWillReceiveProps = nextProps => {
     if (nextProps.dynamic) {
       this.getDynamic();
     } else {
       this.setState({ value: nextProps.value });
     }
-  },
+  };
 
-  inputOnChange: function(event) {
+  inputOnChange = event => {
     this.setState({ value: event.target.value });
-  },
+  };
 
-  render: function() {
+  render = () => {
     return (
       <div className="custom-metadata-table-component-div">
         <span className="custom-metadata-tableWidth">
@@ -646,26 +650,27 @@ let TextAreaComponent = React.createClass({
         </span>
       </div>
     );
-  }
-});
+  };
+}
 
-let InputMultiComponent = React.createClass({
-  getInitialState: function() {
-    return {
+class InputMultiComponent extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       inputValue: "",
       value: []
     };
-  },
+  }
 
-  componentWillMount: function() {
+  componentWillMount = () => {
     if (this.props.dynamic) {
       this.getDynamic();
     } else {
       this.setState({ value: this.props.value });
     }
-  },
+  };
 
-  getDynamic: function() {
+  getDynamic = () => {
     $.ajax({
       type: "get",
       url: this.props.fetchURL,
@@ -674,22 +679,22 @@ let InputMultiComponent = React.createClass({
         this.setState({ value: value });
       }.bind(this)
     });
-  },
+  };
 
-  componentWillReceiveProps: function(nextProps) {
+  componentWillReceiveProps = nextProps => {
     if (nextProps.dynamic) {
       this.getDynamic();
     } else {
       this.setState({ value: nextProps.value });
     }
-  },
+  };
 
-  handleAddition: function(group) {
+  handleAddition = group => {
     let groupArr = [];
     let data = this.state.value;
     for (let i = 0; i < data.length; i++) {
-      if (data[i] != undefined) {
-        if (typeof data[i] == "string") {
+      if (data[i] !== undefined) {
+        if (typeof data[i] === "string") {
           groupArr.push(data[i]);
         } else {
           groupArr.push(data[i].value);
@@ -714,24 +719,24 @@ let InputMultiComponent = React.createClass({
         this.props.errorToggle("Failed to add group", data);
       }.bind(this)
     });
-  },
+  };
 
-  InputChange: function(event) {
+  InputChange = event => {
     this.setState({ inputValue: event.target.value });
-  },
+  };
 
-  handleDelete: function(event) {
+  handleDelete = event => {
     let data = this.state.value;
     let clickedThing = event.target.id;
     let groupArr = [];
     for (let i = 0; i < data.length; i++) {
-      if (data[i] != undefined) {
-        if (typeof data[i] == "string") {
-          if (data[i] != clickedThing) {
+      if (data[i] !== undefined) {
+        if (typeof data[i] === "string") {
+          if (data[i] !== clickedThing) {
             groupArr.push(data[i]);
           }
         } else {
-          if (data[i].value != clickedThing) {
+          if (data[i].value !== clickedThing) {
             groupArr.push(data[i].value);
           }
         }
@@ -754,17 +759,17 @@ let InputMultiComponent = React.createClass({
         this.props.errorToggle("Failed to delete group", data);
       }.bind(this)
     });
-  },
+  };
 
-  render: function() {
+  render = () => {
     let data = this.state.value;
     let groupArr = [];
     let value;
     for (let i = 0; i < data.length; i++) {
-      if (typeof data[i] == "string") {
+      if (typeof data[i] === "string") {
         value = data[i];
-      } else if (typeof data[i] == "object") {
-        if (data[i] != undefined) {
+      } else if (typeof data[i] === "object") {
+        if (data[i] !== undefined) {
           value = data[i].value;
         }
       }
@@ -789,7 +794,7 @@ let InputMultiComponent = React.createClass({
             onChange={this.InputChange}
             value={this.state.inputValue}
           />
-          {this.state.inputValue != "" ? (
+          {this.state.inputValue !== "" ? (
             <Button
               bsSize="xsmall"
               bsStyle="success"
@@ -819,25 +824,26 @@ let InputMultiComponent = React.createClass({
         </span>
       </div>
     );
-  }
-});
+  };
+}
 
-let BooleanComponent = React.createClass({
-  getInitialState: function() {
-    return {
+class BooleanComponent extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       value: false
     };
-  },
+  }
 
-  componentWillMount: function() {
+  componentWillMount = () => {
     if (this.props.dynamic) {
       this.getDynamic();
     } else {
       this.setState({ value: this.props.value });
     }
-  },
+  };
 
-  getDynamic: function() {
+  getDynamic = () => {
     $.ajax({
       type: "get",
       url: this.props.fetchURL,
@@ -846,19 +852,19 @@ let BooleanComponent = React.createClass({
         this.setState({ value: value });
       }.bind(this)
     });
-  },
+  };
 
-  componentWillReceiveProps: function(nextProps) {
+  componentWillReceiveProps = nextProps => {
     if (nextProps.dynamic) {
       this.getDynamic();
     } else {
       this.setState({ value: nextProps.value });
     }
-  },
+  };
 
-  onChange: function(e) {
+  onChange = e => {
     let value;
-    if (e.target.value == "true") {
+    if (e.target.value === "true") {
       value = 1;
     } else {
       value = 0;
@@ -870,9 +876,9 @@ let BooleanComponent = React.createClass({
     obj["target"]["value"] = value;
 
     this.props.onChange(obj);
-  },
+  };
 
-  render: function() {
+  render = () => {
     return (
       <div className="custom-metadata-table-component-div">
         <span className="custom-metadata-tableWidth">{this.props.label}</span>
@@ -900,25 +906,26 @@ let BooleanComponent = React.createClass({
         </span>
       </div>
     );
-  }
-});
+  };
+}
 
-let MultiSelectComponent = React.createClass({
-  getInitialState: function() {
-    return {
+class MultiSelectComponent extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       options: []
     };
-  },
+  }
 
-  componentWillMount: function() {
+  componentWillMount = () => {
     if (this.props.dynamic) {
       this.getDynamic();
     } else {
       this.makeForm();
     }
-  },
+  };
 
-  makeForm: function(nextProps) {
+  makeForm = nextProps => {
     let props = this.props;
     if (nextProps) {
       props = nextProps;
@@ -934,16 +941,16 @@ let MultiSelectComponent = React.createClass({
     }
 
     this.setState({ options: arr });
-  },
+  };
 
-  getDynamic: function() {
+  getDynamic = () => {
     $.ajax({
       type: "get",
       url: this.props.fetchURL,
       success: function(result) {
         let arr = [];
         for (let j = 0; j < result[this.props.referenceKey].length; j++) {
-          if (result[this.props.referenceKey][j].selected == 1) {
+          if (result[this.props.referenceKey][j].selected === 1) {
             arr.push(
               <option selected>
                 {result[this.props.referenceKey][j].value}
@@ -959,21 +966,21 @@ let MultiSelectComponent = React.createClass({
         this.setState({ options: arr });
       }.bind(this)
     });
-  },
+  };
 
-  componentWillReceiveProps: function(nextProps) {
+  componentWillReceiveProps = nextProps => {
     if (nextProps.dynamic) {
       this.getDynamic();
     } else {
       this.makeForm(nextProps);
     }
-  },
+  };
 
-  onChange: function(event) {
+  onChange = event => {
     let multiSelectArr = [];
     for (let i = 0; i < event.target.options.length; i++) {
-      if (event.target.options[i] != undefined) {
-        if (event.target.options[i].selected == true) {
+      if (event.target.options[i] !== undefined) {
+        if (event.target.options[i].selected === true) {
           multiSelectArr.push(event.target.options[i].value);
         } else {
           continue;
@@ -991,15 +998,15 @@ let MultiSelectComponent = React.createClass({
       contentType: "application/json; charset=UTF-8",
       success: function() {
         console.log("success: multi select added");
-      }.bind(this),
+      },
       error: function(data) {
         this.props.errorToggle("Failed to add multi select", data);
       }.bind(this)
     });
     this.setState({ selected: event.target.value });
-  },
+  };
 
-  render: function() {
+  render = () => {
     return (
       <div className="custom-metadata-table-component-div">
         <span className="custom-metadata-tableWidth">{this.props.label}</span>
@@ -1030,7 +1037,5 @@ let MultiSelectComponent = React.createClass({
         </span>
       </div>
     );
-  }
-});
-
-module.exports = CustomMetaDataTable;
+  };
+}

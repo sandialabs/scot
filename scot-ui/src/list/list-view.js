@@ -1,11 +1,10 @@
 import React from "react";
 import ReactTable from "react-table";
-import tableSettings, { buildTypeColumns } from "./tableConfig";
+import { buildTypeColumns } from "./tableConfig";
 import $ from "jquery";
 import * as Cookies from "../utils/cookies";
 import listColumnsJSON from "../utils/list-columns";
 let SelectedContainer = require("../detail/selected_container.js");
-let Store = require("../activemq/store.js");
 let Button = require("react-bootstrap/lib/Button");
 let LoadingContainer = require("./LoadingContainer/index.js").default;
 let EntityCreateModal = require("../modal/entity_create.js").default;
@@ -47,7 +46,7 @@ export default class ListView extends React.Component {
       filter = JSON.parse(this.props.listViewFilter);
     }
 
-    if (this.props.type == "alert") {
+    if (this.props.type === "alert") {
       showSelectedContainer = false;
       typeCapitalized = "Alertgroup";
       type = "alertgroup";
@@ -131,11 +130,14 @@ export default class ListView extends React.Component {
   }
 
   componentWillMount = () => {
-    if (this.props.viewMode == undefined || this.props.viewMode == "default") {
+    if (
+      this.props.viewMode === undefined ||
+      this.props.viewMode === "default"
+    ) {
       this.Landscape();
-    } else if (this.props.viewMode == "landscape") {
+    } else if (this.props.viewMode === "landscape") {
       this.Landscape();
-    } else if (this.props.viewMode == "portrait") {
+    } else if (this.props.viewMode === "portrait") {
       this.Portrait();
     }
     //If alert id is passed, convert the id to its alertgroup id.
@@ -164,11 +166,11 @@ export default class ListView extends React.Component {
     let pageNumber = this.state.activepage.page;
     let idsarray = [];
     let newPage;
-    if (this.props.id != undefined) {
+    if (this.props.id !== undefined) {
       if (this.props.id.length > 0) {
         array = this.props.id;
         //scrolled = $('.container-fluid2').scrollTop()
-        if (this.state.viewMode == "landscape") {
+        if (this.state.viewMode === "landscape") {
           height = "30vh";
         }
       }
@@ -178,11 +180,12 @@ export default class ListView extends React.Component {
     let finalarray = [];
     //register for creation
     let storeKey = this.props.type + "listview";
-    Store.storeKey(storeKey);
-    Store.addChangeListener(this.reloadactive);
+    this.props.createCallbackObject(storeKey, this.reloadactive);
+    // Store.storeKey(storeKey);
+    // Store.addChangeListener(this.reloadactive);
     //List View code
     let url = "/scot/api/v2/" + this.state.type;
-    if (this.props.type == "alert") {
+    if (this.props.type === "alert") {
       url = "/scot/api/v2/alertgroup";
     }
 
@@ -191,7 +194,7 @@ export default class ListView extends React.Component {
     let data = { limit: pageLimit, offset: newPage };
 
     //add sort to the data object
-    if (sortBy != undefined) {
+    if (sortBy !== undefined) {
       let sortObj = {};
       $.each(sortBy, function(key, value) {
         let sortInt = -1;
@@ -204,15 +207,15 @@ export default class ListView extends React.Component {
     }
 
     //add filter to the data object
-    if (this.state.filter != undefined) {
+    if (this.state.filter !== undefined) {
       $.each(filterBy, function(key, value) {
-        if (value.id == "source" || value.id == "tag") {
+        if (value.id === "source" || value.id === "tag") {
           let stringArr = [];
           for (let each of value.value) {
             stringArr.push(each.name);
           }
           data[value.id] = JSON.stringify(stringArr);
-        } else if (value.id == "created" || value.id == "updated") {
+        } else if (value.id === "created" || value.id === "updated") {
           let arr = [];
           arr.push(value.value.start);
           arr.push(value.value.end);
@@ -237,27 +240,28 @@ export default class ListView extends React.Component {
             $.each(
               value,
               function(num, item) {
-                if (num == "sources" || num == "source") {
-                  if (item != undefined) {
+                if (num === "sources" || num === "source") {
+                  if (item !== undefined) {
                     let sourcearr = item.join(", ");
                     finalarray[key]["source"] = sourcearr;
                   }
-                } else if (num == "tags" || num == "tag") {
-                  if (item != undefined) {
+                } else if (num === "tags" || num === "tag") {
+                  if (item !== undefined) {
                     let tagarr = item.join(", ");
                     finalarray[key]["tag"] = tagarr;
                   }
                 } else {
                   finalarray[key][num] = item;
                 }
-                if (num == "id") {
-                  Store.storeKey(item);
-                  Store.addChangeListener(this.reloadactive);
+                if (num === "id") {
+                  this.props.createCallbackObject(item, this.reloadactive);
+                  // Store.storeKey(item);
+                  // Store.addChangeListener(this.reloadactive);
                   idsarray.push(item);
                 }
               }.bind(this)
             );
-            if (key % 2 == 0) {
+            if (key % 2 === 0) {
               finalarray[key]["classname"] = "table-row roweven";
             } else {
               finalarray[key]["classname"] = "table-row rowodd";
@@ -276,18 +280,18 @@ export default class ListView extends React.Component {
           totalPages: totalPages
         });
         if (
-          this.props.type == "alert" &&
-          this.state.showSelectedContainer == false
+          this.props.type === "alert" &&
+          this.state.showSelectedContainer === false
         ) {
           this.setState({ showSelectedContainer: false });
-        } else if (this.state.id == undefined) {
+        } else if (this.state.id === undefined) {
           this.setState({ showSelectedContainer: false });
         } else {
           this.setState({ showSelectedContainer: true });
         }
       }.bind(this),
       error: function(data) {
-        if (!data.statusText == "abort") {
+        if (!data.statusText === "abort") {
           this.props.errorToggle("failed to get list data", data);
         }
       }.bind(this)
@@ -303,7 +307,7 @@ export default class ListView extends React.Component {
         if ($("textarea").is(":focus")) {
           return;
         }
-        if (e.keyCode == 70 && (e.ctrlKey != true && e.metaKey != true)) {
+        if (e.keyCode === 70 && (e.ctrlKey !== true && e.metaKey !== true)) {
           this.toggleView();
         }
       }.bind(this)
@@ -399,13 +403,13 @@ export default class ListView extends React.Component {
 
     return (
       <div>
-        {this.state.type != "entry" ? (
+        {this.state.type !== "entry" ? (
           <div key={this.state.listViewKey} className="allComponents">
             <div className="black-border-line">
               <div className="mainview">
                 <div>
                   <div className="list-buttons">
-                    {this.props.notificationSetting == "on" ? (
+                    {this.props.notificationSetting === "on" ? (
                       <Button
                         eventKey="1"
                         onClick={this.props.notificationToggle}
@@ -422,12 +426,12 @@ export default class ListView extends React.Component {
                         Turn On Notifications
                       </Button>
                     )}
-                    {this.props.type == "event" ||
-                    this.props.type == "intel" ||
-                    this.props.type == "incident" ||
-                    this.props.type == "signature" ||
-                    this.props.type == "guide" ||
-                    this.props.type == "entity" ? (
+                    {this.props.type === "event" ||
+                    this.props.type === "intel" ||
+                    this.props.type === "incident" ||
+                    this.props.type === "signature" ||
+                    this.props.type === "guide" ||
+                    this.props.type === "entity" ? (
                       <Button
                         onClick={this.createNewThing}
                         eventKey="6"
@@ -512,6 +516,8 @@ export default class ListView extends React.Component {
                       errorToggle={this.props.errorToggle}
                       history={this.props.history}
                       form={this.state.form}
+                      createCallbackObject={this.props.createCallbackObject}
+                      removeCallbackObject={this.props.removeCallbackObject}
                     />
                   ) : null}
                   {this.state.showEntityCreateModal ? (
@@ -567,11 +573,11 @@ export default class ListView extends React.Component {
       let idReference = this.state.objectarray[i].id;
       if (
         (this.state.id != null &&
-          this.state.id == idReference &&
-          this.state.id != prevState.id) ||
+          this.state.id === idReference &&
+          this.state.id !== prevState.id) ||
         (this.state.id != null &&
-          this.state.id == idReference &&
-          prevState.initialAutoScrollToId == false)
+          this.state.id === idReference &&
+          prevState.initialAutoScrollToId === false)
       ) {
         //Checks that the id is present, is on the screen, and will not be kicked off again if its already been scrolled to before. The || statement handles the initial load since the id hasn't been scrolled to before.
         setTimeout(this.AutoScrollToId, 300);
@@ -580,22 +586,22 @@ export default class ListView extends React.Component {
   };
 
   componentWillReceiveProps = nextProps => {
-    if (nextProps.id == undefined) {
+    if (nextProps.id === undefined) {
       this.setState({
         type: nextProps.type,
         id: null,
         showSelectedContainer: false,
         scrollheight: $(window).height() - 170 + "px"
       });
-    } else if (nextProps.id != this.props.id) {
-      if (this.props.type == "alert") {
+    } else if (nextProps.id !== this.props.id) {
+      if (this.props.type === "alert") {
         this.ConvertAlertIdToAlertgroupId(nextProps.id);
         this.ConvertEntryIdToType(nextProps.id);
         this.setState({
           type: nextProps.type,
           alertPreSelectedId: nextProps.id
         });
-      } else if (this.props.type == "task") {
+      } else if (this.props.type === "task") {
         this.setState({
           type: nextProps.type,
           queryType: nextProps.queryType,
@@ -610,7 +616,7 @@ export default class ListView extends React.Component {
 
   ConvertAlertIdToAlertgroupId = id => {
     //if the type is alert, convert the id to the alertgroup id
-    if (this.props.type == "alert") {
+    if (this.props.type === "alert") {
       $.ajax({
         type: "get",
         url: "scot/api/v2/alert/" + id,
@@ -633,7 +639,7 @@ export default class ListView extends React.Component {
 
   ConvertEntryIdToType = id => {
     //if the type is alert, convert the id to the alertgroup id
-    if (this.props.type == "entry") {
+    if (this.props.type === "entry") {
       $.ajax({
         type: "get",
         url: "scot/api/v2/entry/" + id,
@@ -694,9 +700,9 @@ export default class ListView extends React.Component {
 
   toggleView = () => {
     if (
-      this.state.id.length != 0 &&
-      this.state.showSelectedContainer == true &&
-      this.state.listViewContainerDisplay != "none"
+      this.state.id.length !== 0 &&
+      this.state.showSelectedContainer === true &&
+      this.state.listViewContainerDisplay !== "none"
     ) {
       this.setState({ listViewContainerDisplay: "none", scrollheight: "0px" });
     } else {
@@ -781,7 +787,7 @@ export default class ListView extends React.Component {
       this.props.history.push("/" + type + "/" + taskid + "/" + rowid + "/");
     }
 
-    if (this.state.display == "block") {
+    if (this.state.display === "block") {
       scrollheight = "30vh";
     }
 
@@ -808,16 +814,16 @@ export default class ListView extends React.Component {
     this.ConvertEntryIdToType(this.props.id);
 
     //defaultpage = page.page
-    if (page == undefined) {
+    if (page === undefined) {
       pageNumber = this.state.activepage.page;
       pageLimit = this.state.activepage.limit;
     } else {
-      if (page.page == undefined) {
+      if (page.page === undefined) {
         pageNumber = this.state.activepage.page;
       } else {
         pageNumber = page.page;
       }
-      if (page.limit == undefined) {
+      if (page.limit === undefined) {
         pageLimit = this.state.activepage.limit;
       } else {
         pageLimit = page.limit;
@@ -826,17 +832,17 @@ export default class ListView extends React.Component {
     let newPage;
     newPage = pageNumber * pageLimit;
     //sort check
-    if (sortBy == undefined) {
+    if (sortBy === undefined) {
       sortBy = this.state.sort;
     }
     //filter check
-    if (filterBy == undefined) {
+    if (filterBy === undefined) {
       filterBy = this.state.filter;
     }
     let data = { limit: pageLimit, offset: newPage };
 
     //add sort to the data object
-    if (sortBy != undefined) {
+    if (sortBy !== undefined) {
       let sortObj = {};
       $.each(sortBy, function(key, value) {
         let sortInt = -1;
@@ -849,18 +855,18 @@ export default class ListView extends React.Component {
     }
 
     //add filter to the data object
-    if (filterBy != undefined) {
+    if (filterBy !== undefined) {
       $.each(filterBy, function(key, value) {
-        if (value.id == "source" || value.id == "tag") {
+        if (value.id === "source" || value.id === "tag") {
           let stringArr = [];
           for (let each of value.value) {
             stringArr.push(each.name);
           }
           data[value.id] = JSON.stringify(stringArr);
         } else if (
-          value.id == "created" ||
-          value.id == "updated" ||
-          value.id == "occurred"
+          value.id === "created" ||
+          value.id === "updated" ||
+          value.id === "occurred"
         ) {
           let arr = [];
           arr.push(value.value.start);
@@ -890,35 +896,36 @@ export default class ListView extends React.Component {
             $.each(
               value,
               function(num, item) {
-                if (num == "sources" || num == "source") {
-                  if (item != undefined) {
+                if (num === "sources" || num === "source") {
+                  if (item !== undefined) {
                     let sourcearr = item.join(", ");
                     newarray[key]["source"] = sourcearr;
                   }
-                } else if (num == "tags" || num == "tag") {
-                  if (item != undefined) {
+                } else if (num === "tags" || num === "tag") {
+                  if (item !== undefined) {
                     let tagarr = item.join(", ");
                     newarray[key]["tag"] = tagarr;
                   }
                 } else {
                   newarray[key][num] = item;
                 }
-                if (num == "id") {
+                if (num === "id") {
                   let idalreadyadded = false;
                   for (let i = 0; i < idsarray.length; i++) {
-                    if (item == idsarray[i]) {
+                    if (item === idsarray[i]) {
                       idalreadyadded = true;
                     }
                   }
-                  if (idalreadyadded == false) {
-                    Store.storeKey(item);
-                    Store.addChangeListener(this.reloadactive);
+                  if (idalreadyadded === false) {
+                    this.createCallbackObject(item, this.reloadactive);
+                    // Store.storeKey(item);
+                    // Store.addChangeListener(this.reloadactive);
                   }
                   newidsarray.push(item);
                 }
               }.bind(this)
             );
-            if (key % 2 == 0) {
+            if (key % 2 === 0) {
               newarray[key]["classname"] = "table-row roweven";
             } else {
               newarray[key]["classname"] = "table-row rowodd";
@@ -938,7 +945,7 @@ export default class ListView extends React.Component {
         });
       }.bind(this),
       error: function(data) {
-        if (!data.statusText == "abort") {
+        if (!data.statusText === "abort") {
           this.props.errorToggle("failed to get list data", data);
         }
       }.bind(this)
@@ -994,7 +1001,7 @@ export default class ListView extends React.Component {
     let newFilterArr = [];
     let _type = this.props.type;
 
-    if (type != undefined) {
+    if (type !== undefined) {
       _type = type;
     }
 
@@ -1010,7 +1017,7 @@ export default class ListView extends React.Component {
 
       this.setState({ filter: newFilterArr });
 
-      if (type == this.props.type || type == undefined) {
+      if (type === this.props.type || type === undefined) {
         //Check if the type passed in matches the type displayed. If not, it's updating the filter for a future query in a different type. Undefined implies its the same type, so update
         this.getNewData({ page: 0 }, null, newFilterArr);
       }
@@ -1028,17 +1035,17 @@ export default class ListView extends React.Component {
   createNewThing = () => {
     let data;
 
-    if (this.props.type == "signature") {
+    if (this.props.type === "signature") {
       data = JSON.stringify({
         name: "Name your Signature",
         status: "disabled"
       });
-    } else if (this.props.type == "guide") {
+    } else if (this.props.type === "guide") {
       data = JSON.stringify({
         subject: "ENTER A GUIDE NAME",
         applies_to: ["documentation"]
       });
-    } else if (this.props.type == "entity") {
+    } else if (this.props.type === "entity") {
       this.ToggleCreateEntity();
       return;
     } else {
@@ -1089,7 +1096,7 @@ export default class ListView extends React.Component {
         }
 
         let scrollheight = this.state.scrollheight;
-        if (this.state.display == "block") {
+        if (this.state.display === "block") {
           scrollheight = "30vh";
         }
 
@@ -1112,7 +1119,8 @@ export default class ListView extends React.Component {
         });
         return;
       },
-      className: rowInfo.row.id === parseInt(this.props.id) ? "selected" : null
+      className:
+        rowInfo.row.id === parseInt(this.props.id, 10) ? "selected" : null
     };
   }
 }

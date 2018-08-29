@@ -13,7 +13,7 @@ export default class Wall extends React.Component {
     };
   }
   sendWallMessage = () => {
-    if (this.state.wallMessage == "") {
+    if (this.state.wallMessage === "") {
       alert("Please enter text");
       this.setState({ buttonStatus: "warning" });
     } else {

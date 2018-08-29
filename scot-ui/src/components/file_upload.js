@@ -1,14 +1,15 @@
 import React from "react";
 import * as SessionStorage from "../utils/session_storage";
 import $ from "jquery";
-let Dropzone = require("../../../node_modules/react-dropzone");
+import Dropzone from "react-dropzone";
 let Button = require("react-bootstrap/lib/Button.js");
 let Link = require("react-router-dom").Link;
 let finalfiles = [];
 
-let FileUpload = React.createClass({
-  getInitialState: function() {
-    return {
+export default class FileUpload extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       files: [],
       edit: false,
       stagecolor: "#000",
@@ -18,9 +19,9 @@ let FileUpload = React.createClass({
       enablesave: true,
       whoami: undefined
     };
-  },
+  }
 
-  componentDidMount: function() {
+  componentDidMount = () => {
     let whoami = SessionStorage.getSessionStorage("whoami");
     if (whoami) {
       this.setState({ whoami: whoami });
@@ -30,9 +31,9 @@ let FileUpload = React.createClass({
       $(".entry-wrapper").scrollTop() +
         $("#not_saved_entry_" + this.props.id).position().top
     );
-  },
+  };
 
-  render: function() {
+  render = () => {
     let not_saved_entry_id = "not_saved_entry_" + this.props.id;
     return (
       <div id={not_saved_entry_id}>
@@ -113,26 +114,30 @@ let FileUpload = React.createClass({
         </div>
       </div>
     );
-  },
-  onCancel: function() {
+  };
+
+  onCancel = () => {
     finalfiles = [];
     this.props.fileUploadToggle();
-  },
-  Close: function(i) {
+  };
+
+  Close = i => {
     for (let x = 0; x < finalfiles.length; x++) {
-      if (i.target.id == finalfiles[x].name) {
+      if (i.target.id === finalfiles[x].name) {
         finalfiles.splice(x, 1);
       }
     }
     this.setState({ files: finalfiles });
-  },
-  onDrop: function(files) {
+  };
+
+  onDrop = files => {
     for (let i = 0; i < files.length; i++) {
       finalfiles.push(files[i]);
     }
     this.setState({ files: finalfiles });
-  },
-  submit: function() {
+  };
+
+  submit = () => {
     if (finalfiles.length > 0) {
       for (let i = 0; i < finalfiles.length; i++) {
         let data = new FormData();
@@ -153,19 +158,21 @@ let FileUpload = React.createClass({
     } else {
       alert("Select a file to upload before submitting.");
     }
-  },
-  uploadComplete: function() {
-    this.onCancel();
-  },
-  uploadFailed: function() {
-    this.props.errorToggle("An error occured. Upload failed.");
-  },
-  uploadProgress: function() {
-    //TODO add progress bar
-  },
-  uploadCancelled: function() {
-    //this.props.errorToggle('Upload Cancelled');
-  }
-});
+  };
 
-module.exports = FileUpload;
+  uploadComplete = () => {
+    this.onCancel();
+  };
+
+  uploadFailed = () => {
+    this.props.errorToggle("An error occured. Upload failed.");
+  };
+
+  uploadProgress = () => {
+    //TODO add progress bar
+  };
+
+  uploadCancelled = () => {
+    //this.props.errorToggle('Upload Cancelled');
+  };
+}

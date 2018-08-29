@@ -1,13 +1,8 @@
 import React from "react";
-import brace from "brace";
 import AceEditor from "react-ace";
 import Button from "react-bootstrap/lib/Button.js";
 import DropdownButton from "react-bootstrap/lib/DropdownButton.js";
-import OverlayTrigger from "react-bootstrap/lib/OverlayTrigger.js";
-import ButtonGroup from "react-bootstrap/lib/ButtonGroup.js";
 import MenuItem from "react-bootstrap/lib/MenuItem.js";
-import Popover from "react-bootstrap/lib/Popover.js";
-
 import "brace/mode/bro";
 import "brace/mode/javascript";
 import "brace/mode/java";
@@ -39,8 +34,9 @@ import "brace/keybinding/emacs";
 import * as Cookies from "../utils/cookies";
 import $ from "jquery";
 
-let SignatureTable = React.createClass({
-  getInitialState: function() {
+export default class SignatureTable extends React.Component {
+  constructor(props) {
+    super(props);
     let key = new Date();
     key = key.getTime();
     let value = "";
@@ -49,13 +45,13 @@ let SignatureTable = React.createClass({
     let currentEditorTheme = "github";
     let viewVersionid = this.props.headerData.prod_sigbody_id;
     let viewSigBodyid;
-    if (Cookies.checkCookie("signatureKeyboardHandler") != undefined) {
+    if (Cookies.checkCookie("signatureKeyboardHandler") !== undefined) {
       currentKeyboardHandler = Cookies.checkCookie("signatureKeyboardHandler");
     }
-    if (Cookies.checkCookie("signatureLanguageMode") != undefined) {
+    if (Cookies.checkCookie("signatureLanguageMode") !== undefined) {
       currentLanguageMode = Cookies.checkCookie("signatureLanguageMode");
     }
-    if (Cookies.checkCookie("signatureEditorTheme") != undefined) {
+    if (Cookies.checkCookie("signatureEditorTheme") !== undefined) {
       currentEditorTheme = Cookies.checkCookie("signatureEditorTheme");
     }
     if (
@@ -64,9 +60,9 @@ let SignatureTable = React.createClass({
     ) {
       //if (!jQuery.isEmptyObject(this.props.headerData.version)) {
       if (
-        this.props.headerData.version[this.props.headerData.prod_sigbody_id] !=
+        this.props.headerData.version[this.props.headerData.prod_sigbody_id] !==
           undefined ||
-        this.props.headerData.version[this.props.headerData.prod_sigbody_id] ==
+        this.props.headerData.version[this.props.headerData.prod_sigbody_id] ===
           0
       ) {
         value = this.props.headerData.version[
@@ -87,7 +83,7 @@ let SignatureTable = React.createClass({
         }
       }
     }
-    return {
+    this.state = {
       readOnly: true,
       value: value,
       signatureData: this.props.headerData,
@@ -133,14 +129,16 @@ let SignatureTable = React.createClass({
       currentEditorTheme: currentEditorTheme,
       ajaxType: null
     };
-  },
-  onChange: function(value) {
+  }
+
+  onChange(value) {
     this.setState({ value: value });
-  },
-  submitSigBody: function(e) {
+  }
+
+  submitSigBody = e => {
     let url = "scot/api/v2/sigbody/";
     let versionid = this.state.viewVersionid; //version revision if creating a new sigbody
-    if (this.state.ajaxType == "put") {
+    if (this.state.ajaxType === "put") {
       versionid = this.state.viewSigBodyid; //version id (not revision id) if editing an existing sigbody
       url = "scot/api/v2/sigbody/" + versionid;
     }
@@ -148,14 +146,14 @@ let SignatureTable = React.createClass({
       type: this.state.ajaxType,
       url: url,
       data: JSON.stringify({
-        signature_id: parseInt(this.props.id),
+        signature_id: parseInt(this.props.id, 10),
         body: this.state.value
       }),
       contentType: "application/json; charset=UTF-8",
       success: function(data) {
         console.log("successfully changed signature data");
         let viewVersionid;
-        if (data.revision == undefined) {
+        if (data.revision === undefined) {
           viewVersionid = this.state.viewVersionid;
         } else {
           viewVersionid = data.revision;
@@ -172,19 +170,22 @@ let SignatureTable = React.createClass({
         this.props.errorToggle("Failed to create/update sigbody", data);
       }.bind(this)
     });
-  },
-  componentWillReceiveProps: function(nextProps) {
+  };
+
+  componentWillReceiveProps = nextProps => {
     this.setState({ signatureData: nextProps.headerData });
-  },
-  editSigBody: function(e) {
+  };
+
+  editSigBody = e => {
     this.setState({
       readOnly: false,
       lastViewVersionid: this.state.viewVersionid,
       cursorEnabledDisabled: "cursorEnabled",
       ajaxType: "put"
     });
-  },
-  createNewSigBody: function() {
+  };
+
+  createNewSigBody = () => {
     this.setState({
       readOnly: false,
       viewVersionid: null,
@@ -193,8 +194,9 @@ let SignatureTable = React.createClass({
       cursorEnabledDisabled: "cursorEnabled",
       ajaxType: "post"
     });
-  },
-  createNewSigBodyFromSig: function() {
+  };
+
+  createNewSigBodyFromSig = () => {
     this.setState({
       readOnly: false,
       lastViewVersionid: this.state.viewVersionid,
@@ -202,8 +204,9 @@ let SignatureTable = React.createClass({
       ajaxType: "post",
       viewVersionid: null
     });
-  },
-  Cancel: function() {
+  };
+
+  Cancel = () => {
     let value = "";
     if (
       Object.keys(this.state.signatureData.version).length !== 0 &&
@@ -213,7 +216,7 @@ let SignatureTable = React.createClass({
       if (
         this.state.signatureData.version[
           this.state.signatureData.prod_sigbody_id
-        ] != undefined
+        ] !== undefined
       ) {
         value = this.state.signatureData.version[this.state.lastViewVersionid]
           .body;
@@ -226,9 +229,10 @@ let SignatureTable = React.createClass({
       cursorEnabledDisabled: "cursorDisabled",
       ajaxType: null
     });
-  },
-  viewSigBody: function(e) {
-    if (this.state.readOnly == true) {
+  };
+
+  viewSigBody = e => {
+    if (this.state.readOnly === true) {
       //only allow button click if you can't edit the signature
       this.setState({
         value: this.state.signatureData.version[e.target.id].body,
@@ -236,20 +240,24 @@ let SignatureTable = React.createClass({
         viewSigBodyid: e.target.viewSigBodyid
       });
     }
-  },
-  keyboardHandlerUpdate: function(e) {
+  };
+
+  keyboardHandlerUpdate = e => {
     Cookies.setCookie("signatureKeyboardHandler", e.target.text, 1000);
     this.setState({ currentKeyboardHandler: e.target.text });
-  },
-  languageModeUpdate: function(e) {
+  };
+
+  languageModeUpdate = e => {
     Cookies.setCookie("signatureLanguageMode", e.target.text, 1000);
     this.setState({ currentLanguageMode: e.target.text });
-  },
-  editorThemeUpdate: function(e) {
+  };
+
+  editorThemeUpdate = e => {
     Cookies.setCookie("signatureEditorTheme", e.target.text, 1000);
     this.setState({ currentEditorTheme: e.target.text });
-  },
-  render: function() {
+  };
+
+  render = () => {
     let versionsArray = [];
     let keyboardHandlersArray = [];
     let languageModesArray = [];
@@ -275,15 +283,15 @@ let SignatureTable = React.createClass({
           let versionidrevisionprodqual = this.state.signatureData.version[key]
             .revision;
           let versionidSigBodyid = this.state.signatureData.version[key].id;
-          if (this.state.signatureData.prod_sigbody_id == versionidrevision) {
+          if (this.state.signatureData.prod_sigbody_id === versionidrevision) {
             versionidrevisionprodqual = versionidrevision + " - Production";
           } else if (
-            this.state.signatureData.qual_sigbody_id == versionidrevision
+            this.state.signatureData.qual_sigbody_id === versionidrevision
           ) {
             versionidrevisionprodqual = versionidrevision + " - Quality";
           } //add production and quality text to identify current status on the menu
           let disabled;
-          if (this.state.readOnly == true) {
+          if (this.state.readOnly === true) {
             disabled = false;
           } else {
             disabled = true;
@@ -308,7 +316,7 @@ let SignatureTable = React.createClass({
       }
     }
 
-    if (this.state.keyboardHandlers != undefined) {
+    if (this.state.keyboardHandlers !== undefined) {
       for (let i = 0; i < this.state.keyboardHandlers.length; i++) {
         keyboardHandlersArray.push(
           <MenuItem
@@ -324,11 +332,11 @@ let SignatureTable = React.createClass({
       }
     }
 
-    if (this.state.currentKeyboardHandler == "none") {
+    if (this.state.currentKeyboardHandler === "none") {
       currentKeyboardHandlerApplied = null;
     }
 
-    if (this.state.languageModes != undefined) {
+    if (this.state.languageModes !== undefined) {
       for (let i = 0; i < this.state.languageModes.length; i++) {
         languageModesArray.push(
           <MenuItem
@@ -344,7 +352,7 @@ let SignatureTable = React.createClass({
       }
     }
 
-    if (this.state.editorThemes != undefined) {
+    if (this.state.editorThemes !== undefined) {
       for (let i = 0; i < this.state.editorThemes.length; i++) {
         editorThemesArray.push(
           <MenuItem
@@ -359,14 +367,14 @@ let SignatureTable = React.createClass({
         );
       }
     }
-    if (this.state.signatureData.prod_sigbody_id == this.state.viewVersionid) {
+    if (this.state.signatureData.prod_sigbody_id === this.state.viewVersionid) {
       viewVersionid.push(
         <span className="signature_production_color">
           {this.state.viewVersionid} - Production
         </span>
       );
     } else if (
-      this.state.signatureData.qual_sigbody_id == this.state.viewVersionid
+      this.state.signatureData.qual_sigbody_id === this.state.viewVersionid
     ) {
       viewVersionid.push(
         <span className="signature_quality_color">
@@ -450,7 +458,7 @@ let SignatureTable = React.createClass({
                           >
                             Create new version
                           </Button>
-                          {this.state.viewVersionid != 0 ? (
+                          {this.state.viewVersionid !== 0 ? (
                             <span>
                               <Button
                                 bsSize={"xsmall"}
@@ -506,20 +514,21 @@ let SignatureTable = React.createClass({
         )}
       </div>
     );
-  }
-});
+  };
+}
 
-let SignatureMetaData = React.createClass({
-  getInitialState: function() {
-    return {
+class SignatureMetaData extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       optionsValue: JSON.stringify(this.props.signatureData.options)
     };
-  },
+  }
 
-  submitMetaData: function(event) {
+  submitMetaData = event => {
     let k = event.target.id;
     let v = event.target.value;
-    if (k == "options" || k == "target") {
+    if (k === "options" || k === "target") {
       try {
         v = JSON.parse(v);
       } catch (err) {
@@ -545,16 +554,18 @@ let SignatureMetaData = React.createClass({
       contentType: "application/json; charset=UTF-8",
       success: function(data) {
         console.log("successfully changed signature data");
-      }.bind(this),
+      },
       error: function(data) {
         this.props.errorToggle("Failed to update signature metadata", data);
       }.bind(this)
     });
-  },
-  onOptionsChange: function(optionsValue) {
+  };
+
+  onOptionsChange = optionsValue => {
     this.setState({ optionsValue: optionsValue });
-  },
-  render: function() {
+  };
+
+  render = () => {
     return (
       <div>
         {this.props.showSignatureOptions ? (
@@ -597,127 +608,129 @@ let SignatureMetaData = React.createClass({
         ) : null}
       </div>
     );
-  }
-});
+  };
+}
 
-let SignatureGroup = React.createClass({
-  getInitialState: function() {
-    return {
-      signatureGroupValue: ""
-    };
-  },
-  handleAddition: function(signature_group) {
-    let newSignatureGroupArr = [];
-    let data = this.props.data;
-    for (let i = 0; i < data.length; i++) {
-      if (data[i] != undefined) {
-        if (typeof data[i] == "string") {
-          newSignatureGroupArr.push(data[i]);
-        } else {
-          newSignatureGroupArr.push(data[i].value);
-        }
-      }
-    }
-    newSignatureGroupArr.push(signature_group.target.value);
-    $.ajax({
-      type: "put",
-      url: "scot/api/v2/signature/" + this.props.id,
-      data: JSON.stringify({ signature_group: newSignatureGroupArr }),
-      contentType: "application/json; charset=UTF-8",
-      success: function(data) {
-        console.log("success: signature_group added");
-        this.setState({ signatureGroupValue: "" });
-      }.bind(this),
-      error: function(data) {
-        this.props.errorToggle("Failed to add signature_group", data);
-      }.bind(this)
-    });
-  },
-  InputChange: function(event) {
-    this.setState({ signatureGroupValue: event.target.value });
-  },
-  handleDelete: function(event) {
-    let data = this.props.data;
-    let clickedThing = event.target.id;
-    let newSignatureGroupArr = [];
-    for (let i = 0; i < data.length; i++) {
-      if (data[i] != undefined) {
-        if (typeof data[i] == "string") {
-          if (data[i] != clickedThing) {
-            newSignatureGroupArr.push(data[i]);
-          }
-        } else {
-          if (data[i].value != clickedThing) {
-            newSignatureGroupArr.push(data[i].value);
-          }
-        }
-      }
-    }
-    $.ajax({
-      type: "put",
-      url: "scot/api/v2/signature/" + this.props.id,
-      data: JSON.stringify({ signature_group: newSignatureGroupArr }),
-      contentType: "application/json; charset=UTF-8",
-      success: function(data) {
-        console.log("deleted signature_group success: " + data);
-      }.bind(this),
-      error: function(data) {
-        this.props.errorToggle("Failed to delete signature_group", data);
-      }.bind(this)
-    });
-  },
+// class SignatureGroup extends React.Component {
+//   constructor(props) {
+//     super(props);
+//     this.state = {
+//       signatureGroupValue: ""
+//     };
+//   }
 
-  render: function() {
-    let data = this.props.data;
-    let signatureGroupArr = [];
-    let value;
-    for (let i = 0; i < data.length; i++) {
-      if (typeof data[i] == "string") {
-        value = data[i];
-      } else if (typeof data[i] == "object") {
-        if (data[i] != undefined) {
-          value = data[i].value;
-        }
-      }
-      signatureGroupArr.push(
-        <span id="event_signature" className="tagButton">
-          {value}{" "}
-          <i
-            id={value}
-            onClick={this.handleDelete}
-            className="fa fa-times tagButtonClose"
-          />
-        </span>
-      );
-    }
-    return (
-      <div className="col-lg-2 col-md-4">
-        <span className="signatureTableWidth">Signature Group:</span>
-        <span className="signatureTableWidth">
-          <input
-            id={this.props.metaType}
-            onChange={this.InputChange}
-            value={this.state.signatureGroupValue}
-          />
-          {this.state.signatureGroupValue != "" ? (
-            <Button
-              bsSize="xsmall"
-              bsStyle="success"
-              onClick={this.handleAddition}
-              value={this.state.signatureGroupValue}
-            >
-              Submit
-            </Button>
-          ) : (
-            <Button bsSize="xsmall" bsType="submit" disabled>
-              Submit
-            </Button>
-          )}
-        </span>
-        {signatureGroupArr}
-      </div>
-    );
-  }
-});
+//   handleAddition = signature_group => {
+//     let newSignatureGroupArr = [];
+//     let data = this.props.data;
+//     for (let i = 0; i < data.length; i++) {
+//       if (data[i] != undefined) {
+//         if (typeof data[i] == "string") {
+//           newSignatureGroupArr.push(data[i]);
+//         } else {
+//           newSignatureGroupArr.push(data[i].value);
+//         }
+//       }
+//     }
+//     newSignatureGroupArr.push(signature_group.target.value);
+//     $.ajax({
+//       type: "put",
+//       url: "scot/api/v2/signature/" + this.props.id,
+//       data: JSON.stringify({ signature_group: newSignatureGroupArr }),
+//       contentType: "application/json; charset=UTF-8",
+//       success: function(data) {
+//         console.log("success: signature_group added");
+//         this.setState({ signatureGroupValue: "" });
+//       }.bind(this),
+//       error: function(data) {
+//         this.props.errorToggle("Failed to add signature_group", data);
+//       }.bind(this)
+//     });
+//   };
 
-module.exports = SignatureTable;
+//   InputChange = event => {
+//     this.setState({ signatureGroupValue: event.target.value });
+//   };
+
+//   handleDelete = event => {
+//     let data = this.props.data;
+//     let clickedThing = event.target.id;
+//     let newSignatureGroupArr = [];
+//     for (let i = 0; i < data.length; i++) {
+//       if (data[i] !== undefined) {
+//         if (typeof data[i] === "string") {
+//           if (data[i] !== clickedThing) {
+//             newSignatureGroupArr.push(data[i]);
+//           }
+//         } else {
+//           if (data[i].value !== clickedThing) {
+//             newSignatureGroupArr.push(data[i].value);
+//           }
+//         }
+//       }
+//     }
+//     $.ajax({
+//       type: "put",
+//       url: "scot/api/v2/signature/" + this.props.id,
+//       data: JSON.stringify({ signature_group: newSignatureGroupArr }),
+//       contentType: "application/json; charset=UTF-8",
+//       success: function(data) {
+//         console.log("deleted signature_group success: " + data);
+//       },
+//       error: function(data) {
+//         this.props.errorToggle("Failed to delete signature_group", data);
+//       }.bind(this)
+//     });
+//   };
+
+//   render = () => {
+//     let data = this.props.data;
+//     let signatureGroupArr = [];
+//     let value;
+//     for (let i = 0; i < data.length; i++) {
+//       if (typeof data[i] === "string") {
+//         value = data[i];
+//       } else if (typeof data[i] === "object") {
+//         if (data[i] !== undefined) {
+//           value = data[i].value;
+//         }
+//       }
+//       signatureGroupArr.push(
+//         <span id="event_signature" className="tagButton">
+//           {value}{" "}
+//           <i
+//             id={value}
+//             onClick={this.handleDelete}
+//             className="fa fa-times tagButtonClose"
+//           />
+//         </span>
+//       );
+//     }
+//     return (
+//       <div className="col-lg-2 col-md-4">
+//         <span className="signatureTableWidth">Signature Group:</span>
+//         <span className="signatureTableWidth">
+//           <input
+//             id={this.props.metaType}
+//             onChange={this.InputChange}
+//             value={this.state.signatureGroupValue}
+//           />
+//           {this.state.signatureGroupValue !== "" ? (
+//             <Button
+//               bsSize="xsmall"
+//               bsStyle="success"
+//               onClick={this.handleAddition}
+//               value={this.state.signatureGroupValue}
+//             >
+//               Submit
+//             </Button>
+//           ) : (
+//             <Button bsSize="xsmall" bsType="submit" disabled>
+//               Submit
+//             </Button>
+//           )}
+//         </span>
+//         {signatureGroupArr}
+//       </div>
+//     );
+//   };
+// }
