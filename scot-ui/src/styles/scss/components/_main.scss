@@ -1,0 +1,121 @@
+// Styles for Main Component
+
+.homePageDisplay {
+	.nav-tabs {
+		& > li > a {
+			padding: 5px;
+		}
+	}
+
+	.home-grid {
+		display: grid;
+		padding: 10px;
+		grid-template-columns: 1fr 1fr 1fr;
+		grid-template-rows: 200px 40px;
+		grid-gap: 15px;
+		
+		grid-template-areas:
+			"status title game"
+			"activity activity activity";
+
+		&.loggedOut {
+			grid-template-areas:
+				"title title title"
+				"title title title";
+		}
+
+		.title-area {
+			display: inline-grid;
+			grid-area: title;
+			height: 100%;
+
+			background: url('/images/scot-600h.png') no-repeat center;
+			background-size: contain;
+
+			text-align: center;
+			text-shadow: 1px 2px 10px rgba( 0, 0, 0, 0.5 );
+
+			h1, h3 {
+				justify-self: center;
+				align-self: end;
+			}
+
+			.sensitivity {
+				justify-self: center;
+				align-self: start;
+				margin: 0;
+			}
+		}
+
+		.status-area {
+			grid-area: status;
+			overflow: hidden;
+		}
+
+		.game-area {
+			grid-area: game;
+			overflow: hidden;
+		}
+
+		.activity-area {
+			grid-area: activity;
+			margin-bottom: 0;
+		}
+	}
+
+	#DashboardTabs {
+		margin: 0 !important;
+
+		& > div {
+			padding: 0 !important;
+		}
+	}
+
+	.dashboard {
+		padding: 0 10px;
+
+		.titleBar {
+			form {
+				display: inline-block;
+
+				button {
+					margin-left: 10px;
+				}
+			}
+
+			input {
+				width: 300px;
+				height: 30px;
+			}
+
+			.edit {
+				float: right;
+			}
+		}
+
+		.editable-column {
+			margin-top: 5px;
+			border: 1px dashed rgba(0, 0, 0, 0.5);
+		}
+
+		.add-widget-button {
+			margin: 5px 0;
+			padding: 15px;
+			cursor: pointer;
+			border: 1px solid rgba(0, 0, 0, 0.5);
+
+			&:hover {
+				background: #EEEEEE;
+			}
+		}
+
+		.widget {
+			margin: 10px 0;
+
+			&.editable {
+				cursor: move;
+				margin: 0;
+			}
+		}
+	}
+}

@@ -11,8 +11,7 @@ class Gamification extends PureComponent {
       gameData: [],
       gameCategories: [],
       categoryIndex: 0,
-      error: null,
-      _isMounted: false
+      error: null
     };
 
     this.updateData = this.updateData.bind(this);
@@ -21,27 +20,28 @@ class Gamification extends PureComponent {
   }
 
   componentDidMount() {
+    this._isMounted = true;
     $.ajax({
       type: "get",
       url: "/scot/api/v2/game",
       success: this.updateData,
       error: this.fetchError
     });
-    this.setState({ _isMounted: true });
     this.categoryInterval = setInterval(this.updateCategory, CATEGORY_INTERVAL);
   }
 
   componentWillUnmount() {
+    this._isMounted = false;
     if (this.categoryInterval) {
       clearInterval(this.categoryInterval);
     }
-    this.setState({ _isMounted: false });
+    this._isMounted = false;
   }
 
   updateCategory() {
     let nextIndex =
       (this.state.categoryIndex + 1) % this.state.gameCategories.length;
-    if (this.state._isMounted) {
+    if (this._isMounted) {
       this.setState({
         categoryIndex: nextIndex
       });
@@ -53,19 +53,14 @@ class Gamification extends PureComponent {
     for (let category in data) {
       categories.push(<Category category={category} data={data[category]} />);
     }
-    if (this.state._isMounted) {
-      this.setState({
-        gameData: data,
-        gameCategories: categories
-      });
+    if (this._isMounted) {
+      this.setState({ gameData: data, gameCategories: categories });
     }
   }
 
   fetchError(error) {
-    if (this.state._isMounted) {
-      this.setState({
-        error: error
-      });
+    if (this._isMounted) {
+      this.setState({ error: error });
     }
   }
 
@@ -86,18 +81,18 @@ class Gamification extends PureComponent {
 
 const Category = ({ category, data }) => (
   <Panel
-    header={`${titleCase(category)} - ${data[0].tooltip.toString()}`}
+    header={`${titleCase(category)} - ${data[0].tooltip}`}
     className="category"
   >
     <div>
       <div>
-        {data[0].username.toString()} <Badge>{data[0].count.toString()}</Badge>
+        {data[0].username} <Badge>{data[0].count}</Badge>
       </div>
       <div>
-        {data[1].username.toString()} <Badge>{data[1].count.toString()}</Badge>
+        {data[1].username} <Badge>{data[1].count}</Badge>
       </div>
       <div>
-        {data[2].username.toString()} <Badge>{data[2].count.toString()}</Badge>
+        {data[2].username} <Badge>{data[2].count}</Badge>
       </div>
     </div>
   </Panel>

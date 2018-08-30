@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { Modal, Button } from "react-bootstrap";
 import $ from "jquery";
+import ScotImage from "../images/scot_logo_473x473.png";
 
 class Login extends Component {
   constructor(props) {
@@ -33,7 +34,7 @@ class Login extends Component {
           <Modal.Title style={{ textAlign: "center" }}>SCOT Login</Modal.Title>
         </Modal.Header>
         <Modal.Body style={{ textAlign: "center" }}>
-          <img src="/images/scot_logo_473x473.png" alt="SCOT Logo" />
+          <img src={ScotImage} alt="SCOT Logo" />
           <Button type="submit" href={url}>
             Sign in using SSO
           </Button>
