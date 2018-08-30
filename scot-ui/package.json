@@ -42,13 +42,17 @@
     "react-time": "^4.0.0",
     "react-tinymce": "latest",
     "recompose": "^0.26.0",
+    "sass": "^1.13.0",
     "underscore": "^1.9.1"
   },
   "scripts": {
+    "dev": "concurrently --kill-others \"npm run sass:watch\" \"npm run start\"",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "sass:watch": "sass --watch src/styles/scss:src/styles/css",
+    "sass:build": "sass --update src/styles/scss:src/styles/css"
   },
   "proxy": {
     "/(api|scotaq|login|sso)": {

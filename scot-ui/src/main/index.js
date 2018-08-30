@@ -9,6 +9,8 @@ import $ from "jquery";
 import Search from "../components/esearch";
 import Wall from "../debug-components/wall";
 import Login from "../modal/login.js";
+import { Link } from "react-router-dom";
+import { Route } from "react-router-dom";
 let Navbar = require("react-bootstrap/lib/Navbar.js");
 let Nav = require("react-bootstrap/lib/Nav.js");
 let NavItem = require("react-bootstrap/lib/NavItem.js");
@@ -16,9 +18,9 @@ let NavDropdown = require("react-bootstrap/lib/NavDropdown.js");
 let MenuItem = require("react-bootstrap/lib/MenuItem.js");
 let LinkContainer = require("react-router-bootstrap/lib/LinkContainer.js");
 let ListView = require("../list/list-view.js");
-let Route = require("react-router-dom").Route;
-let Link = require("react-router-dom").Link;
 var Notification = require("react-notification-system");
+
+window.jQuery = window.$ = require("jquery/dist/jquery");
 
 class App extends React.Component {
   constructor(props) {
@@ -420,21 +422,23 @@ class App extends React.Component {
             )}
           />
           {type === "alert" ? (
-            <ListView
-              id={this.props.match.params.id}
-              id2={this.props.match.params.id2}
-              viewMode={this.state.viewMode}
-              type={type}
-              notificationToggle={this.notificationToggle}
-              notificationSetting={this.state.notificationSetting}
-              listViewFilter={this.state.listViewFilter}
-              listViewSort={this.state.listViewSort}
-              listViewPage={this.state.listViewPage}
-              errorToggle={this.errorToggle}
-              history={this.props.history}
-              createCallbackObject={this.props.createCallbackObject}
-              removeCallbackObject={this.props.removeCallbackObject}
-            />
+            <Route exact path="/alert">
+              <ListView
+                id={this.props.match.params.id}
+                id2={this.props.match.params.id2}
+                viewMode={this.state.viewMode}
+                type={type}
+                notificationToggle={this.notificationToggle}
+                notificationSetting={this.state.notificationSetting}
+                listViewFilter={this.state.listViewFilter}
+                listViewSort={this.state.listViewSort}
+                listViewPage={this.state.listViewPage}
+                errorToggle={this.errorToggle}
+                history={this.props.history}
+                createCallbackObject={this.props.createCallbackObject}
+                removeCallbackObject={this.props.removeCallbackObject}
+              />
+            </Route>
           ) : null}
           {type === "alertgroup" ? (
             <ListView
@@ -606,7 +610,7 @@ class App extends React.Component {
   };
 }
 
-class AMQ extends React.Component {
+export default class AMQ extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -668,9 +672,12 @@ class AMQ extends React.Component {
         console.log("Registered client as " + this.state.client);
         if (!restart) {
           //only start the update if this is not a restart. Restart will just use the new clientid once it is live.
-          setTimeout(function() {
-            this.get_data();
-          }, 1000);
+          setTimeout(
+            function() {
+              this.get_data();
+            }.bind(this),
+            1000
+          );
         }
       }.bind(this),
       error: function(data) {
@@ -695,13 +702,15 @@ class AMQ extends React.Component {
         r: Math.random(),
         json: "true",
         username: this.whoami
-      }
-    })
-      .success(function(data) {
+      },
+      success: function(data) {
         console.log("Received Message");
-        setTimeout(function() {
-          this.get_data();
-        }, 40);
+        setTimeout(
+          function() {
+            this.get_data();
+          }.bind(this),
+          40
+        );
         let messages = $(data)
           .text()
           .split("\n");
@@ -714,13 +723,17 @@ class AMQ extends React.Component {
             return true;
           }
         });
-      })
-      .error(function() {
-        setTimeout(function() {
-          this.getData(this.client);
-        }, 1000);
+      }.bind(this),
+      error: function() {
+        setTimeout(
+          function() {
+            this.getData(this.client);
+          }.bind(this),
+          1000
+        );
         console.log("AMQ not detected, retrying in 1 second.");
-      });
+      }
+    });
   };
 
   create_callback_object = (key, callback) => {
@@ -785,4 +798,3 @@ class AMQ extends React.Component {
     );
   };
 }
-export default AMQ;

@@ -1,0 +1,69 @@
+.TagInput {
+	position: relative;
+	width: 100%;
+	
+	.react-tags {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.react-tags__selected {
+		text-align: left;
+		white-space: normal;
+		order: 1;
+
+		.react-tags__selected-tag {
+			display: inline-block;
+			background: #f1f1f1;
+			border: 1px solid #d1d1d1;
+			border-radius: 2px;
+
+			padding: 3px;
+
+			i {
+				margin-left: 3px;
+				cursor: pointer;
+			}
+		}
+	}
+
+	.react-tags__search {
+		display: inline-block;
+		width: 100%;
+
+		input {
+			width: 100%;
+		}
+	}
+
+	.react-tags__suggestions {
+		z-index: 1;
+        position: absolute;
+		left: 0;
+		min-width: 100%;
+		background: white;
+		border: 1px solid black;
+
+		ul {
+			padding: 0;
+			margin: 0;
+			list-style: none;
+			text-align: left;
+
+			li {
+				padding: 7px 5px;
+				border-bottom: 1px solid #ddd;
+				
+				&:hover, &.is-active {
+					cursor: pointer;
+					background: rgba( 0, 0, 0, 0.1 );
+				}
+
+				mark {
+					background: none;
+					text-decoration: underline;
+				}
+			}
+		}
+	}
+}

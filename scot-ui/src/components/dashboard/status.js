@@ -32,18 +32,27 @@ class Status extends PureComponent {
       success: this.updateData,
       error: this.fetchError
     });
+    this._isMounted = true;
+  }
+
+  componentWillUnmount() {
+    this._isMounted = false;
   }
 
   updateData(response) {
-    this.setState({
-      statusData: response
-    });
+    if (this._isMounted) {
+      this.setState({
+        statusData: response
+      });
+    }
   }
 
   fetchError(error) {
-    this.setState({
-      error: error
-    });
+    if (this._isMounted) {
+      this.setState({
+        error: error
+      });
+    }
   }
 
   render() {
