@@ -9,7 +9,7 @@ let SelectedHeaderOptions = React.createClass( {
     getInitialState: function() {
         return {
             globalFlairState: true,
-            promoteRemaining: null,
+            // promoteRemaining: null,
         };
     },
     toggleFlair: function() {
@@ -38,7 +38,7 @@ let SelectedHeaderOptions = React.createClass( {
             }
         }.bind( this ) );
         this.setState( {globalFlairState: newGlobalFlairState} );
-        
+
     },
     //All methods containing alert are only used by selected_entry when viewing an alertgroupand interacting with an alert.
     alertOpenSelected: function() {
@@ -47,8 +47,8 @@ let SelectedHeaderOptions = React.createClass( {
             let id = $( tr ).attr( 'id' );
             array.push( {id:id,status:'open'} );
         }.bind( this ) );
-        let data = JSON.stringify( {alerts:array} );    
-        
+        let data = JSON.stringify( {alerts:array} );
+
         this.props.ToggleProcessingMessage( true );
 
         $.ajax( {
@@ -73,11 +73,11 @@ let SelectedHeaderOptions = React.createClass( {
         $( 'tr.selected' ).each( function( index,tr ) {
             let id = $( tr ).attr( 'id' );
             array.push( {id:id,status:'closed', closed:time} );
-        }.bind( this ) ); 
+        }.bind( this ) );
         let data = JSON.stringify( {alerts:array} );
-        
+
         this.props.ToggleProcessingMessage( true );
-        
+
         $.ajax( {
             type:'put',
             url: '/scot/api/v2/'+this.props.type + '/'+ this.props.id,
@@ -103,6 +103,7 @@ let SelectedHeaderOptions = React.createClass( {
         }.bind( this ) );
 
         this.props.ToggleProcessingMessage( true );
+        // this.setState( {promoteRemaining:array.length} );
 
         //Start by promoting the first one in the array
         $.ajax( {
@@ -115,11 +116,13 @@ let SelectedHeaderOptions = React.createClass( {
                 let promoteTo = {
                     promote:response.pid
                 };
-                
-                this.setState( {promoteRemaining: array.length -1 } );
-                
-                for ( let i=1; i < array.length; i++ ) {
-                   
+
+                // if ( this.state.promoteRemaining > 0 ){
+                //     this.setState( {promoteRemaining: array.length -1 } );
+                // }
+
+                for ( let i=0; i < array.length; i++ ) {
+
                     $.ajax( {
                         type:'put',
                         url: '/scot/api/v2/alert/'+array[i],
@@ -127,16 +130,20 @@ let SelectedHeaderOptions = React.createClass( {
                         contentType: 'application/json; charset=UTF-8',
                         success: function( ){
                             console.log( 'success' );
-                            this.setState( {promoteRemaining: this.state.promoteRemaining -1} );
-                            
-                            if ( this.state.promoteRemaining == 0 ) {
+                            // if ( this.state.promoteRemaining > 0 ){
+                            //     this.setState( {promoteRemaining: array.length -1 } );
+                            // }
+
+                            if ( i+1 == array.length ) {
                                 this.props.ToggleProcessingMessage( false );
                             }
 
                         }.bind( this ),
                         error: function( data ) {
                             this.props.errorToggle( 'failed to promoted selected alerts', data );
-                            this.setState( {promoteRemaining: this.state.promoteRemaining -1} );
+                            // if ( this.state.promoteRemaining > 0 ){
+                            //     this.setState( {promoteRemaining: array.length -1 } );
+                            // }
                         }.bind( this )
                     } );
                 }
@@ -145,7 +152,7 @@ let SelectedHeaderOptions = React.createClass( {
                 this.props.errorToggle( 'failed to promoted selected alerts', data );
             }.bind( this )
         } );
-        
+
     },
     /*Future use?
     alertUnpromoteSelected: function() {
@@ -245,7 +252,7 @@ let SelectedHeaderOptions = React.createClass( {
                         this.props.errorToggle( 'failed to delete selected alerts' , data );
                     }.bind( this )
                 } );
-            }        
+            }
         }
     },
     PrintPrepare: function() {
@@ -269,7 +276,7 @@ let SelectedHeaderOptions = React.createClass( {
     },
     componentDidMount: function() {
         //open, close SELECTED alerts
-        if ( this.props.type == 'alertgroup' || this.props.type == 'alert' ) { 
+        if ( this.props.type == 'alertgroup' || this.props.type == 'alert' ) {
             $( '#main-detail-container' ).keydown( function( event ){
                 if( $( 'input' ).is( ':focus' ) ) {return;}
                 if ( event.keyCode == 79 && ( event.ctrlKey != true && event.metaKey != true ) ) {
@@ -309,7 +316,7 @@ let SelectedHeaderOptions = React.createClass( {
             data: data,
             contentType: 'application/json; charset=UTF-8',
             success: function( response ){
-                window.open( '/#/guide/' + response.id );        
+                window.open( '/#/guide/' + response.id );
             }.bind( this ),
             error: function( data ) {
                 this.props.errorToggle( 'failed to create a new guide', data );
@@ -342,7 +349,7 @@ let SelectedHeaderOptions = React.createClass( {
                 window.open( url,'_blank' );
             }.bind( this ),
             error: function( data ) {
-                this.props.errorToggle( 'failed to create a signature', data ); 
+                this.props.errorToggle( 'failed to create a signature', data );
             }.bind( this )
         } );
     },
@@ -350,7 +357,7 @@ let SelectedHeaderOptions = React.createClass( {
     manualUpdate: function() {
         this.props.updated( null,null );
     },
-    render: function() { 
+    render: function() {
         let subjectType = this.props.subjectType;
         let type = this.props.type;
         let id = this.props.id;
@@ -363,10 +370,10 @@ let SelectedHeaderOptions = React.createClass( {
         } else if ( this.props.headerData.value ) {
             string = this.props.headerData.value;
         } else if ( this.props.headerData.name ) {
-            string = this.props.headerData.name;  
+            string = this.props.headerData.name;
         } else if ( this.props.headerData.body ) {
             string = this.props.headerData.body;
-        } 
+        }
 
         if ( type != 'alertgroup' ) {
             let newType;
@@ -378,7 +385,7 @@ let SelectedHeaderOptions = React.createClass( {
                     newType = 'Incident';
                 } else if ( type == 'incident' || type == 'guide' || type == 'intel' || type == 'signature' || type == 'entity' ) {
                     showPromote = false;
-                } 
+                }
             } else {
                 showPromote = false;
             }
@@ -389,7 +396,7 @@ let SelectedHeaderOptions = React.createClass( {
                     <Button eventKey="3" onClick={this.toggleFlair} bsSize='xsmall'><i className="fa fa-eye-slash" aria-hidden="true"></i> Toggle Flair</Button>
                     {type == 'alertgroup' || type == 'event' || type == 'intel' ? <Button eventKey="4" onClick={this.props.viewedByHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> Viewed By History</Button> : null}
                     <Button eventKey="5" onClick={this.props.changeHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> {subjectType} History</Button>
-                    {type != 'entity' ? <Button eventKey="6" onClick={this.props.permissionsToggle} bsSize='xsmall'><i className="fa fa-users" aria-hidden="true"></i> Permissions</Button> : null } 
+                    {type != 'entity' ? <Button eventKey="6" onClick={this.props.permissionsToggle} bsSize='xsmall'><i className="fa fa-users" aria-hidden="true"></i> Permissions</Button> : null }
                     <TrafficLightProtocol type={type} id={id} tlp={this.props.headerData.tlp} />
                     <Button eventKey="7" onClick={this.props.entitiesToggle} bsSize='xsmall'><span className='entity'>__</span> View Entities</Button>
                     {type == 'guide' ? <Button eventKey='8' onClick={this.props.guideRedirectToAlertListWithFilter} bsSize='xsmall'><i className="fa fa-table" aria-hidden='true'></i> View Related Alerts</Button> : null}
@@ -406,7 +413,7 @@ let SelectedHeaderOptions = React.createClass( {
                         <Button onClick={this.props.markModalToggle} bsSize='xsmall'>Marked Objects</Button>
                         <Button id='refresh-detail' bsStyle='info' eventKey="10" onClick={this.manualUpdate} bsSize='xsmall' style={{float:'right'}}><i className='fa fa-refresh' aria-hidden='true'></i></Button>
                     </ButtonGroup>
-                    
+
                 </div>
             );
         } else {
@@ -423,8 +430,8 @@ let SelectedHeaderOptions = React.createClass( {
                         <TrafficLightProtocol type={type} id={id} tlp={this.props.headerData.tlp} />
                         <Button eventKey='8' onClick={this.alertOpenSelected} bsSize='xsmall' bsStyle='danger'><img src='/images/open.png'/> Open Selected</Button>
                         <Button eventKey='9' onClick={this.alertCloseSelected} bsSize='xsmall' bsStyle='success'><i className="fa fa-flag-checkered" aria-hidden="true"></i> Close Selected</Button>
-                        <Button eventKey='10' onClick={this.alertPromoteSelected} bsSize='xsmall' bsStyle='warning'><img src='/images/megaphone.png'/> Promote Selected</Button> 
-                        <Button eventKey='11' onClick={this.alertSelectExisting} bsSize='xsmall'><img src='/images/megaphone_plus.png' /> Add Selected to <b>Existing Event</b></Button> 
+                        <Button eventKey='10' onClick={this.alertPromoteSelected} bsSize='xsmall' bsStyle='warning'><img src='/images/megaphone.png'/> Promote Selected</Button>
+                        <Button eventKey='11' onClick={this.alertSelectExisting} bsSize='xsmall'><img src='/images/megaphone_plus.png' /> Add Selected to <b>Existing Event</b></Button>
                         <Button eventKey='12' onClick={this.props.entryToggle} bsSize='xsmall'><i className="fa fa-plus-circle" aria-hidden="true"></i> Add Entry</Button>
                         <Button eventKey="13" onClick={this.props.fileUploadToggle} bsSize='xsmall'><i className="fa fa-upload" aria-hidden="true"></i> Upload File</Button>
                         <Button eventKey='14' onClick={this.alertExportCSV} bsSize='xsmall'><img src='/images/csv_text.png'/> Export to CSV</Button>
@@ -434,7 +441,7 @@ let SelectedHeaderOptions = React.createClass( {
                         <Button onClick={this.PrintPrepare} bsSize='xsmall' bsStyle='info'><i className='fa fa-print' aria-hidden='true'></i> Print</Button>
                         <Button onClick={this.Print} style={{display:'none'}} id="print-button"></Button>
                         <Button eventKey='15' onClick={this.alertDeleteSelected} bsSize='xsmall' bsStyle='danger'><i className="fa fa-trash" aria-hidden="true"></i> Delete Selected</Button>
-                        <Button bsStyle='danger' eventKey="17" onClick={this.props.deleteToggle} bsSize='xsmall'><i className="fa fa-trash" aria-hidden="true"></i> Delete {subjectType}</Button> 
+                        <Button bsStyle='danger' eventKey="17" onClick={this.props.deleteToggle} bsSize='xsmall'><i className="fa fa-trash" aria-hidden="true"></i> Delete {subjectType}</Button>
                         <ButtonGroup style={{float:'right'}}>
                             <Marker type={type} id={id} string={string} />
                             <Button onClick={this.props.markModalToggle} bsSize='xsmall'>Marked Actions</Button>
@@ -442,7 +449,7 @@ let SelectedHeaderOptions = React.createClass( {
                         </ButtonGroup>
                     </div>
                 );
-            } else { 
+            } else {
                 return (
                     <div className="entry-header detail-buttons">
                         <Button eventKey='1' onClick={this.toggleFlair} bsSize='xsmall'><i className="fa fa-eye-slash" aria-hidden="true"></i> Toggle Flair</Button>
