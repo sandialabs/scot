@@ -137,7 +137,7 @@ function install_elasticsearch {
             # fi
             systemctl daemon-reload
             systemctl enable elasticsearch.service
-            systemctl restart elasticsearch.service
+            systemctl --no-pager restart elasticsearch.service
         else
             echo "-- adding elasticsearch to rc.d"
             update-rc.d elasticsearch defaults
@@ -147,7 +147,7 @@ function install_elasticsearch {
     else
         systemctl daemon-reload
         systemctl enable elasticsearch.service
-        systemctl start elasticsearch.service
+        systemctl --no-pager start elasticsearch.service
     fi
 
     echo "~~~ pausing for a few seconds to allow ES to spin up"
