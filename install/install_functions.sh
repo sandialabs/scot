@@ -164,11 +164,11 @@ function start_services {
             systemctl daemon-reload
             systemctl restart mongod.service
             wait_for_mongo
-            systemctl restart scot.service
-            systemctl restart apache2.service
-            systemctl restart scfd.service
-            systemctl restart scrfd.service
-            systemctl restart scepd.service
+            systemctl --no-pager restart scot.service
+            systemctl --no-pager restart apache2.service
+            systemctl --no-pager restart scfd.service
+            systemctl --no-pager restart scrfd.service
+            systemctl --no-pager restart scepd.service
         else 
             service mongod restart
             wait_for_mongo
@@ -181,12 +181,12 @@ function start_services {
     else
         # it appears that centos 7.3 is systemd 
         systemctl daemon-reload
-        systemctl restart mongod.service
+        systemctl --no-pager restart mongod.service
         wait_for_mongo
-        systemctl restart scot.service
-        systemctl restart httpd.service
-        systemctl restart scfd.service
-        systemctl restart scrfd.service
-        systemctl restart scepd.service
+        systemctl --no-pager restart scot.service
+        systemctl --no-pager restart httpd.service
+        systemctl --no-pager restart scfd.service
+        systemctl --no-pager restart scrfd.service
+        systemctl --no-pager restart scepd.service
     fi
 }

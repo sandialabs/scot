@@ -287,13 +287,27 @@ sub get_links_by_entity_id {
 sub get_links_by_target {
     my $self    = shift;
     my $target  = shift;
+    my $filter  = shift;
     my $id      = $target->{id} + 0;
     my $type    = $target->{type};
 
+    my $match   = {
+        vertices => { '$elemMatch' => { id => $id, type => $type } }
+    };
+    if ( defined $filter ) {
+        $match  = {
+            '$and'  => [
+                { vertices => { '$elemMatch' => { id => $id, type => $type } }},
+                {'vertices.type' => {
+                    '$nin' => [ 'alert', 'alertgroup', 'entry' ]
+                }},
+            ]
+        };
+    }
+
     $self->env->log->debug("Finding Links to $type $id");
-    my $cursor = $self->find({
-         vertices    => { '$elemMatch' => { id => $id, type => $type } },
-    });
+    
+    my $cursor = $self->find($match);
     # $self->env->log->debug("found ".$cursor->count." links");
     return $cursor;
 }
