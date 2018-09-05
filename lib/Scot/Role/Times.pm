@@ -1,6 +1,17 @@
 package Scot::Role::Times;
-
 use Moose::Role;
+
+=head1 Name
+
+Scot::Role::Times
+
+=head1 Description
+
+This Role when consumed by a Scot::Model, provides the following attributes.
+
+=head1 Attributes
+
+=over 4
 
 =item B<updated>
 
@@ -17,7 +28,7 @@ has updated => (
 
 =item B<created>
 
-when it was created
+when it was created (integer seconds since unix epoch)
 
 =cut
 
@@ -30,7 +41,7 @@ has created => (
 
 =item B<when>
 
-user adjustable time
+user adjustable time (integer seconds since unix epoch)
 
 =cut
 
@@ -40,5 +51,9 @@ has when    => (
     required    => 1,
     default     => sub { time(); },
 );
+
+=back
+
+=cut
 
 1;

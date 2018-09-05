@@ -8,6 +8,10 @@ Scot::Model::User
 
 This model holds configuration information for SCOT users
 
+=head1 Extends
+
+Scot::Model
+
 =cut
 use lib '../../../lib';
 use Scot::Types;
@@ -20,6 +24,12 @@ with    qw(
     Scot::Role::Username
     Scot::Role::Hashable
 );
+
+=head1 Consumed Roles
+
+    Meerkat::Role::Document
+    Scot::Role::Username
+    Scot::Role::Hashable
 
 =head1 Attributes
 
