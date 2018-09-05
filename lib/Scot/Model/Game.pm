@@ -8,6 +8,10 @@ Scot::Model::Game
 
 This model holds information about SCOT the GAME! 
 
+=head1 Extends 
+
+Scot::Model
+
 =cut
 
 use Moose;
@@ -19,9 +23,18 @@ with    qw(
     Scot::Role::Hashable
 );
 
+=head1 Consumed Roles
+
+    Meerkat::Role::Document
+    Scot::Role::Hashable
+
 =head1 Attributes
 
 =over 4
+
+=item B<game_name>
+
+The name of the game
 
 =cut
 
@@ -31,11 +44,23 @@ has game_name => (
     required    => 1,
 );
 
+=item B<tooltip>
+
+what to display as a tooltip
+
+=cut
+
 has tooltip => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
 );
+
+=item B<lastupdate>
+
+The seconds since unix epoch when this record was updated
+
+=cut
 
 has lastupdate  => (
     is          => 'ro',

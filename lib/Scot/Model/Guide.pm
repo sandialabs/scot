@@ -14,6 +14,10 @@ The model of a Guide
 Guides are collections of entries that the team can use to build
 instructions on how to handle various alerts.
 
+=head1 Extends
+
+Scot::Model
+
 =cut
 
 extends 'Scot::Model';
@@ -26,6 +30,16 @@ with    qw(
     Scot::Role::Times
     Scot::Role::TLP
 );
+
+=head1 Consumed Roles
+
+    Meerkat::Role::Document
+    Scot::Role::Entriable
+    Scot::Role::Hashable
+    Scot::Role::Permission
+    Scot::Role::Subject
+    Scot::Role::Times
+    Scot::Role::TLP
 
 =head1 Attributes
 
