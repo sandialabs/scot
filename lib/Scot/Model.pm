@@ -26,10 +26,9 @@ use namespace::autoclean;
 =over 4
 
 =item B<env>
-
+not used?
 Link to the Scot::Env singleton
 
-=cut
 
 has env =>  (
     is      => 'ro',
@@ -38,6 +37,8 @@ has env =>  (
     traits => [ 'DoNotSerialize' ],
     default => sub { Scot::Env->instance; },
 );
+
+=cut
 
 =item B<_id>
 
