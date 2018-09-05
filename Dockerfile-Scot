@@ -3,12 +3,6 @@ FROM sandialabs/scot_perl
 ENV DEBIAN_FRONTEND="noninteractive" \
     NO_PROXY="elastic,mongodb,activemq"
 
-RUN apt-get update && \
-    apt-get install apt-utils ca-certificates curl vim ssmtp -y -f  && \
-    update-ca-certificates && \ 
-    apt-get autoclean && \
-    apt-get --purge -y autoremove && \ 
-    rm -rf /var/lib/apt/lists* /tmp/* /var/tmp/*
 
 RUN mkdir -p /var/log/scot
 RUN mkdir -p /opt/scot
@@ -28,4 +22,5 @@ COPY docker-configs/scot/restore.cfg.pl /opt/scot/etc/
 EXPOSE 3000 
 
 ENV HOME /home/scot
-CMD /usr/local/bin/hypnotoad -f /opt/scot/script/Scot
+#CMD /usr/local/bin/hypnotoad -f /opt/scot/script/Scot
+CMD /bin/bash
