@@ -19,6 +19,12 @@ of workflows.
 
 =cut
 
+=head1 Extends
+
+Scot::Model
+
+=cut
+
 extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
@@ -29,6 +35,16 @@ with    qw(
     Scot::Role::Times
     Scot::Role::TLP
 );
+
+=head1 Consumed Roles
+
+    Meerkat::Role::Document
+    Scot::Role::Entriable
+    Scot::Role::Hashable
+    Scot::Role::Permission
+    Scot::Role::Subject
+    Scot::Role::Times
+    Scot::Role::TLP
 
 =head1 Attributes
 
