@@ -19,6 +19,10 @@ The model for an individual incident.
 (This is a replacement for old, sandia specific incident. it
 can handle changes to the incident data more gracefully)
 
+=head1 Extends
+
+Scot::Model
+
 =cut
 
 extends 'Scot::Model';
@@ -39,6 +43,22 @@ with    qw(
 );
 
 enum 'valid_status', [ qw(open closed) ];
+
+=head1 Consumed Roles
+
+    Meerkat::Role::Document
+    Scot::Role::Entriable
+    Scot::Role::Events
+    Scot::Role::Hashable
+    Scot::Role::Historable
+    Scot::Role::Permission
+    Scot::Role::Promotable
+    Scot::Role::Sources
+    Scot::Role::Subject
+    Scot::Role::Tags
+    Scot::Role::Type
+    Scot::Role::TLP
+    Scot::Role::Times
 
 =head1 Attributes
 

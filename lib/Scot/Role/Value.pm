@@ -1,8 +1,18 @@
 package Scot::Role::Value;
-
+use Moose::Role;
 use namespace::autoclean;
 
-use Moose::Role;
+=head1 Name
+
+Scot::Role::Value
+
+=head1 Description
+
+This Role when consumed by a Scot::Model, provides the following attributes.
+
+=head1 Attributes
+
+=over 4
 
 =item C<value>
 
@@ -15,5 +25,9 @@ has value  => (
     isa         => 'Str',
     required    => 1,
 );
+
+=back
+
+=cut
 
 1;

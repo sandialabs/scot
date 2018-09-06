@@ -57,14 +57,14 @@ override api_list => sub {
 
     if ( defined $current ) {
         my @records;
-        my $cursor  = $self->get_handler($current);
-        return ($cursor, $cursor->count);
+        my ($cursor,$count)  = $self->get_handler($current);
+        return ($cursor, $count);
     }
 
     $self->env->log->debug("match is ",{filter=>\&Dumper, value=>$match});
 
     my $cursor  = $self->find($match);
-    my $total   = $cursor->count;
+    my $total   = $self->count($match);
 
     my $limit   = $self->build_limit($href);
     if ( defined $limit ) {
@@ -102,9 +102,10 @@ sub get_handler {
         end     => { '$gte' => $when },
     };
 
-    my $cursor = $self->find($match);
+    my $cursor  = $self->find($match);
+    my $count   = $self->count($match);
 
-    return $cursor;
+    return $cursor, $count;
 }
 
 

@@ -34,7 +34,7 @@ let SelectedHeader = React.createClass( {
             entitiesToolbar:false,
             changeHistoryToolbar:false,
             viewedByHistoryToolbar:false,
-            entryToolbar:false, 
+            entryToolbar:false,
             deleteToolbar:false,
             promoteToolbar:false,
             notificationType:null,
@@ -67,10 +67,10 @@ let SelectedHeader = React.createClass( {
             runWatcher: false,
             entityDetailKey: entityDetailKey,
             processing: false,
-            showSignatureOptions: false,        
+            showSignatureOptions: false,
             showMarkModal: false,
             showLinksModal: false,
-            isDeleted: false,     
+            isDeleted: false,
             flairOff: false,
             highlightedText: '',
             flairing : false,
@@ -97,7 +97,7 @@ let SelectedHeader = React.createClass( {
                             if ( this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true ) {
                                 this.setState( {loading:false} );
                             }
-                            if ( this.props.type == 'alertgroup' && eventResult.parsed === -1 ) { 
+                            if ( this.props.type == 'alertgroup' && eventResult.parsed === -1 ) {
                                 this.setState( {flairing: true} );
                             } else {
                                 this.setState( {flairing: false} );
@@ -115,7 +115,7 @@ let SelectedHeader = React.createClass( {
                 //entry load
                 $.ajax( {
                     type: 'get',
-                    url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType, 
+                    url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType,
                     success: function( result ) {
                         if ( this.state.isMounted ) {
                             let entryResult = result.records;
@@ -149,7 +149,7 @@ let SelectedHeader = React.createClass( {
                                     } else {
                                         setTimeout( function(){AddFlair.entityUpdate( entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,this.scrollTo );}.bind( this ) );
                                         if ( this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true ) {
-                                            this.setState( {loading:false} );        
+                                            this.setState( {loading:false} );
                                         }
                                     }
                                 }.bind( this )
@@ -169,7 +169,7 @@ let SelectedHeader = React.createClass( {
                 if ( this.props.type == 'alertgroup' ) {
                     $.ajax( {
                         type:'get',
-                        url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/guide', 
+                        url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/guide',
                         success: function( result ) {
                             if ( this.state.isMounted ) {
                                 let arr = [];
@@ -183,10 +183,10 @@ let SelectedHeader = React.createClass( {
                             this.setState( {guideID: null} );
                             this.props.errorToggle( 'Error: Failed to load guide data. Error message:' + result.responseText, result );
                         }.bind( this )
-                    } );     
+                    } );
                 }
                 Store.storeKey( this.props.id );
-                Store.addChangeListener( this.updated ); 
+                Store.addChangeListener( this.updated );
             }.bind( this )
         };
         InitialAjaxLoad = setTimeout( delayFunction.delay,400 );
@@ -206,7 +206,7 @@ let SelectedHeader = React.createClass( {
         //resets the watcher flag to false. This will only get set to true if a call for entries is made.
         this.setState( {runWatcher:false} );
     },
-    updated: function( _type,_message ) { 
+    updated: function( _type,_message ) {
         if ( !this.state.isDeleted ) {
             this.setState( {refreshing:true, eventLoaded:false,entryLoaded:false,entityLoaded:false} );
             let entryType = 'entry';
@@ -236,7 +236,7 @@ let SelectedHeader = React.createClass( {
                     }
                     this.props.errorToggle( 'Error: Failed to reload detail data. Error message: ' + result.responseText, result );
                 }.bind( this ),
-            } );    
+            } );
             //entry load
             $.ajax( {
                 type: 'get',
@@ -248,14 +248,14 @@ let SelectedHeader = React.createClass( {
                         this.Watcher();
                         if ( this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true ) {
                             this.setState( {refreshing:false} );
-                        } 
+                        }
                     }
                 }.bind( this ),
                 error: function( result ) {
                     this.setState( {showEntryData:true, entryLoaded:true} );
                     if ( this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true ) {
                         this.setState( {refreshing:false} );
-                    } 
+                    }
                     this.props.errorToggle( 'Error: Failed to reload entry data. Error message: ' + result.responseText, result );
                 }
             } );
@@ -279,14 +279,14 @@ let SelectedHeader = React.createClass( {
                                 }
                             }.bind( this )
                         };
-                        waitForEntry.waitEntry(); 
+                        waitForEntry.waitEntry();
                     }
                 }.bind( this ),
                 error: function( result ) {
                     this.setState( {showEntityData:true} );
                     if ( this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true ) {
                         this.setState( {refreshing:false} );
-                    } 
+                    }
                     this.props.errorToggle( 'Error: Failed to reload entity data.', result );
                 }.bind( this )
             } );
@@ -434,7 +434,7 @@ let SelectedHeader = React.createClass( {
         if( this.props.type == 'alertgroup' ) {
             $( '#detail-container' ).find( 'a, .entity' ).not( '.not_selectable' ).each( function( index,tr ) {
                 $( tr ).off( 'mousedown' );
-                $( tr ).on( 'mousedown', function( index ) { 
+                $( tr ).on( 'mousedown', function( index ) {
                     let thing = index.target;
                     if ( $( thing )[0].className == 'extras' ) { thing = $( thing )[0].parentNode;} //if an extra is clicked reference the parent element
                     if ( $( thing ).attr( 'url' ) ) {  //link clicked
@@ -443,7 +443,7 @@ let SelectedHeader = React.createClass( {
                     } else { //entity clicked
                         let entityid = $( thing ).attr( 'data-entity-id' );
                         let entityvalue = $( thing ).attr( 'data-entity-value' );
-                        let entityoffset = $( thing ).offset();                                      
+                        let entityoffset = $( thing ).offset();
                         let entityobj = $( thing );
                         this.flairToolbarToggle( entityid, entityvalue, 'entity', entityoffset, entityobj );
                     }
@@ -464,7 +464,7 @@ let SelectedHeader = React.createClass( {
             }
         }
     },
- 
+
     checkFlairHover: function( ifr, nicktype ) {
         function returnifr() {
             return ifr;
@@ -500,7 +500,7 @@ let SelectedHeader = React.createClass( {
     },
 
     scrollTo: function() {
-        if ( this.props.taskid != undefined ) { 
+        if ( this.props.taskid != undefined ) {
             $( '.entry-wrapper' ).scrollTop( $( '.entry-wrapper' ).scrollTop() + $( '#iframe_'+this.props.taskid ).position().top -30 );
         }
     },
@@ -529,9 +529,9 @@ let SelectedHeader = React.createClass( {
     },
     ToggleProcessingMessage: function( status ) {
         this.setState( {processing: status} );
-   
+        this.props.togglePreventClick();
     },
-    
+
     linksModalToggle: function() {
         let showLinksModal = !this.state.showLinksModal;
         this.setState( { showLinksModal: showLinksModal } );
@@ -547,11 +547,11 @@ let SelectedHeader = React.createClass( {
     },
 
     render: function() {
-        let headerData = this.state.headerData;         
+        let headerData = this.state.headerData;
         let viewedby = this.viewedbyfunc( headerData );
         let type = this.props.type;
         let subjectType = this.titleCase( this.props.type );  //in signatures we're using the key "name"
-        let id = this.props.id; 
+        let id = this.props.id;
         let string = '';
 
         if ( this.state.headerData.subject ) {
@@ -562,8 +562,8 @@ let SelectedHeader = React.createClass( {
             string = this.state.headerData.name;
         } else if ( this.state.headerData.body ) {
             string = this.state.headerData.body;
-        } 
-        
+        }
+
         return (
             <div> {this.state.isNotFound ? <h1>No record found.</h1> :
                 <div>
@@ -572,11 +572,11 @@ let SelectedHeader = React.createClass( {
                             <div className='details-subject' style={{display: 'inline-flex',paddingLeft:'5px'}}>
                                 {this.state.showEventData ? <EntryDataSubject data={this.state.headerData} subjectType={subjectType} type={type} id={this.props.id} errorToggle={this.props.errorToggle} />: null}
                                 {this.state.refreshing ? <span style={{color:'lightblue'}}>Refreshing Data...</span> :null }
-                                {this.state.loading ? <span style={{color:'lightblue'}}>Loading...</span> :null}    
+                                {this.state.loading ? <span style={{color:'lightblue'}}>Loading...</span> :null}
                                 {this.state.processing ? <span style={{color: 'lightblue'}}>Processing Actions...</span> : null }
                                 {this.state.flairing ? <span style={{color: 'lightblue'}}>Flairing...</span> : null }
-                            </div> 
-                            {type != 'entity' ? 
+                            </div>
+                            {type != 'entity' ?
                                 <div className='details-table toolbar' style={{display: 'flex'}}>
                                     <table>
                                         <tbody>
@@ -584,14 +584,14 @@ let SelectedHeader = React.createClass( {
                                                 <th></th>
                                                 <td><div style={{marginLeft:'5px'}}>{this.state.showEventData ? <DetailDataStatus data={this.state.headerData} status={this.state.headerData.status} id={id} type={type} errorToggle={this.props.errorToggle} />: null}</div></td>
                                                 {( type != 'entity' ) ?
-                                                    <th>Owner: </th> 
+                                                    <th>Owner: </th>
                                                     :
                                                     null
                                                 }
-                                                {( type != 'entity' ) ? 
-                                                    <td><span>{this.state.showEventData ? <Owner key={id} data={this.state.headerData.owner} type={type} id={id} updated={this.updated} errorToggle={this.props.errorToggle}/>: null}</span></td> 
+                                                {( type != 'entity' ) ?
+                                                    <td><span>{this.state.showEventData ? <Owner key={id} data={this.state.headerData.owner} type={type} id={id} updated={this.updated} errorToggle={this.props.errorToggle}/>: null}</span></td>
                                                     :
-                                                    null 
+                                                    null
                                                 }
                                                 {( type != 'entity' ) ?
                                                     <th>Updated: </th>
@@ -611,7 +611,7 @@ let SelectedHeader = React.createClass( {
                                         </tbody>
                                     </table>
                                     {/*<DetailHeaderMoreOptions type={type} id={id} data={this.state.headerData} errorToggle={this.props.errorToggle} showData={this.state.showEventData} />*/}
-                                </div> 
+                                </div>
                                 :
                                 null
                             }
@@ -620,7 +620,7 @@ let SelectedHeader = React.createClass( {
                         {this.state.exportModal ? <ExportModal type={type}  errorToggle={this.props.errorToggle} exportToggle={this.exportToggle} id={id} /> : null }
                         {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
                         {this.state.viewedByHistoryToolbar ? <ViewedByHistory viewedByHistoryToggle={this.viewedByHistoryToggle} id={id} type={type} subjectType={subjectType} viewedby={viewedby} errorToggle={this.props.errorToggle} /> : null}
-                        {this.state.changeHistoryToolbar ? <ChangeHistory changeHistoryToggle={this.changeHistoryToggle} id={id} type={type} subjectType={subjectType} errorToggle={this.props.errorToggle}/> : null} 
+                        {this.state.changeHistoryToolbar ? <ChangeHistory changeHistoryToggle={this.changeHistoryToggle} id={id} type={type} subjectType={subjectType} errorToggle={this.props.errorToggle}/> : null}
                         {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} entityData={this.state.entityData} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} /> : null}
                         {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} updated={this.updated} errorToggle={this.props.errorToggle} history={this.props.history}/> :null}
                         {this.state.showMarkModal ? <Mark modalActive={true} type={type} id={id} string={string} errorToggle={this.props.errorToggle} markModalToggle={this.markModalToggle} /> : null }
@@ -679,14 +679,14 @@ let EntryDataSubject = React.createClass( {
                     this.setState( {value:newValue} );
                     this.calculateWidth( newValue );
                 }.bind( this ),
-                error: function( result ) { 
+                error: function( result ) {
                     this.props.errorToggle( 'error: Failed to update the subject/name', result );
                 }.bind( this )
             } );
         }
     },
     componentDidMount: function() {
-        this.calculateWidth( this.state.value ); 
+        this.calculateWidth( this.state.value );
     },
     onChange: function( e ) {
         this.setState({ value: e.target.value });

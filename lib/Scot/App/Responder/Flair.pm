@@ -48,7 +48,7 @@ sub process_message {
     my $href    = shift;
     my $log     = $self->log;
 
-    $log->debug("pm : ",{filter=>\&Dumper, value=>$pm});
+    $log->trace("pm : ",{filter=>\&Dumper, value=>$pm});
     $log->debug("processing message: ",{filter=>\&Dumper, value=>$href});
 
     $log->debug("refreshing entitytypes");
@@ -277,7 +277,9 @@ sub flair_record {
                 next COLUMN;
             }
 
-            if ( $column =~ /^sparkline$/i ) {
+            if ( $column =~ /^sparkline$/i 
+                 or grep {/__SPARKLINE__/} @values 
+            ) {
                 $log->debug("sparkline column detected!");
                 my @sparkvalues = @values;
                 $log->debug("sparkvalues: ",{filter=>\&Dumper, value=>\@sparkvalues});

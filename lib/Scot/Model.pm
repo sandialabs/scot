@@ -25,6 +25,10 @@ use namespace::autoclean;
 
 =over 4
 
+=item B<env>
+not used?
+Link to the Scot::Env singleton
+
 
 has env =>  (
     is      => 'ro',
@@ -33,6 +37,8 @@ has env =>  (
     traits => [ 'DoNotSerialize' ],
     default => sub { Scot::Env->instance; },
 );
+
+=cut
 
 =item B<_id>
 
@@ -74,6 +80,26 @@ has location    => (
     default     => 'local',
 );
 
+=back
+
+=head1 Methods
+
+=over 4
+
+=item B<get_collection_name()>
+
+submit an object get the lowercased collection name.  For example:
+
+    my $thing = Scot::Model::Alertgroup->new();
+    say $thing->get_collection_name();
+
+    alertgroup
+
+=cut
+
+=back
+
+=cut
 
 sub get_collection_name {
     my $self    = shift;
