@@ -13,6 +13,10 @@ Scot::Model::Stat
 
 The model of a Stat
 
+=head1 Extends
+
+Scot::Model
+
 =cut
 
 extends 'Scot::Model';
@@ -22,6 +26,12 @@ with    qw(
     Scot::Role::Hashable
     Scot::Role::Value
 );
+
+=head1 Consumed Roles
+
+    Meerkat::Role::Document
+    Scot::Role::Hashable
+    Scot::Role::Value
 
 =head1 Attributes
 
@@ -54,12 +64,24 @@ sub _build_epoch {
     return $dt->epoch;
 }
 
+=item B<year>
+
+The four digit year
+
+=cut
+
 has year    => (
     is          => 'ro',
     isa         => 'Int',
     required    => 1,
     default     => 1969,
 );
+
+=item B<month>
+
+1-12, 1 = January
+
+=cut
 
 has month    => (
     is          => 'ro',
@@ -68,6 +90,12 @@ has month    => (
     default     => 1,
 );
 
+=item B<day>
+
+1-31 depending on the month
+
+=cut
+
 has day    => (
     is          => 'ro',
     isa         => 'Int',
@@ -75,12 +103,24 @@ has day    => (
     default     => 2,
 );
 
+=item B<dow>
+
+the day of the week, 1-7 where 1= monday
+
+=cut
+
 has dow    => (
     is          => 'ro',
     isa         => 'Int',
     required   => 1,
     default     => 2,
 );
+
+=item B<quarter>
+
+1 = jan, feb, mar
+
+=cut
 
 has quarter    => (
     is          => 'ro',
@@ -103,12 +143,24 @@ sub _build_quarter {
     return $dt->quarter;
 }
 
+=item B<hour>
+
+0-23
+
+=cut
+
 has hour    => (
     is          => 'ro',
     isa         => 'Int',
     required   => 1,
     default     => 1,
 );
+
+=item B<metric>
+
+The string that identifies the metric type
+
+=cut
 
 has metric  => (
     is          => 'ro',
@@ -117,7 +169,11 @@ has metric  => (
     default     => 'unknown',
 );
 
-=item 
+=item B<value>
+
+The numerica quantity for the metric
+
+=cut
 
 has value   => (
     is          => 'ro',
@@ -125,6 +181,8 @@ has value   => (
     required    => 1,
     default     => 0,
 );
+
+=back
 
 =cut
 

@@ -12,6 +12,10 @@ Scot::Model::Signature
 
 The model of a Signature
 
+=head1 Extends
+
+Scot::Model
+
 =cut
 
 extends 'Scot::Model';
@@ -28,6 +32,20 @@ with    qw(
     Scot::Role::Tags
     Scot::Role::TLP
 );
+
+=head1 Consumed Roles
+
+    Meerkat::Role::Document
+    Scot::Role::Entriable
+    Scot::Role::Hashable
+    Scot::Role::Historable
+    Scot::Role::Permission
+    Scot::Role::Target
+    Scot::Role::Times
+    Scot::Role::Permission
+    Scot::Role::Sources
+    Scot::Role::Tags
+    Scot::Role::TLP
 
 =head1 Attributes
 

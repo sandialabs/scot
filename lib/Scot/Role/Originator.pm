@@ -11,7 +11,7 @@ the TLP "color"
 
 has originator  => (
     is          => 'ro',
-    isa         => 'Str'
+    isa         => 'Str',
     required    => 1,
     default     => 'unknown',
 );
