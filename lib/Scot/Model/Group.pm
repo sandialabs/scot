@@ -8,6 +8,10 @@ Scot::Model::Group
 
 This model holds information about a local group
 
+=head1 Extends
+
+Scot::Model
+
 =cut
 
 use Moose;
@@ -18,6 +22,11 @@ with    qw(
     Meerkat::Role::Document
     Scot::Role::Hashable
 );
+
+=head1 Consumed Roles
+
+    Meerkat::Role::Document
+    Scot::Role::Hashable
 
 =head1 Attributes
 

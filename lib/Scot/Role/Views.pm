@@ -1,7 +1,19 @@
 package Scot::Role::Views;
-
 use Moose::Role;
 use namespace::autoclean;
+
+
+=head1 Name
+
+Scot::Role::Alerts
+
+=head1 Description
+
+This Role when consumed by a Scot::Model, provides the following attributes.
+
+=head1 Attributes
+
+=over 4
 
 =item B<views>
 
@@ -17,7 +29,18 @@ has views  => (
     default     => 0,
 );
 
-# array of { who => $a, when => $b, where => $c }
+=item B<view_history>
+
+History of the first view history by user.
+
+    {
+        username    => {
+            when    => epoch_time,
+            where   => string_representation_of_ipaddress,
+        }
+    }
+
+=cut
 
 has view_history => (
     is          => 'ro',
@@ -26,6 +49,18 @@ has view_history => (
     required    => 1,
     default     => sub {{}},
 );
+
+=back
+
+=head1 Methods
+
+=over 4
+
+=item B<add_view($user, $ipaddr, $when)>
+
+increments the B<views> attribute and sets view_history for $user
+
+=cut
 
 sub add_view {
     my $self    = shift;
@@ -59,6 +94,9 @@ sub add_view {
 #    return undef;
 }
 
+=back
+
+=cut
 
 1;
 

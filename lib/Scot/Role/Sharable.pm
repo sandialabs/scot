@@ -1,10 +1,25 @@
 package Scot::Role::Sharable;
-
 use Moose::Role;
 use namespace::autoclean;
 
-# everything that has permissions should have an owner
-# default owner is  a configuration item in env
+=head1 Name
+
+Scot::Role::Sharable
+
+=head1 Description
+
+This Role when consumed by a Scot::Model, provides the following attributes.
+
+=head1 Attributes
+
+=over 4
+
+=item B<site>
+
+Site is a unique string that identifies a SCOT site.  Set this value in 
+you /opt/scot/etc/scot.cfg.pl file
+
+=cut
 
 has site   => (
     is          => 'ro',
@@ -18,6 +33,12 @@ sub _get_site {
     my $env     = Scot::Env->instance;
     return $env->site_identifier;
 }
+
+=item B<shareable>
+
+Boolean value that states if sharing of the consuming object is permitted.
+
+=cut
 
 has shareable   => (
     is          => 'ro',
@@ -40,6 +61,22 @@ sub _get_shareable {
     }
     return $env->default_share_policy;
 }
+
+=back
+
+=head1 Methods
+
+This role provides the following method.
+
+=over 4
+
+=item B<is_shareable>
+
+Return the value stored in the B<sharable> attribute
+
+=back
+
+=cut
 
 sub is_shareable {
     my $self            = shift;

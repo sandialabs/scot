@@ -17,6 +17,12 @@ the Link collection
 
 =cut
 
+=head1 Extends
+
+Scot::Model
+
+=cut
+
 extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
@@ -25,25 +31,21 @@ with    qw(
     Scot::Role::Value
 );
 
+=head1 Consumed Roles
+
+    Meerkat::Role::Document
+    Scot::Role::Entriable
+    Scot::Role::Hashable
+    Scot::Role::Value
+
 =head1 Attributes
 
 =over 4
 
 =item B<value>
 
-Moved to Role
-
+From Scot::Role::Value
 the string that is the entity
-
-
-has value  => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-    default     => '',
-);
-
-=cut
 
 =item B<type>
 
