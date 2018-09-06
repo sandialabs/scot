@@ -14,6 +14,12 @@ The model of a deletion record
 
 =cut
 
+=head1 Extends
+
+Scot::Model
+
+=cut
+
 extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
@@ -22,13 +28,20 @@ with    qw(
     Scot::Role::Times
 );
 
+=head1 Consumed Roles
+
+    Meerkat::Role::Document
+    Scot::Role::Data
+    Scot::Role::Hashable
+    Scot::Role::Times
+
 =head1 Attributes
 
 =over 4
 
 =item B<type>
 
-the Scot::Model::* 
+the type of Scot::Model::* 
 
 =cut
 
