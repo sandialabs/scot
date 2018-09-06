@@ -60,6 +60,45 @@ with    qw(
     Scot::Role::TLP
     Scot::Role::Views
 
+=head1 Sample JSON object representation
+
+    {
+        "_id" : ObjectId("5b8f08b1d67012c18a5b0ea1"),
+        "columns" : [
+            "datetime",
+            "quarantined",
+        ],
+        entry_count: 0,
+        closed_count: 0, 
+        tlp: "unset",
+        id: 123,
+        message_id: "asdfasdfk@sdfds.com",
+        body: "text",
+        body_plain: "text",
+        body_flair: "text",
+        view_history: {
+            user: {
+                when: 12412312312,
+                where: "10.10.10.1",
+            }
+        },
+        ahrefs: [
+            {
+                subject: "foobar",
+                link: "https://foo.bar.com/search?s=123",
+            },
+        ],
+        promotion_id: 0,
+        status: "closed",
+        promoted_count: 0,
+        parsed: 1,
+        entry_count: 1,
+        alert_count: 2,
+        firstview: 1536161212,
+        owner: "scot-admin",
+        type: "alertgroup"
+    }
+
 =head1 Attributes
 
 =over 4

@@ -14,6 +14,10 @@ Entitytype tracks the user defined entity types
 in the future we may store data about entity types
 in here too
 
+=head1 Extends
+
+Scot::Model
+
 =cut
 
 extends 'Scot::Model';
@@ -24,10 +28,16 @@ with    qw(
     Scot::Role::Times
 );
 
+=head1 Consumed Roles
+
+    Meerkat::Role::Document
+    Scot::Role::Entriable
+    Scot::Role::Hashable
+    Scot::Role::Times
+
 =head1 Attributes
 
 =over 4
-
 
 =item B<value>
 

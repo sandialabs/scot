@@ -14,6 +14,10 @@ The model of an source record
 Sources are linked through the
 Link collection
 
+=head1 Extends
+
+Scot::Model
+
 =cut
 
 extends 'Scot::Model';
@@ -22,22 +26,20 @@ with    qw(
     Scot::Role::Value
 );
 
+=head1 Consumed Roles
+
+    Meerkat::Role::Document
+    Scot::Role::Value
+
 =head1 Attributes
 
 =over 4
 
 =item B<value>
 
-Moved to ROLE
+Moved to Scot::Role::Value
 
 the name of the source
-
-
-has value  => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-);
 
 =cut
 

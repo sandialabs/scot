@@ -13,6 +13,10 @@ Scot::Model::Handler
 The model of an the Handler record...
 The incident handler that is
 
+=head1 Extends
+
+Scot::Model
+
 =cut
 
 extends 'Scot::Model';
@@ -21,6 +25,12 @@ with    qw(
     Scot::Role::Hashable
     Scot::Role::Username
 );
+
+=head1 Consumed Roles
+
+    Meerkat::Role::Document
+    Scot::Role::Hashable
+    Scot::Role::Username
 
 =head1 Attributes
 

@@ -16,6 +16,10 @@ these are refrenced by Signatures
 Are essentially read only.
 any mods create a new sigbody
 
+=head1 Extends 
+
+Scot::Model
+
 =cut
 
 extends 'Scot::Model';
@@ -24,6 +28,12 @@ with    qw(
     Scot::Role::Hashable
     Scot::Role::Times
 );
+
+=head1 Consumed Roles
+
+    Meerkat::Role::Document
+    Scot::Role::Hashable
+    Scot::Role::Times
 
 =head1 Attributes
 

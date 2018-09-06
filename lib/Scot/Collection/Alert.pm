@@ -70,14 +70,26 @@ override 'update'   => sub {
          $obj,
          $update )  = $check->(@_);
 
-    my $data        = $self->_try_mongo_op(
+    # causing deprecation warning
+    #my $data        = $self->_try_mongo_op(
+    #    update  => sub {
+    #        $self->_mongo_collection->find_and_modify({
+    #            query   => { _id    => $obj->_id },
+    #            update  => $update,
+    #            new     => 1,
+    #        });
+    #    },
+    #);
+
+    my $data    = $self->_try_mongo_op(
         update  => sub {
-            $self->_mongo_collection->find_and_modify({
-                query   => { _id    => $obj->_id },
-                update  => $update,
-                new     => 1,
-            });
-    },);
+            $self->_mongo_collection->find_one_and_update(
+                { _id   => $obj->_id },
+                $update,
+                { upsert => 1, returnDocument => "after" }
+            )
+        },
+    );
 
     if ( ref $data ) {
         $self->_sync( $data => $obj );

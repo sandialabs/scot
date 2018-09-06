@@ -1,6 +1,17 @@
 package Scot::Role::Type;
-
 use Moose::Role;
+
+=head1 Name
+
+Scot::Role::Type
+
+=head1 Description
+
+This Role when consumed by a Scot::Model, provides the following attributes.
+
+=head1 Attributes
+
+=over 4
 
 =item B<type>
 
@@ -14,5 +25,9 @@ has type => (
     required    => 1,
     default     => '',
 );
+
+=back
+
+=cut
 
 1;

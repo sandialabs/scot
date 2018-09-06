@@ -12,6 +12,10 @@ Scot::Model::Entry
 
 The model of an individual Entry
 
+=head1 Extends
+
+Scot::Model
+
 =cut
 
 extends 'Scot::Model';
@@ -27,6 +31,19 @@ with    qw(
     Scot::Role::Times
     Scot::Role::TLP
 );
+
+=head1 Consumed Roles
+
+    Meerkat::Role::Document
+    Scot::Role::Body
+    Scot::Role::Entitiable
+    Scot::Role::Hashable
+    Scot::Role::Historable
+    Scot::Role::Parsed
+    Scot::Role::Permission
+    Scot::Role::Target
+    Scot::Role::Times
+    Scot::Role::TLP
 
 =head1 Attributes
 
@@ -55,13 +72,15 @@ has class   => (
 
 data about the entry.
 if entry is task then it is a 
-hash of {
-    task => {
-        when    => seconds_epoch,
-        who     => username,
-        status  => open|assigned|completed
+hash of 
+
+    {
+        task => {
+            when    => seconds_epoch,
+            who     => username,
+            status  => open|assigned|completed
+        }
     }
-}
 
 =cut
 
