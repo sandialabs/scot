@@ -2,6 +2,7 @@
 
 sudo docker-compose down
 
+mongo_log_dir="/var/log/mongodb/"
 scot_log_dir="/var/log/scot"
 scot_backup="/opt/scotbackup"
 mongodb_dir="/var/lib/mongodb"
@@ -34,11 +35,18 @@ else
     sudo mkdir -p $elastic_dir
 fi
 
+#check if mongo_log_dir exists
+if [ -d $mongo_log_dir ]; then
+    echo "$mongo_log_dir exists!"
+else
+    sudo mkdir -p $mongo_log_dir
+fi
 
 
 #set permissions
 sudo chmod -R 0770 /opt/scotbackup/
 sudo chmod -R 0775 /var/log/scot/
+sudo chmod -R 0775 /var/log/mongodb/
 sudo chmod -R g+rwx /var/lib/elasticsearch/ 
 sudo chgrp 1000 /var/lib/elasticsearch/
 
@@ -72,6 +80,7 @@ function add_users {
 sudo chown -R 1061:2060 /var/lib/mongodb/ /var/log/mongodb/
 sudo chown -R 1060:2060 /var/log/scot/ /opt/scot/
 sudo chown -R 1060:2060 /opt/scotfiles/
+
 
 #add users
 add_users
