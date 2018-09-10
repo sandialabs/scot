@@ -673,7 +673,7 @@ sub _build_COMMON_FILE_EXT {
     }xims;
     return {
         regex   => $regex,
-        type    => "filename",
+        type    => "file",
         order   => 100,
         options => { multiword => "no" },
     };
