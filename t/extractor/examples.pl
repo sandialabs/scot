@@ -22,13 +22,17 @@ EOF
 EOF
         flair   => <<EOF,
 <div>
-https://<span class="entity domain" data-entity-type="domain" data-entity-value="cbase.som.sunysb.edu">cbase.som.sunysb.edu</span>/soap/bss.cfm
+https://<span class="entity domain" data-entity-type="domain" data-entity-value="cbase.som.sunysb.edu">cbase.som.sunysb.edu</span>/soap/<span class="entity filename" data-entity-type="filename" data-entity-value="bss.cfm">bss.cfm</span>
 </div>
 EOF
         entities    => [
             {
                 type    => "domain",
                 value   => "cbase.som.sunysb.edu",
+            },
+            {
+                type    => "filename",
+                value   => "bss.cfm",
             },
         ],
     },
@@ -1288,6 +1292,32 @@ EOF
 </div>
 EOF
         entities    => [
+        ],
+        userdef => [],
+        debug   => 1,
+    },
+    {
+        testname    => "filename fail",
+        testgroup   => "file",
+        testnumber  => 49,
+        source      => <<'EOF',
+Sep 10, 2018 07:33:38 AM Error [ajp-nio-8016-exec-6] - Error Executing Database Query.[Macromedia][SQLServer JDBC Driver][SQLServer]Incorrect syntax near '='. The specific sequence of files included or processed is: /mnt/gfs/cfdocs/eCATT/templates/pgas_rslts.cfm, line: 235
+EOF
+        plain       => <<'EOF',
+Sep 10, 2018 07:33:38 AM Error [ajp-nio-8016-exec-6] - Error Executing
+   Database Query.[Macromedia][SQLServer JDBC Driver][SQLServer]Incorrect
+   syntax near '='. The specific sequence of files included or processed
+   is: /mnt/gfs/cfdocs/eCATT/templates/pgas_rslts.cfm, line: 235
+EOF
+        flair       => <<'EOF',
+<div>Sep 10, 2018 07:33:38 AM Error [ajp-nio-8016-exec-6] - Error Executing Database Query.[Macromedia][SQLServer JDBC Driver][SQLServer]Incorrect syntax near &#39;=&#39;. The specific sequence of files included or processed is: /mnt/gfs/cfdocs/eCATT/templates/<span class="entity filename" data-entity-type="filename" data-entity-value="pgas_rslts.cfm">pgas_rslts.cfm</span>, line: 235
+</div>
+EOF
+        entities    => [
+            {
+                value   => 'pgas_rslts.cfm',
+                type    => 'filename',
+            },
         ],
         userdef => [],
         debug   => 1,
