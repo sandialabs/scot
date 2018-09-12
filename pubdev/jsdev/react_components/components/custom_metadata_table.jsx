@@ -10,12 +10,14 @@ let CustomMetaDataTable = React.createClass( {
     onChange: function( event ) {
         let k  = event.target.id;
         let v = event.target.value;
+        let data = {};
         let json = {};
         json[k] = v;
+        data['data'] = json;
         $.ajax( {
             type: 'put',
             url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
-            data: JSON.stringify( json ),
+            data: JSON.stringify( data ),
             contentType: 'application/json; charset=UTF-8',
             success: function( ) {
                 console.log( 'successfully changed custom table data' );
