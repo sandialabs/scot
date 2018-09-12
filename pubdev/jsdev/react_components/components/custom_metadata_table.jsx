@@ -337,10 +337,10 @@ let Calendar = React.createClass( {
     },
 
     onChange: function( event ) {
-        let k  = this.props.typeLower;
+        let data_string = 'data.'+this.props.typeLower;
         let v = event._d.getTime()/1000;
         let json = {};
-        json[k] = v;
+        json[data_string] = v;
         $.ajax( {
             type: 'put',
             url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
@@ -493,6 +493,7 @@ let InputMultiComponent = React.createClass( {
         groupArr.push( group.target.value );
 
         let newData = {};
+
         newData[this.props.id] = groupArr;
 
         $.ajax( {
@@ -729,7 +730,8 @@ let MultiSelectComponent = React.createClass( {
         }
 
         let newData = {};
-        newData[this.props.id] = multiSelectArr;
+        let data_string = 'data.'+this.props.id;
+        newData[data_string] = multiSelectArr;
 
         $.ajax( {
             type: 'put',
