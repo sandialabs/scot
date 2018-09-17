@@ -24,7 +24,9 @@ my $env = Scot::Env->instance;
 $t->post_ok(
     '/scot/api/v2/guide'   => json => {
         subject     => "Guide to Alert: Foo does Bar",
-        applies_to  => ['Splunk Alert: (AJB) zip/rar/7z/jar Hourly Quarantined=False'],
+        data    => {
+            applies_to  => ['Splunk Alert: (AJB) zip/rar/7z/jar Hourly Quarantined=False'],
+        },
         entry       => [
             {
                 body => "Get copy of zip",
@@ -43,7 +45,7 @@ $t->get_ok("/scot/api/v2/guide/$guide_id" => {},
            "Get Guid $guide_id" )
   ->status_is(200)
   ->json_is('/subject'      => 'Guide to Alert: Foo does Bar')
-  ->json_is('/applies_to/0'  => 'Splunk Alert: (AJB) zip/rar/7z/jar Hourly Quarantined=False');
+  ->json_is('/data/applies_to/0'  => 'Splunk Alert: (AJB) zip/rar/7z/jar Hourly Quarantined=False');
 
 #  print Dumper($t->tx->res->json), "\n";
 

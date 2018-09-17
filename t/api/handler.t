@@ -50,7 +50,7 @@ $t  ->get_ok("/scot/api/v2/handler?current=1")
 
 print "Current Epoch is : ". $env->now()."\n";
 print "\n Sleeping for 10 secods\n";
-sleep 10;
+sleep 12;
 print "Current Epoch is : ". $env->now()."\n";
 
 

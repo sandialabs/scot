@@ -668,12 +668,12 @@ sub _build_COMMON_FILE_EXT {
         \b
         [0-9a-zA-Z_\-\.]+
         \.
-        (exe|bat|zip|txt|rar|tar|dll|7z|ps1|vbs|js|pdf|msi|hta|mht|doc|docx|xls|xlsx|ppt|pptx|jse|jar|vbe|wsf|wsh|sct|wsc)
+        (cfm|exe|bat|zip|txt|rar|tar|dll|7z|ps1|vbs|js|pdf|msi|hta|mht|doc|docx|xls|xlsx|ppt|pptx|jse|jar|vbe|wsf|wsh|sct|wsc)
         \b
     }xims;
     return {
         regex   => $regex,
-        type    => "filename",
+        type    => "file",
         order   => 100,
         options => { multiword => "no" },
     };
