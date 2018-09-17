@@ -29,7 +29,9 @@ my $body = '
 
 $t  ->post_ok  ('/scot/api/v2/signature'  => json => {
         name    => 'Test Sig 1',
-        type    => 'testsig',
+        data    => {
+            type    => 'testsig',
+        },
     })
     ->status_is(200)
     ->json_is('/status' => 'ok');
@@ -56,7 +58,7 @@ my $bsig1rev = $t->tx->res->json->{revision};
 $t  ->get_ok    ("/scot/api/v2/signature/$sig_id")
     ->status_is(200)
     ->json_is('/name'   => 'Test Sig 1')
-    ->json_is('/type'   => 'testsig')
+    ->json_is('/data/type'   => 'testsig')
     ->json_is("/version/$bsig1rev/body" => $body)
     ->json_is('/status' => "disabled");
 
