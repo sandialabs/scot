@@ -493,8 +493,11 @@ let InputMultiComponent = React.createClass( {
         groupArr.push( group.target.value );
 
         let newData = {};
+        let data_string = 'data.'+this.props.id;
+        newData[data_string] = groupArr;
 
-        newData[this.props.id] = groupArr;
+        // newData[this.props.id] = groupArr;
+
 
         $.ajax( {
             type: 'put',
