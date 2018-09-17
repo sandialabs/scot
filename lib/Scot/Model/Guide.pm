@@ -54,8 +54,8 @@ the subject, from Scot::Role::Subject
 =item B<applies_to>
 
 array of alert subjects that apply to this
+moved to data
 
-=cut
 
 has applies_to  => (
     is          => 'ro',
@@ -63,6 +63,8 @@ has applies_to  => (
     required    => 1,
     default     => sub {[]},
 );
+
+=cut
 
 =item B<data_fmt_ver>
 
@@ -77,6 +79,12 @@ has data_fmt_ver    => (
     default     => 'guide',
 );
 
+has data    => (
+    is      => 'ro',
+    isa     => 'HashRef',
+    required    => 1,
+    default     => sub {{}},
+);
 
 __PACKAGE__->meta->make_immutable;
 1;
