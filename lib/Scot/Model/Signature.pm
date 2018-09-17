@@ -68,7 +68,7 @@ has name  => (
 
 the type of signature: yara, extractor, sourcefire, pipeline, etc.
 
-=cut
+now in data
 
 has type    => (
     is          => 'ro',
@@ -76,6 +76,8 @@ has type    => (
     required    => 1,
     default     => '',
 );
+
+=cut
 
 =item B<status>
 
@@ -92,7 +94,7 @@ has status  => (
 
 =item B<prod_sigbody_id>
 
-=cut
+now in data
 
 has prod_sigbody_id => (
     is          => 'ro',
@@ -101,9 +103,11 @@ has prod_sigbody_id => (
     default     => 0,
 );
 
+=cut
+
 =item B<qual_sigbody_id>
 
-=cut
+now in data
 
 has qual_sigbody_id => (
     is          => 'ro',
@@ -111,6 +115,7 @@ has qual_sigbody_id => (
     required    => 1,
     default     => 0,
 );
+=cut
 
 =item B<latest_revision>
 
@@ -130,7 +135,7 @@ has latest_revision => (
 
 Array of actions to take if Signature is matched
 
-=cut
+now subsumed under data
 
 has action  => (
     is          => 'ro',
@@ -138,12 +143,13 @@ has action  => (
     required    => 1,
     default     => sub { [] },
 );
+=cut
 
 =item B<signature_group>
 
 Allow for grouping of Signatures aside from type
+now in data
 
-=cut
 
 has signature_group => (
     is              => 'ro',
@@ -152,6 +158,8 @@ has signature_group => (
     required        => 1,
     default         => sub { [] },
 );
+
+=cut
 
 =item B<stats>
 
@@ -183,7 +191,7 @@ has options => (
 
 the description of the signature
 
-=cut
+now in data
 
 has description => (
     is          => 'ro',
@@ -191,6 +199,8 @@ has description => (
     required    => 1,
     default     => '',
 );
+
+=cut
 
 =item B<data_fmt_ver>
 
@@ -203,6 +213,13 @@ has data_fmt_ver    => (
     isa         => 'Str',
     required    => 1,
     default     => 'signature',
+);
+
+has data        => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    required    => 1,
+    default     => sub { {} },
 );
 
 __PACKAGE__->meta->make_immutable;
