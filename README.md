@@ -23,6 +23,10 @@ Read our [documentation](http://scot.readthedocs.org/en/latest/install.html) at 
 
 Also, for docker documentation, please read: [https://github.com/sandialabs/scot/blob/scot-docker/docs/source/scotdocker.rst](https://github.com/sandialabs/scot/blob/scot-docker/docs/source/scotdocker.rst)
 
+UPGRADE NOTE
+------------
+IMPORTANT: Read [Issue #55](https://github.com/sandialabs/scot/issues/55) before upgrading from 3.5.5.
+
 Install It!
 -----------
 
