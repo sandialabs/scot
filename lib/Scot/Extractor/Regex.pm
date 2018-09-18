@@ -698,7 +698,7 @@ sub _build_PYTHON_FILE_EXT {
     }xims;
     return {
         regex   => $regex,
-        type    => "filename",
+        type    => "file",
         order   => 9,
         options => { multiword => "no" },
     };
