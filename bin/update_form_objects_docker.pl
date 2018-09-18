@@ -9,7 +9,7 @@ use v5.18;
 
 my $continue    = "no";
 my $env         = Scot::Env->new({config_file => "/opt/scot/etc/scot.cfg.pl"});
-my $mongo       = MongoDB->connect->db('scot-prod');
+my $mongo       = MongoDB->connect('mongodb://mongodb')->db('scot-prod');
 my $collection  = $mongo->get_collection('incident');
 my $cursor      = $collection->find({});
 $cursor->sort({id   => -1});
