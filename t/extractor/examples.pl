@@ -22,7 +22,7 @@ EOF
 EOF
         flair   => <<EOF,
 <div>
-https://<span class="entity domain" data-entity-type="domain" data-entity-value="cbase.som.sunysb.edu">cbase.som.sunysb.edu</span>/soap/<span class="entity filename" data-entity-type="filename" data-entity-value="bss.cfm">bss.cfm</span>
+https://<span class="entity domain" data-entity-type="domain" data-entity-value="cbase.som.sunysb.edu">cbase.som.sunysb.edu</span>/soap/<span class="entity file" data-entity-type="file" data-entity-value="bss.cfm">bss.cfm</span>
 </div>
 EOF
         entities    => [
@@ -31,7 +31,7 @@ EOF
                 value   => "cbase.som.sunysb.edu",
             },
             {
-                type    => "filename",
+                type    => "file",
                 value   => "bss.cfm",
             },
         ],
@@ -747,7 +747,7 @@ EOF
 cmd.exe /c bcdedit /set {default} recoveryenabled No
 EOF
         flair       => <<'EOF',
-<div><span class="entity filename" data-entity-type="filename" data-entity-value="cmd.exe">cmd.exe</span> /c <span class="entity jrock1" data-entity-type="jrock1" data-entity-value="bcdedit /set">bcdedit /set</span> {default} recoveryenabled No</div>
+<div><span class="entity file" data-entity-type="file" data-entity-value="cmd.exe">cmd.exe</span> /c <span class="entity jrock1" data-entity-type="jrock1" data-entity-value="bcdedit /set">bcdedit /set</span> {default} recoveryenabled No</div>
 EOF
         entities    => [
             {
@@ -756,7 +756,7 @@ EOF
             },
             {
                 value   => "cmd.exe",
-                type    => "filename",
+                type    => "file",
             },
         ],
         userdef => [
@@ -795,13 +795,13 @@ EOF
 invoice.pdf.exe
 EOF
     flair           => <<'EOF',
-<div><span class="entity filename" data-entity-type="filename" data-entity-value="invoice.pdf.exe">invoice.pdf.exe</span>
+<div><span class="entity file" data-entity-type="file" data-entity-value="invoice.pdf.exe">invoice.pdf.exe</span>
 </div>
 EOF
     entities    => [
             {
                 value   => 'invoice.pdf.exe',
-                type    => 'filename',
+                type    => 'file',
             }
     ],
     userdef => [],
@@ -930,13 +930,13 @@ EOF
 haxor.py
 EOF
     flair           => <<'EOF',
-<div><span class="entity filename" data-entity-type="filename" data-entity-value="haxor.py">haxor.py</span>
+<div><span class="entity file" data-entity-type="file" data-entity-value="haxor.py">haxor.py</span>
 </div>
 EOF
     entities    => [
             {
                 value   => 'haxor.py',
-                type    => 'filename',
+                type    => 'file',
             }
     ],
     userdef => [],
@@ -1310,13 +1310,13 @@ Sep 10, 2018 07:33:38 AM Error [ajp-nio-8016-exec-6] - Error Executing
    is: /mnt/gfs/cfdocs/eCATT/templates/pgas_rslts.cfm, line: 235
 EOF
         flair       => <<'EOF',
-<div>Sep 10, 2018 07:33:38 AM Error [ajp-nio-8016-exec-6] - Error Executing Database Query.[Macromedia][SQLServer JDBC Driver][SQLServer]Incorrect syntax near &#39;=&#39;. The specific sequence of files included or processed is: /mnt/gfs/cfdocs/eCATT/templates/<span class="entity filename" data-entity-type="filename" data-entity-value="pgas_rslts.cfm">pgas_rslts.cfm</span>, line: 235
+<div>Sep 10, 2018 07:33:38 AM Error [ajp-nio-8016-exec-6] - Error Executing Database Query.[Macromedia][SQLServer JDBC Driver][SQLServer]Incorrect syntax near &#39;=&#39;. The specific sequence of files included or processed is: /mnt/gfs/cfdocs/eCATT/templates/<span class="entity file" data-entity-type="file" data-entity-value="pgas_rslts.cfm">pgas_rslts.cfm</span>, line: 235
 </div>
 EOF
         entities    => [
             {
                 value   => 'pgas_rslts.cfm',
-                type    => 'filename',
+                type    => 'file',
             },
         ],
         userdef => [],
