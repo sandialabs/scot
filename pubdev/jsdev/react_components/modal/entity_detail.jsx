@@ -45,6 +45,9 @@ let EntityDetail = React.createClass( {
             entityobj: this.props.entityobj,
             height: null,
             isMounted: false,
+            width: 0, 
+            entityModalHeight:0
+
         };
     },
     componentWillMount: function () {
@@ -221,18 +224,21 @@ let EntityDetail = React.createClass( {
             });
         });
         this.props.watcher();
+        const varheight = document.getElementById('container').clientHeight;
+        this.setState({entityModalHeight:varheight})
+        this.updateWindowDimensions();
+        window.addEventListener('resize', this.updateWindowDimensions);
     },
 
+    updateWindowDimensions: function(){
+        this.setState({ width: window.innerWidth, height: window.innerHeight });
+    },
 
     componentWillUnmount: function() {
         this.setState( {isMounted: false} );
         //removes escHandler bind
         $( document ).off( 'keydown' );
-        //This makes the size that was last used hold for future entities 
-        /*let height = $('#dragme').height();
-        let width = $('#dragme').width();
-        entityPopUpHeight = height;
-        entityPopUpWidth = width;*/
+        window.removeEventListener('resize', this.updateWindowDimensions);
     },
     componentWillReceiveProps: function( nextProps ) {
         this.onLoad();
@@ -474,12 +480,17 @@ let EntityDetail = React.createClass( {
             }
         }
     },
+
+    
+
+
     render: function() {
         //This makes the size that was last used hold for future entities
         /*if (entityPopUpHeight && entityPopUpWidth) {
             entityHeight = entityPopUpHeight;
             entityWidth = entityPopUpWidth;
         }*/
+        let heightboundary = 200- this.state.defaultEntityOffset.top 
         let defaultOffsetY;
         let defaultOffsetX;
         let tabsArr = [];
@@ -530,7 +541,7 @@ let EntityDetail = React.createClass( {
             );
         } else {
             return (
-                <Draggable handle="#handle" onMouseDown={this.moveDivInit}>
+                <Draggable handle="#handle" bounds={{top: heightboundary}} onMouseDown={this.moveDivInit}>
                     <div id="dragme" className={DragmeClass} style={{width:this.state.entityWidth, left:defaultOffsetX, maxHeight:'90vh'}}>
                         <div id='popup-flex-container' style={{height: '100%', display:'flex', flexFlow:'row'}}>
                             <div id="entity_detail_container" style={{flexFlow: 'column', display: 'flex', width:'100%'}}>
