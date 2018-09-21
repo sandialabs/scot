@@ -28,6 +28,11 @@ sub process_message {
 
     $log->debug("[Wkr $$] Processing Message $action $type $id");
 
+    if ( $type eq "user" or $type eq "group" ) {
+        $log->debug("skipping putting user or group into elasticsearch");
+        return 1;
+    }
+
     if ( $action eq "deleted" ) {
         $es->delete($type, $id, 'scot');
         $log->debug("after sending delete");
