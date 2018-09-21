@@ -25,6 +25,7 @@ db.apikey.drop();
 db.handler.drop();
 db.stat.drop();
 db.entitytype.drop();
+db.getCollection('group').drop()
 
 print ("Creating indexes...");
 load("./src/mongodb/indexes.js");
