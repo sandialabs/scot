@@ -25,9 +25,10 @@ db.apikey.drop();
 db.handler.drop();
 db.stat.drop();
 db.entitytype.drop();
+db.getCollection('group').drop()
 
 print ("Creating indexes...");
-load("./src/mongodb/indexes.js");
+load("./indexes.js");
 print ("Zero-ing the nexid collection...");
-load("./src/mongodb/zero_nextid.js");
+load("./zero_nextid.js");
 
