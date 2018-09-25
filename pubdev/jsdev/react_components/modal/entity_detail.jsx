@@ -269,8 +269,11 @@ let EntityDetail = React.createClass( {
                                                     };
                                                     currentTabArray.push(newTab);
                                                     if (this.state.isMounted) {
+                                                        let processed_ids = this.state.processedIds;
+                                                        processed_ids.push(entityid);
                                                         this.setState({
                                                             tabs: currentTabArray,
+                                                            processedIds: processed_ids,
                                                             currentKey: nextProps.entityid
                                                         });
                                                         Store.storeKey(nextProps.entityid);
@@ -338,10 +341,14 @@ let EntityDetail = React.createClass( {
                 } else {
                     if ( nextProps != undefined ) {
                         //TODO Fix next conditional for undefined that prevents multiple calls for the same ID at load time on a nested entity
-                        if ( nextProps.entitytype != null && ( nextProps.entityid != undefined ) ) {
+                        if ( nextProps.entitytype != null && ( nextProps.entityid != undefined) ) {
+
                             let nextPropsEntityIdInt = parseInt( nextProps.entityid );
                             for ( let i=0; i < this.state.tabs.length; i++ ) {
-                                if ( nextPropsEntityIdInt == this.state.tabs[i].entityid || ( this.state.tabs[i].entitytype == 'guide' && nextProps.entitytype == 'guide' ) ) {
+                                if ( nextPropsEntityIdInt == this.state.tabs[i].entityid || ( this.state.tabs[i].entitytype == 'guide' && nextProps.entitytype == 'guide' ) || this.state.tabs[i].data.value == nextProps.entityvalue ) {
+                                    if (isNaN(nextPropsEntityIdInt)){
+                                        return;
+                                    }
                                     if ( this.state.isMounted ){
                                         this.setState( {currentKey:nextPropsEntityIdInt} );
                                     }
