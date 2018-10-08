@@ -108,21 +108,23 @@ let NewSource = React.createClass( {
                 }
             }
         }
-        newSourceArr.push( source );
-        $.ajax( {
-            type: 'put',
-            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
-            data: JSON.stringify( {'source':newSourceArr} ),
-            contentType: 'application/json; charset=UTF-8',
-            success: function( data ) {
-                console.log( 'success: source added' );
-                this.props.toggleSourceEntry();
-            }.bind( this ),
-            error: function( data ) {
-                this.props.errorToggle( 'Failed to add source', data );
-                this.props.toggleSourceEntry();
-            }.bind( this )
-        } );
+        if (!newSourceArr .includes(source)){
+            newSourceArr.push( source );
+            $.ajax( {
+                type: 'put',
+                url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
+                data: JSON.stringify( {'source':newSourceArr} ),
+                contentType: 'application/json; charset=UTF-8',
+                success: function( data ) {
+                    console.log( 'success: source added' );
+                    this.props.toggleSourceEntry();
+                }.bind( this ),
+                error: function( data ) {
+                    this.props.errorToggle( 'Failed to add source', data );
+                    this.props.toggleSourceEntry();
+                }.bind( this )
+            } );
+        } 
     },
     handleInputChange: function( input ) {
         let arr = [];

@@ -108,21 +108,27 @@ let NewTag = React.createClass( {
                 }
             }
         }
-        newTagArr.push( tag );
-        $.ajax( {
-            type: 'put',
-            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
-            data: JSON.stringify( {'tag':newTagArr} ),
-            contentType: 'application/json; charset=UTF-8',
-            success: function( ) {
-                console.log( 'success: tag added' );
-                this.props.toggleTagEntry();
-            }.bind( this ),
-            error: function( data ) {
-                this.props.errorToggle( 'Failed to add tag', data );
-                this.props.toggleTagEntry();
-            }.bind( this )
-        } );
+        if (!newTagArr.includes(tag)){
+            newTagArr.push( tag );
+            $.ajax( {
+                type: 'put',
+                url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
+                data: JSON.stringify( {'tag':newTagArr} ),
+                contentType: 'application/json; charset=UTF-8',
+                success: function( ) {
+                    console.log( 'success: tag added' );
+                    this.props.toggleTagEntry();
+                }.bind( this ),
+                error: function( data ) {
+                    this.props.errorToggle( 'Failed to add tag', data );
+                    this.props.toggleTagEntry();
+                }.bind( this )
+            } );
+        } else{
+            this.props.errorToggle( 'Tag already exists');
+        }
+            
+        
     },
     handleInputChange: function( input ) {
         let arr = [];
