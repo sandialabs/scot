@@ -9,7 +9,6 @@ let ViewedByHistory         = require( '../modal/viewed_by_history.jsx' );
 let SelectedPermission      = require( '../components/permission.jsx' );
 let SelectedEntry           = require( './selected_entry.jsx' );
 let Badge                    = require( '../components/badge.jsx' );
-let Source                  = require( '../components/source.jsx' );
 let Store                   = require( '../activemq/store.jsx' );
 let Notification            = require( 'react-notification-system' );
 let AddFlair                = require( '../components/add_flair.jsx' ).AddFlair;
