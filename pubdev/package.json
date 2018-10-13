@@ -4,7 +4,9 @@
   "description": "",
   "main": "gulpfile.js",
   "scripts": {
-    "lint:js": "eslint -o /tmp/lint.log --fix ./**/*.jsx"
+    "lint:js": "eslint -o /tmp/lint.log --fix ./**/*.jsx",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "author": "",
   "license": "ISC",
@@ -77,6 +79,8 @@
     "semantic-ui-react": "^0.67.2",
     "through": "^2.3.8",
     "vinyl-source-stream": "^1.1.0",
-    "warning": "^3.0.0"
-  }
+    "warning": "^3.0.0",
+    "snyk": "^1.85.0"
+  },
+  "snyk": true
 }
