@@ -34,3 +34,4 @@ listColumnsJSON = {
         entity: ['id', 'value', 'type', 'entry_count']
     }
 };
+export default listColumnsJSON;
