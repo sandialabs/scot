@@ -7,7 +7,6 @@
         "@material-ui/icons": "latest",
         "@types/jquery": "^3.3.6",
         "d3": "^5.7.0",
-        "events": "latest",
         "eslint": "4.10.0",
         "eslint-config-react-app": "^2.1.0",
         "eslint-loader": "1.9.0",
@@ -15,6 +14,7 @@
         "eslint-plugin-import": "2.8.0",
         "eslint-plugin-jsx-a11y": "5.1.1",
         "eslint-plugin-react": "7.4.0",
+        "events": "latest",
         "flux": "^3.0.0",
         "history": "^4.7.2",
         "jquery": "^3.3.1",
@@ -45,11 +45,11 @@
         "react-scripts": "1.1.4",
         "react-table": "^6.5.1",
         "react-tag-autocomplete": "^5.6.0",
-        "react-tag-input": "^5.1.2",
         "react-time": "^4.0.0",
         "react-tinymce": "latest",
         "recompose": "^0.26.0",
         "sass": "^1.13.0",
+        "tablesorter": "^2.31.0",
         "underscore": "^1.9.1"
     },
     "eslintConfig": {

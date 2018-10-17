@@ -81,7 +81,8 @@ export default class App extends React.Component {
         this.GetHandler();
         this.WhoAmIQuery();
         this.AMQ.register_client();
-        this.AMQ.create_callback_object("wall", this.notification);
+        this.AMQ.create_callback_object("wall", this.wall);
+        this.AMQ.create_callback_object("notification", this.notification);
 
         //ee
         if (this.props.match.url === "/") {
@@ -161,34 +162,35 @@ export default class App extends React.Component {
         let notification = this.refs.notificationSystem;
         //not showing notificaiton on entity due to "flooding" on an entry update that has many entities causing a storm of AMQ messages
         if (
-            this.props.stateProps.activemqwho !== "scot-alerts" &&
-            this.props.stateProps.activemqwho !== "scot-admin" &&
-            this.props.stateProps.activemqwho !== "scot-flair" &&
-            this.props.stateProps.notification !== undefined &&
-            this.props.stateProps.activemqwho !== this.state.whoami &&
-            this.props.stateProps.activemqwho !== "" &&
-            this.props.stateProps.activemqwho !== "api" &&
-            this.props.stateProps.activemqwall !== true &&
-            this.props.stateProps.activemqtype !== "entity" &&
+            this.AMQ.activemqwho !== "scot-alerts" &&
+            this.AMQ.activemqwho !== "scot-admin" &&
+            this.AMQ.activemqwho !== "scot-flair" &&
+            notification !== undefined &&
+            this.AMQ.activemqwho !== this.state.whoami &&
+            this.AMQ.activemqwho !== "" &&
+            this.AMQ.activemqwho !== "api" &&
+            this.AMQ.activemqwall !== true &&
+            this.AMQ.activemqtype !== "entity" &&
             this.state.notificationSetting === "on"
         ) {
+            let message = `${this.AMQ.activemqwho} ${this.AMQ.activemqaction} ${this.AMQ.activemqtype} : ${this.AMQ.activemqid}`
+            let type = this.AMQ.activemqtype;
+            let state = this.AMQ.activemqstate;
+            let activemqid = this.AMQ.activemqid;
             notification.addNotification({
-                message:
-                    this.props.stateProps.activemqwho +
-                    this.props.stateProps.activemqmessage +
-                    this.props.stateProps.activemqid,
+                message: message,
                 level: "info",
                 autoDismiss: 5,
                 action:
-                    this.props.stateProps.activemqstate !== "delete"
+                    state !== "delete"
                         ? {
                             label: "View",
                             callback: function () {
                                 window.open(
                                     "/#/" +
-                                    this.props.stateProps.activemqtype +
+                                    type +
                                     "/" +
-                                    this.props.stateProps.activemqid
+                                    activemqid
                                 );
                             }
                         }
@@ -197,19 +199,19 @@ export default class App extends React.Component {
         }
     };
 
-    wall = message => {
+    wall = (message) => {
         // Don't show on dashboard
         if (this.props.match.path === "/" && this.props.match.isExact) {
             return;
         }
 
         var notification = this.refs.notificationSystem;
-        var date = new Date(message.activemqwhen * 1000);
+        var date = new Date(this.AMQ.activemqwhen * 1000);
         date = date.toLocaleString();
-        if (message.activemqwall === true) {
+        if (this.AMQ.activemqwall === true) {
             notification.addNotification({
                 message:
-                    date + " " + message.activemqwho + ": " + message.activemqmessage,
+                    date + " " + this.AMQ.activemqwho + ": " + this.AMQ.activemqmessage,
                 level: "warning",
                 autoDismiss: 0
             });
@@ -623,11 +625,9 @@ export class Amq {
         this.activemqpid = "";
         this.activemqwhen = "";
         this.activemqwall = "";
-        this.cb_obj_array = [];
+        this.cb_map = new Map();
     }
 
-
-    //AMQ STUFF
     s4 = () => {
         return Math.floor((1 + Math.random()) * 0x10000)
             .toString(16)
@@ -705,15 +705,15 @@ export class Amq {
                 let messages = $(data)
                     .text()
                     .split("\n");
-                $.each(messages, function (key, message) {
+                messages.forEach(function (message, key) {
                     if (message !== "") {
                         let json = JSON.parse(message);
                         console.log(json);
-                        this.process_message(message);
-                        this.handle_update(message);
+                        this.process_message(json);
+                        this.handle_update(json);
                         return true;
                     }
-                });
+                }.bind(this));
             }.bind(this),
             error: function () {
                 setTimeout(
@@ -728,49 +728,72 @@ export class Amq {
     };
 
     create_callback_object = (key, callback) => {
-        let newobject = {};
-        newobject["key"] = key;
-        newobject["callback"] = callback;
-        this.cb_obj_array.push(newobject);
+        if (this.cb_map.has(key)) {
+            this.cb_map.get(key).add(callback);
+        } else {
+            let newset = new Set();
+            newset.add(callback)
+            this.cb_map.set(key, newset)
+        }
     };
 
-    remove_callback_object = key => {
-        for (var i = 0; i < this.cb_obj_array.length; i++)
-            if (this.cb_obj_array[i].key === key) {
-                this.cb_obj_array.splice(i, 1);
-                break;
+    remove_callback_object = (key, callback) => {
+        let callbacks = this.cb_map.get(key)
+        callbacks.forEach(function (element) {
+            if (callback == element) {
+                callbacks.delete(callback);
             }
+        }.bind(this));
     };
 
 
     process_message = payload => {
-        if (this.amqdebug === true) {
-            this.activemqaction = payload.action.activemq.action;
-            this.activemqid = payload.action.activemq.data.id;
-            this.activemqtype = payload.action.activemq.data.type;
-            this.activemqwho = payload.action.activemq.data.who;
-            this.activemqguid = payload.action.activemq.guid;
-            this.activemqhostname = payload.action.activemq.hostname;
-            this.activemqpid = payload.action.activemq.pid;
-        }
 
-        if (payload.action.activemq.action === "wall") {
-            this.activemqwho = payload.action.activemq.data.who;
-            this.activemqmessage = payload.action.activemq.data.message;
-            this.activemqwhen = payload.action.activemq.data.when;
+        if (payload.action === "wall") {
+            this.activemqwho = payload.data.who;
+            this.activemqmessage = payload.data.message;
+            this.activemqwhen = payload.data.when;
             this.activemqwall = true;
+        } else {
+            this.activemqaction = payload.action;
+            this.activemqid = payload.data.id;
+            this.activemqtype = payload.data.type;
+            this.activemqwho = payload.data.who;
+            this.activemqguid = payload.guid;
+            this.activemqhostname = payload.hostname;
+            this.activemqpid = payload.pid;
         }
     }
 
-    //TODO: Implment better handle update function
-    handle_update = message => {
-        let search_key =
-            message.action.activemq.type + ":" + message.action.activemq.id;
+    execute_callback_function = searchstring => {
         try {
-            let f = this.cb_obj_array[search_key];
-            f();
+            let f = this.cb_map.get(searchstring);
+            if (f !== undefined) {
+                f.forEach(function (item) {
+                    item();
+                });
+            }
+            let noti = this.cb_map.get('notification');
+            noti.forEach(function (item) {
+                item();
+            })
         } catch (e) {
             throw e;
         }
+    }
+
+
+    handle_update = message => {
+        let searchstring = "";
+        if (message.action === 'wall') {
+            searchstring = 'wall'
+        } else if (message.action === 'created') {
+            searchstring = `${message.data.type}:listview`
+        } else if (message.action === 'updated') {
+            searchstring = message.data.id
+        } else if (message.action === 'deleted') {
+            searchstring = message.data.id
+        }
+        this.execute_callback_function(searchstring);
     }
 }
