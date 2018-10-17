@@ -10,8 +10,7 @@ import ChangeHistory from "../modal/change_history.js";
 import ViewedByHistory from "../modal/viewed_by_history.js";
 import SelectedPermission from "../components/permission.js";
 import SelectedEntry from "./selected_entry.js";
-import Tag from "../components/tag.js";
-import Source from "../components/source.js";
+import Badge from '../components/badge.js'
 import Notification from "react-notification-system";
 import AddFlair from "../components/add_flair.js";
 import EntityDetail from "../modal/entity_detail.js";
@@ -261,7 +260,7 @@ export default class SelectedHeader extends React.Component {
                         }.bind(this)
                     });
                 }
-                this.props.createCallback(this.props.id, this.updated);
+                this.props.createCallback(parseInt(this.props.id, 10), this.updated);
             }.bind(this)
         };
         InitialAjaxLoad = setTimeout(delayFunction.delay, 400);
@@ -270,7 +269,7 @@ export default class SelectedHeader extends React.Component {
     componentWillUnmount = () => {
         this.setState({ isMounted: false });
         clearTimeout(InitialAjaxLoad);
-        this.props.removeCallback(this.props.id);
+        this.props.removeCallback(parseInt(this.props.id,10), this.updated);
     };
 
     componentDidUpdate = () => {
@@ -448,7 +447,7 @@ export default class SelectedHeader extends React.Component {
                 }.bind(this)
             });
             //error popup if an error occurs
-            if (_type !== undefined && _message !== undefined) {
+            if ((_type !== undefined && _type !== null) && (_message !== null && _message !== undefined)) {
                 this.props.errorToggle(_message);
             }
         }
@@ -925,21 +924,23 @@ export default class SelectedHeader extends React.Component {
                                                                 />
                                                             ) : null}
                                                         {type !== "entity" && this.state.showEventData ? (
-                                                            <Tag
+                                                            <Badge
                                                                 data={this.state.tagData}
                                                                 id={id}
                                                                 type={type}
                                                                 updated={this.updated}
                                                                 errorToggle={this.props.errorToggle}
+                                                                badgeType='tag'
                                                             />
                                                         ) : null}
                                                         {type !== "entity" && this.state.showEventData ? (
-                                                            <Source
+                                                            <Badge
                                                                 data={this.state.sourceData}
                                                                 id={id}
                                                                 type={type}
                                                                 updated={this.updated}
                                                                 errorToggle={this.props.errorToggle}
+                                                                badgeType='source'
                                                             />
                                                         ) : null}
                                                     </tr>
@@ -1057,8 +1058,6 @@ export default class SelectedHeader extends React.Component {
                                         ToggleProcessingMessage={this.ToggleProcessingMessage}
                                         errorToggle={this.props.errorToggle}
                                         toggleFlair={this.toggleFlair}
-                                        createCallback={this.props.createCallback}
-                                        removeCallback={this.props.removeCallback}
                                     />
                                 ) : null}
                                 {this.state.permissionsToolbar ? (
@@ -1102,7 +1101,6 @@ export default class SelectedHeader extends React.Component {
                                     highlightedText={this.state.highlightedText}
                                     form={this.props.form}
                                     createCallback={this.props.createCallback}
-                                    removeCallback={this.props.removeCallback}
                                 />
                             ) : null}
                             {this.state.showEventData && type === "entity" ? (
@@ -1116,7 +1114,6 @@ export default class SelectedHeader extends React.Component {
                                     errorToggle={this.props.errorToggle}
                                     linkWarningToggle={this.linkWarningToggle}
                                     createCallback={this.props.createCallback}
-                                    removeCallback={this.props.removeCallback}
                                 />
                             ) : null}
                             {this.state.flairToolbar ? (
@@ -1137,7 +1134,6 @@ export default class SelectedHeader extends React.Component {
                                     watcher={this.Watcher}
                                     entityobj={this.state.entityobj}
                                     createCallback={this.props.createCallback}
-                                    removeCallback={this.props.removeCallback}
                                 />
                             ) : null}
                         </div>

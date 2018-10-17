@@ -178,7 +178,7 @@ export default class ListView extends React.Component {
         let array = [];
         let finalarray = [];
         //register for creation
-        let storeKey = this.props.type + "listview";
+        let storeKey = this.props.type + ":listview";
         this.props.createCallback(storeKey, this.reloadactive);
         // Store.storeKey(storeKey);
         // Store.addChangeListener(this.reloadactive);
@@ -254,8 +254,6 @@ export default class ListView extends React.Component {
                                 }
                                 if (num === "id") {
                                     this.props.createCallback(item, this.reloadactive);
-                                    // Store.storeKey(item);
-                                    // Store.addChangeListener(this.reloadactive);
                                     idsarray.push(item);
                                 }
                             }.bind(this)
@@ -886,6 +884,13 @@ export default class ListView extends React.Component {
             data: data,
             traditional: true,
             success: function (response) {
+
+                //now that we have new data, lets iterate through the idsarray, and remove their callbacks. 
+                this.state.idsarray.forEach(function (element) {
+                    let searchstring = element
+                    this.props.removeCallback(searchstring, this.reloadactive);
+                }.bind(this));
+
                 datasource = response;
                 $.each(
                     datasource.records,
@@ -908,15 +913,7 @@ export default class ListView extends React.Component {
                                     newarray[key][num] = item;
                                 }
                                 if (num === "id") {
-                                    let idalreadyadded = false;
-                                    for (let i = 0; i < idsarray.length; i++) {
-                                        if (item === idsarray[i]) {
-                                            idalreadyadded = true;
-                                        }
-                                    }
-                                    if (idalreadyadded === false) {
-                                        this.createCallback(item, this.reloadactive);
-                                    }
+                                    this.props.createCallback(item, this.reloadactive);
                                     newidsarray.push(item);
                                 }
                             }.bind(this)

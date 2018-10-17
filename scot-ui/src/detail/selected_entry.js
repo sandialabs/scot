@@ -20,6 +20,7 @@ import TrafficLightProtocol from "../components/traffic_light_protocol";
 import Marker from "../components/marker"
 import EntityCreateModal from "../modal/entity_create"
 import CustomMetaDataTable from "../components/custom_metadata_table";
+import tablesorter from 'tablesorter'
 
 
 export default class SelectedEntry extends React.Component {
@@ -150,7 +151,7 @@ export default class SelectedEntry extends React.Component {
                     if (this.state.isMounted) {
                         this.setState({ showEntryData: true, entryData: entryResult });
                         for (let i = 0; i < result.records.length; i++) {
-                            //TODO: Ask Nick
+
                             this.props.createCallback(result.records[i].id, this.updatedCB);
                         }
                         this.Watcher();
