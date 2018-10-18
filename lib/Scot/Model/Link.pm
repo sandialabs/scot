@@ -16,6 +16,9 @@ SCOT will allow you to associate just about anything with anything else.
 A link is an "edge" in a graph sense.  Common "verticies" could include
 "alerts", "entities", "events", etc.
 
+=head1 Extends
+
+Scot::Model
 
 =cut
 
@@ -24,6 +27,11 @@ with    qw(
     Meerkat::Role::Document
     Scot::Role::Hashable
 );
+
+=head1 Consumed Roles
+
+    Meerkat::Role::Document
+    Scot::Role::Hashable
 
 =head1 Attributes
 

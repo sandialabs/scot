@@ -89,7 +89,7 @@ function add_failIndexKeyTooLong {
 function start_stop  {
     if [[ $OS == "Ubuntu" ]]; then
         if [[ $OSVERSION == "16" ]]; then
-            systemctl $2 ${1}.service
+            systemctl --no-pager $2 ${1}.service
         else
             echo "Start Mongod service..."
             service $1 $2
@@ -97,7 +97,7 @@ function start_stop  {
     else
         # cent 7 is systemd
         # service $1 $2
-        systemctl $2 ${1}.service
+        systemctl --no-pager $2 ${1}.service
     fi
 }
 
@@ -174,7 +174,7 @@ function configure_for_scot {
                 cp $MONGO_CONF_SRC/mongod.service $MONGO_SYSTEMD_SERVICE
                 cp $MONGO_CONF_SRC/mongod.conf /etc/mongod.conf
                 systemctl daemon-reload
-                systemctl restart mongod.service
+                systemctl --no-pager restart mongod.service
                 systemctl enable mongod.service
             fi
         else
@@ -182,7 +182,7 @@ function configure_for_scot {
             cp $MONGO_CONF_SRC/mongod.service $MONGO_SYSTEMD_SERVICE
             cp $MONGO_CONF_SRC/mongod.conf /etc/mongod.conf
             systemctl daemon-reload
-            systemctl restart mongod.service
+            systemctl --no-pager restart mongod.service
             systemctl enable mongod.service
         fi
     fi

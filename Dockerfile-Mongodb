@@ -21,8 +21,8 @@ ADD docker-configs/scot/scot.cfg.pl /opt/scot/etc/
 ADD docker-configs/mongodb/ /
 ADD install/src/mongodb /opt/scot/install/src/mongodb
 
-#Create /var/lib/mongodb directory
-RUN mkdir -p /var/lib/mongodb/
+#Create log directory
+RUN mkdir -p /var/log/mongodb/
 
 
 #add entry scripts

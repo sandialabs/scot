@@ -12,6 +12,10 @@ Scot::Model::File
 
 The model of an individual File
 
+=head1 Extends
+
+Scot::Model
+
 =cut
 
 extends 'Scot::Model';
@@ -23,6 +27,15 @@ with    qw(
     Scot::Role::TLP
     Scot::Role::Hashable
 );
+
+=head1 Consumed Roles
+
+    Meerkat::Role::Document
+    Scot::Role::Permission
+    Scot::Role::Target
+    Scot::Role::Times
+    Scot::Role::TLP
+    Scot::Role::Hashable
 
 =head1 Attributes
 
@@ -108,7 +121,7 @@ has directory   => (
 
 =item B<md5,sha1,sha256>
 
-the md5 hash of the file
+the md5, sha1, sha256 hashes of the file
 
 =cut
 

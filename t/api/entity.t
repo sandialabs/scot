@@ -116,9 +116,9 @@ $t->get_ok("/scot/api/v2/entry/$sidd_entry_id/entity")
     ->json_is('/totalRecordCount'   => 3)
     ->json_is('/records/chosun.com/type'    => 'domain');
 
-# print Dumper($t->tx->res->json),"\n";
-# done_testing();
-# exit 0;
+ print Dumper($t->tx->res->json),"\n";
+ done_testing();
+ exit 0;
 
 my $eid1 = $t->tx->res->json->{records}->{'chosun.com'}->{id};
 my $eid2 = $t->tx->res->json->{records}->{'apture.com'}->{id};

@@ -12,6 +12,10 @@ Scot::Model::Event
 
 The model of an individual event
 
+=head1 Extends
+
+Scot::Model
+
 =cut
 
 extends 'Scot::Model';
@@ -31,6 +35,23 @@ with    qw(
     Scot::Role::TLP
     Scot::Role::Views
 );
+
+=head1 Consumed Roles
+
+    Meerkat::Role::Document
+    Scot::Role::Entriable
+    Scot::Role::Entitiable
+    Scot::Role::Hashable
+    Scot::Role::Historable
+    Scot::Role::Permission
+    Scot::Role::Promotable
+    Scot::Role::Status
+    Scot::Role::Sources
+    Scot::Role::Subject
+    Scot::Role::Tags
+    Scot::Role::Times
+    Scot::Role::TLP
+    Scot::Role::Views
 
 =head1 Attributes
 

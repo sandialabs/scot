@@ -21,3 +21,4 @@ db.user.insert({
 	"last_activity_check" : 4
 })
 db.user.ensureIndex({username: 1});
+

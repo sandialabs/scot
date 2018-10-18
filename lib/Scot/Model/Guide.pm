@@ -14,6 +14,10 @@ The model of a Guide
 Guides are collections of entries that the team can use to build
 instructions on how to handle various alerts.
 
+=head1 Extends
+
+Scot::Model
+
 =cut
 
 extends 'Scot::Model';
@@ -26,6 +30,16 @@ with    qw(
     Scot::Role::Times
     Scot::Role::TLP
 );
+
+=head1 Consumed Roles
+
+    Meerkat::Role::Document
+    Scot::Role::Entriable
+    Scot::Role::Hashable
+    Scot::Role::Permission
+    Scot::Role::Subject
+    Scot::Role::Times
+    Scot::Role::TLP
 
 =head1 Attributes
 
@@ -40,8 +54,8 @@ the subject, from Scot::Role::Subject
 =item B<applies_to>
 
 array of alert subjects that apply to this
+moved to data
 
-=cut
 
 has applies_to  => (
     is          => 'ro',
@@ -49,6 +63,8 @@ has applies_to  => (
     required    => 1,
     default     => sub {[]},
 );
+
+=cut
 
 =item B<data_fmt_ver>
 
@@ -63,6 +79,12 @@ has data_fmt_ver    => (
     default     => 'guide',
 );
 
+has data    => (
+    is      => 'ro',
+    isa     => 'HashRef',
+    required    => 1,
+    default     => sub {{}},
+);
 
 __PACKAGE__->meta->make_immutable;
 1;

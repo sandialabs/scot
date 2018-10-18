@@ -22,13 +22,17 @@ EOF
 EOF
         flair   => <<EOF,
 <div>
-https://<span class="entity domain" data-entity-type="domain" data-entity-value="cbase.som.sunysb.edu">cbase.som.sunysb.edu</span>/soap/bss.cfm
+https://<span class="entity domain" data-entity-type="domain" data-entity-value="cbase.som.sunysb.edu">cbase.som.sunysb.edu</span>/soap/<span class="entity file" data-entity-type="file" data-entity-value="bss.cfm">bss.cfm</span>
 </div>
 EOF
         entities    => [
             {
                 type    => "domain",
                 value   => "cbase.som.sunysb.edu",
+            },
+            {
+                type    => "file",
+                value   => "bss.cfm",
             },
         ],
     },
@@ -743,7 +747,7 @@ EOF
 cmd.exe /c bcdedit /set {default} recoveryenabled No
 EOF
         flair       => <<'EOF',
-<div><span class="entity filename" data-entity-type="filename" data-entity-value="cmd.exe">cmd.exe</span> /c <span class="entity jrock1" data-entity-type="jrock1" data-entity-value="bcdedit /set">bcdedit /set</span> {default} recoveryenabled No</div>
+<div><span class="entity file" data-entity-type="file" data-entity-value="cmd.exe">cmd.exe</span> /c <span class="entity jrock1" data-entity-type="jrock1" data-entity-value="bcdedit /set">bcdedit /set</span> {default} recoveryenabled No</div>
 EOF
         entities    => [
             {
@@ -752,7 +756,7 @@ EOF
             },
             {
                 value   => "cmd.exe",
-                type    => "filename",
+                type    => "file",
             },
         ],
         userdef => [
@@ -791,13 +795,13 @@ EOF
 invoice.pdf.exe
 EOF
     flair           => <<'EOF',
-<div><span class="entity filename" data-entity-type="filename" data-entity-value="invoice.pdf.exe">invoice.pdf.exe</span>
+<div><span class="entity file" data-entity-type="file" data-entity-value="invoice.pdf.exe">invoice.pdf.exe</span>
 </div>
 EOF
     entities    => [
             {
                 value   => 'invoice.pdf.exe',
-                type    => 'filename',
+                type    => 'file',
             }
     ],
     userdef => [],
@@ -926,13 +930,13 @@ EOF
 haxor.py
 EOF
     flair           => <<'EOF',
-<div><span class="entity filename" data-entity-type="filename" data-entity-value="haxor.py">haxor.py</span>
+<div><span class="entity file" data-entity-type="file" data-entity-value="haxor.py">haxor.py</span>
 </div>
 EOF
     entities    => [
             {
                 value   => 'haxor.py',
-                type    => 'filename',
+                type    => 'file',
             }
     ],
     userdef => [],
@@ -1218,6 +1222,101 @@ EOF
             {
                 value   => 'xn--clapcibic1.xn--p1ai',
                 type    => 'domain',
+            },
+        ],
+        userdef => [],
+        debug   => 1,
+    },
+    {
+        testname    => "email with =",
+        testgroup   => "email",
+        testnumber  => 46,
+        source      => <<'EOF',
+bounces+182497-1c5d-xxxx=watermelon.edu@email.followmyhealth.com
+EOF
+        plain       => <<'EOF',
+bounces+182497-1c5d-xxxx=watermelon.edu@email.followmyhealth.com
+EOF
+        flair       => <<'EOF',
+<div><span class="entity email" data-entity-type="email" data-entity-value="bounces+182497-1c5d-xxxx=watermelon.edu@email.followmyhealth.com">bounces+182497-1c5d-xxxx=watermelon.edu@<span class="entity domain" data-entity-type="domain" data-entity-value="email.followmyhealth.com">email.followmyhealth.com</span></span>
+</div>
+EOF
+        entities    => [
+            {
+                value   => 'email.followmyhealth.com',
+                type    => 'domain',
+            },
+            {
+                value   => 'bounces+182497-1c5d-xxxx=watermelon.edu@email.followmyhealth.com',
+                type    => 'email',
+            },
+        ],
+        userdef => [],
+        debug   => 1,
+    },
+    {
+        testname    => "Microsoft CLSID",
+        testgroup   => "clsid",
+        testnumber  => 47,
+        source      => <<'EOF',
+"{F20DA720-C02F-11CE-927B-0800095AE340}": "OLE Package Object",
+EOF
+        plain       => <<'EOF',
+"{F20DA720-C02F-11CE-927B-0800095AE340}": "OLE Package Object",
+EOF
+        flair       => <<'EOF',
+<div>&quot;{<span class="entity clsid" data-entity-type="clsid" data-entity-value="f20da720-c02f-11ce-927b-0800095ae340">F20DA720-C02F-11CE-927B-0800095AE340</span>}&quot;: &quot;OLE Package Object&quot;,
+</div>
+EOF
+        entities    => [
+            {
+                value => "f20da720-c02f-11ce-927b-0800095ae340",
+                type  => "clsid",
+            },
+        ],
+        userdef => [],
+        debug   => 1,
+    },
+    {
+        testname    => "false ipv6",
+        testgroup   => "ipaddr",
+        testnumber  => 48,
+        source      => <<'EOF',
+toys::file
+EOF
+        plain       => <<'EOF',
+toys::file
+EOF
+        flair       => <<'EOF',
+<div>toys::file
+</div>
+EOF
+        entities    => [
+        ],
+        userdef => [],
+        debug   => 1,
+    },
+    {
+        testname    => "filename fail",
+        testgroup   => "file",
+        testnumber  => 49,
+        source      => <<'EOF',
+Sep 10, 2018 07:33:38 AM Error [ajp-nio-8016-exec-6] - Error Executing Database Query.[Macromedia][SQLServer JDBC Driver][SQLServer]Incorrect syntax near '='. The specific sequence of files included or processed is: /mnt/gfs/cfdocs/eCATT/templates/pgas_rslts.cfm, line: 235
+EOF
+        plain       => <<'EOF',
+Sep 10, 2018 07:33:38 AM Error [ajp-nio-8016-exec-6] - Error Executing
+   Database Query.[Macromedia][SQLServer JDBC Driver][SQLServer]Incorrect
+   syntax near '='. The specific sequence of files included or processed
+   is: /mnt/gfs/cfdocs/eCATT/templates/pgas_rslts.cfm, line: 235
+EOF
+        flair       => <<'EOF',
+<div>Sep 10, 2018 07:33:38 AM Error [ajp-nio-8016-exec-6] - Error Executing Database Query.[Macromedia][SQLServer JDBC Driver][SQLServer]Incorrect syntax near &#39;=&#39;. The specific sequence of files included or processed is: /mnt/gfs/cfdocs/eCATT/templates/<span class="entity file" data-entity-type="file" data-entity-value="pgas_rslts.cfm">pgas_rslts.cfm</span>, line: 235
+</div>
+EOF
+        entities    => [
+            {
+                value   => 'pgas_rslts.cfm',
+                type    => 'file',
             },
         ],
         userdef => [],
