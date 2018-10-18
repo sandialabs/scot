@@ -44,6 +44,7 @@
         "react-router-dom": "latest",
         "react-scripts": "1.1.4",
         "react-table": "^6.5.1",
+        "react-tag-input": "^5.1.2",
         "react-tag-autocomplete": "^5.6.0",
         "react-time": "^4.0.0",
         "react-tinymce": "latest",
