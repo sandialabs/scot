@@ -159,7 +159,7 @@ export default class Mark extends Component {
         );
     }
 
-    handleRowSelection(state, rowInfo, column) {
+    handleRowSelection = (state, rowInfo, column) => {
         return {
             onClick: event => {
                 let data = this.state.data;
@@ -186,7 +186,7 @@ export default class Mark extends Component {
         };
     }
 
-    handleCheckboxSelection(state, rowInfo, column) {
+    handleCheckboxSelection = (state, rowInfo, column) => {
         if (column.id === "selected") {
             return {
                 onClick: event => {
@@ -212,7 +212,7 @@ export default class Mark extends Component {
         }
     }
 
-    handleTHeadCheckboxSelection(state, rowInfo, column, instance) {
+    handleTHeadCheckboxSelection = (state, rowInfo, column, instance) => {
         if (column.id === "selected") {
             return {
                 onClick: event => {
@@ -238,7 +238,7 @@ export default class Mark extends Component {
         }
     }
 
-    checkAllSelected(data) {
+    checkAllSelected = (data) => {
         for (let row of data) {
             if (!row.selected) {
                 return false;
@@ -247,7 +247,7 @@ export default class Mark extends Component {
         return true;
     }
 
-    getMarkedItems() {
+    getMarkedItems = () => {
         let markedItems = SessionStorage.getLocalStorage("marked");
         let currentItem = {
             id: this.props.id,
@@ -268,7 +268,6 @@ export default class Mark extends Component {
 class Actions extends Component {
     constructor(props) {
         super(props);
-
         this.state = {
             entry: false,
             thing: false,
@@ -281,22 +280,6 @@ class Actions extends Component {
             deleteButton: ACTION_BUTTONS.READY,
             promoteButton: ACTION_BUTTONS.READY
         };
-
-        this.RemoveSelected = this.RemoveSelected.bind(this);
-        this.MoveEntry = this.MoveEntry.bind(this);
-        this.CopyEntry = this.CopyEntry.bind(this);
-        this.EntryAjax = this.EntryAjax.bind(this);
-        this.Link = this.Link.bind(this);
-        this.LinkAjax = this.LinkAjax.bind(this);
-        this.Reparse = this.Reparse.bind(this);
-        this.ReparseAjax = this.ReparseAjax.bind(this);
-        this.Promote = this.Promote.bind(this);
-        this.PromoteAjax = this.PromoteAjax.bind(this);
-        this.ToggleActionSuccess = this.ToggleActionSuccess.bind(this);
-        this.ExpandLinkToggle = this.ExpandLinkToggle.bind(this);
-        this.LinkContextChange = this.LinkContextChange.bind(this);
-        this.deleteCallback = this.deleteCallback.bind(this);
-        this.StartDelete = this.StartDelete.bind(this);
     }
 
     componentWillMount() {
@@ -307,7 +290,7 @@ class Actions extends Component {
         this.mounted = false;
     }
 
-    deleteCallback(success) {
+    deleteCallback = (success) => {
         if (success === true) {
             this.RemoveSelected();
         }
@@ -465,11 +448,11 @@ class Actions extends Component {
         );
     }
 
-    LinkContextChange(e) {
+    LinkContextChange = (e) => {
         this.setState({ linkContextString: e.target.value });
     }
 
-    ExpandLinkToggle(newState) {
+    ExpandLinkToggle = (newState)=> {
         if (newState === true || newState === false) {
             this.setState({ linkPanel: newState, linkContextString: "" });
         } else {
@@ -478,7 +461,7 @@ class Actions extends Component {
         }
     }
 
-    RemoveSelected() {
+    RemoveSelected = () => {
         for (let key of this.props.data) {
             if (key.selected) {
                 removeMarkedItems(key.type, key.id);
@@ -494,13 +477,13 @@ class Actions extends Component {
         }
     }
 
-    StartDelete() {
+    StartDelete = () => {
         this.setState({
             pendingDelete: true
         });
     }
 
-    MoveEntry() {
+    MoveEntry = () =>{
         for (let key of this.props.data) {
             if (key.selected && key.type === "entry") {
                 this.EntryAjax(key.id, true);
@@ -508,7 +491,7 @@ class Actions extends Component {
         }
     }
 
-    CopyEntry() {
+    CopyEntry = () => {
         for (let key of this.props.data) {
             if (key.selected && key.type === "entry") {
                 this.EntryAjax(key.id, false);
@@ -516,7 +499,7 @@ class Actions extends Component {
         }
     }
 
-    Link() {
+    Link = () => {
         for (let key of this.props.data) {
             if (key.selected) {
                 let arrayToLink = [];
@@ -552,7 +535,7 @@ class Actions extends Component {
         }
     }
 
-    Reparse() {
+    Reparse = () => {
         this.setState({
             reparseButton: ACTION_BUTTONS.LOADING
         });
@@ -587,7 +570,7 @@ class Actions extends Component {
             });
     }
 
-    ReparseAjax(thing) {
+    ReparseAjax = (thing) => {
         return $.ajax({
             type: "put",
             url: "/scot/api/v2/" + thing.type + "/" + thing.id,
@@ -596,7 +579,7 @@ class Actions extends Component {
         });
     }
 
-    Promote() {
+    Promote = () => {
         this.setState({
             promoteButton: ACTION_BUTTONS.LOADING
         });
@@ -638,7 +621,7 @@ class Actions extends Component {
             });
     }
 
-    PromoteAjax(thing) {
+    PromoteAjax = (thing) => {
         return $.ajax({
             type: "put",
             url: "/scot/api/v2/alert/" + thing.id,
@@ -648,7 +631,7 @@ class Actions extends Component {
         });
     }
 
-    LinkAjax(arrayToLink) {
+    LinkAjax = (arrayToLink) => {
         let data = {};
         data.weight = 1; //passed in object
         data.vertices = arrayToLink; //link to current thing
@@ -675,7 +658,7 @@ class Actions extends Component {
         });
     }
 
-    EntryAjax(id, removeOriginal) {
+    EntryAjax = (id, removeOriginal) => {
         $.ajax({
             type: "get",
             url: "/scot/api/v2/entry/" + id,
@@ -715,7 +698,7 @@ class Actions extends Component {
         });
     }
 
-    RemoveEntryAfterMove(id) {
+    RemoveEntryAfterMove = (id) => {
         $.ajax({
             type: "delete",
             url: "/scot/api/v2/entry/" + id,
@@ -728,7 +711,7 @@ class Actions extends Component {
         });
     }
 
-    ToggleActionSuccess(status) {
+    ToggleActionSuccess = (status) => {
         if (status === true || status === false) {
             this.setState({ actionSuccess: status });
         } else {

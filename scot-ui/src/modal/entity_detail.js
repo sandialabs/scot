@@ -138,7 +138,7 @@ export default class EntityDetail extends React.Component {
                                             initialLoad: true,
                                             processedIds: entityidsarray
                                         });
-                                        this.props.createCallbackObject(this.props.entityid, this.updated);
+                                        this.props.createCallback(this.props.entityid, this.updated);
                                     }
                                 }.bind(this),
                                 error: function (data) {
@@ -185,7 +185,7 @@ export default class EntityDetail extends React.Component {
                                     initialLoad: true,
                                     processedIds: entityidsarray
                                 });
-                                this.props.createCallbackObject(this.props.entityid, this.updated);
+                                this.props.createCallback(this.props.entityid, this.updated);
                             }
                         }.bind(this),
                         error: function (data) {
@@ -214,7 +214,7 @@ export default class EntityDetail extends React.Component {
                 initialLoad: true,
                 processedIds: entityidsarray
             });
-            this.props.createCallbackObject(this.props.entityid, this.updated);
+            this.props.createCallback(this.props.entityid, this.updated);
         }
         //Esc key closes popup
         function escHandler(event) {
@@ -311,7 +311,7 @@ export default class EntityDetail extends React.Component {
                                                             tabs: currentTabArray,
                                                             currentKey: nextProps.entityid
                                                         });
-                                                        this.props.createCallbackObject(nextProps.entityid, this.updated);
+                                                        this.props.createCallback(nextProps.entityid, this.updated);
                                                     }
                                                 }.bind(this),
                                                 error: function (data) {
@@ -351,7 +351,7 @@ export default class EntityDetail extends React.Component {
                                                 tabs: currentTabArray,
                                                 currentKey: nextProps.entityid
                                             });
-                                            this.props.createCallbackObject(nextProps.entityid, this.updated);
+                                            this.props.createCallback(nextProps.entityid, this.updated);
                                         }
                                     }.bind(this),
                                     error: function (data) {
@@ -379,7 +379,7 @@ export default class EntityDetail extends React.Component {
                                 initialLoad: true,
                                 processedIds: entityidsarray
                             });
-                            this.props.createCallbackObject(nextProps.entityid, this.updated);
+                            this.props.createCallback(nextProps.entityid, this.updated);
                             this.props.watcher();
                         }
                     }.bind(this)
@@ -569,7 +569,7 @@ export default class EntityDetail extends React.Component {
         });
     };
 
-    handleSelectTab(key) {
+    handleSelectTab = (key) => {
         this.setState({ currentKey: key });
     }
 
@@ -661,6 +661,7 @@ export default class EntityDetail extends React.Component {
                         key={z}
                         errorToggle={this.props.errorToggle}
                         linkWarningToggle={this.props.linkWarningToggle}
+                        createCallback={this.props.createCallback}
                     />
                 </Tab>
             );
@@ -809,6 +810,7 @@ class TabContents extends React.Component {
                                     value={this.props.valueClicked}
                                     data={this.props.data}
                                     errorToggle={this.props.errorToggle}
+                                    createCallback={this.props.createCallback}
                                 />
                             ) : (
                                     <div style={{ display: "inline-flex", position: "relative" }}>
@@ -835,6 +837,8 @@ class TabContents extends React.Component {
                                 id={this.props.id}
                                 errorToggle={this.props.errorToggle}
                                 linkWarningToggle={this.props.linkWarningToggle}
+                                createCallback={this.props.createCallback}
+
                             />
                         ) : (
                                 <div>Loading...</div>
@@ -855,12 +859,14 @@ class TabContents extends React.Component {
                                             <EntityValue
                                                 value={this.props.entityid}
                                                 errorToggle={this.props.errorToggle}
+                                                createCallback={this.props.createCallback}
                                             />
                                         </span>
                                         <div>
                                             <EntityValue
                                                 value={this.props.data.applies_to}
                                                 errorToggle={this.props.errorToggle}
+                                                createCallback={this.props.createCallback}
                                             />
                                         </div>
                                     </span>
@@ -881,6 +887,7 @@ class TabContents extends React.Component {
                                 form={this.props.form}
                                 data={this.props.data}
                                 entitytype={this.props.entitytype}
+                                createCallback={this.props.createCallback}
                             />
                         ) : (
                                 <div>Loading...</div>
@@ -904,6 +911,7 @@ class TabContents extends React.Component {
                                 data={this.props.data}
                                 entityid={this.props.entityid}
                                 entitytype={this.props.entitytype}
+                                createCallback={this.props.createCallback}
                             />
                         ) : (
                                 <div>Loading...</div>
@@ -997,11 +1005,11 @@ class EntityBody extends React.Component {
         this.props.linkWarningToggle(e.target.id);
     };
 
-    componentDidMount = () => {
+    componentDidMount() {
         this.setState({ isMounted: true });
     };
 
-    componentWillUnmount = () => {
+    componentWillUnmount() {
         this.setState({ isMounted: false });
     };
 
@@ -1124,6 +1132,7 @@ class EntityBody extends React.Component {
                             id={this.props.entityid}
                             isPopUp={1}
                             errorToggle={this.props.errorToggle}
+                            createCallback={this.props.createCallback}
                         />
                     </div>
                 </Tab>
@@ -1159,7 +1168,7 @@ class GeoView extends React.Component {
         }
     };
 
-    render = () => {
+    render() {
         let trArr = [];
         let copyArr = [];
         copyArr.push("<table>");
@@ -2076,6 +2085,7 @@ class GuideBody extends React.Component {
                         isPopUp={1}
                         headerData={this.props.data}
                         errorToggle={this.props.errorToggle}
+                        createCallback={this.props.createCallback}
                     />
                 </Tab>
             </Tabs>
