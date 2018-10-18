@@ -19,6 +19,7 @@ export default class SelectedContainer extends React.Component {
                 form={this.props.form}
                 createCallback={this.props.createCallback}
                 removeCallback={this.props.removeCallback}
+                togglePreventClick={this.props.togglePreventClick}
             />
         );
         let width = "100%";

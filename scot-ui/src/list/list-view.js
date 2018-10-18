@@ -59,6 +59,7 @@ export default class ListView extends React.Component {
 
         let typeCapitalized = this.titleCase(this.props.type);
         this.state = {
+            togglePreventClick: false,
             splitter: true,
             selectedColor: "#AEDAFF",
             sourcetags: [],
@@ -315,6 +316,10 @@ export default class ListView extends React.Component {
         document.removeEventListener("keydown", this.keyNavigate);
     };
 
+    togglePreventClick=()=>{
+        this.setState({preventClick:!this.state.preventClick});
+    }
+
     keyNavigate = event => {
         if (event.type !== "click") {
             if (!["j", "k", "ArrowUp", "ArrowDown"].includes(event.key)) {
@@ -514,6 +519,7 @@ export default class ListView extends React.Component {
                                             form={this.state.form}
                                             createCallback={this.props.createCallback}
                                             removeCallback={this.props.removeCallback}
+                                            togglePreventClick={this.togglePreventClick}
                                         />
                                     ) : null}
                                     {this.state.showEntityCreateModal ? (

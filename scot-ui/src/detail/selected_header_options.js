@@ -121,7 +121,9 @@ export default class SelectedHeaderOptions extends React.Component {
                     promote: response.pid
                 };
 
-                this.setState({ promoteRemaining: array.length - 1 });
+                if (array.length == 1) {
+                    this.props.ToggleProcessingMessage(false);
+                }
 
                 for (let i = 1; i < array.length; i++) {
                     $.ajax({
@@ -131,11 +133,7 @@ export default class SelectedHeaderOptions extends React.Component {
                         contentType: "application/json; charset=UTF-8",
                         success: function () {
                             console.log("success");
-                            this.setState({
-                                promoteRemaining: this.state.promoteRemaining - 1
-                            });
-
-                            if (this.state.promoteRemaining === 0) {
+                            if (i + 1 == array.length) {
                                 this.props.ToggleProcessingMessage(false);
                             }
                         }.bind(this),
@@ -144,9 +142,6 @@ export default class SelectedHeaderOptions extends React.Component {
                                 "failed to promoted selected alerts",
                                 data
                             );
-                            this.setState({
-                                promoteRemaining: this.state.promoteRemaining - 1
-                            });
                         }.bind(this)
                     });
                 }
