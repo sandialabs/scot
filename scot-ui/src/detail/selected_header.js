@@ -3,7 +3,7 @@ import $ from "jquery";
 import DetailDataStatus from "../components/detail_data_status";
 import ReactTime from "react-time"
 import SelectedHeaderOptions from "./selected_header_options.js";
-import DeleteEvent from "../modal/delete.js"
+import { DeleteEvent } from "../modal/delete.js"
 import Owner from "../modal/owner.js";
 import Entities from "../modal/entities.js";
 import ChangeHistory from "../modal/change_history.js";
@@ -269,7 +269,7 @@ export default class SelectedHeader extends React.Component {
     componentWillUnmount = () => {
         this.setState({ isMounted: false });
         clearTimeout(InitialAjaxLoad);
-        this.props.removeCallback(parseInt(this.props.id,10), this.updated);
+        this.props.removeCallback(parseInt(this.props.id, 10), this.updated);
     };
 
     componentDidUpdate = () => {
@@ -801,7 +801,7 @@ export default class SelectedHeader extends React.Component {
         }
     };
 
-    render = () => {
+    render() {
         let headerData = this.state.headerData;
         let viewedby = this.viewedbyfunc(headerData);
         let type = this.props.type;
@@ -1144,7 +1144,7 @@ export default class SelectedHeader extends React.Component {
 }
 
 class EntryDataUpdated extends React.Component {
-    render = () => {
+    render() {
         let data = this.props.data;
         return (
             <div>
@@ -1198,7 +1198,7 @@ class EntryDataSubject extends React.Component {
         }
     };
 
-    componentDidMount = () => {
+    componentDidMount() {
         this.calculateWidth(this.state.value);
     };
 
@@ -1230,7 +1230,7 @@ class EntryDataSubject extends React.Component {
         this.calculateWidth(value);
     };
 
-    render = () => {
+    render() {
         //only disable the subject editor on an entity with a non-blank subject as editing it could damage flair.
         let isDisabled = false;
         if (this.props.type === "entity" && this.state.value !== "") {

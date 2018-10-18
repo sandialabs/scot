@@ -60,8 +60,6 @@ export default class SelectedEntry extends React.Component {
                     if (this.state.isMounted) {
                         this.setState({ showEntryData: true, entryData: entryResult });
                         for (let i = 0; i < result.records.length; i++) {
-
-                            //TODO: ASK NICK
                             this.props.createCallback(result.records[i].id, this.updatedCB)
                         }
                         this.Watcher();
@@ -110,7 +108,6 @@ export default class SelectedEntry extends React.Component {
                     }
                 }.bind(this)
             });
-            //TODO: Ask Nick
             this.props.createCallback(this.props.id, this.updatedCB)
         }
 
@@ -1760,7 +1757,8 @@ class EntryData extends React.Component {
     }
 
     onLoad = () => {
-        if (document.getElementById("iframe_" + this.props.id) !== undefined) {
+        if (document.getElementById("iframe_" + this.props.id) !== undefined &&
+        document.getElementById("iframe_" + this.props.id) !== null) {
             if (
                 document.getElementById("iframe_" + this.props.id).contentDocument
                     .readyState === "complete"
@@ -1783,8 +1781,8 @@ class EntryData extends React.Component {
                 setTimeout(
                     function () {
                         if (
-                            document.getElementById("iframe_" + this.props.id) !== undefined
-                        ) {
+                            document.getElementById("iframe_" + this.props.id) !== undefined &&
+                            document.getElementById("iframe_" + this.props.id) !== null) {
                             document
                                 .getElementById("iframe_" + this.props.id)
                                 .contentWindow.requestAnimationFrame(
