@@ -27,10 +27,10 @@ sub add_history_entry {
     my $env     = $self->env;
     my $log     = $env->log;
 
-    my $target  = $href->{targets}; # { id => x, type => y }
+    my $target  = $href->{target}; # { id => x, type => y }
 
-    $log->debug("history is ",{filter=>\&Dumper, value=>$href});
-    $log->debug("adding history to ",{filter=>\&Dumper, value=>$target});
+    $log->trace("history is ",{filter=>\&Dumper, value=>$href});
+    $log->trace("adding history to ",{filter=>\&Dumper, value=>$target});
 
     my $obj     = $self->create($href);
     unless ($obj) {

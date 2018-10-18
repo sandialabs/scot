@@ -290,10 +290,10 @@ function start_apache {
         if [[ $OSVERSION == "14" ]]; then
             service apache2 start
         else 
-            systemctl start apache2.service
+            systemctl --no-pager start apache2.service
         fi
     else
-        systemctl start httpd.service
+        systemctl --no-pager start httpd.service
     fi
 }
 
@@ -314,10 +314,10 @@ function start_scot {
         if [[ $OSVERSION == "14" ]]; then
             service scot start
         else 
-            systemctl start scot.service
+            systemctl --no-pager start scot.service
         fi
     else
-        systemctl start scot.service
+        systemctl --no-pager start scot.service
     fi
 }
 
@@ -333,6 +333,7 @@ function setup_scot_admin {
         HASH=`$SCOT_CONFIG_SRC/mongodb/passwd.pl`
 
         mongo scot-prod $SCOT_CONFIG_SRC/mongodb/admin_user.js
+        mongo scot-prod $SCOT_CONFIG_SRC/mongodb/defaultgroups.js
         mongo scot-prod --eval "db.user.update({username:'admin'}, {$set:{pwhash:'$HASH'}})"
     fi
 }
@@ -346,14 +347,14 @@ function restart_daemons {
                     service scrfd restart
                     service scepd restart
                 else
-                    systemctl restart scfd.service
-                    systemctl restart scrfd.service
-                    systemctl restart scepd.service
+                    systemctl --no-pager restart scfd.service
+                    systemctl --no-pager restart scrfd.service
+                    systemctl --no-pager restart scepd.service
                 fi
             else
-                systemctl restart scfd.service
-                systemctl restart scrfd.service
-                systemctl restart scepd.service
+                systemctl --no-pager restart scfd.service
+                systemctl --no-pager restart scrfd.service
+                systemctl --no-pager restart scepd.service
             fi
     fi
 }
@@ -365,12 +366,12 @@ function selinux_to_permissive {
 function start_mongo {
     if [[ $OS == "Ubuntu" ]]; then
         if [[ $OSVERSION == "16" ]]; then
-            systemctl start mongod.service
+            systemctl --no-pager start mongod.service
         else 
             service mongod start
         fi
     else
-        systemctl start mongod.service
+        systemctl --no-pager start mongod.service
     fi
 }
 

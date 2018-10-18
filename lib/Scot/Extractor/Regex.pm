@@ -279,6 +279,45 @@ sub _build_CIDR {
     };
 }
 
+=item B<CLSID>
+
+Microsoft object CLSID
+
+=cut
+
+has regex_CLSID     => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_CLSID',
+);
+
+sub _build_CLSID {
+    my $self    = shift;
+    my $regex   = qr{
+        \b                                      # word boundary
+        (
+        [a-fA-F0-9]{8}
+        \-
+        [a-fA-F0-9]{4}
+        \-
+        [a-fA-F0-9]{4}
+        \-
+        [a-fA-F0-9]{4}
+        \-
+        [a-fA-F0-9]{12}
+        )
+        \b
+    }xims;
+    return {
+        regex   => $regex,
+        type    => "clsid",
+        order   => 100,
+        options => { multiword => "no" },
+    };
+}
+
 =item B<md5>
 
 The regex will pull out md5 out of text
@@ -383,6 +422,7 @@ has regex_IPV6 => (
 sub _build_IPV6 {
     my $self    = shift;
     my $re      = qr{
+    \b
 	(?:
     # Mixed
 	(?:
@@ -391,7 +431,7 @@ sub _build_IPV6 {
 	# Compressed with at most 6 colons
 	|(?=(?:[A-F0-9]{0,4}:){0,6}
 		(?:[0-9]{1,3}\.){3}[0-9]{1,3}  # and 4 bytes
-	#	\Z)                            # and anchored
+        (?![:.\w])
     )
 	# and at most 1 double colon
 	(([0-9A-F]{1,4}:){0,5}|:)((:[0-9A-F]{1,4}){1,5}:|:)
@@ -406,13 +446,14 @@ sub _build_IPV6 {
 	(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}
 	|# Compressed with at most 7 colons
 	(?=(?:[A-F0-9]{0,4}:){0,7}[A-F0-9]{0,4}
-	#	\Z
+        (?![:.\w])
         )  # and anchored
 	# and at most 1 double colon
 	(([0-9A-F]{1,4}:){1,7}|:)((:[0-9A-F]{1,4}){1,7}|:)
 	# Compressed with 8 colons
 	|(?:[A-F0-9]{1,4}:){7}:|:(:[A-F0-9]{1,4}){7}
 	)
+    (?![:.\w]) # neg lookahead to "anchor"
     }xmis;
     return {
         regex => $re,
@@ -421,7 +462,6 @@ sub _build_IPV6 {
         options => { multiword => "yes" },
     };
 }
-        
 
 sub _build_IPV6_not {
     my $self    = shift;
@@ -547,8 +587,8 @@ sub _build_EMAIL {
         \b
         (
             (?:
-                [a-z0-9!#$%&'*+/?^_`{|}~-]+             # one or more of these
-                (?:\.[a-z0-9!#$%&'*+/?^_`{|}~-]+)*      # zero or more of these
+                [\=a-z0-9!#$%&'*+/?^_`{|}~-]+             # one or more of these
+                (?:\.[\=a-z0-9!#$%&'*+/?^_`{|}~-]+)*      # zero or more of these
             )
             @
             (?:
@@ -628,12 +668,12 @@ sub _build_COMMON_FILE_EXT {
         \b
         [0-9a-zA-Z_\-\.]+
         \.
-        (exe|bat|zip|txt|rar|tar|dll|7z|ps1|vbs|js|pdf|msi|hta|mht|doc|docx|xls|xlsx|ppt|pptx|jse|jar|vbe|wsf|wsh|sct|wsc)
+        (cfm|exe|bat|zip|txt|rar|tar|dll|7z|ps1|vbs|js|pdf|msi|hta|mht|doc|docx|xls|xlsx|ppt|pptx|jse|jar|vbe|wsf|wsh|sct|wsc)
         \b
     }xims;
     return {
         regex   => $regex,
-        type    => "filename",
+        type    => "file",
         order   => 100,
         options => { multiword => "no" },
     };
@@ -658,7 +698,7 @@ sub _build_PYTHON_FILE_EXT {
     }xims;
     return {
         regex   => $regex,
-        type    => "filename",
+        type    => "file",
         order   => 9,
         options => { multiword => "no" },
     };

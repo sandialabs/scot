@@ -12,6 +12,10 @@ Scot::Model::Tag
 
 The model of an individual Tag
 
+=head1 Extends
+
+Scot::Model
+
 =cut
 
 extends 'Scot::Model';
@@ -20,22 +24,20 @@ with    qw(
     Scot::Role::Value
 );
 
+=head1 Consumed Roles
+
+    Meerkat::Role::Document
+    Scot::Role::Value
+
 =head1 Attributes
 
 =over 4
 
 =item B<value>
 
-Moved to Role
+Moved to Scot::Role::Value
 
 the text that makes up the tag
-
-
-has value  => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-);
 
 =cut
 
@@ -61,8 +63,7 @@ __PACKAGE__->meta->make_immutable;
 
 =head1 Copyright
 
-Copyright (c) 2014 Sandia National Laboratories.
-
+Copyright (c) 2014 Sandia National Laboratories.  
 =head1 Author
 
 Todd Bruner.  

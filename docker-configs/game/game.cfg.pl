@@ -1,4 +1,5 @@
 %environment = (
+    location => "local",
     log_config  => {
         logger_name     => 'SCOT',
         layout          => '%d %7p [%P] %15F{1}: %4L %m%n',

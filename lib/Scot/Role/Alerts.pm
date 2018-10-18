@@ -1,6 +1,17 @@
 package Scot::Role::Alerts;
-
 use Moose::Role;
+
+=head1 Name
+
+Scot::Role::Alerts
+
+=head1 Description
+
+This Role when consumed by a Scot::Model, provides the following attributes.
+
+=head1 Attributes
+
+=over 4
 
 =item B<alerts>
 
@@ -15,5 +26,14 @@ has alerts => (
     required=> 1,
     default => sub {[]},
 );
+
+=back
+
+=head1 License
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+=cut
+
 
 1;

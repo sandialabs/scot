@@ -151,7 +151,7 @@ sub day_hour_heatmap_json {
     };
     $log->debug("building day hour heatmap for ",{filter=>\&Dumper, value=>$match});
     my $cursor  = $self->env->mongo->collection('Stat')->find($match);
-    $log->debug("cursor has ".$cursor->count." document");
+    # $log->debug("cursor has ".$cursor->count." document");
     my %results = ();
     while ( my $obj = $cursor->next ) {
         my $dt  = DateTime->from_epoch( epoch => $obj->epoch );

@@ -1,10 +1,22 @@
 package Scot::Role::Body;
-
 use Moose::Role;
+
+=head1 Name
+
+Scot::Role::Body
+
+=head1 Description
+
+This Role when consumed by a Scot::Model, provides the following attributes.
+
+=head1 Attributes
+
+=over 4
 
 =item B<body>
 
-The "body" of the consuming role.  May be HTML.
+Attribute that contains string data that may be plain text or HTML.  
+This attribute may also contain a null value.
 
 =cut
 
@@ -17,7 +29,9 @@ has body => (
 
 =item B<body_plain>
 
-The plaintext version of the body.
+Attribute that contains a plain text rendering of the B<body> 
+attribute.  
+This attribute may also contain a null value.
 
 =cut
 
@@ -30,8 +44,11 @@ has body_plain => (
 
 =item B<body_flair>
 
-The "flaired" version of body
-in other words, defenitely html
+Attribute that contains the HTML version of the body after the text
+has been scanned for entities and "flaired".  If Body is null, this
+will be null also.
+
+=back
 
 =cut
 
@@ -41,5 +58,6 @@ has body_flair => (
     required    => 1,
     default     => '',
 );
+
 
 1;

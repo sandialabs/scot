@@ -14,11 +14,21 @@ The model of an audit record
 
 =cut
 
+=head1 Extends
+
+Scot::Model
+
+=cut
+
 extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
     Scot::Role::Data
 );
+
+=head1 Consumed Roles
+
+Scot::Role::Data
 
 =head1 Attributes
 

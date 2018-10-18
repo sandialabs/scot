@@ -12,6 +12,10 @@ Scot::Model::History
 
 The model of a History Record
 
+=head1 Extends
+
+Scot::Model
+
 =cut
 
 extends 'Scot::Model';
@@ -19,6 +23,11 @@ with    qw(
     Meerkat::Role::Document
     Scot::Role::Target
 );
+
+=head1 Consumed Roles
+
+    Meerkat::Role::Document
+    Scot::Role::Target
 
 =head1 Attributes
 
