@@ -26,6 +26,8 @@ sub api_create {
     my $env     = $self->env;
     my $log     = $env->log;
 
+    $log->debug("in api_create for alert");
+
     my $data    = $href->{data};
     if ( ! defined $data ) {
         $log->error("empty data field in api create request!");
@@ -48,12 +50,17 @@ sub api_create {
         return 0;
     }
 
-    my $alert = $self->create({
+
+    my $ref    = {
         data        => $data,
         alertgroup  => $agid,
         status      => 'open',
         columns     => $columns,
-    });
+    };
+
+    $log->debug("attempting to create alert: ",{filter=>\&Dumper, value=>$ref});
+
+    my $alert = $self->create($ref);
 
     if ( ! defined $alert ) {
         $log->error("failed to create alert!");

@@ -1595,13 +1595,13 @@ sub get_request_params  {
     my $log     = $env->log;
 
     my $mreq    = $self->req;
-    $log->trace("mojolicious request obj: ",{filter=>\&Dumper, value=>$mreq});
+    $log->debug("mojolicious request obj: ",{filter=>\&Dumper, value=>$mreq});
 
     my $params  = $self->req->params->to_hash;
     my $json    = $self->req->json;
 
-    $log->trace("params => ", { filter => \&Dumper, value => $params });
-    $log->trace("json   => ", { filter => \&Dumper, value => $json });
+    $log->debug("params => ", { filter => \&Dumper, value => $params });
+    $log->debug("json   => ", { filter => \&Dumper, value => $json });
 
     if ( $params ) {
         $log->trace("Checking Params for JSON values");
