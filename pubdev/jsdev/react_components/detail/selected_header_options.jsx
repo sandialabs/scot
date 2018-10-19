@@ -117,11 +117,14 @@ let SelectedHeaderOptions = React.createClass( {
                     promote:response.pid
                 };
 
+                if (array.length == 1){
+                    this.props.ToggleProcessingMessage( false );
+                }
                 // if ( this.state.promoteRemaining > 0 ){
                 //     this.setState( {promoteRemaining: array.length -1 } );
                 // }
 
-                for ( let i=0; i < array.length; i++ ) {
+                for ( let i=1; i < array.length; i++ ) {
 
                     $.ajax( {
                         type:'put',
