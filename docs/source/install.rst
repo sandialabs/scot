@@ -1,6 +1,11 @@
 Installing SCOT
 ===============
 
+Important Update
+================
+
+As of SCOT 3.6, you can now install SCOT via docker. Please see the :doc:`scot-docker docs <./scotdocker>` 
+
 Minimum System Requirements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -15,6 +20,7 @@ at least 4 GB of RAM in this case.
 
 System Preparation
 ^^^^^^^^^^^^^^^^^^
+
 
 Ubuntu 14.04
 ------------
