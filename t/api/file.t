@@ -54,6 +54,12 @@ $t  ->post_ok('/scot/api/v2/file'  => form => {
     entry_id    => $entry1,
 })->status_is(200);
 
+#$t  ->post_ok("/scot/api/v2/file" => json => {
+#    changes => 0,
+#    created => 1,
+#    filename    => 'real.php',
+#});
+
 
 #  print Dumper($t->tx->res->json);
  done_testing();
