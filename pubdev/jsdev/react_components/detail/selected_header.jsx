@@ -8,8 +8,7 @@ let ChangeHistory           = require( '../modal/change_history.jsx' );
 let ViewedByHistory         = require( '../modal/viewed_by_history.jsx' );
 let SelectedPermission      = require( '../components/permission.jsx' );
 let SelectedEntry           = require( './selected_entry.jsx' );
-let Tag                     = require( '../components/tag.jsx' );
-let Source                  = require( '../components/source.jsx' );
+let Badge                    = require( '../components/badge.jsx' );
 let Store                   = require( '../activemq/store.jsx' );
 let Notification            = require( 'react-notification-system' );
 let AddFlair                = require( '../components/add_flair.jsx' ).AddFlair;
@@ -605,8 +604,8 @@ let SelectedHeader = React.createClass( {
                                                 }
                                                 {( type == 'event' || type == 'incident' ) && this.state.showEventData && this.state.headerData.promoted_from.length > 0 ? <th>Promoted From:</th> : null}
                                                 {( type == 'event' || type == 'incident' ) && this.state.showEventData && this.state.headerData.promoted_from.length > 0 ? <PromotedData data={this.state.headerData.promoted_from} type={type} id={id} /> : null}
-                                                {( type != 'entity' ) && this.state.showEventData ? <Tag data={this.state.tagData} id={id} type={type} updated={this.updated} errorToggle={this.props.errorToggle} /> : null}
-                                                {( type != 'entity' ) && this.state.showEventData ? <Source data={this.state.sourceData} id={id} type={type} updated={this.updated} errorToggle={this.props.errorToggle}/> : null }
+                                                {( type != 'entity' ) && this.state.showEventData ? <Badge data={this.state.tagData} badgeType='tag' id={id} type={type} updated={this.updated} errorToggle={this.props.errorToggle} /> : null}
+                                                {( type != 'entity' ) && this.state.showEventData ? <Badge data={this.state.sourceData} badgeType='source' id={id} type={type} updated={this.updated} errorToggle={this.props.errorToggle}/> : null }
                                             </tr>
                                         </tbody>
                                     </table>
