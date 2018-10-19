@@ -1,0 +1,16 @@
+alert
+
+id              int
+alergroup_id    int foriegn key
+status          string
+parsed          boolean
+columns         array
+data            json
+data_with_flair json
+created         int
+updated         int
+tlp             string
+read_groups     array
+modify_groups   array
+
+

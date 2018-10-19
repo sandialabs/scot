@@ -80,7 +80,7 @@ override api_create => sub {
     my @audit_msgs  = ();
     my @stat_msgs   = ();
 
-    $log->trace("create alertgroup");
+    $log->debug("create alertgroup");
 
     # alertgroup creation will receive the following in the 
     # json portion of the request
@@ -114,7 +114,7 @@ override api_create => sub {
 
         my $alert_col   = $mongo->collection('Alert');
 
-        $log->trace("Creating alerts belonging to Alertgroup ". $id);
+        $log->debug("Creating alerts belonging to Alertgroup ". $id);
         foreach my $datum (@{$data}) {
 
             my $alertscreated += $alert_col->api_create({
