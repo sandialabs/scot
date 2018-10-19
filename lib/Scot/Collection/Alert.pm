@@ -7,6 +7,25 @@ use Type::Params qw/compile/;
 use Types::Standard qw/slurpy :types/;
 use Data::Dumper;
 
+=head1 Name
+
+Scot::Collection::Alert
+
+=head1 Description
+
+Collection methods for Alerts
+
+=head1 Extends
+
+Scot::Collection
+
+=head1 Consumed Roles
+
+Scot::Role::GetByAttr
+Scot::Role::GetTagged
+
+=cut
+
 extends 'Scot::Collection';
 
 with    qw(
@@ -19,6 +38,14 @@ sub create_from_handler {
         error   => "Direct creation of Alerts from Web API not supported",
     };
 }
+
+=head1 Methods
+
+=over 4
+
+=item B<api_create($req_href)>
+
+=cut
 
 sub api_create {
     my $self    = shift;
@@ -63,6 +90,10 @@ sub api_create {
 }
 
 # updating an Alert can cause changes in the alertgroup
+
+=item B<update($obj, $update)>
+
+=cut
 
 override 'update'   => sub {
     state $check    = compile( Object, Object, HashRef );
@@ -306,5 +337,9 @@ sub update_alert_parsed {
 #         $log->error("unsupported subthing $subthing!");
 #     }
 # };
+
+=back
+
+=cut
 
 1;
