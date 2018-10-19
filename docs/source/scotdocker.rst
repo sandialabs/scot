@@ -1,7 +1,7 @@
-Docker-SCOT v 0.02
+Docker-SCOT v 0.03
 ******************
 
-v0.02 relase date - 2/5/2017
+v0.03 relase date - 9/21/2018
 
 =================
 Table of Contents
@@ -17,7 +17,7 @@ Table of Contents
 **Overview** 
 ----------------------
 
-Docker-SCOT is an experimental, multi-container based implementation of SCOT. Docker-Scot allows a new user to get up and running with SCOT much quicker, and easier than with the traditional SCOT install process. 
+Docker-SCOT is now a supported, multi-container deployment of SCOT. Docker-SCOT allows a new user to get up and running with SCOT much quicker, and easier than with the traditional SCOT install process. 
 
 **IMPORTANT**
 
@@ -89,9 +89,9 @@ To restart a specific service and build in any particular changes you have made 
 Configuration
 -------------
 
-Docker-SCOT relies on the docker-compose.yml to define the execution of the services, the DockerFiles that define the dependencies for each container, and two directories (docker-scripts & docker-configs). Below I will talk about each. 
+Docker-SCOT relies on the docker-compose.yml or docker-compose-custom.yml file to define the execution of the services, the DockerFiles that define the dependencies for each container, and two directories (docker-scripts & docker-configs).  
 
-**docker-compose.yml**
+**docker-compose-custom.yml**
 
 The docker-compose.yml simply defines the port mappings, data volumes, build contexts, etc. Most of this can be configured as you please but keep in mind some of the data volume mapping and all of the static IPs are currently required unless you modify the configuration files in docker-configs. 
 
@@ -108,7 +108,7 @@ The following scripts are currently supported:
 To execute one of the above scripts, simply connect to the scot container via:: 
 
 
-    sudo docker exec -i -t -u 0 scot /bin/bash
+    sudo docker exec -i -t -u scot scot /bin/bash
 
 cd to /opt/scot/bin/
 
@@ -122,14 +122,14 @@ and run::
 
 If you are upgrading to the docker version of SCOT and need to restore your database (make sure to backup your database prior to upgrading) or you are already using the docker version of SCOT and want to backup your database simply run:: 
 
-    sudo docker exec -i -t -u 0 scot /bin/bash
+    sudo docker exec -i -t -u scot scot /bin/bash
 
 cd to /opt/scot/bin and run::
     ./backup.pl
     
 To restore, once you have finished the backup::
 
-    sudo docker exec -i -t -u 0 scot /bin/bash
+    sudo docker exec -i -t -u scot scot /bin/bash
 
 cd to /opt/scot/bin and run::
     ./restore.pl

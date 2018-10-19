@@ -269,8 +269,11 @@ let EntityDetail = React.createClass( {
                                                     };
                                                     currentTabArray.push(newTab);
                                                     if (this.state.isMounted) {
+                                                        let processed_ids = this.state.processedIds;
+                                                        processed_ids.push(entityid);
                                                         this.setState({
                                                             tabs: currentTabArray,
+                                                            processedIds: processed_ids,
                                                             currentKey: nextProps.entityid
                                                         });
                                                         Store.storeKey(nextProps.entityid);
@@ -338,10 +341,14 @@ let EntityDetail = React.createClass( {
                 } else {
                     if ( nextProps != undefined ) {
                         //TODO Fix next conditional for undefined that prevents multiple calls for the same ID at load time on a nested entity
-                        if ( nextProps.entitytype != null && ( nextProps.entityid != undefined ) ) {
+                        if ( nextProps.entitytype != null && ( nextProps.entityid != undefined) ) {
+
                             let nextPropsEntityIdInt = parseInt( nextProps.entityid );
                             for ( let i=0; i < this.state.tabs.length; i++ ) {
-                                if ( nextPropsEntityIdInt == this.state.tabs[i].entityid || ( this.state.tabs[i].entitytype == 'guide' && nextProps.entitytype == 'guide' ) ) {
+                                if ( nextPropsEntityIdInt == this.state.tabs[i].entityid || ( this.state.tabs[i].entitytype == 'guide' && nextProps.entitytype == 'guide' ) || this.state.tabs[i].data.value == nextProps.entityvalue ) {
+                                    if (isNaN(nextPropsEntityIdInt)){
+                                        return;
+                                    }
                                     if ( this.state.isMounted ){
                                         this.setState( {currentKey:nextPropsEntityIdInt} );
                                     }
@@ -490,7 +497,6 @@ let EntityDetail = React.createClass( {
             entityHeight = entityPopUpHeight;
             entityWidth = entityPopUpWidth;
         }*/
-        let heightboundary = 200- this.state.defaultEntityOffset.top 
         let defaultOffsetY;
         let defaultOffsetX;
         let tabsArr = [];
@@ -541,7 +547,7 @@ let EntityDetail = React.createClass( {
             );
         } else {
             return (
-                <Draggable handle="#handle" bounds={{top: heightboundary}} onMouseDown={this.moveDivInit}>
+                <Draggable handle="#handle" onMouseDown={this.moveDivInit}>
                     <div id="dragme" className={DragmeClass} style={{width:this.state.entityWidth, left:defaultOffsetX, maxHeight:'90vh'}}>
                         <div id='popup-flex-container' style={{height: '100%', display:'flex', flexFlow:'row'}}>
                             <div id="entity_detail_container" style={{flexFlow: 'column', display: 'flex', width:'100%'}}>
@@ -707,26 +713,28 @@ let EntityBody = React.createClass( {
         //let href = '/#/entity/' + this.props.entityid + '/' + this.props.type + '/' + this.props.id;
         let href = '/' + 'entity/'+this.props.entityid;
         return (
-            <Tabs className='tab-content' defaultActiveKey={1} bsStyle='tabs'>
-                <Tab eventKey={1} className='entityPopUpButtons' title={this.state.appearances} style={{height:'100%'}}>
-                    <div>
-                        {entityEnrichmentLinkArr}
-                    </div>
-                    <div style={{maxHeight: '30vh', overflowY: 'auto'}}>
-                        <span><b>Appears: {this.state.appearances} times</b></span>{this.state.showFullEntityButton == true ? <span style={{paddingLeft:'5px'}}><Link to={href} style={{color:'#c400ff'}} target='_blank'>List truncated due to large amount of references. Click to view the whole entity</Link></span> : null}<br/><EntityReferences entityid={this.props.entityid} updateAppearances={this.updateAppearances} type={this.props.type} showFullEntityButton={this.showFullEntityButton} errorToggle={this.props.errorToggle}/><br/>
-                    </div>
-                    <hr style={{marginTop:'.5em', marginBottom:'.5em'}}/>
-                    <div style={{maxHeight:'50vh', overflowY:'auto'}}>
+            <div style={{overflowY: 'auto'}}>
+                <Tabs className='tab-content' defaultActiveKey={1} bsStyle='tabs'>
+                    <Tab eventKey={1} className='entityPopUpButtons' title={this.state.appearances} style={{height:'100%'}}>
                         <div>
-                            <Button bsSize='xsmall' onClick={this.entryToggle}>Add Entry</Button><br/>
+                            {entityEnrichmentLinkArr}
                         </div>
-                        {this.state.entryToolbar ? <AddEntry entryAction={'Add'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} 
-                        <SelectedEntry type={'entity'} id={this.props.entityid} isPopUp={1} errorToggle={this.props.errorToggle}/>
-                    </div>
-                </Tab>
-                {entityEnrichmentGeoArr}
-                {entityEnrichmentDataArr}
-            </Tabs>
+                        <div style={{maxHeight: '30vh', overflowY: 'auto'}}>
+                            <span><b>Appears: {this.state.appearances} times</b></span>{this.state.showFullEntityButton == true ? <span style={{paddingLeft:'5px'}}><Link to={href} style={{color:'#c400ff'}} target='_blank'>List truncated due to large amount of references. Click to view the whole entity</Link></span> : null}<br/><EntityReferences entityid={this.props.entityid} updateAppearances={this.updateAppearances} type={this.props.type} showFullEntityButton={this.showFullEntityButton} errorToggle={this.props.errorToggle}/><br/>
+                        </div>
+                        <hr style={{marginTop:'.5em', marginBottom:'.5em'}}/>
+                        <div style={{maxHeight:'50vh', overflowY:'auto'}}>
+                            <div>
+                                <Button bsSize='xsmall' onClick={this.entryToggle}>Add Entry</Button><br/>
+                            </div>
+                            {this.state.entryToolbar ? <AddEntry entryAction={'Add'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} 
+                            <SelectedEntry type={'entity'} id={this.props.entityid} isPopUp={1} errorToggle={this.props.errorToggle}/>
+                        </div>
+                    </Tab>
+                    {entityEnrichmentGeoArr}
+                    {entityEnrichmentDataArr}
+                </Tabs>
+            </div>
         );
     }
     
