@@ -19,6 +19,10 @@ Scot::Collection::Alertgroup
 
 Custom collection operations for Alertgroups
 
+=head1 Extends
+
+Scot::Collection
+
 =head1 Methods
 
 =over 4
@@ -69,6 +73,22 @@ sub split_alertgroups {
     return wantarray ? @ag_requests : \@ag_requests;
 }
 
+=item B<api_create($href)>
+
+Overrides api_create in Scot::Collection.  Create an alertgroup from 
+
+    # alertgroup creation will receive the following in the 
+    # json portion of the request
+    # request => {
+    #    message_id  => '213123',
+    #    subject     => 'subject',
+    #    data       => [ { ... href structure ...      }, { ... } ... ],
+    #    tags       => [],
+    #    sources    => [],
+    # }
+
+=cut
+
 override api_create => sub {
     my $self    = shift;
     my $href    = shift;
@@ -82,15 +102,6 @@ override api_create => sub {
 
     $log->debug("create alertgroup");
 
-    # alertgroup creation will receive the following in the 
-    # json portion of the request
-    # request => {
-    #    message_id  => '213123',
-    #    subject     => 'subject',
-    #    data       => [ { ... href structure ...      }, { ... } ... ],
-    #    tags       => [],
-    #    sources    => [],
-    # }
 
     my @requests        = $self->split_alertgroups($href);
     my @alertgroups     = ();
@@ -200,6 +211,22 @@ sub refresh_data {
 
 }
 
+=item B<api_subthing($req)>
+
+Given a $req that looks like:
+
+    {
+        collection  => thing,
+        id          => 123,
+        subthing    => subthing,
+    }
+
+return a cursor of subthings.
+
+Valid subthings: alert, entry, entity, link, tag, source, guide, history
+
+=cut
+
 sub api_subthing {
     my $self    = shift;
     my $req     = shift;
@@ -276,7 +303,10 @@ sub api_subthing {
 
     die "Unsupported subthing: $subthing";
 }
-    
+
+=item B<update_alerts_in_alertgroup($alertgroup_obj, $request_href)>
+
+=cut
 
 sub update_alerts_in_alertgroup {
     my $self     = shift;
@@ -379,6 +409,12 @@ sub get_bundled_alertgroup {
     return $href;
 }
 
+=item B<get_alerts_in_alertgroup($alertgroup_object)>
+
+return array of alerts for a given alertgroup
+
+=cut
+
 # new api 
 sub get_alerts_in_alertgroup {
     my $self    = shift;
@@ -394,6 +430,10 @@ sub get_alerts_in_alertgroup {
     }
     return wantarray ? @alerts : \@alerts;
 }
+
+=item B<update_alertgroup_with_bundled_alert($put_href)>
+
+=cut
 
 sub update_alertgroup_with_bundled_alert {
     my $self    = shift;
@@ -516,6 +556,12 @@ sub update_alertgroup_with_bundled_alert_old {
     }
 }
 
+=item B<get_subject($alertgroup_id)>
+
+return the subject of an alertgroup
+
+=cut
+
 sub get_subject {
     my $self    = shift;
     my $agid    = shift;
@@ -526,6 +572,10 @@ sub get_subject {
     }
     die "Can't find Alertgroup $agid";
 }
+
+=back
+
+=cut
 
 1;
 
