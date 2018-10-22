@@ -234,7 +234,7 @@
         signature  => [
             {
                 type    => "textarea",
-                key     => "description",
+                key     => "data.description",
                 value   => '',
                 value_type => {
                     type    => 'static',

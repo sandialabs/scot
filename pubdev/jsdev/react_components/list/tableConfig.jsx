@@ -11,90 +11,90 @@ import LoadingContainer from './LoadingContainer';
 import TagInput from '../components/TagInput';
 
 const customFilters = {
-    numberFilter: ( {filter, onChange} ) => (
+    numberFilter: ({ filter, onChange }) => (
         <DebounceInput
             debounceTimeout={200}
             type='number'
             minLength={1}
-            min = {0}
+            min={0}
             value={filter ? filter.value : ''}
-            onChange={ e => onChange( e.target.value ) }
-            style={{width: '100%'}}
+            onChange={e => onChange(e.target.value)}
+            style={{ width: '100%' }}
         />
     ),
-    stringFilter: ( {filter, onChange} ) => (   
+    stringFilter: ({ filter, onChange }) => (
         <DebounceInput
             debounceTimeout={200}
-            minLength={1} 
-            value={filter ? filter.value : '' }
-            onChange={ e => onChange( e.target.value ) }
-            style={{width: '100%'}}
+            minLength={1}
+            value={filter ? filter.value : ''}
+            onChange={e => onChange(e.target.value)}
+            style={{ width: '100%' }}
         />
     ),
-    dropdownFilter: ( options = [ 'open', 'closed', 'promoted' ], align ) => ( {filter, onChange} ) => (
+    dropdownFilter: (options = ['open', 'closed', 'promoted'], align) => ({ filter, onChange }) => (
         <OverlayTrigger trigger='focus' placement='bottom' overlay={
-            <Popover id='status_popover' style={{maxWidth: '400px'}}>
-                <ButtonGroup vertical style={{maxHeight: '50vh', overflowY: 'auto', position: 'relative'}}>
-                    { options.map( option => (
+            <Popover id='status_popover' style={{ maxWidth: '400px' }}>
+                <ButtonGroup vertical style={{ maxHeight: '50vh', overflowY: 'auto', position: 'relative' }}>
+                    {options.map(option => (
                         <Button
                             key={option}
-                            onClick={ () => onChange( option ) }
+                            onClick={() => onChange(option)}
                             active={filter && filter.value === option}
-                            style={{textTransform: 'capitalize', textAlign: align ? align : null}}
+                            style={{ textTransform: 'capitalize', textAlign: align ? align : null }}
                         >{option}</Button>
-                    ) ) }
+                    ))}
                 </ButtonGroup>
-                { filter && 
+                {filter &&
                     <Button
                         block
-                        onClick={ () => onChange( '' ) }
+                        onClick={() => onChange('')}
                         bsStyle='primary'
-                        style={{marginTop: '3px'}}
+                        style={{ marginTop: '3px' }}
                     >Clear</Button>
                 }
             </Popover>
         }>
-            <input type='text' value={filter ? filter.value : ''} readOnly style={{width: '100%', cursor: 'pointer'}} />
+            <input type='text' value={filter ? filter.value : ''} readOnly style={{ width: '100%', cursor: 'pointer' }} />
         </OverlayTrigger>
     ),
-    dateRange: ( {filter, onChange} ) => (
+    dateRange: ({ filter, onChange }) => (
         <OverlayTrigger trigger='click' rootClose placement='bottom' overlay={
-            <Popover id='daterange_popover' style={{maxWidth: '350px'}}>
+            <Popover id='daterange_popover' style={{ maxWidth: '350px' }}>
                 <DateRangePicker numberOfCalendars={2} selectionType='range' showLegend={false} singleDateRange={true} onSelect={
-                    ( range, states ) => { onChange( momentRangeToEpoch( range ) ); }
-                } value={filter ? epochRangeToMoment( filter.value ) : null} />
-                { filter &&
-						<Button block onClick={ () => { 
-						    onChange( '' );
-						    document.dispatchEvent( new MouseEvent( 'click' ) );
-						} } bsStyle='primary'>Clear</Button>
+                    (range, states) => { onChange(momentRangeToEpoch(range)); }
+                } value={filter ? epochRangeToMoment(filter.value) : null} />
+                {filter &&
+                    <Button block onClick={() => {
+                        onChange('');
+                        document.dispatchEvent(new MouseEvent('click'));
+                    }} bsStyle='primary'>Clear</Button>
                 }
             </Popover>
         }>
-            <input type='text' value={filter ? epochRangeToString( filter.value ) : ''} readOnly style={{width: '100%', cursor: 'pointer'}} />
+            <input type='text' value={filter ? epochRangeToString(filter.value) : ''} readOnly style={{ width: '100%', cursor: 'pointer' }} />
         </OverlayTrigger>
     ),
-    tagFilter: ( type = 'tag' ) => ( {filter, onChange} ) => (
+    tagFilter: (type = 'tag') => ({ filter, onChange }) => (
         <TagInput type={type} onChange={onChange} value={filter ? filter.value : []} />
     ),
 };
 
 const customCellRenderers = {
     dateFormater: row => {
-        let date = new Date( row.value * 1000 );
-        return ( 
+        let date = new Date(row.value * 1000);
+        return (
             <span>{date.toLocaleString()}</span>
         );
     },
     alertStatus: row => {
-        let [ open, closed, promoted ] = row.value.split( '/' ).map( value => parseInt( value.trim(), 10 ) );
+        let [open, closed, promoted] = row.value.split('/').map(value => parseInt(value.trim(), 10));
         let className = 'open btn-danger';
-        if ( promoted ) {
+        if (promoted) {
             className = 'promoted btn-warning';
-        } else if ( closed ) {
-            if ( !open ) {
+        } else if (closed) {
+            if (!open) {
                 className = 'closed btn-success';
-		    }
+            }
         }
 
         return (
@@ -103,21 +103,21 @@ const customCellRenderers = {
     },
     textStatus: row => {
         let color = 'green';
-        if ( row.value === 'open' || row.value === 'disabled' || row.value === 'assigned' ) {
+        if (row.value === 'open' || row.value === 'disabled' || row.value === 'assigned') {
             color = 'red';
-        } else if ( row.value === 'promoted' ) {
+        } else if (row.value === 'promoted') {
             color = 'orange';
         }
 
         return (
-            <span style={{color: color}}>{row.value}</span>
+            <span style={{ color: color }}>{row.value}</span>
         );
     },
 };
 
 const customTableComponents = {
-    loading: ( {loading} ) => (
-        <div className={'-loading'+ ( loading ? ' -active' : '' )}>
+    loading: ({ loading }) => (
+        <div className={'-loading' + (loading ? ' -active' : '')}>
             <LoadingContainer loading={loading} />
         </div>
     ),
@@ -133,8 +133,8 @@ const columnDefinitions = {
 
     AlertStatus: {
         Header: 'Status',
-        accessor: d => d.open_count +' / '+ d.closed_count +' / '+ d.promoted_count,
-        column: [ 'open_count', 'closed_count', 'promoted_count' ],
+        accessor: d => d.open_count + ' / ' + d.closed_count + ' / ' + d.promoted_count,
+        column: ['open_count', 'closed_count', 'promoted_count'],
         id: 'status',
         maxWidth: 150,
         Filter: customFilters.dropdownFilter(),
@@ -157,15 +157,15 @@ const columnDefinitions = {
         accessor: 'status',
         maxWidth: 100,
         Cell: customCellRenderers.textStatus,
-        Filter: customFilters.dropdownFilter( [ 'open', 'closed' ] ),
+        Filter: customFilters.dropdownFilter(['open', 'closed']),
     },
-	
+
     SigStatus: {
         Header: 'Status',
         accessor: 'status',
         maxWidth: 100,
         Cell: customCellRenderers.textStatus,
-        Filter: customFilters.dropdownFilter( [ 'enabled', 'disabled' ] ),
+        Filter: customFilters.dropdownFilter(['enabled', 'disabled']),
     },
 
     TaskStatus: {
@@ -174,12 +174,12 @@ const columnDefinitions = {
         id: 'metadata.task.status',
         column: 'metadata',
         Cell: customCellRenderers.textStatus,
-        Filter: customFilters.dropdownFilter( [ 'open', 'assigned', 'closed' ] ),
+        Filter: customFilters.dropdownFilter(['open', 'assigned', 'closed']),
     },
 
     TaskSummary: {
         Header: 'Task Summary',
-        accessor: d => d.body_plain.length > 200 ? d.body_plain.substr( 0, 200 ) +'...' : d.body_plain,
+        accessor: d => d.body_plain.length > 200 ? d.body_plain.substr(0, 200) + '...' : d.body_plain,
         id: 'summary',
         minWidth: 400,
         maxWidth: 5000,
@@ -193,7 +193,7 @@ const columnDefinitions = {
         maxWidth: 5000,
         Filter: customFilters.stringFilter,
     },
-    
+
     Location: {
         Header: 'Location',
         accessor: 'location',
@@ -221,13 +221,23 @@ const columnDefinitions = {
     },
 
     Occurred: {
-        Header: 'Occurred',
-        accessor: 'occurred',
+        Header: 'When',
+        accessor: 'when',
         minWidth: 100,
         maxWidth: 180,
         Filter: customFilters.dateRange,
         Cell: customCellRenderers.dateFormater,
     },
+
+    //Changing due to Todd's change of Incident data structure as of 10/19
+    // Occurred: {
+    //     Header: 'Occurred',
+    //     accessor: 'occurred',
+    //     minWidth: 100,
+    //     maxWidth: 180,
+    //     Filter: customFilters.dateRange,
+    //     Cell: customCellRenderers.dateFormater,
+    // },
 
     Sources: {
         Header: 'Sources',
@@ -236,7 +246,7 @@ const columnDefinitions = {
         id: 'source',
         minWidth: 120,
         //maxWidth: 150,
-        Filter: customFilters.tagFilter( 'source' ),
+        Filter: customFilters.tagFilter('source'),
     },
 
     Tags: {
@@ -246,7 +256,7 @@ const columnDefinitions = {
         id: 'tag',
         minWidth: 120,
         //maxWidth: 150,
-        Filter: customFilters.tagFilter( 'tag' ),
+        Filter: customFilters.tagFilter('tag'),
     },
 
     TaskOwner: {
@@ -255,7 +265,7 @@ const columnDefinitions = {
         maxWidth: 80,
         Filter: customFilters.stringFilter,
     },
-    
+
     Owner: {
         Header: 'Owner',
         accessor: 'owner',
@@ -289,7 +299,7 @@ const columnDefinitions = {
         accessor: 'type',
         minWidth: 200,
         maxWidth: 250,
-        Filter: customFilters.dropdownFilter( constants.INCIDENT_TYPES, 'left' ),
+        Filter: customFilters.dropdownFilter(constants.INCIDENT_TYPES, 'left'),
     },
 
     AppliesTo: {
@@ -318,7 +328,7 @@ const columnDefinitions = {
 
     Group: {
         Header: 'Group',
-        accessor: d => d.signature_group ? d.signature_group.join( ', ' ) : '',
+        accessor: d => d.signature_group ? d.signature_group.join(', ') : '',
         column: 'signature_group',
         id: 'group',
         Filter: customFilters.stringFilter,
@@ -347,7 +357,7 @@ const columnDefinitions = {
         id: 'target_type',
         Filter: customFilters.stringFilter,
     },
-	
+
     TargetId: {
         Header: 'Target Id',
         accessor: d => d.target.id,
@@ -360,7 +370,7 @@ const columnDefinitions = {
         Header: 'Open Tasks',
         accessor: 'has_tasks',
         Filter: customFilters.numberFilter,
-	    maxWidth: 90,
+        maxWidth: 90,
         filterable: false,
     },
 };
@@ -381,10 +391,10 @@ const defaultTableSettings = {
 export const defaultTypeTableSettings = {
     page: 0,
     pageSize: 50,
-    sorted: [ {
+    sorted: [{
         id: 'id',
         desc: true,
-    } ],
+    }],
     filtered: [],
 };
 
@@ -395,9 +405,9 @@ const defaultColumnSettings = {
 };
 
 const typeColumns = {
-    alertgroup: [ 'Id', 'Location', 'AlertStatus', 'Subject', 'Created', 'Sources', 'Tags', 'Views', 'OpenTasks' ],
-    event: [ 'Id', 'Location', 'EventStatus', 'Subject', 'Created', 'Updated', 'Sources', 'Tags', 'Owner', 'Entries', 'Views', 'OpenTasks' ],
-    incident: [ 'Id', 'Location', 'DOE', 'IncidentStatus', 'Owner', 'Subject', 'Occurred', 'IncidentType',
+    alertgroup: ['Id', 'Location', 'AlertStatus', 'Subject', 'Created', 'Sources', 'Tags', 'Views', 'OpenTasks'],
+    event: ['Id', 'Location', 'EventStatus', 'Subject', 'Created', 'Updated', 'Sources', 'Tags', 'Owner', 'Entries', 'Views', 'OpenTasks'],
+    incident: ['Id', 'Location', 'DOE', 'IncidentStatus', 'Owner', 'Subject', 'Occurred', 'IncidentType',
         {
             title: 'Tags',
             options: { minWidth: 100, maxWidth: 150 },
@@ -407,12 +417,12 @@ const typeColumns = {
             options: { minWidth: 100, maxWidth: 150 },
         },
     ],
-    intel: [ 'Id', 'Location', 'Subject', 'Created', 'Updated', 'Sources', 
+    intel: ['Id', 'Location', 'Subject', 'Created', 'Updated', 'Sources',
         {
             title: 'Tags',
             options: { minWidth: 200, maxWidth: 250 },
-        }, 'Owner', 'Entries', 'Views', ],
-    task: [ 'Id', 'Location', 'Subject', 'TargetType', 'TargetId',
+        }, 'Owner', 'Entries', 'Views',],
+    task: ['Id', 'Location', 'Subject', 'TargetType', 'TargetId',
         {
             title: 'TaskOwner',
             options: { minWidth: 150, maxWidth: 500 },
@@ -423,35 +433,35 @@ const typeColumns = {
             options: { minWidth: 150, maxWidth: 500 },
         },
     ],
-    signature: [ 'Id', 'Location', 'Name', 'Type', 'SigStatus', 'Group', 'Description', 'Owner', 'Tags', 'Sources', 'Updated', ],
-    guide: [ 'Id', 'Location', 'Subject', 'AppliesTo' ],
-    entity: [ 'Id', 'Location', 'Value', 'Type', 'Entries', ],
-    default: [ 'Id', 'Location', 'AlertStatus', 'Subject', 'Created', 'Sources', 'Tags', 'Views', ],
+    signature: ['Id', 'Location', 'Name', 'Type', 'SigStatus', 'Group', 'Description', 'Owner', 'Tags', 'Sources', 'Updated',],
+    guide: ['Id', 'Location', 'Subject', 'AppliesTo'],
+    entity: ['Id', 'Location', 'Value', 'Type', 'Entries',],
+    default: ['Id', 'Location', 'AlertStatus', 'Subject', 'Created', 'Sources', 'Tags', 'Views',],
 };
 
-export const buildTypeColumns = ( type ) => {
-    if ( !typeColumns.hasOwnProperty( type ) ) {
+export const buildTypeColumns = (type) => {
+    if (!typeColumns.hasOwnProperty(type)) {
         // throw new Error( 'No columns defined for type: '+ type );
         type = 'default';
     }
-	
+
     let columns = [];
-    for ( let col of typeColumns[ type ] ) {
+    for (let col of typeColumns[type]) {
         let colOptions = {};
-		
-        if ( typeof col === 'object' ) {
+
+        if (typeof col === 'object') {
             colOptions = {
-                ...columnDefinitions[ col.title ],
+                ...columnDefinitions[col.title],
                 ...col.options,
             };
-        } else if ( typeof col === 'string' ) {
-            colOptions = columnDefinitions[ col ];
+        } else if (typeof col === 'string') {
+            colOptions = columnDefinitions[col];
         }
 
-        columns.push( {
+        columns.push({
             ...defaultColumnSettings,
             ...colOptions,
-        } );
+        });
     }
 
     return columns;
