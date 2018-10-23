@@ -12,6 +12,8 @@ my $collection  = $mongo->get_collection('signature');
 my $cursor      = $collection->find();
 my $bodycol     = $mongo->get_collection('sigbody');
 my $continue    = "no";
+my @delids      = ();
+my @new         = ();
 
 print "starting...\n";
 print $cursor->count . " signature records\n";
@@ -24,7 +26,7 @@ while (my $signature = $cursor->next) {
         name            => $signature->{name},
         status          => $signature->{status},
         latest_revision => get_latest_revision($signature),
-        status          => {},
+        stats           => {},
         options         => {},
         groups          => $signature->{groups},
         owner           => $signature->{owner},
@@ -70,11 +72,12 @@ while (my $signature = $cursor->next) {
     if ( $command eq "skip" ) {
         next;
     }
-
-    $collection->update_one({id => $signature->{id}}, {
-        '$set'  => $newsig
-    });
+    push @delids, $signature->{id};
+    push @new, $newsig;
 }
+
+$collection->delete_many({ id => {'$in' => \@delids }});
+$collection->insert_many([@new]);
 
 sub get_latest_revision {
     my $sig = shift;
