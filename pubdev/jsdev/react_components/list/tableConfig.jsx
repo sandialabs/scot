@@ -221,23 +221,13 @@ const columnDefinitions = {
     },
 
     Occurred: {
-        Header: 'When',
-        accessor: 'when',
+        Header: 'Occurred',
+        accessor: 'occurred',
         minWidth: 100,
         maxWidth: 180,
         Filter: customFilters.dateRange,
         Cell: customCellRenderers.dateFormater,
     },
-
-    //Changing due to Todd's change of Incident data structure as of 10/19
-    // Occurred: {
-    //     Header: 'Occurred',
-    //     accessor: 'occurred',
-    //     minWidth: 100,
-    //     maxWidth: 180,
-    //     Filter: customFilters.dateRange,
-    //     Cell: customCellRenderers.dateFormater,
-    // },
 
     Sources: {
         Header: 'Sources',
@@ -328,7 +318,7 @@ const columnDefinitions = {
 
     Group: {
         Header: 'Group',
-        accessor: d => d.signature_group ? d.signature_group.join(', ') : '',
+        accessor: d => d.data.signature_group ? d.data.signature_group.join(', ') : '',
         column: 'signature_group',
         id: 'group',
         Filter: customFilters.stringFilter,
@@ -336,7 +326,8 @@ const columnDefinitions = {
 
     Type: {
         Header: 'Type',
-        accessor: 'type',
+        accessor: d => d.data.type,
+        id: 'type',
         Filter: customFilters.stringFilter,
         minWidth: 100,
         maxWidth: 150,
@@ -344,9 +335,11 @@ const columnDefinitions = {
 
     Description: {
         Header: 'Description',
-        accessor: 'description',
+        // accessor: 'description',
+        accessor: d => d.data.description,
         Filter: customFilters.stringFilter,
         minWidth: 400,
+        id: 'description',
         maxWidth: 5000,
     },
 
