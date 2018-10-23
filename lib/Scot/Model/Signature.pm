@@ -25,7 +25,6 @@ with    qw(
     Scot::Role::Hashable
     Scot::Role::Historable
     Scot::Role::Permission
-    Scot::Role::Target
     Scot::Role::Times
     Scot::Role::Permission
     Scot::Role::Sources
@@ -40,7 +39,6 @@ with    qw(
     Scot::Role::Hashable
     Scot::Role::Historable
     Scot::Role::Permission
-    Scot::Role::Target
     Scot::Role::Times
     Scot::Role::Permission
     Scot::Role::Sources
@@ -64,20 +62,6 @@ has name  => (
     default     => 'new sig',
 );
 
-=item B<type>
-
-the type of signature: yara, extractor, sourcefire, pipeline, etc.
-
-now in data
-
-has type    => (
-    is          => 'ro',
-    isa         => 'Maybe[Str]',
-    required    => 1,
-    default     => '',
-);
-
-=cut
 
 =item B<status>
 
@@ -92,30 +76,6 @@ has status  => (
     default     => 'disabled',
 );
 
-=item B<prod_sigbody_id>
-
-now in data
-
-has prod_sigbody_id => (
-    is          => 'ro',
-    isa         => 'Int',
-    required    => 1,
-    default     => 0,
-);
-
-=cut
-
-=item B<qual_sigbody_id>
-
-now in data
-
-has qual_sigbody_id => (
-    is          => 'ro',
-    isa         => 'Int',
-    required    => 1,
-    default     => 0,
-);
-=cut
 
 =item B<latest_revision>
 
@@ -130,36 +90,6 @@ has latest_revision => (
     default     => 0,
 );
 
-
-=item B<action>
-
-Array of actions to take if Signature is matched
-
-now subsumed under data
-
-has action  => (
-    is          => 'ro',
-    isa         => 'ArrayRef',
-    required    => 1,
-    default     => sub { [] },
-);
-=cut
-
-=item B<signature_group>
-
-Allow for grouping of Signatures aside from type
-now in data
-
-
-has signature_group => (
-    is              => 'ro',
-    isa             => 'ArrayRef',
-    traits          => [ 'Array' ],
-    required        => 1,
-    default         => sub { [] },
-);
-
-=cut
 
 =item B<stats>
 
@@ -187,20 +117,6 @@ has options => (
     default     => sub { {} },
 );
 
-=item B<description>
-
-the description of the signature
-
-now in data
-
-has description => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-    default     => '',
-);
-
-=cut
 
 =item B<data_fmt_ver>
 
@@ -215,11 +131,74 @@ has data_fmt_ver    => (
     default     => 'signature',
 );
 
+=item B<data>
+
+metadata about the signuate that is displayed in the form element
+
+    has type    => (
+        is          => 'ro',
+        isa         => 'Maybe[Str]',
+        required    => 1,
+        default     => '',
+    );
+
+    the description of the signature
+
+    has description => (
+        is          => 'ro',
+        isa         => 'Str',
+        required    => 1,
+        default     => '',
+    );
+
+    Allow for grouping of Signatures aside from type
+
+    has signature_group => (
+        is              => 'ro',
+        isa             => 'ArrayRef',
+        traits          => [ 'Array' ],
+        required        => 1,
+        default         => sub { [] },
+    );
+
+    has prod_sigbody_id => (
+        is          => 'ro',
+        isa         => 'Int',
+        required    => 1,
+        default     => 0,
+    );
+
+    has qual_sigbody_id => (
+        is          => 'ro',
+        isa         => 'Int',
+        required    => 1,
+        default     => 0,
+    );
+    Array of actions to take if Signature is matched
+
+    has action  => (
+        is          => 'ro',
+        isa         => 'ArrayRef',
+        required    => 1,
+        default     => sub { [] },
+    );
+
+    has target = { type => x, id => y}
+=cut
+
 has data        => (
     is          => 'ro',
     isa         => 'HashRef',
     required    => 1,
-    default     => sub { {} },
+    default     => sub { {
+        type    => '',
+        qual_sigbody_id => 0,
+        prod_sigbody_id => 0,
+        description     => '',
+        action          => [],
+        signature_group => [],
+        target          => {},
+    } },
 );
 
 __PACKAGE__->meta->make_immutable;
