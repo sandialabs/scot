@@ -48,11 +48,11 @@ override 'create' => sub {
     push @args, "location" => $location;
 
     if ( $self->class->meta->does_role("Scot::Role::Permittable") ) {
-        $log->trace("Checking for group permissions !!!!!!!");
+        $log->debug("Checking for group permissions !!!!!!!");
         $self->get_group_permissions(\@args);
     }
 
-    $log->trace("creating with : ",{filter=>\&Dumper, value=>\@args});
+    $log->debug("creating with : ",{filter=>\&Dumper, value=>\@args});
 
     my $obj = $self->class->new( @args, _collection => $self );
     $self->_save($obj);
@@ -341,6 +341,7 @@ sub get_group_permissions {
     my $aref    = shift;    # using ref allows us to modify array here 
     my $env     = $self->env;
     my $log     = $self->env->log;
+    $log->debug("get_group_permissions");
 
     # check the araf for readgroups/modifygroups explicitly passed in from api and 
     # 
@@ -365,6 +366,7 @@ sub get_group_permissions {
         push @$aref, "modifygroups" => $env->default_groups->{modify};
     }
 
+    $log->debug("aref is now ",{filter=>\&Dumper, value=>$aref});
 }
 
 sub get_value_from_request {
