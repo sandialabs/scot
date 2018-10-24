@@ -256,7 +256,7 @@ export default class EntityDetail extends React.Component {
                 }
             });
         });
-        this.props.watcher();
+        // this.props.watcher();
     };
 
     componentWillUnmount = () => {
