@@ -4,7 +4,9 @@
   "description": "",
   "main": "gulpfile.js",
   "scripts": {
-    "lint:js": "eslint -o /tmp/lint.log --fix ./**/*.jsx"
+    "lint:js": "eslint -o /tmp/lint.log --fix ./**/*.jsx",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "author": "",
   "license": "ISC",
@@ -29,7 +31,7 @@
     "eslint-plugin-react": "^7.6.1",
     "events": "^1.1.0",
     "flux": "^3.0.0",
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.0",
     "gulp-minify": "^2.1.0",
     "gulp-rename": "^1.2.2",
     "gulp-sass": "^3.1.0",
@@ -77,6 +79,8 @@
     "semantic-ui-react": "^0.67.2",
     "through": "^2.3.8",
     "vinyl-source-stream": "^1.1.0",
-    "warning": "^3.0.0"
-  }
+    "warning": "^3.0.0",
+    "snyk": "^1.104.2"
+  },
+  "snyk": true
 }
