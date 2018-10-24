@@ -739,6 +739,7 @@ export default class SelectedHeader extends React.Component {
     };
 
     guideRedirectToAlertListWithFilter = () => {
+        console.log("hey")
         RegExp.escape = function (text) {
             return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
         };
@@ -748,7 +749,7 @@ export default class SelectedHeader extends React.Component {
             [
                 {
                     id: "subject",
-                    value: RegExp.escape(this.state.headerData.applies_to[0])
+                    value: RegExp.escape(this.state.headerData.data.applies_to[0])
                 }
             ],
             null,
