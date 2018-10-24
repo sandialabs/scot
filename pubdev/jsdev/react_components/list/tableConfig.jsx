@@ -320,14 +320,14 @@ const columnDefinitions = {
         Header: 'Group',
         accessor: d => d.data.signature_group ? d.data.signature_group.join(', ') : '',
         column: 'signature_group',
-        id: 'group',
+        id: 'data.signature_group',
         Filter: customFilters.stringFilter,
     },
 
     Type: {
         Header: 'Type',
         accessor: d => d.data.type,
-        id: 'type',
+        id: 'data.type',
         Filter: customFilters.stringFilter,
         minWidth: 100,
         maxWidth: 150,
@@ -339,7 +339,7 @@ const columnDefinitions = {
         accessor: d => d.data.description,
         Filter: customFilters.stringFilter,
         minWidth: 400,
-        id: 'description',
+        id: 'data.description',
         maxWidth: 5000,
     },
 
