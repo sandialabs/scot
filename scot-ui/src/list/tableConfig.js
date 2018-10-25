@@ -343,6 +343,14 @@ const columnDefinitions = {
         maxWidth: 150,
     },
 
+    EntityType: {
+        Header: 'Type',
+        accessor: 'type',
+        Filter: customFilters.stringFilter,
+        minWidth: 100,
+        maxWidth: 150,
+    },
+
 
     Description: {
         Header: 'Description',
@@ -440,7 +448,7 @@ const typeColumns = {
     ],
     signature: ['Id', 'Location', 'Name', 'Type', 'SigStatus', 'Group', 'Description', 'Owner', 'Tags', 'Sources', 'Updated',],
     guide: ['Id', 'Location', 'Subject', 'AppliesTo'],
-    entity: ['Id', 'Location', 'Value', 'Type', 'Entries',],
+    entity: ['Id', 'Location', 'Value', 'EntityType', 'Entries',],
     default: ['Id', 'Location', 'AlertStatus', 'Subject', 'Created', 'Sources', 'Tags', 'Views',],
 };
 
