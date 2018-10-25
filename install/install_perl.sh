@@ -386,10 +386,10 @@ function install_perl_modules {
         Log::Log4perl
         Mail::IMAPClient
         Mail::IMAPClient::BodyStructure
-        MongoDB
-        MongoDB::GridFS
-        MongoDB::GridFS::File
-        MongoDB::OID
+        MongoDB@1.2.3
+        MongoDB::GridFS@1.2.3
+        MongoDB::GridFS::File@1.2.3
+        MongoDB::OID@1.2.3
         Meerkat
         Mojo
         MojoX::Log::Log4perl
