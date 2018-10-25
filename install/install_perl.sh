@@ -346,6 +346,7 @@ function install_perl_modules {
         MooseX::Types
         MooseX::Types::Common
         MooseX::MethodAttributes
+        MooseX::Role::MongoDB@0.010
         Safe
         Readonly
         DateTime
@@ -386,10 +387,10 @@ function install_perl_modules {
         Log::Log4perl
         Mail::IMAPClient
         Mail::IMAPClient::BodyStructure
-        MongoDB@1.2.3
-        MongoDB::GridFS@1.2.3
-        MongoDB::GridFS::File@1.2.3
-        MongoDB::OID@1.2.3
+        MongoDB@1.8.3
+        MongoDB::GridFS@1.8.3
+        MongoDB::GridFS::File@1.8.3
+        MongoDB::OID@1.8.3
         Meerkat
         Mojo
         MojoX::Log::Log4perl
