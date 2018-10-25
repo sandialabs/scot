@@ -508,7 +508,7 @@ has regex_DOMAIN => (
 sub _build_DOMAIN {
     my $self    = shift;
     my $regex   = qr{
-        \b                                      # word boundary
+        (\b|http[s]*//:)                        # word boundary
         (
             (?=[a-z0-9-]{1,63}
             [\(\{\[]*\.[\]\}\)]*)               # optional obsfucation
@@ -521,7 +521,7 @@ sub _build_DOMAIN {
 #            (xn--)?
             [-a-z0-9]{2,63}
         )
-        \b                                      # word boundary
+        (\b|\/)                                      # word boundary
     }xims;
     return {
         regex   => $regex,
