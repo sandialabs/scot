@@ -328,27 +328,32 @@ const columnDefinitions = {
 
     Group: {
         Header: 'Group',
-        accessor: d => d.signature_group ? d.signature_group.join(', ') : '',
+        accessor: d => d.data.signature_group ? d.data.signature_group.join(', ') : '',
         column: 'signature_group',
-        id: 'group',
+        id: 'data.signature_group',
         Filter: customFilters.stringFilter,
     },
 
     Type: {
         Header: 'Type',
-        accessor: 'type',
+        accessor: d => d.data.type,
+        id: 'data.type',
         Filter: customFilters.stringFilter,
         minWidth: 100,
         maxWidth: 150,
     },
 
+
     Description: {
         Header: 'Description',
-        accessor: 'description',
+        // accessor: 'description',
+        accessor: d => d.data.description,
         Filter: customFilters.stringFilter,
         minWidth: 400,
+        id: 'data.description',
         maxWidth: 5000,
     },
+
 
     TargetType: {
         Header: 'Type',
