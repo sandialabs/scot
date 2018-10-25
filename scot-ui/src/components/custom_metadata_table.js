@@ -182,8 +182,8 @@ class DropdownComponent extends React.Component {
                 if (referenceKey == 'qual_sigbody_id' || referenceKey == 'prod_sigbody_id') {
                     arr.push(<option>0</option>);
                     for (let key in result['version']) {
-                        if (result['version'][key]['revision'] == result[referenceKey]) {
-                            selected = result[referenceKey];
+                        if (result['version'][key]['revision'] == result.data[referenceKey]) {
+                            selected = result.data[referenceKey];
                         }
                         arr.push(<option>{result['version'][key]['revision']}</option>);
                     }
