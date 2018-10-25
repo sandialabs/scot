@@ -282,7 +282,7 @@ export default class ListView extends React.Component {
                     this.state.showSelectedContainer === false
                 ) {
                     this.setState({ showSelectedContainer: false });
-                } else if (this.state.id === undefined) {
+                } else if (this.state.id === undefined || this.state.id === null) {
                     this.setState({ showSelectedContainer: false });
                 } else {
                     this.setState({ showSelectedContainer: true });
@@ -316,8 +316,8 @@ export default class ListView extends React.Component {
         document.removeEventListener("keydown", this.keyNavigate);
     };
 
-    togglePreventClick=()=>{
-        this.setState({preventClick:!this.state.preventClick});
+    togglePreventClick = () => {
+        this.setState({ preventClick: !this.state.preventClick });
     }
 
     keyNavigate = event => {
@@ -1088,40 +1088,29 @@ export default class ListView extends React.Component {
     };
 
     handleRowSelection(state, rowInfo, column, instance) {
-        let id = 0;
-        this.props.id === 'undefined' || this.props === 'undefined' ? id = 0 : id = this.props.id;
         return {
             onClick: event => {
-                if (this.state.id === rowInfo.row.id) {
+                if (this.state.preventClick !== true) {
+                    if (this.state.id === rowInfo.row.id) {
+                        return;
+                    }
+                    let scrollheight = this.state.scrollheight;
+                    if (this.state.display == 'block') {
+                        scrollheight = '30vh';
+                    }
+                    if (this.state.type === 'task') {
+                        this.props.history.push('/task/' + rowInfo.row.target_type + '/' + rowInfo.row.target_id + '/' + rowInfo.row.id);
+                    } else {
+                        this.props.history.push('/' + this.state.type + '/' + rowInfo.row.id);
+                    }
+                    this.setState({ alertPreSelectedId: 0, scrollheight: scrollheight, showSelectedContainer: true });
                     return;
                 }
-
-                let scrollheight = this.state.scrollheight;
-                if (this.state.display === "block") {
-                    scrollheight = "30vh";
+                else {
+                    this.props.errorToggle('Currently processing action(s). Please wait.')
                 }
-
-                if (this.state.type === "task") {
-                    this.props.history.push(
-                        "/task/" +
-                        rowInfo.row.target_type +
-                        "/" +
-                        rowInfo.row.target_id +
-                        "/" +
-                        rowInfo.row.id
-                    );
-                } else {
-                    this.props.history.push("/" + this.state.type + "/" + rowInfo.row.id);
-                }
-                this.setState({
-                    alertPreSelectedId: 0,
-                    scrollheight: scrollheight,
-                    showSelectedContainer: true
-                });
-                return;
             },
-            className:
-                rowInfo.row.id === parseInt(id, 10) ? "selected" : null
+            className: rowInfo.row.id === parseInt(this.props.id) ? 'selected' : null,
         };
     }
 }

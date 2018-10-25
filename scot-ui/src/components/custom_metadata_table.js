@@ -141,6 +141,7 @@ export default class CustomMetaDataTable extends React.Component {
 
         );
     }
+
 };
 
 class DropdownComponent extends React.Component {
