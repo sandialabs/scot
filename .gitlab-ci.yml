@@ -9,5 +9,5 @@ before_script:
 test:unit:
   stage: test
   script:
-    - perl -MDevel::Cover t/test_harness_script.pl
+    - perl -MDevel::Cover t/api/all.t
   coverage: /Total\s+.+\s(\d+\.\d+?)$/
