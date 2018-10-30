@@ -69,7 +69,7 @@
     "react-router-dom": "^4.1.1",
     "react-table": "^6.5.1",
     "react-tag-autocomplete": "^5.4.1",
-    "react-tag-input": "^4.0.0",
+    "react-tag-input": "^6.0.0",
     "react-time": "^4.0.0",
     "react-tinymce": "^0.6.0",
     "react-transition-group": "^2.2.1",
