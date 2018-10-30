@@ -1,0 +1,13 @@
+---
+stages:
+  - test
+
+before_script:
+  - export http_proxy=http://wwwproxy.sandia.gov:80
+  - export https_proxy=http://wwwproxy.sandia.gov:80
+
+test:unit:
+  stage: test
+  script:
+    - perl -MDevel::Cover t/test_harness_script.pl
+  coverage: /Total\s+.+\s(\d+\.\d+?)$/
