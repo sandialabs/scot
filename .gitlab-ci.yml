@@ -6,7 +6,7 @@ before_script:
   - export http_proxy=http://wwwproxy.sandia.gov:80
   - export https_proxy=http://wwwproxy.sandia.gov:80
   - export no_proxy=*.sandia.gov
-test:unit:
+test:
   stage: test
   script:
     - perl -MDevel::Cover t/api/all.t
