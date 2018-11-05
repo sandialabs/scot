@@ -28,7 +28,7 @@ use Module::Runtime qw(require_module);
 use Sys::Hostname;
 use strict;
 use warnings;
-use v5.18;
+# use v5.18;
 
 use Moose;
 extends 'Scot::App';

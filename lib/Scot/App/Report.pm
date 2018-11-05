@@ -3,7 +3,7 @@ package Scot::App::Report;
 use lib '../../../lib';
 use strict;
 use warnings;
-use v5.18;
+# use v5.18;
 
 use DateTime;
 use Time::Duration;

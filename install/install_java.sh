@@ -13,7 +13,7 @@ function install_java {
             apt-get install -y openjdk-7-jdk -y
         fi
     else
-        yum install java-1.7.0-openjdk -y
+        yum install java-1.8.0-openjdk -y
     fi
 
 }

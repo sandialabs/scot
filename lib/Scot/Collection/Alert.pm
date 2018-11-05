@@ -1,6 +1,6 @@
 package Scot::Collection::Alert;
 use lib '../../../lib';
-use v5.18;
+use v5.16;
 use Moose 2;
 use MooseX::AttributeShortcuts;
 use Type::Params qw/compile/;
