@@ -85,11 +85,11 @@ if [[ $INSTMODE != "SCOTONLY" ]]; then
     . ./install/install_activemq.sh
     install_activemq
 
-    . ./install/install_elasticsearch.sh
-    install_elasticsearch
-    
     . ./install/install_mongodb.sh
     install_mongodb
+    
+    . ./install/install_elasticsearch.sh
+    install_elasticsearch
     
     . ./install/install_perl.sh
     install_perl
