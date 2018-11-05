@@ -52,6 +52,7 @@ name=MongoDB Repository
 baseurl=http://repo.mongodb.org/yum/redhat/$OSVERSION/mongodb-org/3.6/x86_64/
 gpgcheck=1
 enabled=1
+gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc
 EOF
         fi
     fi
