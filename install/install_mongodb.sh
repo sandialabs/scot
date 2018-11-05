@@ -47,10 +47,10 @@ function ensure_mongo_repo {
         else
             echo "-- adding mongo yum repo stanza"
             cat <<- EOF > $MONGO_YUM_REPO
-[mongodb-org-3.2]
+[mongodb-org-3.6]
 name=MongoDB Repository
-baseurl=http://repo.mongodb.org/yum/redhat/$OSVERSION/mongodb-org/3.2/x86_64/
-gpgcheck=0
+baseurl=http://repo.mongodb.org/yum/redhat/$OSVERSION/mongodb-org/3.6/x86_64/
+gpgcheck=1
 enabled=1
 EOF
         fi
@@ -252,6 +252,11 @@ function install_mongodb {
         install_36_mongo
     else
         ensure_mongo_repo
+        SELINUXSTATUS=`getenforce`
+        if [[ $SELINUXSTATUS == "Enforcing" ]]; then
+            # allow mongo to run in selinux
+            semanage port -a -t mongod_port_t -p tcp 27017
+        fi
         yum install mongodb-org -y
     fi
 
