@@ -421,7 +421,7 @@ function install_perl_modules {
         SVG::Sparkline
     '
 
-    # install_cpanm
+    install_cpanm
 
     # test has probles with proxy and ssl 
     # -n skips the test and installs anyway.  
