@@ -252,13 +252,15 @@ function install_mongodb {
     if [[ $OS == "Ubuntu" ]]; then
         install_36_mongo
     else
+        echo "-- INSTALLING MONGODB-ORG"
         ensure_mongo_repo
         SELINUXSTATUS=`getenforce`
         if [[ $SELINUXSTATUS == "Enforcing" ]]; then
+            echo "--- selinux adding ports"
             # allow mongo to run in selinux
             semanage port -a -t mongod_port_t -p tcp 27017
         fi
-        yum install mongodb-org -y
+        yum install mongodb-org 
     fi
 
     configure_for_scot
