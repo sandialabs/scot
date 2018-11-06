@@ -429,7 +429,7 @@ function install_perl_modules {
         echo "-- 1st attempt at installing $module"
         echo "--"
 
-        cpanm $module
+        /usr/local/bin/cpanm $module
 
         if [[ $? == 1 ]]; then
             echo "!!!"
@@ -446,7 +446,7 @@ function install_perl_modules {
         echo "--"
         echo "-- 2nd attept to install $module"
         echo "--"
-        cpanm $module
+        /usr/local/bin/cpanm $module
 
         if [[ $? == 1 ]]; then
             echo "!!! !!!"
@@ -466,7 +466,7 @@ function install_perl_modules {
         for module in $FAILED; do
             if [[ $module == "AnyEvent::ForkManager" ]]; then
                 echo "- forcing the install of AnyEvent::ForkManager"
-                cpanm -f AnyEvent::ForkManager
+                /usr/local/bin/cpanm -f AnyEvent::ForkManager
             else 
                 echo "    => $module"
             fi
