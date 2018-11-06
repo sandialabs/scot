@@ -1,3 +1,8 @@
+import Navbar from "react-bootstrap/lib/Navbar.js";
+import Nav from "react-bootstrap/lib/Nav.js";
+import NavItem from "react-bootstrap/lib/NavItem.js";
+import NavDropdown from "react-bootstrap/lib/NavDropdown.js";
+import MenuItem from "react-bootstrap/lib/MenuItem.js";
 import React from "react";
 import Home from "./home";
 import { ReportPage, SingleReport } from "../components/dashboard/report";
@@ -11,14 +16,10 @@ import Wall from "../debug-components/wall";
 import Login from "../modal/login.js";
 import { Link } from "react-router-dom";
 import { Route } from "react-router-dom";
-import Navbar from "react-bootstrap/lib/Navbar.js";
 import ListView from '../list/list-view';
 import Notification from "react-notification-system"
-import Nav from "react-bootstrap/lib/Nav.js";
-import NavItem from "react-bootstrap/lib/NavItem.js";
-import NavDropdown from "react-bootstrap/lib/NavDropdown.js";
-import MenuItem from "react-bootstrap/lib/MenuItem.js";
 import LinkContainer from "react-router-bootstrap/lib/LinkContainer.js";
+
 window.jQuery = window.$ = require("jquery/dist/jquery");
 
 export default class App extends React.Component {
