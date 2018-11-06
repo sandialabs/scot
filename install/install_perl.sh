@@ -410,6 +410,10 @@ function install_perl_modules {
         Net::SSH::Perl
         Net::SFTP
         Lingua::Stem
+        Math::VecStat
+        Class::Exporter
+        Math::HashSum
+        Math::Vector::SortIndexes
         Lingua::EN::StopWords
         XML::Twig
         XML::Simple
