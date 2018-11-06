@@ -43,7 +43,7 @@ function ensure_elastic_entry {
         fi
     else
         echo "-importing signing key"
-        rpm --import https::/artifacts.elastic.co/GPG-KEY-elasticsearch
+        rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
         if grep --quiet elastic $ES_YUM_REPO; then
             echo "-- $ES_YUM_REPO exists"
         else
