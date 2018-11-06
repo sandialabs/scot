@@ -316,11 +316,6 @@ function install_packages {
 
 function install_perl_modules {
 
-    if [[ $OS != "Ubuntu" ]]; then 
-        # echo "-- Cent/RH system, invoking perlbrew to modernize the perl"
-        # perlbrew switch perl-5.18.2
-    fi
-
     PERLMODULES='
         Array::Split
         Data::Dumper
