@@ -4,6 +4,8 @@ DEVDIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd)"
 
 . ./install/install_functions.sh
 
+export no_proxy=localhost,$no_proxy
+
 INTERACTIVE='yes'
 
 echo "==================== SCOT 3.5 Installer ======================="
