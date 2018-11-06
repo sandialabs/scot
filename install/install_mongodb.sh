@@ -14,7 +14,7 @@ function ensure_mongo_repo {
         MONGO_KEY_OPTS="--keyserver-options http-proxy=$PROXY"
     fi
     if [[ "$MONGO_SOURCE_LIST" == "" ]]; then
-        MONGO_SOURCE_LIST="/etc/apt/sources.list.d/mongo-org-3.2.list"
+        MONGO_SOURCE_LIST="/etc/apt/sources.list.d/mongo-org-3.6.list"
     fi
     if [[ "$MONGO_YUM_REPO" == "" ]]; then
         MONGO_YUM_REPO="/etc/yum.repos.d/mongodb.repo"
@@ -32,13 +32,15 @@ function ensure_mongo_repo {
         echo "-- requesting mongodb-org gpg key"
         apt-key adv $MONGO_KEY_OPTS $MONGO_KEYSRVR --recv $MONGO_KEY
 
-        if [[ $OSVERSION == "16" ]]; then
+        if [[ $OSVERSION == "18" ]]; then
+            OS_REPO="bionic"
+        elif [[ $OSVERSION == "16" ]]; then
             OS_REPO="xenial"
         else 
             OS_REPO="trusty"
         fi
 
-        DEB="http://repo.mongodb.org/apt/ubuntu $OS_REPO/mongodb-org/3.2"
+        DEB="http://repo.mongodb.org/apt/ubuntu $OS_REPO/mongodb-org/3.6"
         echo "deb $DEB multiverse" | tee $MONGO_SOURCE_LIST
         apt-get update
     else 
@@ -69,7 +71,9 @@ function add_failIndexKeyTooLong {
     if [[ $OS == "Ubuntu" ]]; then
 
 
-        if [[ $OSVERSION == "16" ]]; then
+        if [[ $OSVERSION == "18" ]]; then
+            echo "-- scot installed config files will include failIndexKeyTooLong paramter set to false"
+        elif [[ $OSVERSION == "16" ]]; then
             echo "-- scot installed config files will include failIndexKeyTooLong paramter set to false"
         else
             echo "- ubuntu 14 locations"
@@ -89,7 +93,9 @@ function add_failIndexKeyTooLong {
 
 function start_stop  {
     if [[ $OS == "Ubuntu" ]]; then
-        if [[ $OSVERSION == "16" ]]; then
+        if [[ $OSVERSION == "18" ]]; then
+            systemctl --no-pager $2 ${1}.service
+        elif [[ $OSVERSION == "16" ]]; then
             systemctl --no-pager $2 ${1}.service
         else
             echo "Start Mongod service..."
@@ -169,7 +175,15 @@ function configure_for_scot {
         MONGO_SYSTEMD_SERVICE=/lib/systemd/system/mongod.service
 
         if [[ $OS == "Ubuntu" ]]; then
-            if [[ $OSVERSION == "16" ]]; then
+            if [[ $OSVERSION == "18" ]]; then
+                echo "- installing $MONGO_INIT_SRC"
+                backup_file $MONGO_SYSTEMD_SERVICE
+                cp $MONGO_CONF_SRC/mongod.service $MONGO_SYSTEMD_SERVICE
+                cp $MONGO_CONF_SRC/mongod.conf /etc/mongod.conf
+                systemctl daemon-reload
+                systemctl --no-pager restart mongod.service
+                systemctl enable mongod.service
+            elif [[ $OSVERSION == "16" ]]; then
                 echo "- installing $MONGO_INIT_SRC"
                 backup_file $MONGO_SYSTEMD_SERVICE
                 cp $MONGO_CONF_SRC/mongod.service $MONGO_SYSTEMD_SERVICE
@@ -231,7 +245,9 @@ function install_36_mongo {
 
     apt-key adv $MONGO_PROXY $MONGO_KEY_SERVER $MONGO_RECV
 
-    if [[ $OSVERSION == "16" ]]; then
+    if [[ $OSVERSION == "18" ]]; then
+        echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/3.6 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.6.list
+    elif [[ $OSVERSION == "16" ]]; then
         echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.6 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.6.list
     else
         echo "deb [ arch=amd64 ] https://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.6 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.6.list

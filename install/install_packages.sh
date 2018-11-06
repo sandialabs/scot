@@ -64,7 +64,9 @@ function update_apt {
     apt-get install -y software-properties-common
 
     UBUNTUNAME="trusty"
-    if [[ $OSVERSION == "16" ]]; then
+    if [[ $OSVERSION == "18" ]]; then
+        UBUNTUNAME="bionic"
+    elif [[ $OSVERSION == "16" ]]; then
         UBUNTUNAME="xenial"
     fi
 
@@ -77,7 +79,9 @@ function update_apt {
         #    echo "- miracles never cease, ppa added."
         #else
             UBUNAME="trusty"
-            if [[ $OSVERSION == "16" ]]; then
+            if [[ $OSVERSION == "18" ]]; then
+                UBUNAME="bionic"
+            elif [[ $OSVERSION == "16" ]]; then
                 UBUNAME="xenial"
             fi
             Line="deb http://ppa.launchpad.net/maxmind/ppa/ubuntu $UBUNAME main"
