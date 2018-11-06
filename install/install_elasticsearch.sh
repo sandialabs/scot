@@ -155,7 +155,7 @@ function install_elasticsearch {
 
 
     echo "~~~ attempting to query localhost:9200 for scot index"
-    if curl -i -XHEAD http://localhost:9200/scot | grep -q 404; then
+    if curl -i -f -XHEAD http://localhost:9200/scot | grep -q 404; then
         echo "-- need to init elastic search DB"
         ES_RESET_DB="yes"
     else
