@@ -76,6 +76,9 @@ if [[ $INSTMODE != "SCOTONLY" ]]; then
     . ./install/install_packages.sh
     install_packages
 
+    . ./install/install_perl.sh
+    install_perl
+
     . ./install/install_java.sh
     install_java
 
@@ -91,8 +94,6 @@ if [[ $INSTMODE != "SCOTONLY" ]]; then
     . ./install/install_elasticsearch.sh
     install_elasticsearch
     
-    . ./install/install_perl.sh
-    install_perl
     
 fi
 
