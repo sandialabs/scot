@@ -139,7 +139,7 @@ function initialize_database {
     if [[ "$RESETDB" == "yes" ]] ; then
         echo "-- initializing SCOT database"
         # subshell
-        (cd $DEVDIR/install; mongo scot-prod ./src/mongodb/reset.js)
+        (cd $DEVDIR/install/src/mongodb; mongo scot-prod reset.js)
         if [[ $? -ne 0 ]];then
             echo "!!!!!"
             echo "!!!!! SCOT initialization of database failed!"
