@@ -3,7 +3,7 @@ use lib '../../Scot-Internal-Modules/lib';
 use lib '../lib';
 use strict;
 use warnings;
-use v5.18;
+use v5.16;
 
 use Test::More;
 use Test::Mojo;

@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 
 use lib '../lib';
-use v5.18;
+use v5.16;
 
 use Scot::Util::HttpStomp;
 use Scot::Env;

@@ -3,7 +3,7 @@ use lib '../lib';
 use Data::Dumper;
 use JSON;
 use Net::STOMP::Client;
-use v5.18;
+use v5.16;
 
 my $stomp = Net::STOMP::Client->new(
     host    => '127.0.0.1',

@@ -2,7 +2,7 @@
 
 use lib '../lib';
 use lib '/opt/scot/bin';
-use v5.18;
+use v5.16;
 use Meerkat;
 use Scot::Env;
 
