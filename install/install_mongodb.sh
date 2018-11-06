@@ -260,7 +260,7 @@ function install_mongodb {
             # allow mongo to run in selinux
             semanage port -a -t mongod_port_t -p tcp 27017
         fi
-        yum install mongodb-org 
+        yum install mongodb-org -y
     fi
 
     configure_for_scot
