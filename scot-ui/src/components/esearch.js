@@ -1,9 +1,8 @@
 import React from "react";
 import $ from "jquery";
-import "jquery/src/jquery";
+import { Link } from 'react-router-dom'
 import Highlighter from "react-highlight-words";
-let Link = require("react-router-dom").Link;
-
+import styles from './Highlighter.example.css'
 export default class Search extends React.Component {
     constructor(props) {
         super(props);
@@ -91,6 +90,7 @@ export default class Search extends React.Component {
                             dataOne={this.state.results[i]}
                             key={i}
                             index={i}
+                            searchString={this.state.searchString}
                         />
                     );
                 }
@@ -149,6 +149,7 @@ export default class Search extends React.Component {
                                     display: "table-caption"
                                 }}
                             >
+
                                 {tableRows}
                             </div>
                         </div>
@@ -165,25 +166,7 @@ export default class Search extends React.Component {
 
 class SearchDataEachHeader extends React.Component {
     render = () => {
-        /*return (
-                <div className="table-row header" style={{color:'black', display:'flex'}}>
-                    <div style={{flexGrow:1, display:'flex'}}>
-                        <div style={{width:'100px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
-                            ID
-                        </div>
-                        <div style={{width:'100px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
-                            Type
-                        </div>
-                        <div style={{width:'100px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
-                            Score
-                        </div>
-                        <div style={{width:'400px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
-                            Snippet
-                            <i className='fa fa-times pull-right' style={{color:'red', margin: '2px', cursor: 'pointer'}}onClick={this.props.closeSearch}/>
-                        </div>
-                    </div>
-                </div>
-            )*/
+
         return (
             <div
                 className="table-row header"
@@ -253,13 +236,18 @@ class SearchDataEachRows extends React.Component {
                 );
             } else {
                 for (let key in this.props.dataOne.highlight) {
+                    let search_string_array = this.props.searchString.split(" ");
                     highlight.push(
-                        <span className="search_snippet_container panel col">
-                            <span className="search_snippet_header">{key}</span>
-                            <span className="search_snippet_result">
-                                {this.props.dataOne.highlight[key]}
-                            </span>
-                        </span>
+                        <Highlighter
+                            activeClassName={styles.Active}
+                            highlightClassName="search_snippet_result"
+                            className="search_snippet_result"
+                            searchWords={search_string_array}
+                            autoEscape={true}
+                            textToHighlight={this.props.dataOne.highlight[key][0]}
+                            highlightClassName={styles.Highlight}
+                            highlightStyle={{backgroundColor:'yellow'}}
+                        />
                     );
                 }
             }
