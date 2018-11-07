@@ -2,6 +2,9 @@
 
 function install_ubuntu_packages {
 
+    # fix? to GPG keys problems?
+    apt-get update 2>&1 | grep NO_PUBKEY | sed -e 's?^.*NO_PUBKEY ??' | while read _hash; do  wget -O- "keyserver.ubuntu.com/pks/lookup?op=get&search=0x${_hash}" | apt-key add -; done
+
     DEBPACKAGES='
         curl
         make
