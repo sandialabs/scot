@@ -29,10 +29,12 @@ function install_geoip {
         U_DEB_REPO="deb $MAXMINDURL"
         U_DEB_SRC_REPO="deb-src $MAXMINDURL"
 
-        if [[ $OSVERSION == "14" ]];then
-            code_name="trusty"
-        else
+        if [[ $OSVERSION == "18" ]];then
+            code_name="bionic"
+        if [[ $OSVERSION == "16" ]];then
             code_name="xenial"
+        else
+            code_name="trusty"
         fi
 
         MMREPO="$U_DEB_REPO $codename main"
