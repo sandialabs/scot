@@ -236,20 +236,24 @@ function configure_for_scot {
 
 function install_36_mongo {
     MONGO_KEY_SERVER="--keyserver hkp://keyserver.ubuntu.com:80"
-    MONGO_RECV="--recv 2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5"
     MONGO_PROXY=""
 
     if [[ -v $http_proxy ]]; then
+        echo "!!!   ADDING HTTP_PROXY to apt-key"
         MONGO_PROXY="--keyserver-options http-proxy=$http_proxy"
     fi
 
-    apt-key adv $MONGO_PROXY $MONGO_KEY_SERVER $MONGO_RECV
-
     if [[ $OSVERSION == "18" ]]; then
-        echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/3.6 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.6.list
+        MONGO_RECV="--recv 9DA31620334BD75D9DCB49F368818C72E52529D4"
+        apt-key adv $MONGO_PROXY $MONGO_KEY_SERVER $MONGO_RECV
+        echo "deb [ arch=amd64 ] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.0.list
     elif [[ $OSVERSION == "16" ]]; then
+        MONGO_RECV="--recv 2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5"
+        apt-key adv $MONGO_PROXY $MONGO_KEY_SERVER $MONGO_RECV
         echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.6 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.6.list
     else
+        MONGO_RECV="--recv 2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5"
+        apt-key adv $MONGO_PROXY $MONGO_KEY_SERVER $MONGO_RECV
         echo "deb [ arch=amd64 ] https://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.6 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.6.list
     fi
 
