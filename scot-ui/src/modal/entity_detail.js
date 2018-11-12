@@ -1245,12 +1245,12 @@ class GeoView extends React.Component {
 }
 
 class EntityEnrichmentButtons extends React.Component {
-    render = () => {
+    render() {
         let dataSource = this.props.dataSource;
         return (
             <div style={{ overflowY: "auto", maxHeight: "70vh" }}>
                 <div>
-                    <Inspector.default data={dataSource} expandLevel={4} />
+                    <Inspector data={dataSource} expandLevel={4} />
                 </div>
             </div>
         );
