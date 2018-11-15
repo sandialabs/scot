@@ -424,12 +424,9 @@ export default class App extends React.Component {
             )}
           />
           <Route
-            exact
-            path="/admin"
-            render={props => (
-              <Admin />
-            )}
-          />
+            exact path="/admin">
+            <Admin></Admin>
+          </Route>
           {type === "alert" ? (
             <Route exact path="/alert">
               <ListView
