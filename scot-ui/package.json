@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "private": true,
     "dependencies": {
-        "@material-ui/core": "latest",
+        "@material-ui/core": "^3.5.1",
         "@material-ui/icons": "latest",
         "@types/jquery": "^3.3.6",
         "d3": "^5.7.0",
@@ -44,8 +44,8 @@
         "react-router-dom": "latest",
         "react-scripts": "1.1.4",
         "react-table": "^6.5.1",
-        "react-tag-input": "^4.0.0",
         "react-tag-autocomplete": "^5.6.0",
+        "react-tag-input": "^4.0.0",
         "react-time": "^4.0.0",
         "react-tinymce": "latest",
         "recompose": "^0.26.0",
