@@ -291,7 +291,9 @@ sub api_subthing {
 
     if ( $subthing eq "guide" ) {
         my $ag  = $mongo->collection('Alertgroup')->find_iid($id);
-        return $mongo->collection('Guide')->find({applies_to => $ag->subject});
+        return $mongo->collection('Guide')->find({
+            'data.applies_to' => $ag->subject
+        });
     }
 
     if ( $subthing eq "history") {
