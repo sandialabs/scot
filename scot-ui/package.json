@@ -6,6 +6,7 @@
         "@material-ui/core": "^3.5.1",
         "@material-ui/icons": "latest",
         "@types/jquery": "^3.3.6",
+        "axios": "^0.18.0",
         "d3": "^5.7.0",
         "eslint": "4.10.0",
         "eslint-config-react-app": "^2.1.0",
