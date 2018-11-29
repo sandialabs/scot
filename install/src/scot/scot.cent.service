@@ -7,10 +7,9 @@ Type=simple
 RemainAfterExit=yes
 SyslogIdentifier=SCOT
 PIDFile=/var/run/scot.pid
-EnvironmentFile=/opt/scot/etc/scot_perlbrew.env
-ExecStart=/opt/perl5/bin/perlbrew exec hypnotoad /opt/scot/script/Scot
-ExecStop=/opt/perl5/bin/perlbrew exec hypnotoad -s /opt/scot/script/Scot
-ExecReload=/opt/perl5/bin/perlbrew exec hypnotoad /opt/scot/script/Scot
+ExecStart=/usr/local/bin/hypnotoad /opt/scot/script/Scot
+ExecReload=/usr/local/bin/hypnotoad /opt/scot/script/Scot
+ExecStop=/usr/local/bin/hypnotoad -s /opt/scot/script/Scot
 StandardOutput=syslog
 StandardError=syslog
 

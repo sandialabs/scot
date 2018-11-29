@@ -1,7 +1,7 @@
 package Scot::Controller::Auth::Testing;
 
 use lib '../../../../lib';
-use v5.18;
+# use v5.18;
 use strict;
 use warnings;
 

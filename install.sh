@@ -4,6 +4,8 @@ DEVDIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd)"
 
 . ./install/install_functions.sh
 
+export no_proxy=localhost,$no_proxy
+
 INTERACTIVE='yes'
 
 echo "==================== SCOT 3.5 Installer ======================="
@@ -73,29 +75,38 @@ show_variables
 echo "____ INSTALL MODE $INSTMODE"
 
 if [[ $INSTMODE != "SCOTONLY" ]]; then
+    echo "=========== installing packages ============="
     . ./install/install_packages.sh
     install_packages
 
+    echo "=========== installing PERL modules ============="
+    . ./install/install_perl.sh
+    install_perl
+
+    echo "=========== installing JAVA ============="
     . ./install/install_java.sh
     install_java
 
+    echo "=========== installing APACHE ============="
     . ./install/install_apache.sh
     install_apache
 
+    echo "=========== installing ActiveMQ ============="
     . ./install/install_activemq.sh
     install_activemq
 
-    . ./install/install_elasticsearch.sh
-    install_elasticsearch
-    
+    echo "=========== installing Mongodb ============="
     . ./install/install_mongodb.sh
     install_mongodb
     
-    . ./install/install_perl.sh
-    install_perl
+    echo "=========== installing ElasticSearch ============="
+    . ./install/install_elasticsearch.sh
+    install_elasticsearch
+    
     
 fi
 
+echo "=========== installing SCOT  ============="
 . ./install/install_scot.sh
 install_scot
 
