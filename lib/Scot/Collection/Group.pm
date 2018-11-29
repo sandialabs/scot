@@ -1,6 +1,7 @@
 package Scot::Collection::Group;
 use lib '../../../lib';
 use Data::Dumper;
+use HTML::Entities;
 use Moose 2;
 extends 'Scot::Collection';
 
@@ -10,6 +11,11 @@ override api_create => sub {
     my $env     = $self->env;
     my $json    = $request->{request}->{json};
     my $log     = $env->log;
+
+    my $gname   = $json->{groupname};
+    $json->{groupname} = encode_entities($gname);
+    my $desc    = $json->{description};
+    $json->{description} = encode_entities($desc);
 
     my $group   = $self->create($json);
 
