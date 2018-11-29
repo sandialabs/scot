@@ -1,7 +1,7 @@
 package Scot::Util::MongoQueryMaker;
 
 use Data::Dumper;
-use v5.18;
+# use v5.18;
 use Moose;
 extends 'Scot::Util';
 
@@ -284,7 +284,7 @@ sub build_match_ref {
             $mquery{$key} = $self->parse_stringfield_match($value);
         }
     }
-    say "Matching: ", Dumper(\%mquery);
+    print "Matching: ". Dumper(\%mquery)."\n";
     return wantarray ? %mquery : \%mquery;
 }
 

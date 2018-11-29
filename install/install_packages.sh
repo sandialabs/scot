@@ -2,6 +2,9 @@
 
 function install_ubuntu_packages {
 
+    # fix? to GPG keys problems?
+    apt-get update 2>&1 | grep NO_PUBKEY | sed -e 's?^.*NO_PUBKEY ??' | while read _hash; do  wget -O- "keyserver.ubuntu.com/pks/lookup?op=get&search=0x${_hash}" | apt-key add -; done
+
     DEBPACKAGES='
         curl
         make
@@ -64,7 +67,9 @@ function update_apt {
     apt-get install -y software-properties-common
 
     UBUNTUNAME="trusty"
-    if [[ $OSVERSION == "16" ]]; then
+    if [[ $OSVERSION == "18" ]]; then
+        UBUNTUNAME="bionic"
+    elif [[ $OSVERSION == "16" ]]; then
         UBUNTUNAME="xenial"
     fi
 
@@ -77,7 +82,9 @@ function update_apt {
         #    echo "- miracles never cease, ppa added."
         #else
             UBUNAME="trusty"
-            if [[ $OSVERSION == "16" ]]; then
+            if [[ $OSVERSION == "18" ]]; then
+                UBUNAME="bionic"
+            elif [[ $OSVERSION == "16" ]]; then
                 UBUNAME="xenial"
             fi
             Line="deb http://ppa.launchpad.net/maxmind/ppa/ubuntu $UBUNAME main"
@@ -144,6 +151,7 @@ function install_cent_packages {
         libmaxminddb.x86_64
         libmaxminddb-devel.x86_64
         libgmp3-devel
+        policycoreutils-python
     '
 
     for pkg in $YUMPACKAGES; do

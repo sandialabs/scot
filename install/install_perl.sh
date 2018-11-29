@@ -207,6 +207,9 @@ function install_ubuntu_packages {
 
 function install_cent_perl_packages {
 
+    # OK, cent is now up to perl 5.16 which will barely work.
+    # perlbrew is tricky and so we are going to skip that
+
     # <rant> supporting cent sucks.  everything is so old that 
     # the net no longer knows how to fix there old crappy software.
     # we most likely just built a modern perl that won't work with
@@ -235,33 +238,29 @@ function install_cent_perl_packages {
 #        echo "-- using cpanm to install $pkg"
 #        cpanm $pkg
 #    done 
-    echo "!!! are you sure you want to install on CentOS? Life is better on Ubuntu !!!"
     echo "-- installing things that should never be pulled out of a perl install, thanks centos"
-    yum install perl-devel patch -y
-    echo "-- installing perlbrew to get around crappy centos perl version"
-    export PERLBREW_ROOT=/opt/perl5
-    curl --insecure -L https://install.perlbrew.pl | bash
-    echo "-- adding perlbrew environment to system profile"
-    echo "source $PERLBREW_ROOT/etc/bashrc" > /etc/profile.d/perlbrew.sh
-    source $PERLBREW_ROOT/etc/bashrc
+    yum install perl perl-devel patch -y
+    #echo "-- installing perlbrew to get around crappy centos perl version"
+    #export PERLBREW_ROOT=/opt/perl5
+    #curl --insecure -L https://install.perlbrew.pl | bash
+    #echo "-- adding perlbrew environment to system profile"
+    #echo "source $PERLBREW_ROOT/etc/bashrc" > /etc/profile.d/perlbrew.sh
+    #source $PERLBREW_ROOT/etc/bashrc
     #echo "-- installing patchperl"
     #perlbrew install-patchperl
-    echo "-- brewing 5.18.2"
-    perlbrew install perl-5.18.2
-    perlbrew switch perl-5.18.2
+    #echo "-- brewing 5.18.2"
+    #perlbrew install perl-5.18.2
+    #perlbrew switch perl-5.18.2
 
     echo "- PERL VERSION IS NOW -"
     perl -V
     local PVER=`perl -e 'print $];'`
-    local PTAR="5.018"
+    local PTAR="5.016"
     local COMP=`echo $PVER'>'$PTAR | bc -l`
     if [[ $COMP != 1 ]]; then
-        echo "failed to upgrade perl, manual intervention required"
+        echo "perl must be at least version 5.16, manual intervention required"
         exit 1;
     fi
-
-    
-
 }
 
 function install_cpanm {
@@ -282,7 +281,7 @@ function install_cpanm {
 function perl_version_check {
 
     local PVER=`perl -e 'print $];'`
-    local PTAR="5.018"
+    local PTAR="5.016"
     local COMP=`echo $PVER'>'$PTAR | bc -l`
 
     echo "PERL reports version as $PVER"
@@ -292,7 +291,7 @@ function perl_version_check {
     if [[ $COMP == 1 ]];then
         echo "Yea! A modern perl! "
     else 
-        echo "Your Perl is out of date.  Upgrade to 5.18 or better "
+        echo "Your Perl is out of date.  Upgrade to 5.16 or better "
         echo "== See installation docs in docs/source/install.rst for instructions on how to install new perl"
         echo ""
         echo " this means yo uare most likely on a CentOS system, condolences."
@@ -316,11 +315,6 @@ function install_packages {
 }
 
 function install_perl_modules {
-
-    if [[ $OS != "Ubuntu" ]]; then 
-        echo "-- Cent/RH system, invoking perlbrew to modernize the perl"
-        perlbrew switch perl-5.18.2
-    fi
 
     PERLMODULES='
         Array::Split
@@ -416,13 +410,17 @@ function install_perl_modules {
         Net::SSH::Perl
         Net::SFTP
         Lingua::Stem
+        Math::VecStat
+        Class::Exporter
+        Math::HashSum
+        Math::Vector::SortIndexes
         Lingua::EN::StopWords
         XML::Twig
         XML::Simple
         SVG::Sparkline
     '
 
-    # install_cpanm
+    install_cpanm
 
     # test has probles with proxy and ssl 
     # -n skips the test and installs anyway.  
@@ -435,7 +433,7 @@ function install_perl_modules {
         echo "-- 1st attempt at installing $module"
         echo "--"
 
-        cpanm $module
+        /usr/local/bin/cpanm $module
 
         if [[ $? == 1 ]]; then
             echo "!!!"
@@ -452,7 +450,7 @@ function install_perl_modules {
         echo "--"
         echo "-- 2nd attept to install $module"
         echo "--"
-        cpanm $module
+        /usr/local/bin/cpanm $module
 
         if [[ $? == 1 ]]; then
             echo "!!! !!!"
@@ -472,7 +470,7 @@ function install_perl_modules {
         for module in $FAILED; do
             if [[ $module == "AnyEvent::ForkManager" ]]; then
                 echo "- forcing the install of AnyEvent::ForkManager"
-                cpanm -f AnyEvent::ForkManager
+                /usr/local/bin/cpanm -f AnyEvent::ForkManager
             else 
                 echo "    => $module"
             fi
