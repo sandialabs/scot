@@ -180,6 +180,20 @@ sub post_create_process {
         );
     }
 
+    if ( ref($object) eq "Scot::Model::Alert" ) {
+        $mongo->collection('Stat')->put_stat(
+            'alert created', 1
+        );
+        $self->env->mq->send("/topic/scot", {
+            action  => "updated",
+            data    => {
+                who     => $self->session('user'),
+                type    => 'alertgroup',
+                id      => $object->alertgroup,
+            }
+        });
+    }
+
     return $json;
 }
 
@@ -1137,7 +1151,7 @@ sub post_update_process {
             # need to write history to Alertgroup
             my $agobj = $agcol->find($object->alertgroup);
             if (defined $agobj) {
-                $self->crete_change_audit($agobj, $uphref);
+                $self->create_change_audit($agobj, $uphref);
             }
         }
     }
