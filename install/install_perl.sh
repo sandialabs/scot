@@ -15,7 +15,6 @@ function install_ubuntu_packages {
         libyaml-perl
         libwww-mechanize-perl
         libjson-perl
-        librose-db-perl
         libtree-simple-perl
         libtask-weaken-perl
         libtree-simple-visitorfactory-perl
@@ -132,10 +131,6 @@ function install_ubuntu_packages {
         libppi-perl
         libreadonly-perl
         libreadonly-xs-perl
-        librose-datetime-perl
-        librose-db-object-perl
-        librose-db-perl
-        librose-object-perl
         librpc-xml-perl
         libscope-guard-perl
         libscope-upper-perl
