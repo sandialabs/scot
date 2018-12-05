@@ -33,27 +33,45 @@ with    qw(
     Scot::Role::GetTagged
 );
 
-sub create_from_handler {
-    return {
-        error   => "Direct creation of Alerts from Web API not supported",
-    };
-}
-
 =head1 Methods
 
 =over 4
 
 =item B<api_create($req_href)>
 
+a post to the api will land here
+
 =cut
 
-sub api_create {
+override api_create => sub {
+    my $self        = shift;
+    my $req_href    = shift;
+    my $env         = $self->env;
+    my $log         = $env->log;
+
+    $log->debug("creating alert from api");
+
+    my $json    = $req_href->{request}->{json};
+
+    my $alert   = $self->create($json);
+    return $alert;
+
+};
+
+=item B<linked_create($href)>
+
+the request to create an alertgroup with embedded alerts in the data attribute
+calls this
+
+=cut
+
+sub linked_create {
     my $self    = shift;
     my $href    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
 
-    $log->debug("in api_create for alert");
+    $log->debug("in linked_create for alert");
 
     my $data    = $href->{data};
     if ( ! defined $data ) {
