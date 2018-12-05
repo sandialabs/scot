@@ -36,7 +36,6 @@ libxml-perl
 libyaml-perl
 libwww-mechanize-perl
 libjson-perl
-librose-db-perl
 libtree-simple-perl
 libtask-weaken-perl
 libtree-simple-visitorfactory-perl
