@@ -128,7 +128,7 @@ override api_create => sub {
         $log->debug("Creating alerts belonging to Alertgroup ". $id);
         foreach my $datum (@{$data}) {
 
-            my $alertscreated += $alert_col->api_create({
+            my $alertscreated += $alert_col->linked_create({
                 data        => $datum,
                 alertgroup  => $id,
                 columns     => $alertgroup->columns,
@@ -291,7 +291,9 @@ sub api_subthing {
 
     if ( $subthing eq "guide" ) {
         my $ag  = $mongo->collection('Alertgroup')->find_iid($id);
-        return $mongo->collection('Guide')->find({applies_to => $ag->subject});
+        return $mongo->collection('Guide')->find({
+            'data.applies_to' => $ag->subject
+        });
     }
 
     if ( $subthing eq "history") {
