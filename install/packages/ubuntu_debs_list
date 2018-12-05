@@ -151,10 +151,6 @@ libpod-spell-perl
 libppi-perl
 libreadonly-perl
 libreadonly-xs-perl
-librose-datetime-perl
-librose-db-object-perl
-librose-db-perl
-librose-object-perl
 librpc-xml-perl
 libscope-guard-perl
 libscope-upper-perl
