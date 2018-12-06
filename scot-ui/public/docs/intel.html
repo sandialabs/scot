@@ -1,0 +1,158 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Threat Intel in SCOT &#8212; SCOT 3.5.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '3.5.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
+    <link rel="next" title="Handling High Confidence alerts in SCOT" href="alerts.html" />
+    <link rel="prev" title="First Steps - Logging into SCOT" href="login.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="alerts.html" title="Handling High Confidence alerts in SCOT"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="login.html" title="First Steps - Logging into SCOT"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="threat-intel-in-scot">
+<h1>Threat Intel in SCOT<a class="headerlink" href="#threat-intel-in-scot" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="intel-grid">
+<h2>Intel Grid<a class="headerlink" href="#intel-grid" title="Permalink to this headline">¶</a></h2>
+<p>Here we will go more indepth about the threat intel section of SCOT and how you can leverage its capabilities to the fullest.</p>
+<p>We’ll start by clicking on the “Intel” button in the top menu which will take us to intel grid. You’ll see a document already exists (“Intro to SCOT’s Threat Intel section”), as well as a “Create Intel” button in the top left hand corner.</p>
+<div class="figure">
+<a class="reference internal image-reference" href="_images/intelgrid.png"><img alt="Image of Intel Grid Here" src="_images/intelgrid.png" style="width: 100%;" /></a>
+</div>
+<p>If you want to view an existing piece of intel, just click on the row for the document of interest. The document will load in the lower pane of the screen. Note: Double clicking a row automatically expands the document hiding the grid.</p>
+<p>If you want to add a new piece of intel, just click the “Create Intel” button and a new empty document will be added. Read the “Intel Details” section next for information about how to add information to this new Intel Object</p>
+</div>
+<div class="section" id="intel-details">
+<h2>Intel Details<a class="headerlink" href="#intel-details" title="Permalink to this headline">¶</a></h2>
+<p>So, we’ve created a new Intel object, but how do we add our information to it?</p>
+<p>First, let&#8217;s set a subject so everyone else knows what this intel object is about. We do this by clicking in the subject box in the Header of the Intel Details (see image below) and modifying the text like we would any other textbox.  Changes to the subject box are saved as you type.</p>
+<a class="reference internal image-reference" href="_images/intel_details_header.png"><img alt="_images/intel_details_header.png" src="_images/intel_details_header.png" style="width: 100%;" /></a>
+<p>You can see we&#8217;ve added a Tag of &#8216;APT&#8217; to improve searching later on.  You can add a tag by clicking on the <img alt="add" src="_images/add.png" /> icon or remove one by clicking on the <img alt="x" src="_images/remove_x.png" />.</p>
+<p>Now that we&#8217;ve set the metadata for our intel object, let&#8217;s go about actually adding the information and IOCs.</p>
+<p>Go ahead and click the &#8220;Add Entry&#8221; button at the right of the header.  A blank textarea with a green background will appear in the details section (this indicates you are in edit mode).  Additionally, a rich text editor toolbar will appear for advanced formatting.</p>
+<div class="figure">
+<a class="reference internal image-reference" href="_images/intel_details_add_entry.png"><img alt="_images/intel_details_add_entry.png" src="_images/intel_details_add_entry.png" style="width: 100%;" /></a>
+</div>
+<p>Go ahead and either paste in the report from email or a website, or type it in manually. Click “Save” and this entry will now be added to this intel object. Here is what it looks like after we pasted in our indicators.</p>
+<div class="figure">
+<a class="reference internal image-reference" href="_images/intel_details_one_entry.png"><img alt="_images/intel_details_one_entry.png" src="_images/intel_details_one_entry.png" style="width: 100%;" /></a>
+</div>
+<p>WOAH! What&#8217;s with all that <span style="background-color: rgba(255,245,168, 0.5); border: 1px dotted green; border-radius: 6px; padding: 1px">yellow hilighting</span>?</p>
+<ul class="simple">
+<li>SCOT Automatically extracts IOCs (Domains, IPs, Hashes, Emails, etc.) and highlights them for you.</li>
+</ul>
+<p>Why do some of the highlighted parts have numbers like <img alt="count" src="_images/referenceCount.png" /> after them?</p>
+<ul class="simple">
+<li>The number after a highlighted IOC tells you how many times previously SCOT has seen this indicator.  For example, we&#8217;ve seen <em>rnil.am</em> three times before, and if we want more information, we can click on the Indicator.</li>
+</ul>
+<p>Ok, but what about that internet explorer icon <img alt="ie" src="_images/blocked.png" /> on kavkazcentr.info?</p>
+<ul class="simple">
+<li>SCOT Integrates into your blocklist to automatically tell you which domains are blocked without you having to look it up. If we had an IP Address, we’d see a small flag next to it indicating the country in which the IP Address is registered.</li>
+</ul>
+<p>We refer to the highlighting of IOCs and display of basic information as &#8220;Flair&#8221;.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Threat Intel in SCOT</a><ul>
+<li><a class="reference internal" href="#intel-grid">Intel Grid</a></li>
+<li><a class="reference internal" href="#intel-details">Intel Details</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="login.html"
+                        title="previous chapter">First Steps - Logging into SCOT</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="alerts.html"
+                        title="next chapter">Handling High Confidence alerts in SCOT</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/intel.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="alerts.html" title="Handling High Confidence alerts in SCOT"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="login.html" title="First Steps - Logging into SCOT"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2011-2016, Sandia National Laboratories.
+    </div>
+  </body>
+</html>
