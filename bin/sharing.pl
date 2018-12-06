@@ -5,7 +5,7 @@ use warnings;
 use lib '../lib';
 use lib '../../lib';
 use lib '../../Scot-Internal-Modules/lib';
-use v5.18;
+use v5.16;
 use Scot::App::Sharing;
 use Data::Dumper;
 

@@ -3,7 +3,7 @@ package Scot::Util::Taxii;
 use Mojo::UserAgent;
 use Data::Dumper;
 use XML::Simple;
-use v5.18;
+# use v5.18;
 
 use Moose;
 extends 'Scot::Util';

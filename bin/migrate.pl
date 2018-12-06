@@ -9,7 +9,7 @@ use Getopt::Long qw(GetOptions);
 use Data::Dumper;
 use Log::Log4perl::Level;
 
-use v5.18;
+use v5.16;
 
 $| = 1;
 # $ENV{'scot_mode'} = "migrated"; # use this to set the scot-foo database

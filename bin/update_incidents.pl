@@ -6,7 +6,7 @@ use lib '../lib';
 use lib '../../Scot-Internal-Modules/lib';
 use Scot::Env;
 use IO::Prompt;
-use v5.18;
+use v5.16;
 
 my $continue    = "no";
 my $env         = Scot::Env->new({config_file => "/opt/scot/etc/scot.cfg.pl"});
