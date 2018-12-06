@@ -160,7 +160,16 @@ function start_services {
     fi
 
     if [[ $OS == "Ubuntu" ]]; then
-        if [[ $OSVERSION == "16" ]]; then
+        if [[ $OSVERSION == "18" ]]; then
+            systemctl daemon-reload
+            systemctl restart mongod.service
+            wait_for_mongo
+            systemctl --no-pager restart scot.service
+            systemctl --no-pager restart apache2.service
+            systemctl --no-pager restart scfd.service
+            systemctl --no-pager restart scrfd.service
+            systemctl --no-pager restart scepd.service
+        elif [[ $OSVERSION == "16" ]]; then
             systemctl daemon-reload
             systemctl restart mongod.service
             wait_for_mongo

@@ -13,7 +13,7 @@ via Scot::Role::Configurable
 =cut
 
 use lib '../../lib';
-use v5.18;
+use v5.16;
 use strict;
 use warnings;
 

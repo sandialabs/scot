@@ -1,6 +1,6 @@
 package Scot::App::Taxii;
 
-use v5.18;
+# use v5.18;
 use lib '../../../lib';
 use Data::Dumper;
 use Scot::Env;
