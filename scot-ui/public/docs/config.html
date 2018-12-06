@@ -1,0 +1,289 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Initially Configuring SCOT &#8212; SCOT 3.5.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '3.5.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
+    <link rel="next" title="Admin / Maintenance" href="maintenance.html" />
+    <link rel="prev" title="Authentication/Authorization" href="auth.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="maintenance.html" title="Admin / Maintenance"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="auth.html" title="Authentication/Authorization"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="initially-configuring-scot">
+<h1>Initially Configuring SCOT<a class="headerlink" href="#initially-configuring-scot" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="ssl-certs">
+<h2>SSL Certs<a class="headerlink" href="#ssl-certs" title="Permalink to this headline">¶</a></h2>
+<p>SCOT will generate a &#8220;snake-oil&#8221; certificate upon install.  You will need to replace this as soon as possible with a real SSL certificate.</p>
+<div class="section" id="configuration-files">
+<h3>Configuration Files<a class="headerlink" href="#configuration-files" title="Permalink to this headline">¶</a></h3>
+<p>The following sections detail the configuration options that are available in SCOT&#8217;s configuration files.  SCOT comes with configuration templates that you can modify to meet your site requirements and are located in the /opt/scot/etc directory with a &#8220;cfg&#8221; extension.  The templates are Perl code and heavily documented.  After making changes to them, you should always validate their syntax with the following command: &#8220;perl -wc file.cfg&#8221;</p>
+</div>
+</div>
+<div class="section" id="scot-env-cfg">
+<h2>scot_env.cfg<a class="headerlink" href="#scot-env-cfg" title="Permalink to this headline">¶</a></h2>
+<p>The Scot::Env module is created at SCOT startup and holds references to many commonly used modules, common methods, and common configuration variables used by the SCOT application server.  The fields are as follows:</p>
+<dl class="docutils">
+<dt>modules</dt>
+<dd>This hash reference lists the modules that should be instantiated at SCOT start time.  The key is the attribute name of Scot::Env that will hold the reference to the module instance listed in the value.</dd>
+<dt>configs</dt>
+<dd>This hash reference provided the filename of the configuration files for the modules in the section above.</dd>
+<dt>config_path</dt>
+<dd>This array reference lists the paths to search for the above config files.  The directories are recursively searched in the order they are listed and the first match will be returned.</dd>
+<dt>authtype</dt>
+<dd>This option allows you to specify the authentication method for SCOT to use.  Your choices are &#8220;Remoteuser&#8221;, &#8220;Ldap&#8221; or &#8220;Local&#8221;. See the seciton on Authentication, Authorization and Auditing for more details.</dd>
+<dt>group_mode</dt>
+<dd>This option allows you to select if group membership will be controlled by LDAP/AD groups or locally by the SCOT application server.</dd>
+<dt>default_owner</dt>
+<dd>This allows you to set the username of the default owner of newly created &#8220;things&#8221; within SCOT.</dd>
+<dt>default_groups</dt>
+<dd>This option sets the default group set for both read and modify when group permissions are not explicitly specified upon object creation.</dd>
+<dt>admin_group</dt>
+<dd>Members of this group have the right to override permissions and other potentially destructive acts.</dd>
+<dt>mojo_defaults</dt>
+<dd><p class="first">This hash reference controlls the following:</p>
+<dl class="last docutils">
+<dt>secrets</dt>
+<dd>An array of strings that Mojolicious uses to create secure encrypted session cookies.  Be sure to change these!</dd>
+<dt>default_expiration</dt>
+<dd>Session validity duration in seconds.</dd>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="ldap-cfg">
+<h2>ldap.cfg<a class="headerlink" href="#ldap-cfg" title="Permalink to this headline">¶</a></h2>
+<p>My best advice is to buy your LDAP administrator lunch.  There are so
+many ways to (mis)configure LDAP, that telling you how to do it is beyond
+the scope of this manual.</p>
+<p>I can help you with the what the fields in the scot configuration are
+looking for.</p>
+<dl class="docutils">
+<dt>hostname</dt>
+<dd>use the fully qualified hostname for the LDAP/AD server, e.g. &#8220;ldap.foo.com&#8221;</dd>
+<dt>dn</dt>
+<dd>The string is the distinguished name and can be provided by your LDAP admin.  typically, it looks like: &#8220;cn=something,ou=local config, dc=edu&#8221;</dd>
+<dt>password</dt>
+<dd>some LDAP/AD instance require a password</dd>
+<dt>scheme</dt>
+<dd>typically &#8220;ldap&#8221;.</dd>
+<dt>group_search</dt>
+<dd><p class="first">This is how scot gets a list of valid scot group names from LDAP/AD.</p>
+<dl class="last docutils">
+<dt>base</dt>
+<dd>the search DN that holds your groups.  Could look like: &#8220;ou=groups,ou=compname,dc=orgname&#8221;</dd>
+<dt>filter</dt>
+<dd>the filter to apply to the groups returned by the base dn above.  If
+you start all your scot groups with &#8216;wg-scot&#8217;  then the filter would
+be &#8216;(| (cn=wg-scot*))&#8217;</dd>
+<dt>attrs</dt>
+<dd>the attribute that provides the group name, e.g. &#8216;cn&#8217;.</dd>
+</dl>
+</dd>
+<dt>user_groups</dt>
+<dd><p class="first">This is how SCOT gets a list of groups that a user belongs to.</p>
+<dl class="last docutils">
+<dt>base</dt>
+<dd>the search DN to get the users group membership.  Could look like:
+&#8220;ou=accounts,ou=companyname,dc=orgname&#8221;</dd>
+<dt>filter</dt>
+<dd>The attribute filter to match, in the form of attributename=value.
+Default for SCOT is uid=%s where the %s gets filled in with the user&#8217;s
+username at access time.  In other words, SCOT does a
+sprintf(&#8220;uid=%s&#8221;, $username);</dd>
+<dt>attrs</dt>
+<dd>The attribute that provides the list of groups a user is a member of.
+Default is &#8216;memberOf&#8217; but your milage may vary.</dd>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="mail-app-cfg">
+<h2>mail.app.cfg<a class="headerlink" href="#mail-app-cfg" title="Permalink to this headline">¶</a></h2>
+<p>These settings point SCOT to your IMAP server and defines the domains and accounts that can send email to SCOT.</p>
+<dl class="docutils">
+<dt>mailbox</dt>
+<dd>Typically &#8220;INBOX&#8221;, but hey whatever works for you.</dd>
+<dt>hostname</dt>
+<dd>The hostname of the IMAP server, make sure it resolves.</dd>
+<dt>port</dt>
+<dd>Allows you to set the port if you are running on a non-standard port.  Typically it is 993.</dd>
+<dt>username</dt>
+<dd>The username associated with the IMAP mailbox that SCOT will use to log into the IMAP server.</dd>
+<dt>password</dt>
+<dd>The password that will enable SCOT to log into the IMAP server.</dd>
+<dt>ssl</dt>
+<dd>See &#8220;perldoc IO::Socket::SSL&#8221; for valid options.</dd>
+<dt>uid</dt>
+<dd>Default is 1.  Leave it that unless you really know why you are changing it.</dd>
+<dt>ignore_size_errors</dt>
+<dd>Default is 1.</dd>
+<dt>approved_alert_domains</dt>
+<dd>Email from domains not in this list are rejected by SCOT.</dd>
+<dt>approved_accounts</dt>
+<dd>Accounts in this list are not rejected by SCOT.</dd>
+</dl>
+</div>
+<div class="section" id="flair-app-cfg">
+<h2>flair.app.cfg<a class="headerlink" href="#flair-app-cfg" title="Permalink to this headline">¶</a></h2>
+<p>These settings control aspects of the SCOT flairing application.</p>
+<dl class="docutils">
+<dt>logfile</dt>
+<dd>Where you want the flairing app to log.</dd>
+<dt>enrichments</dt>
+<dd>The configfile that defines the enrichments you with the flair app to use.</dd>
+<dt>scot</dt>
+<dd><p class="first">This hash reference tells the flairing application how to communicate with the SCOT application server.</p>
+<dl class="last docutils">
+<dt>servername</dt>
+<dd>The resolvable name of the SCOT server</dd>
+<dt>username</dt>
+<dd>The username to use for authentication.</dd>
+<dt>password</dt>
+<dd>The password that corresponds to the username above.</dd>
+<dt>authtype</dt>
+<dd>What type of authentication is SCOT server performing, &#8220;RemoteUser&#8221;, &#8220;LDAP&#8221;, or &#8220;Local&#8221;.</dd>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="enrichments-cfg">
+<h2>enrichments.cfg<a class="headerlink" href="#enrichments-cfg" title="Permalink to this headline">¶</a></h2>
+<p>The enrichments configuration file is used to initialize the Scot::Util::Enrichments module.</p>
+<dl class="docutils">
+<dt>mappings</dt>
+<dd>Maps the entity type to an array of enrichments that are available for that type.</dd>
+<dt>configs</dt>
+<dd><p class="first">Hash that maps the enrichment name to configuration information for that enrichment</p>
+<dl class="last docutils">
+<dt>key</dt>
+<dd>enrichment name, should match an entry in mappings.</dd>
+<dt>value</dt>
+<dd><p class="first">A hash of information necessary to make the enrichment work.</p>
+<dl class="last docutils">
+<dt>type</dt>
+<dd>Type is required and is one of the following: &#8220;native&#8221;, &#8220;internal_link&#8221;, &#8220;external_link&#8221;.</dd>
+<dt>module</dt>
+<dd>The Perl Module name for a &#8220;native&#8221; enrichment</dd>
+<dt>url</dt>
+<dd>Only available to link types, url is a sprintf style string that contains the URL and parameters necessary for call.</dd>
+<dt>field</dt>
+<dd>The field from the Entity object to use to perform substitution.  ( sprintf(url, field) )</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Initially Configuring SCOT</a><ul>
+<li><a class="reference internal" href="#ssl-certs">SSL Certs</a><ul>
+<li><a class="reference internal" href="#configuration-files">Configuration Files</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#scot-env-cfg">scot_env.cfg</a></li>
+<li><a class="reference internal" href="#ldap-cfg">ldap.cfg</a></li>
+<li><a class="reference internal" href="#mail-app-cfg">mail.app.cfg</a></li>
+<li><a class="reference internal" href="#flair-app-cfg">flair.app.cfg</a></li>
+<li><a class="reference internal" href="#enrichments-cfg">enrichments.cfg</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="auth.html"
+                        title="previous chapter">Authentication/Authorization</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="maintenance.html"
+                        title="next chapter">Admin / Maintenance</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/config.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="maintenance.html" title="Admin / Maintenance"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="auth.html" title="Authentication/Authorization"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2011-2016, Sandia National Laboratories.
+    </div>
+  </body>
+</html>
