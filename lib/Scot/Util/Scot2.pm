@@ -3,7 +3,7 @@ package Scot::Util::Scot2;
 use lib '../../../lib';
 use strict;
 use warnings;
-use v5.18;
+# use v5.18;
 
 use Mojo::UserAgent;
 use Data::Dumper;

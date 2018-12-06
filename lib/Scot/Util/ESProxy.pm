@@ -3,7 +3,7 @@ package Scot::Util::ESProxy;
 use lib '../../../lib';
 use strict;
 use warnings;
-use v5.18;
+# use v5.18;
 
 use Mojo::UserAgent;
 use Mojo::JSON qw/encode_json decode_json/;

@@ -91,6 +91,34 @@ $t->get_ok("/scot/api/v2/alert?id=1&withsubject=1" => {},
     ->status_is(200)
     ->json_is('/records/0/subject'  => 'test message 1');
 
+# try to add a new alert to alertgroup
+
+$t->post_ok(
+    '/scot/api/v2/alert'    => json => {
+        alertgroup  => $alertgroup_id,
+        columns     => [qw(foo bar data)],
+        data        => {
+            foo => 10, bar => 10, data => "4.4.4.4"
+        },
+    }
+)->status_is(200);
+my $alert_id    = $t->tx->res->json->{id};
+$flairer->process_message(undef, {
+    action  => "updated",
+    data    => {
+        type    => "alertgroup",
+        id      => $alertgroup_id
+    }
+});
+
+$t->get_ok("/scot/api/v2/alert/$alert_id");
+# print Dumper($t->tx->res->json), "\n";
+
+$t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/alert" => {},
+    "Get alertgroup by list")
+    ->status_is(200);
+print Dumper($t->tx->res->json), "\n";
+
 done_testing();
 exit 0;
 

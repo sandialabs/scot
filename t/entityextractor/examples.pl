@@ -17,13 +17,17 @@ https://cbase.som.sunysb.edu/soap/bss.cfm
 EOF
             flair   => <<EOF,
 <div>
-https://<span class="entity domain" data-entity-type="domain" data-entity-value="cbase.som.sunysb.edu">cbase.som.sunysb.edu</span>/soap/bss.cfm
+https://<span class="entity domain" data-entity-type="domain" data-entity-value="cbase.som.sunysb.edu">cbase.som.sunysb.edu</span>/soap/<span class="entity file" data-entity-type="file" data-entity-value="bss.cfm">bss.cfm</span>
 </div>
 EOF
             entities    => [
                 {
                     type    => "domain",
                     value   => "cbase.som.sunysb.edu",
+                },
+                {
+                    type    => "file",
+                    value   => "bss.cfm",
                 },
             ],
         },
@@ -418,6 +422,23 @@ EOF
             entities    => [
                 {
                     value   => 'paziapm.co.id',
+                    type    => 'domain',
+                },
+            ],
+        },
+        'domain_in_uri' => {
+            source  => <<'EOF',
+<html>https://groups.google.com/d/optout</html>
+EOF
+            plain   => <<'EOF',
+https://groups.google.com/d/optout
+EOF
+            flair   => <<'EOF',
+<div>https://<span class="entity domain" data-entity-type="domain" data-entity-value="groups.google.com">groups.google.com</span>/d/optout</div>
+EOF
+            entities    => [
+                {
+                    value   => 'google.groups.com',
                     type    => 'domain',
                 },
             ],

@@ -6,7 +6,7 @@ use lib '../lib';
 use lib '../../lib';
 use lib '../../Scot-Internal-Modules/lib';
 use lib '/opt/scot/lib';
-use v5.18;
+use v5.16;
 use Scot::App::Responder::Reflair;
 use Data::Dumper;
 

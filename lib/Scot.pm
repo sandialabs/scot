@@ -2,7 +2,7 @@ package Scot;
 
 use strict;
 use warnings;
-use v5.18;
+# use v5.18;
 
 use Carp qw(cluck longmess shortmess);
 use Mojo::Base 'Mojolicious';
