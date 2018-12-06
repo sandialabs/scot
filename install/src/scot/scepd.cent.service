@@ -2,8 +2,7 @@
 Description=SCot Elasticsearch Push Daemon
 
 [Service]
-EnvironmentFile=/opt/scot/etc/scot_perlbrew.env
-ExecStart=/opt/perl5/bin/perlbrew exec /opt/scot/bin/stretch.pl
+ExecStart=/opt/scot/bin/stretch.pl
 Restart=always
 RestartSec=10
 StandardOutput=syslog

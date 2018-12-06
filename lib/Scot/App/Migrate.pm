@@ -24,7 +24,7 @@ use Time::HiRes qw(gettimeofday tv_interval);
 use Safe::Isa;
 use Storable;
 use HTML::TreeBuilder;
-use v5.18;
+# use v5.18;
 use strict;
 use warnings;
 

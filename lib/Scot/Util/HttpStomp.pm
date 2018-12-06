@@ -3,7 +3,7 @@ package Scot::Util::HttpStomp;
 use lib '../../../lib';
 use strict;
 use warnings;
-use v5.18;
+# use v5.18;
 
 use Mojo::JSON qw/decode_json encode_json/;
 use Data::GUID;

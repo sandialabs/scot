@@ -2,7 +2,7 @@
 
 use MongoDB;
 use Data::Dumper;
-use v5.18;
+use v5.16;
 
 my $mongo           = MongoDB->connect->db('scot-prod');
 my $collection      = $mongo->get_collection('link');

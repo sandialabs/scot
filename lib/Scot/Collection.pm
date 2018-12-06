@@ -1,6 +1,6 @@
 package Scot::Collection;
 
-use v5.18;
+use v5.16;
 use lib '../../lib';
 use strict;
 use warnings;

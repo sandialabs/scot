@@ -2,8 +2,7 @@
 Description=SCot ReFlair Daemon
 
 [Service]
-EnvironmentFile=/opt/scot/etc/scot_perlbrew.env
-ExecStart=/opt/perl5/bin/perlbrew exec /opt/scot/bin/reflair.pl
+ExecStart=/opt/scot/bin/reflair.pl
 Restart=always
 RestartSec=10
 StandardOutput=syslog
