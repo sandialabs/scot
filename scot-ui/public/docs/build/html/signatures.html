@@ -1,0 +1,192 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Signatures &#8212; SCOT 3.5.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '3.5.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
+    <link rel="next" title="REVL Visualization Guide" href="visualization.html" />
+    <link rel="prev" title="Developing For SCOT" href="devguide.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="visualization.html" title="REVL Visualization Guide"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="devguide.html" title="Developing For SCOT"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="signatures">
+<h1>Signatures<a class="headerlink" href="#signatures" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="signature">
+<h2>Signature<a class="headerlink" href="#signature" title="Permalink to this headline">¶</a></h2>
+<p>Signatures are used to integrate the version control of signatures within 3rd party mitigation tools (firewalls, IDS, etc.) while being managed by SCOT as a central repository. Signature&#8217;s have the same list view as other &#8220;things&#8221; within SCOT, but they have a slightly modified detail view.</p>
+<p>The detail view of signatures contain metadata editing, where you can modify a description, signature type (yara, ids, firewall, etc.), production and quality signature body versions, signature group that the signature belongs in, and signature options (written in JSON format). The final new item within the detail view is the Signature body editor. This editor should be used to add in the signature&#8217;s that will be used in the 3rd party tool. The output of the body is converted to a string format, which can then be ingested by the other tool.</p>
+<p>Below these new sections, the entries that are found in other &#8220;things&#8221; still exist.</p>
+</div>
+<div class="section" id="signature-metadata">
+<h2>Signature Metadata<a class="headerlink" href="#signature-metadata" title="Permalink to this headline">¶</a></h2>
+<div class="figure">
+<a class="reference internal image-reference" href="_images/signaturemetadata.png"><img alt="signature metadata editing" src="_images/signaturemetadata.png" style="width: 25%;" /></a>
+</div>
+<p>Signatures contain their own unique metadata that can be used for version control, describing the signature, and grouping the signatures. The metadata contains the following options:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Description:</th><td class="field-body">Describes the signature</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Type:</th><td class="field-body">Defines the type of signature being created (yara, firewall, ids, etc.)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Production Signature Body Version:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">Declares the version of the signature body to be used in production</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Quality Signature Body Version:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">Declares the version of the signature body to be used in quality</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Signature Group:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">Declares a group name if signature will be grouped together.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Signature Options:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">This is the first editor window you see that accepts JSON formatted data that can be used to pass on specific options for the signature being applied.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Signature Body:</th><td class="field-body">This is the second and larger editor window you will see that will pass along the contents as a string to the SCOT server that can then be used by the tool ingesting the signature. The signature body editor contains a few options - Editor Theme, Language Handler, Keyboard Handler, Signature Body Version, and the following buttons - Create new version, Create new version using this base, updating displayed version.</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="signature-body-options">
+<h3>Signature Body Options<a class="headerlink" href="#signature-body-options" title="Permalink to this headline">¶</a></h3>
+<div class="figure">
+<a class="reference internal image-reference" href="_images/signaturebody.png"><img alt="signature body editing" src="_images/signaturebody.png" style="width: 75%;" /></a>
+</div>
+<p>Note: The Editor Theme, Language Handler, and Keyboard Handler all save their settings in a cookie file. If you change these settings, they will persist until you change them again or clear your browser&#8217;s cookies.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Editor Theme:</th><td class="field-body">You can select the theme you prefer to use for your code editor. There are a variety of color options depending on your color tastes</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Language Handler:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">You can select the language of the signature that you are writing, or one that closely resembles it</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Keyboard Handler:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">You can select none, vim, or emacs if you prefer a keyboard handler</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Signature Body Version:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">You can select the version you would like to view here.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Create new version:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">This button will empty the editor and allow editing within the editor so you can create a new signature body.Any other signature body&#8217;s created will remain attached to this Signature to be viewed/edited. Note that this WILL NOT make the new signature body automatically the &#8220;qual/prod&#8221; versions, as that must be done manually in the metadata section.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Create new version using this base:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">This button will also create a new signature body version, but it will start the editor off with whatever contents are already in the editor based on the version selected.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Update displayed version:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">This button will allow editing of the version selected. It will not create a new version of the signature body, but instead just update the version selected.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Signatures</a><ul>
+<li><a class="reference internal" href="#signature">Signature</a></li>
+<li><a class="reference internal" href="#signature-metadata">Signature Metadata</a><ul>
+<li><a class="reference internal" href="#signature-body-options">Signature Body Options</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="devguide.html"
+                        title="previous chapter">Developing For SCOT</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="visualization.html"
+                        title="next chapter">REVL Visualization Guide</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/signatures.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="visualization.html" title="REVL Visualization Guide"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="devguide.html" title="Developing For SCOT"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2011-2016, Sandia National Laboratories.
+    </div>
+  </body>
+</html>
