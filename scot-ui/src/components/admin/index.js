@@ -8,6 +8,8 @@ import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
 import UserGroupContainer from './usergroupcontainer'
+import { Api } from './api'
+import { Undelete } from './undelete'
 
 
 function TabContainer(props) {
@@ -69,11 +71,11 @@ class Admin extends React.Component {
             </TabContainer>}
           {value === 1 &&
             <TabContainer>
-              API stuff
-              </TabContainer>}
+              <Api></Api>
+            </TabContainer>}
           {value === 2 &&
             <TabContainer>
-              Undelete stuffs
+              <Undelete></Undelete>
             </TabContainer>}
         </div>
       </MuiThemeProvider>
