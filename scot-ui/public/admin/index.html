@@ -1,0 +1,557 @@
+<!DOCTYPE HTML>
+<html lang="en"  >
+	<head>
+		<link href="/favicon.png"   rel="icon" type="image/png"></link>
+		<!-- API documented at /api/index.html -->
+		<link rel="stylesheet"      href="../libs/bootstrap/css/bootstrap.min.css"></link>
+		<link rel="stylesheet"      href="style.css"></link>
+		<link rel="stylesheet"      href="../libs/jquery-ui-1.12.1/jquery-ui.css"></link>
+		<link rel="stylesheet"      href="../css/font-awesome.min.css"></link>
+		<link rel="stylesheet"      href="../css/styles.css"></link>
+        <link rel="stylesheet"      href="../css/react-table.css"></link>
+		<meta http-equiv="Content-Security-Policy" content="frame-src 'none'; script-src 'self'">
+		<meta name="viewport"       content="width=device-width, initial-scale=1.0">
+
+		<script src="../libs/jquery-3.3.1/jquery.min.js" type="text/javascript"></script>
+		<!--<script src="../libs/jquery-ui-1.10.3.custom.min.js"></script>-->
+		<script src="../libs/jquery-ui-1.12.1/jquery-ui.min.js" type="text/javascript"></script>
+		<script src="../libs/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+		<script src="../libs/jquery.progressbar.min.js" type="text/javascript"></script>
+		<script src="./admin_functions.js" type="text/javascript"></script>
+	</head>
+
+	<body>
+		<div id="header"> 
+			<div  class="container">
+
+				<div class="masthead">
+					<span class="muted" style="line-height:150%; font-weight:bold; font-size:200%;">SCOT Admin Panel</span>
+					<div class="navbar" style="margin-bottom:1%;">
+						<div class="navbar-inner">
+							<div class="container">
+								<ul class="nav" id="admin_nav">
+									<li><a href=/>Home</li>
+									<li class="active"><a href="#info">Info</a></li>
+									<!--<li><a href="#backup">Backup</a></li>-->
+									<li><a href="#auth">Auth</a></li>
+									<!--<li><a href="#alerts">Alerts</a></li>-->
+									<li><a href="#logs">Logs</a></li>
+									<!--<li><a href="#ssl">SSL</a></li>
+									<li><a href="#geoip">GeoIP</a></li>-->
+									<li><a href="#api">API</a></li>
+									<li><a href="#undelete">Undelete</a></li>
+								</ul>
+							</div>
+						</div>
+					</div><!-- /.navbar -->
+				</div>
+			</div>
+		</div>
+		<div id="footer">
+			<div class="footer pull-left">
+				<p>&copy; Sandia National Laboratories 2012-2014</p>
+			</div>
+			<div class="footer pull-right">
+				<p><a href="https://www.sandia.gov/scot" style="color:white;">https://www.sandia.gov/scot/</a></p>
+			</div>
+		</div>
+
+		<div id="fullpage" style="padding-top:110px;" class="content container">
+			<div class="section" id="info">
+				<span style="font-size:150%; font-weight:bold">Version</span>
+				<div class="nwell well">
+					SCOT Version: 3.5.1 - Donner Party &nbsp; &nbsp;
+					<button class="btn" style="display:none;" disabled>Check for SCOT update</button>&nbsp;&nbsp;
+					<button class="btn" style='display:none;' disabled>Offline SCOT update</button>
+					<div id="offline_upload_input" style="display:none;"><hr><b>Select SCOT Update File</b><br><input type="file" id="update_file" name="update_file" style="margin-bottom:0px;"><button class="btn btn-warning" id="update_warn_btn" style="display:none;" >Apply Update</button>
+						<div id="progress_uploading" style="display:none;">
+							<h4>Upload Progess: <span id="progressNumber"></span><div style="border:0px solid transparent;" id="updateProgressbar"></div></h4>
+						</div>
+					</div>
+				</div>
+				<!--<h3>System Health</h3>
+				<div id="stats" style="font-family:monospace;" class="nwell">
+
+				</div>-->
+			</div>
+			<div class="section" id="backup" style="overflow:hidden;">
+				<h3>Backup</h3>
+				Download a copy of all your SCOT data
+				<div class="nwell">
+					<button class="btn btn-primary" style="width:100%; margin-bottom:10px;" id="create_backup_btn">Create On-Demand Backup</button><br>
+					<div style="display:table; margin:auto;" id="backups" >
+					</div>
+				</div>
+				<hr>
+				<h3>Restore</h3>
+				Restore your SCOT data from a backup file
+				<div class="nwell comming_soon">
+					<input type="file" id="restore_file" name="restore"></input><br>
+					<button class="btn btn-warning" id="restore_backup_btn" style="display:none">Restore</button>
+					<div id="progress_restoring" style="display:none;">
+						<h4>Upload Progess: <span id="restoreProgressNumber"></span><div style="border:0px solid transparent;" id="restoreProgressbar"></div></h4>
+					</div>
+				</div>
+				<hr>
+				<h3>Schedule a backup</h3>
+				Regular backups help when disaster strikes
+				<div class="nwell">
+
+
+
+					<form id="schedule_backup_form" class="form-horizontal" role="form">
+						<div class="form-group">
+							<label class="control-label" for="schedule">Cron Schedule:</label>
+							<div class="controls">
+								<input type="input" name="schedule" id="schedule" placeholder="e.x. 0 */2 * * *" ></input>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="control-label" for="max_disk">Max Disk Space:</label>
+							<div class="controls">
+								<input type="number" name="max_disk" style="width:40px;" id="max_disk" ></input>GB
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="control-label" for="enable_backups">Enable Backups:</label>
+							<div class="controls">
+								<input type="checkbox" name="enable_backups" id="enable_backups" ></input>
+							</div>
+						</div>
+						<button type="button" id="schedule_backup_btn" class="btn btn-primary" style="margin-left:50px; width:calc(60% - 50px);" >Save Changes</button>
+					</form>
+				</div>
+			</div>
+
+			<div class="section" id="auth">
+
+				<h3>User Authentication:</h3>
+				<!--If you have Active Directory or OpenLDAP, put in the deets below.--> 
+				<hr>
+				<div>
+					<ul class="nav nav-tabs" id="method_tabs">
+						<li class="active"><a href="#local" data-toggle="tab">Users/Groups</a></li> 
+						<!--<li><a href="#ldap" data-toggle="tab">LDAP</a></li>-->
+					</ul> 
+
+					<div class="tab-content">
+						<div class="tab-pane active center-auth" id="local" >
+							<div  style="float:left; margin-right:17px; margin-bottom:10px;" >
+								<b>Users</b>
+								<button class="btn" id="new_user_btn" style="width:100%; margin-top:5px;"><img src="/images/add.png"></img>New User</button>
+								<div  class="hwell">
+									<table id="users_table" style="display:block; overflow-y:auto; padding-right:15px;">
+										<tr><th></th><th></th><th>Username</th><th>Full Name</th><th>Active</th></tr>
+									</div>
+								</table>
+							</div>
+						</div>
+						<div style="float:left;">
+							<b>Groups</b>
+							<button class="btn" id="new_group_btn" style="width:100%; margin-top:5px;"><img src="/images/add.png"></img>New Group</button>
+							<div class="hwell">
+								<table  id="groups_table" style="display:block;  overflow-y:auto; padding-right:15px;">
+									<tr><th></th><th></th><th>Group Name</th></tr>
+								</table>
+							</div>
+
+						</div>
+						<div style="clear:both;"></div>
+					</div>
+					<div id="ldap" class="tab-pane" style="padding-top:20px;">
+						<form name="ldap_form" id="ldap_form" class="form-horizontal" role="form">
+							<div class="form-group">
+								<label class="control-label" for="scheme">LDAP Server:<img src="/images/question.png"></img></label>
+								<div class="controls">
+									<select name="ldap_type">
+										<option value="ldaps">LDAPS://</option>
+										<option value="ldap">LDAP://</option>
+									</select>
+									<input type="text" name="host" placeholder="Host"></input>
+									<input style="width:50px" type="text" name="port" placeholder="Port"></input> 
+									<div class="details">The hostname or IP Address of the Active Directory or LDAP server. Use LDAPS for encrypted connection, LDAP or un-encrypted<br> e.x. ldap.yourCompany.com</div> 
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label" for="scheme">Base Domain:<img src="/images/question.png"></img></label>
+								<div class="controls">
+									<input type="text" name="basedn" placeholder="" style="width:365px;"></input>
+									<div class="details">Where in Active Directory or LDAP to search for users.<br>e.x. 'ou=accounts,ou=org,dc=yourCompany,dc=parentCompany,dc=com</div>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label" for="scheme">User ID Attribute:<img src="/images/question.png"></img></label>
+								<div class="controls">
+									<input type="text" name="uid" placeholder="" style="width:365px;"></input>
+									<div class="details">Where in Active Directory or LDAP to search for users/groups.<br>e.x. 'ou=accounts,ou=org,dc=yourCompany,dc=parentCompany,dc=com</div>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label" for="attr">Membership Attr:<img src="/images/question.png"></img></label>
+								<div class="controls">
+									<input type="text" name="attr" placeholder="" style="width:365px;"></input>
+									<div class="details">What attribute in the LDAP user object do we check for a list of their groups?<br>This is usually 'memberOf'.</div>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label" for="scheme">Bind DN:<img src="/images/question.png"></img></label>
+								<div class="controls">
+									<input type="text" name="binddn" placeholder="" style="width:365px;"></input>
+									<div class="details">This is the full path for the user used to search the domain.  This is also referred to as the 'Bind Domain' or 'BindDN'<br>e.x. '<span style="color:red;">uid</span>=<span style="color:green;">usernameHere</span>,<span style="color:blue;">ou=accounts,ou=org,dc=yourCompany,dc=parentCompany,dc=com</span><br>This is usually constructed from 3 parts, <span style="color:red;">the User ID Attribute</span>, the <span style="color:green;">Username of Active Directory / LDAP user authorized to perform searches</span> and the <span style="color: blue;">Base Domain</span></div>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label" for="scheme">Bind Password:<img src="/images/question.png"></img></label>
+								<div class="controls">
+									<input type="text" name="bindpassword" placeholder="" style="width:365px;"></input>
+									<div class="details">(optional) password used in conjunction with 'Account' to login and search for users/groups.</div>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label" for="scheme">Test User:<img src="/images/question.png"></img></label>
+								<div class="controls">
+									<input type="text" name="testuser" placeholder="" style="width:365px;"></input>
+									<div class="details">Enter username of valid LDAP user who is in one or more groups.<br> This is used in testing of the BaseDN e.x. kphall</div>
+								</div>
+							</div>
+							<br>
+							<br>
+							<button class="btn btn-primary" type="button" id="test_ldap_btn" style="width:50%; display:block; margin:auto;">Test LDAP Settings</button>
+							<button class="btn btn-success" type="button" id="save_ldap_btn" style="display:none; width:50%; margin:auto;">SAVE LDAP Settings</button>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="section" id="alerts">
+			<h3>Alert Collectors</h3>
+			<p>There are multiple ways to get alerts into SCOT.  On this page you can enable/disable any of these methods</p>
+			<hr>
+			<form id="collector_form" name="collector_form" class="form-horizontal" role="form">
+				<div class="form-group">
+					<label class="control-label" for="email">Email<img src="/images/question.png"></img></label>
+					<div class="controls">
+						<input type="checkbox" name="email"></input>
+						<div class="details">SCOT will periodically login to an email account of your choice and retrieve emails.  <br>Only IMAP is supported currently</div>
+					</div>
+
+					<div id="email_options" class="options">
+						<label for="address">Server:</label>
+						<div>
+							<input type="text" name="address" style="width:250px" placeholder="Email Server (e.x. mail.example.com)"></input>
+							<input type="text" name="port" style="width:50px;"  placeholder="port"></input>
+						</div>
+						<div>
+							<label for="address">Server requires SSL:</label>
+							<input type="checkbox" name="email_ssl" style="margin-top:0px; margin-left:5px;" checked></input> 
+						</div>
+						<label for="username">Username:</label>
+						<div>
+							<input type="text" name="username" placeholder="" style="width:318px;"></input>
+						</div>
+						<label for="password">Password:</label>
+						<div>
+							<input type="password" name="password" placeholder="" style="width:318px;"></input>
+						</div>
+						<div>
+							<button class="btn btn-warning" type="button" style="display:none; width:335px;" id="test_email_btn">Test Email Settings</button>
+							<button class="btn btn-primary" type="button" style="display:none; width:335px;" id="set_email_btn">Set Email Settings</button>
+						</div>
+						<label for="permitted_senders">Permitted Senders</label>
+						<div>
+							<table id="permitted_senders" >
+								<tr>
+									<th>
+										<button type="button" class="btn sender_btn" id="sender_email_btn">
+											<img src="/images/add.png"></img>
+										</button>
+									</th>
+									<th style="min-width:100px; text-align:right;">
+										User
+									</th>
+									<th>
+										@
+									</th>
+									<th style="min-width:100px; text-align:left;">
+										Domain.tld
+									</th>
+								</tr>
+							</table>
+							<div style="display:block;" id="new_sender"></div>
+						</div>
+					</div>
+				</div>
+				<hr>
+				<div class="form-group">
+					<label class="control-label" for="syslog">Syslog<img src="/images/question.png"></img></label>
+					<div class="controls">
+						<input type="checkbox" name="syslog"></input>
+					</div>
+					<div class="details">SCOT will watch a text file for changes, and read in one alert per line</div>
+					<div class="options comming_soon">
+						<label for "syslog_watch_path">Full Path to file:</label>
+						<input type="text" style="width:400px;" name="syslog_watch_path"></input>
+					</div>
+				</div>
+				<hr>
+				<div class="form-group collector_on">
+					<label class="control-label" for="http">HTTP<img src="/images/question.png"></img></label>
+					<div class="controls">
+						<input type="checkbox" name="http" checked disabled></input>
+						<div class="details">The SCOT web interface can take new alerts in JSON format via an HTTP POST	<br><b>Example</b>
+							<br><b> POST /scot/alertgroup</b><br>
+							<div class="indent">
+								{<br>
+								<b>user</b>         :  USERNAME_HERE,<br> 
+								<b>pass</b>         :  PASSWORD_HERE,<br>
+								<b>sources</b>      :  ["splunk", "email"],<br>
+								<b>subject</b>      :  "EXE blocked by corporate email later downloaded via browser",<br>
+								<b>data</b>         :  [{		 
+								<div class="indent">
+									"sender","evil@attacker.com",<br>
+									"recipient","innocent@example.com",<br>
+									"file_name","bad_stuff.exe",<br>
+									"md5","9a1af1e5fd464e6001b7477a381777bd",<br>
+									"dst_ip","5.5.5.5",<br>
+									...<br>
+									}],
+								</div>
+								<b>tags</b> 	     :  ["critical", "front_door", "email"],<br>
+								<b>readgroups</b>   :  ["ADgroup1", "ADgroup2"],  //<br>
+								<b>modifygroups</b> :  ["ADgroup1"] <br>
+								}<br></div><br><br>
+							<table border=1 cellpadding=2>
+								<tr><th>Field</th><th>Explination</th></tr>
+								<tr><td>user</td><td>User for logging into SCOT</td></tr>
+								<tr><td>pass</td><td>Password for the User for logging into SCOT</td></tr>
+								<tr><td>sources</td><td>Where did this alert come from?</td></tr>
+								<tr><td>subject</td><td>Usually used to define type of alert e.x. 'Blocked exe from incoming email'</td></tr>
+								<tr><td>data</td><td>The meat and potatoes of the alert.  It is an array of dicts, with each dict representing another occurance, or datapoint in the alert.  Each dict contains the alert data like source IP, filename, email address, etc.  If we had a script that ran every 30 minutes, it may have three exes blocked in incoming email, we would have three dicts, each representing an occurance.</td></tr>
+								<tr><td>tags</td><td>Tags describing this alert for later searching / correlation</td></tr>
+								<tr><td>readgroups</td><td>Only users in one or more of these groups can read the alert data</td></tr>
+								<tr><td>modifygroups</td><td>Only users in one or more of these groups can modify the alert</td></tr>
+							</table>
+
+
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+
+		<div class="section" id="logs">
+			<h1>Logs</h1>
+			<div class="comming_soon"></div>
+		</div>
+		<div class="section" id="api">
+			<script src="./api.js"></script>
+		</div>
+        <div class="section" id="undelete">
+            <script src="./undelete.js"></script>
+        </div>
+		<div class="section" id="ssl">
+			<h3>SSL Certificate</h3>
+			SCOT comes with a self-signed SSL cert, but please replace it with a trusted CA cert.
+			<hr>
+			<form id="ssl_form" class="form-horizontal" role="form">
+				<div class="form-group">
+					<label class="control-label" for="privatekey">Private Key:</label>
+					<div class="controls">
+						<input type="file" name="privatekey" id="privatekey" ></input>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label" for="sslcert">SSL Certificate:</label>
+					<div class="controls">
+						<input type="file" name="sslcert" id="sslcert" ></input>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label" for="intermediate">Intermediate CA Certificate:</label>
+					<div class="controls">
+						<input type="file" name="intermediate" id="intermediate" ></input>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="controls">
+						<button class="btn btn-primary" id="upload_ssl_btn">Update SSL Cert</button>
+					</div>
+				</div>
+			</form>
+
+		</div>
+
+		<div class="section" id="geoip">
+			<h3>GeoIP</h3>
+			Update your <a href="https://www.maxmind.com/en/geolocation_landing">MaxMind GeoIP</a> and <a href="https://www.maxmind.com/en/organization">Organization</a> databases
+			<hr>
+			<form name="maxmind_form" id="maxmind_form" class="comming_soon form-horizontal" role="form">
+				<div class="form-group">
+					<label class="control-label" for="city">GeoIP City</label>
+					<div class="controls">
+						<input type="file" name="city" id="city" ></input>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label" for="country">GeoIP Country</label>
+					<div class="controls">
+						<input type="file" name="country" id="country" ></input>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label" for="organization">GeoIP Organization</label>
+					<div class="controls">
+						<input type="file" name="oranization" id="organization" ></input>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="controls">
+						<button class="btn btn-primary">Upload GeoIP Databases</button>
+					</div>
+				</div>
+			</form>
+			<hr>
+			<h5>Whats GeoIP?</h5>
+			The location and ownership of an IP address is determined using offline MaxMind databases.<br>A free location database from MaxMind ships with SCOT, but the ownership database is paid only.<br>If you have a MaxMind Organization database subscription, upload it here. <br>These are offline databases, and need to be periodically updated. The latest files can be downloaded <a href="https://www.maxmind.com/en/geolocation_landing">here</a>.
+		</div>
+
+
+	</div>
+</div>
+
+
+<div id="ssl_upload_warn_modal" class="modal hide " tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+		<h3 id="group_label">Webserver Restart Confirm</h3>
+	</div>
+	<div class="modal-body">
+		Uploading a new SSL certificate requires the webserver to restart.  <br>WARNING: SCOT will be unavailable for a few seconds.
+	</div>
+	<div class="modal-footer">
+		<button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+		<button class="btn btn-danger" id="confirm_ssl_btn">Proceed</button>
+	</div>
+</div>
+
+<div id="restore_warn_modal" class="modal hide " tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+		<h3 id="group_label">Restore Confirm</h3>
+	</div>
+	<div class="modal-body">
+		<h4>WARNING:</h4> WARNING: THIS WILL DELETE ALL DATA CURRENTLY ON SCOT and replace it with the backup bundle you selected to upload.  <br><br><b>We STRONGLY reccomend you BACKUP, and DOWNLOAD that backup before proceeding.</b><br><br>Are you sure you want to proceed with the restore?
+	</div>
+	<div class="modal-footer">
+		<button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+		<button class="btn btn-danger" id="restore_backup_confirm_btn" data-dismiss="modal">Proceed</button>
+	</div>
+</div>
+
+<div id="update_warn_modal" class="modal hide " tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+		<h3 id="group_label">Update Confirm</h3>
+	</div>
+	<div class="modal-body">
+		<h4>WARNING:</h4> SCOT will be unavailable during the update which may take several minutes.<br><br><b>We STRONGLY reccomend you BACKUP, and DOWNLOAD that backup before proceeding.</b><br><br>Are you sure you want to proceed with the update?
+	</div>
+	<div class="modal-footer">
+		<button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+		<button class="btn btn-danger" id="update_confirm_btn" data-dismiss="modal" >Proceed</button>
+	</div>
+</div>
+
+<!-- Group Modal -->
+<div id="group_modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class='modal-dialog' role='document'> 
+		<div class='modal-content'>
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+				<h3 id="group_label">Group</h3>
+			</div>
+			<div class="modal-body">
+				<form name="group_form" id="group_form" class="form-horizontal" role="form">
+					<div class="form-group" style='display:none'>
+						<input type="text" name="id" id="group_id" readonly></input>
+					</div>  
+					<div class="form-group">
+						<label class="control-label" for="groupname">Group</label>
+						<div class="controls">
+							<input type="text" name="groupname" id="groupname" ></input>
+						</div>
+						<label class="control-label" for="description">Description</label>
+						<div class="controls">
+							<input type='test' name='description' id='description'></input>
+						</div>
+					</div>
+					<table style="margin:auto;">
+						<tr><th>Group Members</th><th></th><th>Available Users</th></tr>
+						<tr><td><select name="users" class="select_swap" id="users" multiple></select></td><td><span style="display:block;"><button type="button" id="add_user_group_btn" style="font-size:150%;">&larr;</button><br><button type="button" id="remove_user_group_btn" style="font-size:150%;">&rarr;</button></span></td><td><select name="all_users" style="width:inherit;" class="select_swap" id="all_users" multiple></select></td></tr>
+					</table>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+				<button class="btn btn-primary" id="save_group_btn">Save</button>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- / Group Modal -->
+
+<div id="user_modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class='modal-dialog' role='document'>
+		<div class='modal-content'>
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+				<h3 id="user_label">User</h3>
+			</div>
+			<div class="modal-body">
+				<form name="user_form" id="user_form" class="form-horizontal" role="form">
+					<div class="form-group" style='display:none'>
+						<input type="text" name="id" id="user_id" readonly></input> 
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="username">Username</label>
+						<div class="controls">
+							<input type="text" name="username" id="username" ></input>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="fullname">Full Name</label>
+						<div class="controls">
+							<input type="text" name="fullname" id="fullname"></input>
+						</div>
+					</div>
+					<div id="user_locked" style="display:none; color: red;">
+						<b>User account temporarly inactive because of too many password attempts. Check 'active' and save to unlock.</b>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="active">Active</label>
+						<div class="controls">
+							<input type="checkbox" name="active" id="active"></input>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="password">Password</label>
+						<div class="controls">
+							<input type="password" name="password" id="password" placeholder="********"></input>
+						</div>
+					</div>
+					<table style="margin:auto;">
+						<tr><th>User's groups</th><th></th><th>Available Groups</th></tr>
+						<tr><td><select class="select_swap" name="groups" id="groups" multiple></select></td><td><span style="display:block;"><button type="button" id="add_group_user_btn" style="font-size:150%;">&larr;</button><br><button type="button" id="remove_group_user_btn" style="font-size:150%;">&rarr;</button></span></td><td><select class="select_swap" id="all_groups" multiple></select></td></tr>
+					</table>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+				<button class="btn btn-primary" id="save_user_btn">Save</button>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>
