@@ -367,7 +367,10 @@ export default class App extends React.Component {
                   <MenuItem>Reports</MenuItem>
                 </LinkContainer>
                 <MenuItem divider />
-                <MenuItem href="/admin/index.html">Administration</MenuItem>
+                <LinkContainer to="/admin" activeClassName="active">
+                  <MenuItem >Administration</MenuItem>
+                </LinkContainer>
+
                 <MenuItem href="/docs/index.html">Documentation</MenuItem>
                 <MenuItem divider />
                 <MenuItem href="/cyberchef.htm">Cyber Chef</MenuItem>
@@ -392,7 +395,7 @@ export default class App extends React.Component {
               }}
               className="scot_version"
             >
-              V3.5
+              V3.7
             </span>
             <Search errorToggle={this.errorToggle} />
           </Navbar.Collapse>
@@ -423,10 +426,11 @@ export default class App extends React.Component {
               />
             )}
           />
-          <Route
-            exact path="/admin">
-            <Admin></Admin>
-          </Route>
+          {type === "admin" ? (
+            <Route exact path="/admin">
+              <Admin></Admin>
+            </Route>
+          ) : null}
           {type === "alert" ? (
             <Route exact path="/alert">
               <ListView
