@@ -674,7 +674,7 @@ sub _build_COMMON_FILE_EXT {
     return {
         regex   => $regex,
         type    => "file",
-        order   => 100,
+        order   => 9,
         options => { multiword => "no" },
     };
 }
