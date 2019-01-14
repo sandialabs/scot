@@ -473,10 +473,10 @@ sub domain_action {
 
     $match = $self->deobsfucate_ipdomain($match);
 
-    $log->debug("domin is $match after deobsfucation");
+    $log->debug("domain is $match after deobsfucation");
 
     return try {
-        $rootdom = $self->pdsuffix->get_root_domain($match);
+        $rootdom = $self->get_rdomain($match);
         if ( defined $rootdom ) {
             $log->debug("We have valid domain with root: $rootdom");
             push @{$dbhref->{entities}}, {
@@ -497,6 +497,34 @@ sub domain_action {
         return undef;
     };
 }
+
+sub get_rdomain {
+    my $self    = shift;
+    my $text    = shift;
+    my $log     = $self->env->log;
+    my $pds     = $self->pdsuffix;
+
+    $log->debug("trying to get root domain $text");
+
+    my $root    = $pds->get_root_domain($text);
+
+    if ( ! defined $root ) {
+        my $error   = $pds->error();
+        $log->warn("root domain error: $error");
+        if ( $error eq "Domain not valid") {
+            # try adding a junk hostname, due to way PDS works
+            $root = $pds->get_root_domain("x.".$text);
+            if ( ! defined $root ) {
+                $error  = $pds->error();
+                $log->error("root domain final error: $error");
+                return undef;
+            }
+        }
+    }
+    return $root;
+}
+
+
 
 =item B<email_action>
 

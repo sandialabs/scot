@@ -1354,6 +1354,28 @@ EOF
             },
         ],
     },
-    
-
+    {
+        testname    => 'newish domain name',
+        testgroup   => 'domain',
+        testnumber  => 2,
+        source  => <<EOF,
+<html>
+    <div>
+        <p>gov.eg</p>
+    </div>
+</html>
+EOF
+        plain   => <<EOF,
+   gov.eg
+EOF
+        flair   => <<EOF,
+<div><div><p><span class="entity domain" data-entity-type="domain" data-entity-value="gov.eg">gov.eg</span></div></div>
+EOF
+        entities    => [
+            {
+                type    => "domain",
+                value   => "gov.eg",
+            },
+        ],
+    },
 );
