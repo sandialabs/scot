@@ -71,7 +71,8 @@
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "watch": "NODE_ENV=production node scripts/watch.js",
-    "css": "node-sass -o build/css/ src/styles/scss/components --recursive true"
+    "css": "node-sass -o build/css/ src/styles/scss/components --recursive true",
+    "pwatch": "rm -rf ../public/* && parcel watch src/index.html --out-dir ../public/ --no-cache"
   },
   "proxy": {
     "/(api|scotaq|login|sso)": {
