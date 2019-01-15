@@ -368,9 +368,8 @@ export default class App extends React.Component {
                 </LinkContainer>
                 <MenuItem divider />
                 <LinkContainer to="/admin" activeClassName="active">
-                  <MenuItem >Administration</MenuItem>
+                  <MenuItem>Administration</MenuItem>
                 </LinkContainer>
-
                 <MenuItem href="/docs/index.html">Documentation</MenuItem>
                 <MenuItem divider />
                 <MenuItem href="/cyberchef.htm">Cyber Chef</MenuItem>
@@ -395,7 +394,7 @@ export default class App extends React.Component {
               }}
               className="scot_version"
             >
-              V3.7
+              V3.5
             </span>
             <Search errorToggle={this.errorToggle} />
           </Navbar.Collapse>

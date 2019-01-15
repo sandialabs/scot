@@ -141,7 +141,9 @@ export default class ListView extends React.Component {
       this.Portrait();
     }
     //If alert id is passed, convert the id to its alertgroup id.
-    this.ConvertAlertIdToAlertgroupId(this.props.id);
+    if (this.props.id) {
+      this.ConvertAlertIdToAlertgroupId(this.props.id);
+    }
 
     //if the type is entry, convert the id and type to the actual type and id
     this.ConvertEntryIdToType(this.props.id);
