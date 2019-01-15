@@ -1,20 +1,26 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import { withStyles } from '@material-ui/core/styles';
 
-class LoadingContainer extends PureComponent {
-    static propTypes = {
-        loading: PropTypes.bool,
-    }
-
-	render() {
-		return (
-			<div className='LoadingContainer'>
-				{ this.props.loading &&
-				    <i className='fa fa-spinner fa-spin fa-2x' aria-hidden='true' />	
-                }
-            </div>
-        );
-    }
+const styles = theme => ({
+  progress: {
+    margin: theme.spacing.unit * 2,
+  },
+});
+function LoadingContainer(props) {
+  const { classes, loading } = props;
+  return (
+    <div className='LoadingContainer'>
+      {loading &&
+        <CircularProgress className={classes.progress} />
+      }
+    </div>
+  );
 }
 
-export default LoadingContainer;
+LoadingContainer.propTypes = {
+  classes: PropTypes.object.isRequired,
+};
+export default withStyles(styles)(LoadingContainer);
+
