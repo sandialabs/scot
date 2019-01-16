@@ -521,8 +521,16 @@ export default class EntityDetail extends React.Component {
 
     doDrag = e => {
         let elem = document.getElementById("dragme");
-        elem.style.width = startWidth + e.clientX - startX + "px";
-        elem.style.height = startHeight + e.clientY - startY + "px";
+        console.log(`elem.style.width before: ${elem.style.width}`);
+        console.log(`e.clientX before: ${e.clientX}`);
+        console.log(`startX before: ${startX}`);
+        console.log(`startwidth before: ${startWidth}`);
+        if (startWidth + e.clientX - startX > 586){
+          elem.style.width = startWidth + e.clientX - startX + "px";
+        } 
+        if (startHeight + e.clientY - startY > 386){
+          elem.style.height = startHeight + e.clientY - startY + "px";
+        }
     };
 
     stopDrag = e => {
