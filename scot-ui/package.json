@@ -17,11 +17,14 @@
         "eslint-plugin-react": "7.4.0",
         "events": "latest",
         "flux": "^3.0.0",
+        "fs-extra": "^7.0.1",
         "history": "^4.7.2",
         "jquery": "^3.3.1",
         "material-ui": "latest",
         "moment": "^2.19.1",
         "moment-range": "^3.1.0",
+        "node-sass": "^4.11.0",
+        "notistack": "^0.4.1",
         "react": "latest",
         "react-ace": "^6.1.4",
         "react-addons-pure-render-mixin": "^15.6.2",
@@ -65,15 +68,19 @@
     "scripts": {
         "dev": "concurrently --kill-others \"npm run sass:watch\" \"npm run start\"",
         "start": "react-scripts start",
-        "build": "react-scripts build",
+        "build": "npm run sass && react-scripts build && node scripts/copy.js",
         "test": "react-scripts test --env=jsdom",
         "eject": "react-scripts eject",
-        "watch": "NODE_ENV=production node scripts/watch.js"
+        "watch": "NODE_ENV=production node scripts/watch.js && node scripts/copy.js",
+        "sass": "node-sass  ./src/styles/scss --output ./src/styles/css/"
     },
     "proxy": {
         "/(api|scotaq|login|sso)": {
             "target": "https://as3016snllx.sandia.gov",
             "secure": false
         }
+    },
+    "devDependencies": {
+        "webpack-bundle-analyzer": "^3.0.3"
     }
 }
