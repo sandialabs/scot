@@ -21,9 +21,8 @@
 
 // Components (Imports everything in folder)
 // WARNING: Cannot rely on import order for overloading
-@import "components/app";
-@import "components/body";
-@import "components/api";
+@import "components/App";
+@import "components/Body";
 @import "components/custom_metadata";
 @import "components/dashboard_online";
 @import "components/dashboard_status";
