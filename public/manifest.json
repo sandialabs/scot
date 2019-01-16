@@ -1,5 +1,5 @@
 {
-  "short_name": "SCOT 3.6",
+  "short_name": "SCOT 3.7",
   "name": "Sandia Cyber Omni Tracker",
   "icons": [
     {
@@ -11,5 +11,6 @@
   "start_url": "./index.html",
   "display": "standalone",
   "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "background_color": "#ffffff",
+  "csp": "script-src 'self' 'unsafe-inline'; object-src 'self'"
 }

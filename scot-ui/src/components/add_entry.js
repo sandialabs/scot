@@ -28,7 +28,8 @@ export default class AddEntryModal extends React.Component {
         asyncContentLoaded = true;
         break;
       case "Edit":
-        (content = ""), (asyncContentLoaded = false);
+        content = "";
+        asyncContentLoaded = false;
         break;
       case "Export":
         content = this.props.content;
@@ -61,7 +62,7 @@ export default class AddEntryModal extends React.Component {
       $.ajax({
         type: "GET",
         url: "/scot/api/v2/entry/" + this.props.id,
-        success: function(response) {
+        success: function (response) {
           this.setState({
             content: response.body,
             asyncContentLoaded: true,
@@ -69,7 +70,7 @@ export default class AddEntryModal extends React.Component {
           });
           this.forceUpdate();
         }.bind(this),
-        error: function(data) {
+        error: function (data) {
           this.props.errorToggle(
             "Error getting original data from source. Copy/Paste original",
             data
@@ -86,7 +87,7 @@ export default class AddEntryModal extends React.Component {
     if ($("#not_saved_entry_" + this.state.key).position()) {
       $(".entry-wrapper").scrollTop(
         $(".entry-wrapper").scrollTop() +
-          $("#not_saved_entry_" + this.state.key).position().top
+        $("#not_saved_entry_" + this.state.key).position().top
       );
     }
   };
@@ -128,14 +129,14 @@ export default class AddEntryModal extends React.Component {
                     Export
                   </Button>
                 ) : (
-                  <Button
-                    bsSize={"xsmall"}
-                    onClick={this.submit}
-                    bsStyle={"success"}
-                  >
-                    Submit
+                    <Button
+                      bsSize={"xsmall"}
+                      onClick={this.submit}
+                      bsStyle={"success"}
+                    >
+                      Submit
                   </Button>
-                )}
+                  )}
                 <Button bsSize={"xsmall"} onClick={this.onCancel}>
                   Cancel
                 </Button>
@@ -156,7 +157,7 @@ export default class AddEntryModal extends React.Component {
                   "strong em b i font h1 h2 h3 h4 h5 h6 p div",
                 paste_retain_style_properties: "all",
                 paste_data_images: true,
-                paste_preprocess: function(plugin, args) {
+                paste_preprocess: function (plugin, args) {
                   function replaceA(string) {
                     return string.replace(/<(\/)?a([^>]*)>/g, "<$1span$2>");
                   }
@@ -171,7 +172,7 @@ export default class AddEntryModal extends React.Component {
                 content_css: "/css/entryeditor.css",
                 height: 250,
                 verify_html: false,
-                setup: function(editor) {
+                setup: function (editor) {
                   function blockquote() {
                     return "<blockquote><p><br></p></blockquote>";
                   }
@@ -191,8 +192,8 @@ export default class AddEntryModal extends React.Component {
               }}
             />
           ) : (
-            <div>Loading Editor...</div>
-          )}
+              <div>Loading Editor...</div>
+            )}
         </div>
         <Prompt
           when={this.state.leaveCatch}
@@ -226,10 +227,10 @@ export default class AddEntryModal extends React.Component {
         $("#tiny_" + this.state.key + "_ifr")
           .contents()
           .find("#tinymce")
-          .each(function(x, y) {
+          .each(function (x, y) {
             $(y)
               .find("img")
-              .each(function(key, value) {
+              .each(function (key, value) {
                 if ($(value)[0].src.startsWith("blob")) {
                   //Checking to see if it's a locally copied file
                   let canvas = document.createElement("canvas");
@@ -259,11 +260,11 @@ export default class AddEntryModal extends React.Component {
           data: data,
           contentType: "application/json; charset=UTF-8",
           dataType: "json",
-          success: function(response) {
+          success: function (response) {
             this.setState({ leaveCatch: false });
             this.props.addedentry();
           }.bind(this),
-          error: function(response) {
+          error: function (response) {
             this.props.errorToggle("Failed to add entry.", response);
           }.bind(this)
         });
@@ -271,12 +272,12 @@ export default class AddEntryModal extends React.Component {
         $.ajax({
           type: "GET",
           url: "/scot/api/v2/entry/" + this.props.id,
-          success: function(response) {
+          success: function (response) {
             if (this.state.recentlyUpdated !== response.updated) {
               this.forEdit(false);
               let set = false;
               let Confirm = {
-                launch: function(set) {
+                launch: function (set) {
                   this.forEdit(set);
                 }.bind(this)
               };
@@ -289,10 +290,10 @@ export default class AddEntryModal extends React.Component {
                 content: "edit:" + "\n\n" + response.body,
                 backgroundDismiss: false,
                 title: "Edit Conflict from another user" + "\n\n",
-                confirm: function() {
+                confirm: function () {
                   Confirm.launch(true);
                 },
-                cancel: function() {
+                cancel: function () {
                   return;
                 }
               });
@@ -300,7 +301,7 @@ export default class AddEntryModal extends React.Component {
               this.forEdit(true);
             }
           }.bind(this),
-          error: function(data) {
+          error: function (data) {
             this.props.errorToggle("failed to get data for edit", data);
           }.bind(this)
         });
@@ -308,10 +309,10 @@ export default class AddEntryModal extends React.Component {
         $("#tiny_" + this.state.key + "_ifr")
           .contents()
           .find("#tinymce")
-          .each(function(x, y) {
+          .each(function (x, y) {
             $(y)
               .find("img")
-              .each(function(key, value) {
+              .each(function (key, value) {
                 if ($(value)[0].src.startsWith("blob")) {
                   //Checking if it's a locally copied file
                   let canvas = document.createElement("canvas");
@@ -341,11 +342,11 @@ export default class AddEntryModal extends React.Component {
           data: data,
           contentType: "application/json; charset=UTF-8",
           dataType: "json",
-          success: function(response) {
+          success: function (response) {
             this.setState({ leaveCatch: false });
             this.props.addedentry();
           }.bind(this),
-          error: function(response) {
+          error: function (response) {
             this.props.errorToggle("Failed to add entry.", response);
           }.bind(this)
         });
@@ -353,10 +354,10 @@ export default class AddEntryModal extends React.Component {
         $("#tiny_" + this.state.key + "_ifr")
           .contents()
           .find("#tinymce")
-          .each(function(x, y) {
+          .each(function (x, y) {
             $(y)
               .find("img")
-              .each(function(key, value) {
+              .each(function (key, value) {
                 if ($(value)[0].src.startsWith("blob")) {
                   //Checking if its a locally copied file
                   let canvas = document.createElement("canvas");
@@ -386,11 +387,11 @@ export default class AddEntryModal extends React.Component {
           data: JSON.stringify(data),
           contentType: "application/json; charset=UTF-8",
           dataType: "json",
-          success: function(response) {
+          success: function (response) {
             this.setState({ leaveCatch: false });
             this.props.addedentry();
           }.bind(this),
-          error: function(response) {
+          error: function (response) {
             this.props.errorToggle("Failed to add entry.", response);
           }.bind(this)
         });
@@ -404,10 +405,10 @@ export default class AddEntryModal extends React.Component {
       $("#tiny_" + this.state.key + "_ifr")
         .contents()
         .find("#tinymce")
-        .each(function(x, y) {
+        .each(function (x, y) {
           $(y)
             .find("img")
-            .each(function(key, value) {
+            .each(function (key, value) {
               if ($(value)[0].src.startsWith("blob")) {
                 //Checking to see if it's a locally copied file
                 let canvas = document.createElement("canvas");
@@ -436,11 +437,11 @@ export default class AddEntryModal extends React.Component {
         data: data,
         contentType: "application/json; charset=UTF-8",
         dataType: "json",
-        success: function() {
+        success: function () {
           this.setState({ leaveCatch: false });
           this.props.exportResponse("success");
         }.bind(this),
-        error: function(response) {
+        error: function (response) {
           this.props.errorToggle(
             "Failed to export " + this.props.type,
             response
@@ -458,10 +459,10 @@ export default class AddEntryModal extends React.Component {
       $("#tiny_" + this.state.key + "_ifr")
         .contents()
         .find("#tinymce")
-        .each(function(x, y) {
+        .each(function (x, y) {
           $(y)
             .find("img")
-            .each(function(key, value) {
+            .each(function (key, value) {
               if ($(value)[0].src.startsWith("blob")) {
                 //Checking if its a lcoally copied file
                 let canvas = document.createElement("canvas");
@@ -492,11 +493,11 @@ export default class AddEntryModal extends React.Component {
         data: JSON.stringify(data),
         contentType: "application/json; charset=UTF-8",
         dataType: "json",
-        success: function(response) {
+        success: function (response) {
           this.setState({ leaveCatch: false });
           this.props.addedentry();
         }.bind(this),
-        error: function(response) {
+        error: function (response) {
           this.props.errorToggle("Failed to edit entry.", response);
         }.bind(this)
       });
