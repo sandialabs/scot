@@ -56,7 +56,7 @@
         "react-d3-basic": "^1.6.11",
         "react-daterange-picker": "^1.0.0",
         "react-datetime": "^2.5.0",
-        "react-dazzle": "^1.2.7",
+        "react-dazzle": "~1.2.7",
         "react-debounce-input": "latest",
         "react-dom": "latest",
         "react-draggable": "^3.0.5",
@@ -99,12 +99,8 @@
         ]
     },
     "scripts": {
-        "dev": "concurrently --kill-others \"npm run sass:watch\" \"npm run start\"",
-        "start": "react-scripts start",
         "build": "npm run sass && node scripts/build.js && node scripts/copy.js",
-        "test": "react-scripts test --env=jsdom",
-        "eject": "react-scripts eject",
-        "watch": "NODE_ENV=production node scripts/watch.js && node scripts/copy.js",
+        "watch": "node scripts/watch.js ",
         "sass": "node-sass  ./src/styles/scss --output ./src/styles/css/"
     },
     "proxy": {
@@ -114,6 +110,7 @@
         }
     },
     "devDependencies": {
+        "copy-webpack-plugin": "^4.6.0",
         "react-dev-utils": "^7.0.1",
         "webpack-bundle-analyzer": "^3.0.3"
     }
