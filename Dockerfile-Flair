@@ -9,9 +9,4 @@ COPY bin/flairer.pl /opt/scot/bin/
 COPY install/src/scot /opt/scot/etc/
 COPY docker-configs/flair/flair.cfg.pl /opt/scot/etc/
 
-RUN groupadd -g 2060 scot && \
-    useradd -r -u 1060 -g scot scot
-
-
-USER scot
 CMD ["/usr/bin/perl", "/opt/scot/bin/flairer.pl"]
