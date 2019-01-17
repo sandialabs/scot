@@ -394,7 +394,7 @@ export default class App extends React.Component {
               }}
               className="scot_version"
             >
-              V3.5
+              V3.7
             </span>
             <Search errorToggle={this.errorToggle} />
           </Navbar.Collapse>

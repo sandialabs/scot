@@ -99,7 +99,7 @@
         ]
     },
     "scripts": {
-        "build": "npm run sass && node scripts/build.js && node scripts/copy.js",
+        "build": "rm -rf ../public/ && npm run sass && node scripts/build.js && node scripts/copy.js",
         "watch": "node scripts/watch.js ",
         "sass": "node-sass  ./src/styles/scss --output ./src/styles/css/"
     },
