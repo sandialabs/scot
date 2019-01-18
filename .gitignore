@@ -19,3 +19,5 @@ package-lock.json
 #scot.js
 scot-debug.js
 .idea/
+scot-ui/build/static/js/
+scot-ui/build/

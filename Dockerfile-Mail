@@ -10,10 +10,4 @@ COPY docker-configs/mail/Mail.pm /opt/scot/lib/Scot/App/
 COPY install/src/scot /opt/scot/etc/
 COPY docker-configs/mail/alert.cfg.pl /opt/scot/etc/
 
-
-RUN groupadd -g 2060 scot && \
-    useradd -r -u 1060 -g scot scot
-
-#USER scot
-
 CMD ["/usr/bin/perl", "/opt/scot/bin/alert.pl"]
