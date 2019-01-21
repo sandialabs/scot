@@ -518,6 +518,7 @@ export default class ListView extends React.Component {
                       handleFilter={this.handleFilter}
                       errorToggle={this.props.errorToggle}
                       history={this.props.history}
+                      togglePreventClick={this.togglePreventClick}
                       form={this.state.form}
                       createCallback={this.props.createCallback}
                       removeCallback={this.props.removeCallback}
@@ -884,8 +885,7 @@ export default class ListView extends React.Component {
 
     let newarray = [];
 
-    //Update 5/17/18 - removed below check as it was breaking clicking on an alert in alert group, closing alert and then immediately switching to a new alert group would cancel ajax call and majorly lag network traffic
-    //       if ( this.state.loading == true ) { listQuery.abort(); }
+    if (this.state.loading == true) { listQuery.abort(); }
     listQuery = $.ajax({
       type: "GET",
       url: "/scot/api/v2/" + this.state.type,
