@@ -4,7 +4,6 @@ use lib '../../../lib';
 
 use strict;
 use warnings;
-# use v5.18;
 
 use Readonly;
 Readonly my $MSG_ID_FMT => qr/\A\d+\z/;

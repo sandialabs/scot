@@ -1,7 +1,6 @@
 package Scot::Controller::Graph;
 
 use Data::Dumper;
-# use v5.18;
 use strict;
 use warnings;
 use base 'Mojolicious::Controller';
