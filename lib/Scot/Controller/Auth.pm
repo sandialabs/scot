@@ -1,7 +1,6 @@
 package Scot::Controller::Auth;
 
 use lib '../../../lib';
-# use v5.18;
 use MIME::Base64;
 use Crypt::PBKDF2;
 use Data::Dumper;

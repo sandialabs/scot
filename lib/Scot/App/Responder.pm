@@ -23,7 +23,6 @@ use Scot::Env;
 use Scot::App;
 use strict;
 use warnings;
-# use v5.18;
 
 use Moose;
 extends 'Scot::App';

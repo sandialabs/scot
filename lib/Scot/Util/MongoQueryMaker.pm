@@ -1,7 +1,6 @@
 package Scot::Util::MongoQueryMaker;
 
 use Data::Dumper;
-# use v5.18;
 use Moose;
 extends 'Scot::Util';
 

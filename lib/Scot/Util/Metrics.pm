@@ -3,7 +3,7 @@ package Scot::Util::Metrics;
 use lib '../../../lib';
 use strict;
 use warnings;
-# use v5.18;
+use v5.16;
 
 use Data::Dumper;
 use DateTime;
