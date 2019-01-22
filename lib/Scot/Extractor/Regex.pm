@@ -1,6 +1,5 @@
 package Scot::Extractor::Regex;
 
-# use v5.18;
 use strict;
 use warnings;
 # use re 'debug';
