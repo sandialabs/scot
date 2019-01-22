@@ -418,6 +418,7 @@ function install_perl_modules {
         XML::Twig
         XML::Simple
         SVG::Sparkline
+        Email::Stuffer
     '
 
     install_cpanm
