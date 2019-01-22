@@ -196,7 +196,7 @@ export default class ListView extends React.Component {
     let data = { limit: pageLimit, offset: newPage };
 
     //add sort to the data object
-    if (sortBy !== undefined) {
+    if (sortBy !== undefined || sortBy === null) {
       let sortObj = {};
       $.each(sortBy, function (key, value) {
         let sortInt = -1;
@@ -209,7 +209,7 @@ export default class ListView extends React.Component {
     }
 
     //add filter to the data object
-    if (this.state.filter !== undefined) {
+    if (sortBy !== undefined || sortBy === null) {
       $.each(filterBy, function (key, value) {
         if (value.id === "source" || value.id === "tag") {
           let stringArr = [];
@@ -823,12 +823,12 @@ export default class ListView extends React.Component {
       pageNumber = this.state.activepage.page;
       pageLimit = this.state.activepage.limit;
     } else {
-      if (page.page === undefined) {
+      if (sortBy !== undefined || sortBy === null) {
         pageNumber = this.state.activepage.page;
       } else {
         pageNumber = page.page;
       }
-      if (page.limit === undefined) {
+      if (sortBy !== undefined || sortBy === null) {
         pageLimit = this.state.activepage.limit;
       } else {
         pageLimit = page.limit;
@@ -837,17 +837,17 @@ export default class ListView extends React.Component {
     let newPage;
     newPage = pageNumber * pageLimit;
     //sort check
-    if (sortBy === undefined) {
+    if (sortBy !== undefined || sortBy === null) {
       sortBy = this.state.sort;
     }
     //filter check
-    if (filterBy === undefined) {
+    if (sortBy !== undefined || sortBy === null) {
       filterBy = this.state.filter;
     }
     let data = { limit: pageLimit, offset: newPage };
 
     //add sort to the data object
-    if (sortBy !== undefined) {
+    if (sortBy !== undefined || sortBy === null) {
       let sortObj = {};
       $.each(sortBy, function (key, value) {
         let sortInt = -1;
