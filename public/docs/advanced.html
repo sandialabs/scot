@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Advanced Topics &#8212; SCOT 3.5.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '3.5.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
+    <link rel="prev" title="Incident Handler / Incident Commander" href="incident_handler.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="incident_handler.html" title="Incident Handler / Incident Commander"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="advanced-topics">
+<h1>Advanced Topics<a class="headerlink" href="#advanced-topics" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="alert-parsing">
+<h2>Alert Parsing<a class="headerlink" href="#alert-parsing" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="rest-or-email">
+<h3>REST or Email<a class="headerlink" href="#rest-or-email" title="Permalink to this headline">¶</a></h3>
+<p>SCOT can receive alerts via e-mail or by POST to the REST API.</p>
+</div>
+<div class="section" id="why-e-mail">
+<h3>Why E-mail<a class="headerlink" href="#why-e-mail" title="Permalink to this headline">¶</a></h3>
+<p>Detections systems offer a wide variety of ways to notify something when a they detect something.  Most are optimized to work with their own console.  Some provide API&#8217;s or other integrations.  Just about all offer the ability to send an email.</p>
+</div>
+<div class="section" id="getting-your-hands-dirty">
+<h3>Getting your Hands Dirty<a class="headerlink" href="#getting-your-hands-dirty" title="Permalink to this headline">¶</a></h3>
+<p>Writing new parsers will require some programming work on your part.  Ruby, Python, et al. programmers should be able to extrapolate the concepts in the provided modules to develop there own alert input system utilizing the JSON web api.</p>
+</div>
+<div class="section" id="alert-json">
+<h3>Alert JSON<a class="headerlink" href="#alert-json" title="Permalink to this headline">¶</a></h3>
+<p>So this is what you need to POST to create an alertgroup with alerts.:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+      <span class="n">message_id</span>  <span class="o">=&gt;</span> <span class="s1">&#39;112233445566778899aabbccddeeff&#39;</span><span class="p">,</span>
+      <span class="n">subject</span>     <span class="o">=&gt;</span> <span class="s1">&#39;test message 1&#39;</span><span class="p">,</span>
+      <span class="n">data</span>        <span class="o">=&gt;</span> <span class="p">[</span>
+          <span class="p">{</span> <span class="n">foo</span>   <span class="o">=&gt;</span> <span class="mi">1</span><span class="p">,</span>   <span class="n">bar</span> <span class="o">=&gt;</span> <span class="mi">2</span> <span class="p">},</span>
+          <span class="p">{</span> <span class="n">foo</span>   <span class="o">=&gt;</span> <span class="mi">3</span><span class="p">,</span>   <span class="n">bar</span> <span class="o">=&gt;</span> <span class="mi">4</span> <span class="p">},</span>
+      <span class="p">],</span>
+      <span class="n">tag</span>     <span class="o">=&gt;</span> <span class="p">[</span><span class="n">qw</span><span class="p">(</span><span class="n">test</span> <span class="n">testing</span><span class="p">)],</span>
+      <span class="n">source</span>  <span class="o">=&gt;</span> <span class="p">[</span><span class="n">qw</span><span class="p">(</span><span class="n">todd</span> <span class="n">scot</span><span class="p">)],</span>
+      <span class="n">columns</span>  <span class="o">=&gt;</span> <span class="p">[</span><span class="n">qw</span><span class="p">(</span><span class="n">foo</span> <span class="n">bar</span><span class="p">)</span> <span class="p">],</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="working-with-the-perl-parsers">
+<h3>Working with the Perl Parsers<a class="headerlink" href="#working-with-the-perl-parsers" title="Permalink to this headline">¶</a></h3>
+<p>The perl alert parsing modules are located in the /opt/scot/lib/Scot/Parser directory.  They are descendents of the /opt/scot/lib/Scot/Parser.pm class.  The following parsers are included:</p>
+<dl class="glossary docutils">
+<dt id="term-fireeye-pm">FireEye.pm</dt>
+<dd>This parser will parse e-mails from FireEye appliances.  This parser expects that the email is plain text with key value pairs seperated by colons (:).</dd>
+<dt id="term-forefront-pm">Forefront.pm</dt>
+<dd>This parser will parse Microsoft Forefront email messages.</dd>
+<dt id="term-sourcefire-pm">Sourcefire.pm</dt>
+<dd>Sourcefire email messages are handled by this parser.</dd>
+<dt id="term-splunk-pm">Splunk.pm</dt>
+<dd>Splunk can output messages in a variety of formats.  You will want to select HTML, as this parser relies on the HTML table layout of the these messages.</dd>
+<dt id="term-generic-pm">Generic.pm</dt>
+<dd>This parser will take the email, convert it to plain text and insert the results into an Alert as a single object.</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class="section" id="entities-ioc-and-flair">
+<h1>Entities, IOC, and Flair<a class="headerlink" href="#entities-ioc-and-flair" title="Permalink to this headline">¶</a></h1>
+<p>SCOT parses the alert data and entries for various entities.  Entities are commonly refred to as IOC&#8217;s (indicators of compromise) but are only limited by the ability to parse and extract strings within the alert and entry data.</p>
+<p>Once identified, SCOT, stores metadata about these entities that allows the SCOT UI to &#8220;flair&#8221; them with highlighting, badges, and other useful visual indicators that help analysts to rapidly identify the impact of the entity.</p>
+<p>SCOT can automatically detect and extract the following Entities:</p>
+<dl class="glossary docutils">
+<dt id="term-domain-names">Domain Names</dt>
+<dd>SCOT extracts domain names in form of host.sub.domain.tld, where tld is 2 to 6 characters in lenght.  Secondary validation against Mozilla&#8217;s TLD database (effective_tld_names.dat)</dd>
+<dt id="term-file-names">File Names</dt>
+<dd>Common filename extensions such as exe, pdf, and so on are detected by SCOT.</dd>
+<dt id="term-hashes">Hashes</dt>
+<dd>SCOT can extract MD5, SHA1, and SHA256 hashes from input data.</dd>
+<dt id="term-ip-addresses">IP Addresses</dt>
+<dd>SCOT currently only extracts IPv4 addresses.</dd>
+<dt id="term-email-addresses">Email Addresses</dt>
+<dd>E-mail addresses, both email username and the domain, are extracted and watched.</dd>
+</dl>
+<p>The primary tool for entity extraction is the Perl module Scot::Util::EntityExtractor.
+Additional regular expression may be added to this module to extract additional entities.</p>
+<p>We would also be happy to accept submissions from users on new ways to parse and extract entities.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Advanced Topics</a><ul>
+<li><a class="reference internal" href="#alert-parsing">Alert Parsing</a><ul>
+<li><a class="reference internal" href="#rest-or-email">REST or Email</a></li>
+<li><a class="reference internal" href="#why-e-mail">Why E-mail</a></li>
+<li><a class="reference internal" href="#getting-your-hands-dirty">Getting your Hands Dirty</a></li>
+<li><a class="reference internal" href="#alert-json">Alert JSON</a></li>
+<li><a class="reference internal" href="#working-with-the-perl-parsers">Working with the Perl Parsers</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#entities-ioc-and-flair">Entities, IOC, and Flair</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="incident_handler.html"
+                        title="previous chapter">Incident Handler / Incident Commander</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/advanced.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="incident_handler.html" title="Incident Handler / Incident Commander"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2011-2016, Sandia National Laboratories.
+    </div>
+  </body>
+</html>

@@ -819,7 +819,7 @@ export default class ListView extends React.Component {
     this.ConvertEntryIdToType(this.props.id);
 
     //defaultpage = page.page
-    if (page == undefined || page == null) {
+    if (page == undefined) {
       pageNumber = this.state.activepage.page;
       pageLimit = this.state.activepage.limit;
     } else {
@@ -837,42 +837,36 @@ export default class ListView extends React.Component {
     let newPage;
     newPage = pageNumber * pageLimit;
     //sort check
-    if (sortBy == undefined || sortBy == null) {
+    if (sortBy == undefined) {
       sortBy = this.state.sort;
     }
     //filter check
-    if (sortBy == undefined || sortBy == null) {
+    if (filterBy == undefined) {
       filterBy = this.state.filter;
     }
     let data = { limit: pageLimit, offset: newPage };
 
     //add sort to the data object
-    if (sortBy != undefined || sortBy != null) {
+    if (sortBy != undefined) {
       let sortObj = {};
       $.each(sortBy, function (key, value) {
         let sortInt = -1;
-        if (!value.desc) {
-          sortInt = 1;
-        }
+        if (!value.desc) { sortInt = 1; }
         sortObj[value.id] = sortInt;
       });
-      data["sort"] = JSON.stringify(sortObj);
+      data['sort'] = JSON.stringify(sortObj);
     }
 
     //add filter to the data object
-    if (filterBy !== undefined) {
+    if (filterBy != undefined) {
       $.each(filterBy, function (key, value) {
-        if (value.id === "source" || value.id === "tag") {
+        if (value.id == 'source' || value.id == 'tag') {
           let stringArr = [];
           for (let each of value.value) {
             stringArr.push(each.name);
           }
           data[value.id] = JSON.stringify(stringArr);
-        } else if (
-          value.id === "created" ||
-          value.id === "updated" ||
-          value.id === "occurred"
-        ) {
+        } else if (value.id == 'created' || value.id == 'updated' || value.id == 'occurred') {
           let arr = [];
           arr.push(value.value.start);
           arr.push(value.value.end);
@@ -885,69 +879,53 @@ export default class ListView extends React.Component {
 
     let newarray = [];
 
+    //Update 5/17/18 - removed below check as it was breaking clicking on an alert in alert group, closing alert and then immediately switching to a new alert group would cancel ajax call and majorly lag network traffic
     if (this.state.loading == true) { listQuery.abort(); }
     listQuery = $.ajax({
-      type: "GET",
-      url: "/scot/api/v2/" + this.state.type,
+      type: 'GET',
+      url: '/scot/api/v2/' + this.state.type,
       data: data,
       traditional: true,
       success: function (response) {
-
-        //now that we have new data, lets iterate through the idsarray, and remove their callbacks. 
-        this.state.idsarray.forEach(function (element) {
-          let searchstring = element
-          this.props.removeCallback(searchstring, this.reloadactive);
-        }.bind(this));
-
         datasource = response;
-        $.each(
-          datasource.records,
-          function (key, value) {
-            newarray[key] = {};
-            $.each(
-              value,
-              function (num, item) {
-                if (num === "sources" || num === "source") {
-                  if (item !== undefined) {
-                    let sourcearr = item.join(", ");
-                    newarray[key]["source"] = sourcearr;
-                  }
-                } else if (num === "tags" || num === "tag") {
-                  if (item !== undefined) {
-                    let tagarr = item.join(", ");
-                    newarray[key]["tag"] = tagarr;
-                  }
-                } else {
-                  newarray[key][num] = item;
-                }
-                if (num === "id") {
-                  this.props.createCallback(item, this.reloadactive);
-                  newidsarray.push(item);
-                }
-              }.bind(this)
-            );
-            if (key % 2 === 0) {
-              newarray[key]["classname"] = "table-row roweven";
-            } else {
-              newarray[key]["classname"] = "table-row rowodd";
+        $.each(datasource.records, function (key, value) {
+          newarray[key] = {};
+          $.each(value, function (num, item) {
+            if (num == 'sources' || num == 'source') {
+              if (item != undefined) {
+                let sourcearr = item.join(', ');
+                newarray[key]['source'] = sourcearr;
+              }
             }
-          }.bind(this)
-        );
+            else if (num == 'tags' || num == 'tag') {
+              if (item != undefined) {
+                let tagarr = item.join(', ');
+                newarray[key]['tag'] = tagarr;
+              }
+            }
+            else {
+              newarray[key][num] = item;
+            }
+            if (num == 'id') {
+              this.props.createCallback(item, this.reloadactive);
+              newidsarray.push(item);
+            }
+          }.bind(this));
+          if (key % 2 == 0) {
+            newarray[key]['classname'] = 'table-row roweven';
+          }
+          else {
+            newarray[key]['classname'] = 'table-row rowodd';
+          }
+        }.bind(this));
 
         let totalPages = this.getPages(response.totalRecordCount); //get pages for list view
 
-        this.setState({
-          totalCount: response.totalRecordCount,
-          activepage: { page: pageNumber, limit: pageLimit },
-          objectarray: newarray,
-          loading: false,
-          idsarray: newidsarray,
-          totalPages: totalPages
-        });
+        this.setState({ totalCount: response.totalRecordCount, activepage: { page: pageNumber, limit: pageLimit }, objectarray: newarray, loading: false, idsarray: newidsarray, totalPages: totalPages });
       }.bind(this),
       error: function (data) {
-        if (!data.statusText === "abort") {
-          this.props.errorToggle("failed to get list data", data);
+        if (!data.statusText == 'abort') {
+          this.props.errorToggle('failed to get list data', data);
         }
       }.bind(this)
     });
