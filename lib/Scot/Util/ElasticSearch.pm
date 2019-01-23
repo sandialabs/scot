@@ -3,7 +3,6 @@ package Scot::Util::ElasticSearch;
 use lib '../../../lib';
 use strict;
 use warnings;
-# use v5.18;
 
 use Mojo::JSON qw/decode_json encode_json/;
 use Search::Elasticsearch;

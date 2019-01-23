@@ -20,4 +20,3 @@ ReactDOM.render(<HashRouter history={customHistory()}>
     </Switch>
   </SnackbarProvider>
 </HashRouter>, document.getElementById('root'));
-registerServiceWorker();
