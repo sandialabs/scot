@@ -19,7 +19,6 @@ use Try::Tiny;
 use JSON;
 use Scot::Env;
 use Scot::App;
-# use v5.18;
 use strict;
 use warnings;
 

@@ -1,7 +1,6 @@
 package Scot::Collection::Sigbody;
 use lib '../../../lib';
 use Moose 2;
-# use v5.18;
 use Data::Dumper;
 
 extends 'Scot::Collection';
