@@ -21,6 +21,7 @@ import Marker from "../components/marker"
 import EntityCreateModal from "../modal/entity_create"
 import CustomMetaDataTable from "../components/custom_metadata_table";
 import tablesorter from 'tablesorter'
+import axios from 'axios'
 
 
 export default class SelectedEntry extends React.Component {
@@ -45,7 +46,8 @@ export default class SelectedEntry extends React.Component {
       isMounted: false
     };
   }
-  componentDidMount = () => {
+
+  componentDidMount() {
     this.setState({ isMounted: true });
     if (
       this.props.type === "alert" ||
@@ -120,17 +122,18 @@ export default class SelectedEntry extends React.Component {
     );
   };
 
-  componentWillReceiveProps = () => {
+
+  componentWillReceiveProps() {
     this.containerHeightAdjust();
   };
 
-  componentDidUpdate = () => {
+  componentDidUpdate() {
     if (this.state.runWatcher === true) {
       this.Watcher();
     }
   };
 
-  componentWillUnmount = () => {
+  componentWillUnmount() {
     this.setState({ isMounted: false });
   };
 
@@ -578,6 +581,7 @@ class EntryIterator extends React.Component {
             fileUploadToolbar={this.props.fileUploadToolbar}
             errorToggle={this.props.errorToggle}
             flairOff={this.props.flairOff}
+            createCallback={this.props.createCallback}
           />
         );
       }
@@ -848,6 +852,7 @@ class AlertParent extends React.Component {
             fileUploadToggle={this.props.fileUploadToggle}
             fileUploadToolbar={this.props.fileUploadToolbar}
             errorToggle={this.props.errorToggle}
+            createCallback={this.props.createCallback}
           />
         );
       }
@@ -1199,6 +1204,7 @@ class AlertBody extends React.Component {
           showFileUploadToolbar={this.state.showFileUploadToolbar}
           toggleOffFileUpload={this.toggleOffFileUpload}
           errorToggle={this.props.errorToggle}
+          createCallback={this.props.createCallback}
         />
       </tbody>
     );
@@ -1250,6 +1256,7 @@ class AlertRowBlank extends React.Component {
         type={this.props.type}
         id={this.props.id}
         errorToggle={this.props.errorToggle}
+        createCallback={this.props.createCallback}
       />
     );
     if (showEntry === true) {
@@ -1265,6 +1272,7 @@ class AlertRowBlank extends React.Component {
                   type={this.props.type}
                   id={this.props.id}
                   errorToggle={this.props.errorToggle}
+                  createCallback={this.props.createCallback}
                 />
               }
             </div>
