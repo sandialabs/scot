@@ -62,6 +62,7 @@
         "react-draggable": "^3.0.5",
         "react-dropzone": "^5.0.1",
         "react-frame": "latest",
+        "react-frame-component": "^4.0.2",
         "react-highlight-words": "^0.14.0",
         "react-inspector": "^2.3.0",
         "react-modal": "latest",
