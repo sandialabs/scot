@@ -11,7 +11,7 @@ import { DeleteEntry } from '../modal/delete';
 import Summary from '../components/summary'
 import Task from "../components/task"
 import SelectedPermission from "../components/permission.js";
-import Frame from "../components/frame";
+import Frame from 'react-frame-component';
 import AddFlair from "../components/add_flair";
 import LinkWarning from "../modal/link_warning"
 import { Link } from 'react-router-dom'
@@ -367,21 +367,23 @@ export default class SelectedEntry extends React.Component {
     setTimeout(
       function () {
         let scrollHeight;
-        let ListViewTableHeight = parseInt(document.defaultView.getComputedStyle(document.getElementsByClassName('ReactTable')[0]).height, 10);
-        if (ListViewTableHeight !== 0) {
-          scrollHeight =
-            $(window).height() -
-            ListViewTableHeight -
-            $("#header").height() -
-            78;
-          scrollHeight = scrollHeight + "px";
-        } else {
-          scrollHeight = $(window).height() - $("#header").height() - 78;
-          scrollHeight = scrollHeight + "px";
-        }
-        //$('#detail-container').css('height',scrollHeight);
-        if (this.state.isMounted) {
-          this.setState({ height: scrollHeight });
+        let ListViewTableHeight = document.getElementsByClassName('ReactTable')[0].clientHeight
+        if (ListViewTableHeight !== undefined) {
+          if (ListViewTableHeight !== 0) {
+            scrollHeight =
+              $(window).height() -
+              ListViewTableHeight -
+              $("#header").height() -
+              78;
+            scrollHeight = scrollHeight + "px";
+          } else {
+            scrollHeight = $(window).height() - $("#header").height() - 78;
+            scrollHeight = scrollHeight + "px";
+          }
+          //$('#detail-container').css('height',scrollHeight);
+          if (this.state.isMounted) {
+            this.setState({ height: scrollHeight });
+          }
         }
       }.bind(this),
       500
@@ -1766,104 +1768,76 @@ class EntryData extends React.Component {
   }
 
   onLoad = () => {
-    if (document.getElementById("iframe_" + this.props.id) !== undefined &&
-      document.getElementById("iframe_" + this.props.id) !== null) {
-      if (
-        document.getElementById("iframe_" + this.props.id).contentDocument
-          .readyState === "complete"
-      ) {
-        let ifr = $("#iframe_" + this.props.id);
+    if (document.getElementById('iframe_' + this.props.id) != undefined) {
+      if (document.getElementById('iframe_' + this.props.id).contentDocument.readyState === 'complete') {
+        let ifr = $('#iframe_' + this.props.id);
         let ifrContents = $(ifr).contents();
-        let ifrContentsHead = $(ifrContents).find("head");
+        let ifrContentsHead = $(ifrContents).find('head');
         if (ifrContentsHead) {
-          if (!$(ifrContentsHead).find("link")) {
-            ifrContentsHead.append(
-              $("<link/>", {
-                rel: "stylesheet",
-                href: "css/sandbox.css",
-                type: "text/css"
-              })
-            );
+          if (!$(ifrContentsHead).find('link')) {
+            ifrContentsHead.append($('<link/>', { rel: 'stylesheet', href: 'css/sandbox.css', type: 'text/css' }));
           }
         }
-        //if (this.props.type != 'entity') {
-        setTimeout(
-          function () {
-            if (
-              document.getElementById("iframe_" + this.props.id) !== undefined &&
-              document.getElementById("iframe_" + this.props.id) !== null) {
-              document
-                .getElementById("iframe_" + this.props.id)
-                .contentWindow.requestAnimationFrame(
-                  function () {
-                    let newheight;
-                    newheight = document.getElementById(
-                      "iframe_" + this.props.id
-                    ).contentWindow.document.body.scrollHeight;
-                    newheight = newheight + "px";
-                    if (this.state.height !== newheight) {
-                      this.setState({ height: newheight });
-                    }
-                  }.bind(this)
-                );
-            }
-          }.bind(this),
-          250
-        );
-        //}
-      } else {
-        setTimeout(this.onLoad, 0);
       }
     }
-  };
+  }
 
-  componentWillReceiveProps = () => {
+  setHeight = () => {
+    if (document.getElementById('iframe_' + this.props.id) != undefined) {
+      document.getElementById('iframe_' + this.props.id).contentWindow.requestAnimationFrame(function () {
+        let newheight;
+        newheight = document.getElementById('iframe_' + this.props.id).contentWindow.document.body.scrollHeight;
+        newheight = newheight + 30 + 'px';
+        if (this.state.height != newheight) {
+          this.setState({ height: newheight });
+        }
+      }.bind(this));
+    }
+  }
+
+  componentWillReceiveProps() {
     this.onLoad();
-  };
+  }
 
-  render = () => {
+  componentDidMount() {
+    this.onLoad();
+  }
+
+  generateKey = () => {
+    var S4 = function () {
+      return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+    };
+    return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4());
+  }
+
+  render() {
     let rawMarkup = this.props.subitem.body_flair;
-    if (this.props.subitem.body_flair === "") {
+    if (this.props.subitem.body_flair == '') {
       rawMarkup = this.props.subitem.body;
     }
     let id = this.props.id;
-    let entry_body_id = "entry-body-" + this.props.id;
-    let entry_body_inner_id = "entry-body-inner-" + this.props.id;
+    let entry_body_id = 'entry-body-' + this.props.id;
+    let entry_body_inner_id = 'entry-body-inner-' + this.props.id;
     return (
-      <div
-        id={entry_body_id}
-        key={this.props.id}
-        className={"row-fluid entry-body"}
-      >
-        <div
-          id={entry_body_inner_id}
-          className={"row-fluid entry-body-inner"}
-          style={{ marginLeft: "auto", marginRight: "auto", width: "99.3%" }}
-        >
-          {this.props.editEntryToolbar ? (
-            <AddEntry
-              entryAction={"Edit"}
-              type={this.props.type}
-              targetid={this.props.targetid}
-              id={id}
-              addedentry={this.props.editEntryToggle}
-              parent={this.props.subitem.parent}
-              errorToggle={this.props.errorToggle}
-            />
-          ) : (
-              <Frame
-                id={"iframe_" + id}
-                sandbox={"allow-same-origin"}
-                styleSheets={["/css/sandbox.css"]}
-                height={this.state.height} >
-                <div dangerouslySetInnerHTML={{ __html: rawMarkup }} />
-              </Frame>
-            )}
+      <div id={entry_body_id} key={this.props.id} className={'row-fluid entry-body'}>
+        <div id={entry_body_inner_id} className={'row-fluid entry-body-inner'} style={{ marginLeft: 'auto', marginRight: 'auto', width: '99.3%' }}>
+          {this.props.editEntryToolbar ? <AddEntry entryAction={'Edit'} type={this.props.type} targetid={this.props.targetid} id={id} addedentry={this.props.editEntryToggle} parent={this.props.subitem.parent} errorToggle={this.props.errorToggle} /> :
+            <Frame
+              key={this.generateKey()}
+              //Here is new stuff
+              // contentDidUpdate={this.setHeight}
+              contentDidMount={this.setHeight}
+              head={<link rel="stylesheet" type="text/css" href="/css/sandbox.css" />}
+              //end of new stuff
+              frameBorder={'0'} id={'iframe_' + id}
+              sandbox={'allow-same-origin'}
+              // styleSheets={['/css/sandbox.css']}
+              style={{ width: '100%', height: this.state.height }}>
+              <div dangerouslySetInnerHTML={{ __html: rawMarkup }} />
+            </Frame>}
         </div>
-      </div >
+      </div>
     );
-  };
-  componentDidMount = () => {
-    // this.onLoad();
-  };
+  }
+
 }
