@@ -613,6 +613,7 @@ sub get_groups {
     # testing short circuit
     if ( $user eq "scot-testing" ) {
         push @groups, @{$self->env->default_groups->{modify}};
+        push @groups, "scot-testfoo";
         return wantarray ? @groups :\@groups;
     }
 

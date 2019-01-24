@@ -26,6 +26,7 @@ $t  ->post_ok  ('/scot/api/v2/event'  => json => {
         subject => "Entry Test Event 1",
         source  => ["threadtest"],
         status  => 'open',
+        tlp     => "amber",
     })
     ->status_is(200)
     ->json_is('/status' => 'ok');
@@ -41,6 +42,10 @@ $t  ->post_ok('/scot/api/v2/entry' => json => {
     ->json_is('/status' => 'ok');
 
 my $entry1 = $t->tx->res->json->{id};
+
+$t  ->get_ok("/scot/api/v2/entry/$entry1")
+    ->status_is(200)
+    ->json_is('/tlp'    => 'amber');
 
 $t  ->get_ok("/scot/api/v2/event/$event_id")
     ->status_is(200)
