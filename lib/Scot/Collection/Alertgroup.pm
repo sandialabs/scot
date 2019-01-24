@@ -132,6 +132,8 @@ override api_create => sub {
                 data        => $datum,
                 alertgroup  => $id,
                 columns     => $alertgroup->columns,
+                owner       => $alertgroup->owner,
+                groups      => $alertgroup->groups,
             });
         }
 
