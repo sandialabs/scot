@@ -113,6 +113,12 @@ override api_create => sub {
         my $tags        = $request->{request}->{json}->{tag};
         my $sources     = $request->{request}->{json}->{source};
         my $data        = delete $request->{request}->{json}->{data};
+        if ( ! defined $request->{request}->{json}->{groups} ) {
+            $request->{request}->{json}->{groups} = {
+                read    => $request->{groups},
+                modify  => $request->{groups},
+            };
+        }
         my $alertgroup  = $self->create($request->{request}->{json});
         my $alertscreated   = 0;
 
