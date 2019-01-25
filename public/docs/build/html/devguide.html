@@ -1,0 +1,446 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Developing For SCOT &#8212; SCOT 3.5.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '3.5.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
+    <link rel="next" title="Signatures" href="signatures.html" />
+    <link rel="prev" title="Administration Guide" href="adminguide.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="signatures.html" title="Signatures"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="adminguide.html" title="Administration Guide"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="developing-for-scot">
+<h1>Developing For SCOT<a class="headerlink" href="#developing-for-scot" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="scot-architecture">
+<h2>SCOT Architecture<a class="headerlink" href="#scot-architecture" title="Permalink to this headline">¶</a></h2>
+<p>overview of the puzzle pieces go here</p>
+</div>
+<div class="section" id="scot-directory-map">
+<h2>SCOT Directory Map<a class="headerlink" href="#scot-directory-map" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>bin/</dt>
+<dd>scripts, executables that run stand alone (not part of the webservice)
+Ex: bots, import scripts, export scripts, etc.</dd>
+<dt>docs/</dt>
+<dd>text files that form documentation for SCOT</dd>
+<dt>etc/</dt>
+<dd>configuration files for Scot go here</dd>
+<dt>etcsrc/</dt>
+<dd>starting templates for your config files.</dd>
+<dt>lib/</dt>
+<dd><p class="first">Perl library Hierarchy</p>
+<p>Scot.pm - the top level mojolicious application library containing route info</p>
+<dl class="last docutils">
+<dt>Scot/</dt>
+<dd><p class="first">the top level of the Scot:: modules</p>
+<dl class="last docutils">
+<dt>Bot/</dt>
+<dd>modules for use by scot bots</dd>
+<dt>Controller/</dt>
+<dd>modules for handling routes defined in Scot.pm</dd>
+<dt>Model/</dt>
+<dd>modules describing the data model for Scot data types</dd>
+<dt>Util/</dt>
+<dd>authentication, database, and other general utility modules</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>public/</dt>
+<dd><p class="first">Static served files by mojolicious</p>
+<dl class="last docutils">
+<dt>css/</dt>
+<dd>css files for scot, and frameworks</dd>
+<dt>img/</dt>
+<dd>images used by SCOT</dd>
+<dt>fonts/</dt>
+<dd>Any fonts used by the CSS go here</dd>
+<dt>lib/</dt>
+<dd><p class="first">javascript 3rd party libraries</p>
+<dl class="last docutils">
+<dt>angular/</dt>
+<dd>angular libraries go here</dd>
+<dt>bootstrap/</dt>
+<dd>bootstrap stuff</dd>
+<dt>jquery/</dt>
+<dd>jquery stuff</dd>
+</dl>
+</dd>
+<dt>js/</dt>
+<dd>javascript that we create for scot including react components</dd>
+<dt>api/</dt>
+<dd>api documentation</dd>
+<dt>docs/</dt>
+<dd>online documentation</dd>
+</dl>
+</dd>
+<dt>script/</dt>
+<dd>usually holds the mojolicious startup script</dd>
+<dt>t/</dt>
+<dd>tests, tests, tests of mojolicious back end</dd>
+<dt>templates/</dt>
+<dd>templates used for rendering data that was passed through mojolicious</dd>
+</dl>
+</div>
+<div class="section" id="scot-rest-api">
+<h2>SCOT REST API<a class="headerlink" href="#scot-rest-api" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="/api/index.html">SCOT API Documentation.</a></p>
+<div class="section" id="scot-get-api">
+<h3>SCOT get API<a class="headerlink" href="#scot-get-api" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic">
+<li><p class="first">Retrieve one &#8220;thing&#8221; when you know the id:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v2</span><span class="o">/</span><span class="n">event</span><span class="o">/</span><span class="mi">123</span>
+
+<span class="n">output</span><span class="p">:</span>
+
+<span class="n">JSON</span> <span class="nb">object</span> <span class="n">representing</span> <span class="n">event</span> <span class="mi">123</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Retrieve list of &#8220;things&#8221;:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v2</span><span class="o">/</span><span class="n">event</span>
+
+<span class="n">output</span>
+
+<span class="p">{</span>
+    <span class="n">queryRecordCount</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
+    <span class="n">totalRecordCount</span><span class="p">:</span> <span class="mi">10060</span><span class="p">,</span>
+    <span class="n">records</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span> <span class="n">event</span> <span class="n">json</span> <span class="nb">object</span> <span class="mi">1</span> <span class="p">},</span>
+        <span class="o">...</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Retrieve list of &#8220;things&#8221; based on time range:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>/scot/api/v2/event?created=1472244135&amp;created=1472244137
+</pre></div>
+</div>
+</li>
+<li><p class="first">Retrieve list of &#8220;things&#8221; based on string match:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>/scot/api/v2/event?subject=Symnatic
+</pre></div>
+</div>
+</li>
+<li><p class="first">Retrieve list of &#8220;things&#8221; base on Numerical conditions</p>
+</li>
+</ol>
+<blockquote>
+<div><ol class="loweralpha">
+<li><p class="first">matching a single number:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>/scot/api/v2/event?views=2
+
+output: events with two views
+</pre></div>
+</div>
+</li>
+<li><p class="first">matching a set of numbers:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>/scot/api/v2/event?entry_count=2&amp;entry_count=4&amp;entry_count=6
+
+output: events with an entry_count of 2, 4, or 6
+</pre></div>
+</div>
+</li>
+<li><p class="first">matching everything but a number:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>/scot/api/v2/event?views=!1
+
+output: events with views not equal to 1
+</pre></div>
+</div>
+</li>
+<li><p class="first">matching everyting but a set of numbers:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>/scot/api/v2/event?views=!1&amp;views=!2&amp;views=!3
+
+output: events with views not equal to 1,2, or 3.
+(note:  if ! appears in any element, all are treated as if they are !
+</pre></div>
+</div>
+</li>
+<li><p class="first">matching an expression:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>/scot/api/v2/event?views=4&lt;x&lt;8
+/scot/api/v2/event?views=4&lt;=x&lt;8
+/scot/api/v2/event?views=4&lt;=x&lt;=8
+/scot/api/v2/event?views=4&lt;x&lt;=8
+/scot/api/v2/event?views=9&gt;x&gt;=2
+
+output: events with views (represented by x) matching the expression
+syntax notes: the expression must be of the form some number of digit,
+followed immediately by one of the following operands: &lt; &lt;= &gt; &gt;=, the
+letter lower case x (which represents the column name) followed
+immediately by the comparison operands, and finally followed
+immediately by some numbe of digits.
+</pre></div>
+</div>
+</li>
+</ol>
+</div></blockquote>
+<ol class="arabic">
+<li><p class="first">Retrieve list of &#8220;things&#8221; based on Set Fields like &#8220;tag&#8221; or &#8220;source&#8221;:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>/scot/api/v2/event?tag=email&amp;tag=malware&amp;tag=!false_positive
+
+output:  list of evens with tags email and malware but not containing
+ the tag false_positive
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+<div class="section" id="scot-post-api">
+<h3>SCOT post API<a class="headerlink" href="#scot-post-api" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic">
+<li><p class="first">Create an Alertgroup containing several alertgroups:</p>
+<dl class="docutils">
+<dt>curl -XPOST /scot/api/v2/alertgroup -d &#8216;{</dt>
+<dd><blockquote class="first">
+<div><p>&#8220;message_id&#8221;:   &#8216;112233445566778899aabbccddeeff&#8217;,
+&#8220;subject&#8221;: &#8220;Detection of Bad Stuff&#8221;,
+&#8220;data&#8221;:     [</p>
+<blockquote>
+<div><p>{ &#8220;column1&#8221;: &#8220;data11&#8221;, &#8220;column2&#8221;: &#8220;data12&#8221;, &#8220;column3&#8221;: &#8220;data13&#8221; },
+{ &#8220;column2&#8221;: &#8220;data21&#8221;, &#8220;column2&#8221;: &#8220;data22&#8221;, &#8220;column3&#8221;: &#8220;data23&#8221; },
+{ &#8220;column3&#8221;: &#8220;data31&#8221;, &#8220;column2&#8221;: &#8220;data32&#8221;, &#8220;column3&#8221;: &#8220;data33&#8221; },</p>
+</div></blockquote>
+<p>],
+&#8220;tag&#8221;: [ &#8216;tag1&#8217;,&#8217;tag2&#8217;,&#8217;tag3&#8217; ],
+&#8220;source&#8221;: [ &#8216;source1&#8217; ],
+columns: [ &#8216;column1&#8217;, &#8216;column2&#8217;, &#8216;column3&#8217; ],</p>
+</div></blockquote>
+<p class="last">}&#8217;</p>
+</dd>
+</dl>
+</li>
+</ol>
+</div>
+<div class="section" id="scot-put-api">
+<h3>SCOT put API<a class="headerlink" href="#scot-put-api" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic">
+<li><p class="first">Update and event status:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">XPUT</span> <span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v2</span><span class="o">/</span><span class="n">event</span><span class="o">/</span><span class="mi">123</span> <span class="o">-</span><span class="n">d</span> <span class="s1">&#39;{</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;closed&quot;</span>
+<span class="p">}</span><span class="s1">&#39;</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+<div class="section" id="scot-delete-api">
+<h3>SCOT delete API<a class="headerlink" href="#scot-delete-api" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic">
+<li><p class="first">Delete and entry:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">XDELETE</span> <span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v2</span><span class="o">/</span><span class="n">entry</span><span class="o">/</span><span class="mi">12345</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="section" id="scot-event-queue">
+<h2>SCOT Event Queue<a class="headerlink" href="#scot-event-queue" title="Permalink to this headline">¶</a></h2>
+<p>SCOT uses a message queue to publish events that have occurred.  This allows your
+process to subscribe to be asyncronously updated and to take actions on these
+event.  SCOT uses ActiveMQ, it gets the job done and just about every language under the
+sun has a way to interface with it.</p>
+<p>The message format is:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="n">guid</span><span class="p">:</span>   <span class="s2">&quot;unique_guid_string&quot;</span><span class="p">,</span>
+    <span class="n">action</span><span class="p">:</span> <span class="s2">&quot;action_string&quot;</span><span class="p">,</span>
+    <span class="n">data</span><span class="p">:</span>   <span class="p">{</span>
+        <span class="nb">type</span><span class="p">:</span>   <span class="s2">&quot;type_of_data_structure&quot;</span><span class="p">,</span>
+        <span class="nb">id</span><span class="p">:</span>     <span class="n">integer_id_of_data</span><span class="p">,</span>
+        <span class="n">who</span><span class="p">:</span>    <span class="n">username</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">unique_guid_string:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><p class="first">is a requirement of the STOMP protocol and is generated</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">action_string:</th><td class="field-body"><p class="first">is a member of the following:
+*  &#8220;created&#8221;  = something was created
+*  &#8220;updated&#8221;  = something was updated
+*  &#8220;deleted&#8221;  = something was deleted
+*  &#8220;viewed&#8221;   = something was viewed
+*  &#8220;message&#8221;  = send a message to a subscriber</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">type:</th><td class="field-body"><dl class="first docutils">
+<dt>describes the data type that was operated on and is one of:</dt>
+<dd><ul class="first last simple">
+<li>alert</li>
+<li>alertgroup</li>
+<li>entry</li>
+<li>event</li>
+<li>incident</li>
+<li>intel</li>
+</ul>
+</dd>
+<dt>or in the case of a &#8220;message&#8221; it can be any string</dt>
+<dd><p class="first last">that your client is listening for.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">id:</th><td class="field-body"><p class="first">is an integer id for the &#8220;type&#8221; above.
+if sending a message, this could be the an epoch time.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">data:</th><td class="field-body"><p class="first last">is a json structure that you are free to put stuff in.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="scot-server">
+<h2>SCOT Server<a class="headerlink" href="#scot-server" title="Permalink to this headline">¶</a></h2>
+<p>will discuss how to work in the Perl base server.  Perldocs will be linked here as well.</p>
+</div>
+<div class="section" id="scot-ui">
+<h2>SCOT UI<a class="headerlink" href="#scot-ui" title="Permalink to this headline">¶</a></h2>
+<p>SCOT&#8217;S front end is primarily developed using React JS. See <a class="reference external" href="https://facebook.github.io/react/">https://facebook.github.io/react/</a> to read more about it.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">pubdev/:</th><td class="field-body">Contains files necessary to modify the React-based front end</td>
+</tr>
+</tbody>
+</table>
+<p><em>Note: Not all of the front end of SCOT is developed in React. Currently, the Incident Handler calendar and administration pages are written using jQuery and HTML, without React.</em></p>
+<p>SCOT has been written using the JSX format. See <a class="reference external" href="https://facebook.github.io/react/docs/introducing-jsx.html">https://facebook.github.io/react/docs/introducing-jsx.html</a> to read more about it.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">JSX Libraries:</th><td class="field-body">Most libraries that the SCOT JSX components (found in /pubdev/jsdev/react_components/) rely on are found in /pubdev/node_modules and can be installed/updated using npm.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">JSX Compiling:</th><td class="field-body">Compiling the JSX files into a single javascript file is done by using Gulp. The file that specifies the compiling directories is /pubdev/gulpfile.js. The final file that is ultimately compiled and used is /public/scot-3.5.js</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">JSX Dev:</th><td class="field-body">If you would like to contribute to, or modify the front end of SCOT, you can do so by creating/modifying files in /pubdev/ and then compile your changes using gulp.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Final HTML/JS:</th><td class="field-body">The files ultimately used to display and control the front end are found in /public/</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Developing For SCOT</a><ul>
+<li><a class="reference internal" href="#scot-architecture">SCOT Architecture</a></li>
+<li><a class="reference internal" href="#scot-directory-map">SCOT Directory Map</a></li>
+<li><a class="reference internal" href="#scot-rest-api">SCOT REST API</a><ul>
+<li><a class="reference internal" href="#scot-get-api">SCOT get API</a></li>
+<li><a class="reference internal" href="#scot-post-api">SCOT post API</a></li>
+<li><a class="reference internal" href="#scot-put-api">SCOT put API</a></li>
+<li><a class="reference internal" href="#scot-delete-api">SCOT delete API</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#scot-event-queue">SCOT Event Queue</a></li>
+<li><a class="reference internal" href="#scot-server">SCOT Server</a></li>
+<li><a class="reference internal" href="#scot-ui">SCOT UI</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="adminguide.html"
+                        title="previous chapter">Administration Guide</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="signatures.html"
+                        title="next chapter">Signatures</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/devguide.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="signatures.html" title="Signatures"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="adminguide.html" title="Administration Guide"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2011-2016, Sandia National Laboratories.
+    </div>
+  </body>
+</html>
