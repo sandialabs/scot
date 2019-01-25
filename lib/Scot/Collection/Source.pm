@@ -50,6 +50,7 @@ sub autocomplete {
     my $fragment    = shift;
 
     my $cursor  =  $self->find({ value   => qr/$fragment/i });
+    $cursor->limit(25); # to help react tags component
     # my @records = map { { id => $_->{id}, key => $_->{value} } } 
     #                 $cursor->all;
     my @records = map { $_->{value}  } $cursor->all;
