@@ -63,6 +63,7 @@ sub autocomplete {
     my $cursor  = $self->find({
         value    => qr/$string/i
     });
+    $cursor->limit(25); # to help react tags
     @results    = map { $_->{value} } $cursor->all;
     return wantarray ? @results : \@results;
 }
