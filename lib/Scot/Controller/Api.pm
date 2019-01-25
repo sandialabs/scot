@@ -326,9 +326,11 @@ sub post_list_process {
         }
     }
     elsif ( $thing      eq "alertgroup" ) {
+        $log->debug("alertgroup processing");
         while ( my $obj = $cursor->next ) {
             my $agid = $obj->id;
             my $href = $obj->as_hash;
+            $log->debug("looking at alertgroup $agid");
             $href->{has_tasks} = 0;
             my $acur = $self->env->mongo->collection('Alert')->find({alertgroup => $agid});
             ALERT:
@@ -339,6 +341,7 @@ sub post_list_process {
                     last ALERT;
                 }
             }
+            $log->debug("pushing on records: ",{filter=>\&Dumper, value=>$href});
             push @records, $href;
         }
     }
