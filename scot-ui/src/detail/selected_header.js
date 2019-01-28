@@ -86,35 +86,20 @@ export default class SelectedHeader extends React.Component {
     this.setState({ isMounted: true });
     let delayFunction = {
       delay: function () {
-        let entryType = "entry";
-        if (this.props.type === "alertgroup") {
-          entryType = "alert";
-        }
+        let entryType = 'entry';
+        if (this.props.type == 'alertgroup') { entryType = 'alert'; }
         //Main Type Load
         $.ajax({
-          type: "get",
-          url: "scot/api/v2/" + this.props.type + "/" + this.props.id,
+          type: 'get',
+          url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
           success: function (result) {
             if (this.state.isMounted) {
               let eventResult = result;
-              this.setState({
-                headerData: eventResult,
-                showEventData: true,
-                isNotFound: false,
-                tagData: eventResult.tag,
-                sourceData: eventResult.source
-              });
-              if (
-                this.state.showEventData === true &&
-                this.state.showEntryData === true &&
-                this.state.showEntityData === true
-              ) {
+              this.setState({ headerData: eventResult, showEventData: true, isNotFound: false, tagData: eventResult.tag, sourceData: eventResult.source });
+              if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                 this.setState({ loading: false });
               }
-              if (
-                this.props.type === "alertgroup" &&
-                eventResult.parsed === -1
-              ) {
+              if (this.props.type == 'alertgroup' && eventResult.parsed === -1) {
                 this.setState({ flairing: true });
               } else {
                 this.setState({ flairing: false });
@@ -123,95 +108,49 @@ export default class SelectedHeader extends React.Component {
           }.bind(this),
           error: function (result) {
             this.setState({ showEventData: true, isNotFound: true });
-            if (
-              this.state.showEventData === true &&
-              this.state.showEntryData === true &&
-              this.state.showEntityData === true
-            ) {
+            if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
               this.setState({ loading: false });
             }
-            this.props.errorToggle(
-              "Error: Failed to load detail data. Error message: " +
-              result.responseText,
-              result
-            );
-          }.bind(this)
+            this.props.errorToggle('Error: Failed to load detail data. Error message: ' + result.responseText, result);
+          }.bind(this),
         });
         //entry load
         $.ajax({
-          type: "get",
-          url:
-            "scot/api/v2/" +
-            this.props.type +
-            "/" +
-            this.props.id +
-            "/" +
-            entryType,
+          type: 'get',
+          url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType,
           success: function (result) {
             if (this.state.isMounted) {
               let entryResult = result.records;
-              this.setState({
-                showEntryData: true,
-                entryData: entryResult,
-                runWatcher: true
-              });
+              this.setState({ showEntryData: true, entryData: entryResult, runWatcher: true });
               this.Watcher();
-              if (
-                this.state.showEventData === true &&
-                this.state.showEntryData === true &&
-                this.state.showEntityData === true
-              ) {
+              if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                 this.setState({ loading: false });
               }
             }
           }.bind(this),
           error: function (result) {
             this.setState({ showEntryData: true });
-            if (
-              this.state.showEventData === true &&
-              this.state.showEntryData === true &&
-              this.state.showEntityData === true
-            ) {
+            if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
               this.setState({ loading: false });
             }
-            this.props.errorToggle(
-              "Error: Failed to load entry data. Error message: " +
-              result.responseText,
-              result
-            );
+            this.props.errorToggle('Error: Failed to load entry data. Error message: ' + result.responseText, result);
           }
         });
         //entity load
         $.ajax({
-          type: "get",
-          url:
-            "scot/api/v2/" + this.props.type + "/" + this.props.id + "/entity",
+          type: 'get',
+          url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity',
           success: function (result) {
             if (this.state.isMounted) {
               let entityResult = result.records;
               this.setState({ showEntityData: true, entityData: entityResult });
               var waitForEntry = {
                 waitEntry: function () {
-                  if (this.state.showEntryData === false) {
+                  if (this.state.showEntryData == false) {
                     setTimeout(waitForEntry.waitEntry, 50);
                   } else {
-                    setTimeout(
-                      function () {
-                        AddFlair.entityUpdate(
-                          entityResult,
-                          this.flairToolbarToggle,
-                          this.props.type,
-                          this.linkWarningToggle,
-                          this.props.id,
-                          this.scrollTo
-                        );
-                      }.bind(this)
-                    );
-                    if (
-                      this.state.showEventData === true &&
-                      this.state.showEntryData === true &&
-                      this.state.showEntityData === true
-                    ) {
+                    setTimeout(function () { AddFlair.entityUpdate(entityResult, this.flairToolbarToggle, this.props.type, this.linkWarningToggle, this.props.id, this.scrollTo); }.bind(this));
+                    if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                       this.setState({ loading: false });
                     }
                   }
@@ -222,25 +161,17 @@ export default class SelectedHeader extends React.Component {
           }.bind(this),
           error: function (result) {
             this.setState({ showEntityData: true });
-            if (
-              this.state.showEventData === true &&
-              this.state.showEntryData === true &&
-              this.state.showEntityData === true
-            ) {
+            if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
               this.setState({ loading: false });
             }
-            this.props.errorToggle(
-              "Error: Failed to load entity data.",
-              result
-            );
+            this.props.errorToggle('Error: Failed to load entity data.', result);
           }.bind(this)
         });
         //guide load
-        if (this.props.type === "alertgroup") {
+        if (this.props.type == 'alertgroup') {
           $.ajax({
-            type: "get",
-            url:
-              "scot/api/v2/" + this.props.type + "/" + this.props.id + "/guide",
+            type: 'get',
+            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/guide',
             success: function (result) {
               if (this.state.isMounted) {
                 let arr = [];
@@ -252,18 +183,15 @@ export default class SelectedHeader extends React.Component {
             }.bind(this),
             error: function (result) {
               this.setState({ guideID: null });
-              this.props.errorToggle(
-                "Error: Failed to load guide data. Error message:" +
-                result.responseText,
-                result
-              );
+              this.props.errorToggle('Error: Failed to load guide data. Error message:' + result.responseText, result);
             }.bind(this)
           });
         }
-        this.props.createCallback(parseInt(this.props.id, 10), this.updated);
+        this.props.createCallback(this.props.id, this.updated);
       }.bind(this)
     };
     InitialAjaxLoad = setTimeout(delayFunction.delay, 400);
+
   };
 
   componentWillUnmount = () => {
@@ -286,39 +214,21 @@ export default class SelectedHeader extends React.Component {
 
   updated = (_type, _message) => {
     if (!this.state.isDeleted) {
-      this.setState({
-        refreshing: true,
-        eventLoaded: false,
-        entryLoaded: false,
-        entityLoaded: false
-      });
-      let entryType = "entry";
-      if (this.props.type === "alertgroup") {
-        entryType = "alert";
-      }
+      this.setState({ refreshing: true, eventLoaded: false, entryLoaded: false, entityLoaded: false });
+      let entryType = 'entry';
+      if (this.props.type == 'alertgroup') { entryType = 'alert'; }
       //main type load
       $.ajax({
-        type: "get",
-        url: "scot/api/v2/" + this.props.type + "/" + this.props.id,
+        type: 'get',
+        url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
         success: function (result) {
           if (this.state.isMounted) {
             let eventResult = result;
-            this.setState({
-              headerData: eventResult,
-              showEventData: true,
-              eventLoaded: true,
-              isNotFound: false,
-              tagData: eventResult.tag,
-              sourceData: eventResult.source
-            });
-            if (
-              this.state.eventLoaded === true &&
-              this.state.entryLoaded === true &&
-              this.state.entityLoaded === true
-            ) {
+            this.setState({ headerData: eventResult, showEventData: true, eventLoaded: true, isNotFound: false, tagData: eventResult.tag, sourceData: eventResult.source });
+            if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
               this.setState({ refreshing: false });
             }
-            if (this.props.type === "alertgroup" && eventResult.parsed === -1) {
+            if (this.props.type == 'alertgroup' && eventResult.parsed === -1) {
               this.setState({ flairing: true });
             } else {
               this.setState({ flairing: false });
@@ -326,103 +236,50 @@ export default class SelectedHeader extends React.Component {
           }
         }.bind(this),
         error: function (result) {
-          this.setState({
-            showEventData: true,
-            eventLoaded: true,
-            isNotFound: true
-          });
-          if (
-            this.state.eventLoaded === true &&
-            this.state.entryLoaded === true &&
-            this.state.entityLoaded === true
-          ) {
+          this.setState({ showEventData: true, eventLoaded: true, isNotFound: true });
+          if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
             this.setState({ refreshing: false });
           }
-          this.props.errorToggle(
-            "Error: Failed to reload detail data. Error message: " +
-            result.responseText,
-            result
-          );
-        }.bind(this)
+          this.props.errorToggle('Error: Failed to reload detail data. Error message: ' + result.responseText, result);
+        }.bind(this),
       });
       //entry load
       $.ajax({
-        type: "get",
-        url:
-          "scot/api/v2/" +
-          this.props.type +
-          "/" +
-          this.props.id +
-          "/" +
-          entryType,
+        type: 'get',
+        url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType,
         success: function (result) {
           if (this.state.isMounted) {
             let entryResult = result.records;
-            this.setState({
-              showEntryData: true,
-              entryLoaded: true,
-              entryData: entryResult,
-              runWatcher: true
-            });
+            this.setState({ showEntryData: true, entryLoaded: true, entryData: entryResult, runWatcher: true });
             this.Watcher();
-            if (
-              this.state.eventLoaded === true &&
-              this.state.entryLoaded === true &&
-              this.state.entityLoaded === true
-            ) {
+            if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
               this.setState({ refreshing: false });
             }
           }
         }.bind(this),
         error: function (result) {
           this.setState({ showEntryData: true, entryLoaded: true });
-          if (
-            this.state.eventLoaded === true &&
-            this.state.entryLoaded === true &&
-            this.state.entityLoaded === true
-          ) {
+          if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
             this.setState({ refreshing: false });
           }
-          this.props.errorToggle(
-            "Error: Failed to reload entry data. Error message: " +
-            result.responseText,
-            result
-          );
+          this.props.errorToggle('Error: Failed to reload entry data. Error message: ' + result.responseText, result);
         }
       });
       //entity load
       $.ajax({
-        type: "get",
-        url: "scot/api/v2/" + this.props.type + "/" + this.props.id + "/entity",
+        type: 'get',
+        url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity',
         success: function (result) {
           if (this.state.isMounted) {
             let entityResult = result.records;
-            this.setState({
-              showEntityData: true,
-              entityLoaded: true,
-              entityData: entityResult
-            });
+            this.setState({ showEntityData: true, entityLoaded: true, entityData: entityResult });
             var waitForEntry = {
               waitEntry: function () {
-                if (this.state.entryLoaded === false) {
+                if (this.state.entryLoaded == false) {
                   setTimeout(waitForEntry.waitEntry, 50);
                 } else {
-                  setTimeout(
-                    function () {
-                      AddFlair.entityUpdate(
-                        entityResult,
-                        this.flairToolbarToggle,
-                        this.props.type,
-                        this.linkWarningToggle,
-                        this.props.id
-                      );
-                    }.bind(this)
-                  );
-                  if (
-                    this.state.eventLoaded === true &&
-                    this.state.entryLoaded === true &&
-                    this.state.entityLoaded === true
-                  ) {
+                  setTimeout(function () { AddFlair.entityUpdate(entityResult, this.flairToolbarToggle, this.props.type, this.linkWarningToggle, this.props.id); }.bind(this));
+                  if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                     this.setState({ refreshing: false });
                   }
                 }
@@ -433,24 +290,18 @@ export default class SelectedHeader extends React.Component {
         }.bind(this),
         error: function (result) {
           this.setState({ showEntityData: true });
-          if (
-            this.state.eventLoaded === true &&
-            this.state.entryLoaded === true &&
-            this.state.entityLoaded === true
-          ) {
+          if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
             this.setState({ refreshing: false });
           }
-          this.props.errorToggle(
-            "Error: Failed to reload entity data.",
-            result
-          );
+          this.props.errorToggle('Error: Failed to reload entity data.', result);
         }.bind(this)
       });
       //error popup if an error occurs
-      if ((_type !== undefined && _type !== null) && (_message !== null && _message !== undefined)) {
+      if (_type != undefined && _message != undefined) {
         this.props.errorToggle(_message);
       }
     }
+
   };
 
   flairToolbarToggle = (id, value, type, entityoffset, entityobj) => {
@@ -589,76 +440,51 @@ export default class SelectedHeader extends React.Component {
   };
 
   Watcher = () => {
-    $("iframe").each(
-      function (index, ifr) {
-        //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
-        ifr.contentWindow.requestAnimationFrame(
-          function () {
-            if (ifr.contentDocument != null) {
-              let arr = [];
-              //arr.push(this.props.type);
-              arr.push(this.checkFlairHover);
-              arr.push(this.checkHighlight);
-              $(ifr).off("mouseenter");
-              $(ifr).off("mouseleave");
-              $(ifr).on(
-                "mouseenter",
-                function (v, type) {
-                  let intervalID = setInterval(this[0], 50, ifr); // this.flairToolbarToggle, type, this.props.linkWarningToggle, this.props.id);
-                  let intervalID1 = setInterval(this[1], 50, ifr); // this.flairToolbarToggle, type, this.props.linkWarningToggle, this.props.id);
-                  $(ifr).data("intervalID", intervalID);
-                  $(ifr).data("intervalID1", intervalID1);
-                  console.log("Now watching iframe " + intervalID);
-                }.bind(arr)
-              );
-              $(ifr).on("mouseleave", function () {
-                let intervalID = $(ifr).data("intervalID");
-                let intervalID1 = $(ifr).data("intervalID1");
-                window.clearInterval(intervalID);
-                window.clearInterval(intervalID1);
-                console.log("No longer watching iframe " + intervalID);
-              });
-            }
-          }.bind(this)
-        );
-      }.bind(this)
-    );
-    if (this.props.type === "alertgroup") {
-      $("#detail-container")
-        .find("a, .entity")
-        .not(".not_selectable")
-        .each(
-          function (index, tr) {
-            $(tr).off("mousedown");
-            $(tr).on(
-              "mousedown",
-              function (index) {
-                let thing = index.target;
-                if ($(thing)[0].className === "extras") {
-                  thing = $(thing)[0].parentNode;
-                } //if an extra is clicked reference the parent element
-                if ($(thing).attr("url")) {
-                  //link clicked
-                  let url = $(thing).attr("url");
-                  this.linkWarningToggle(url);
-                } else {
-                  //entity clicked
-                  let entityid = $(thing).attr("data-entity-id");
-                  let entityvalue = $(thing).attr("data-entity-value");
-                  let entityoffset = $(thing).offset();
-                  let entityobj = $(thing);
-                  this.flairToolbarToggle(
-                    entityid,
-                    entityvalue,
-                    "entity",
-                    entityoffset,
-                    entityobj
-                  );
-                }
-              }.bind(this)
-            );
-          }.bind(this)
-        );
+    $('iframe').each(function (index, ifr) {
+      //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
+      ifr.contentWindow.requestAnimationFrame(function () {
+        if (ifr.contentDocument != null) {
+          let arr = [];
+          //arr.push(this.props.type);
+          arr.push(this.checkFlairHover);
+          arr.push(this.checkHighlight);
+          $(ifr).off('mouseenter');
+          $(ifr).off('mouseleave');
+          $(ifr).on('mouseenter', function (v, type) {
+            let intervalID = setInterval(this[0], 50, ifr);// this.flairToolbarToggle, type, this.props.linkWarningToggle, this.props.id);
+            let intervalID1 = setInterval(this[1], 50, ifr);// this.flairToolbarToggle, type, this.props.linkWarningToggle, this.props.id);
+            $(ifr).data('intervalID', intervalID);
+            $(ifr).data('intervalID1', intervalID1);
+            console.log('Now watching iframe ' + intervalID);
+          }.bind(arr));
+          $(ifr).on('mouseleave', function () {
+            let intervalID = $(ifr).data('intervalID');
+            let intervalID1 = $(ifr).data('intervalID1');
+            window.clearInterval(intervalID);
+            window.clearInterval(intervalID1);
+            console.log('No longer watching iframe ' + intervalID);
+          });
+        }
+      }.bind(this));
+    }.bind(this));
+    if (this.props.type == 'alertgroup') {
+      $('#detail-container').find('a, .entity').not('.not_selectable').each(function (index, tr) {
+        $(tr).off('mousedown');
+        $(tr).on('mousedown', function (index) {
+          let thing = index.target;
+          if ($(thing)[0].className == 'extras') { thing = $(thing)[0].parentNode; } //if an extra is clicked reference the parent element
+          if ($(thing).attr('url')) {  //link clicked
+            let url = $(thing).attr('url');
+            this.linkWarningToggle(url);
+          } else { //entity clicked
+            let entityid = $(thing).attr('data-entity-id');
+            let entityvalue = $(thing).attr('data-entity-value');
+            let entityoffset = $(thing).offset();
+            let entityobj = $(thing);
+            this.flairToolbarToggle(entityid, entityvalue, 'entity', entityoffset, entityobj);
+          }
+        }.bind(this));
+      }.bind(this));
     }
   };
 
@@ -666,13 +492,14 @@ export default class SelectedHeader extends React.Component {
     let content;
     if (ifr) {
       content = ifr.contentWindow.getSelection().toString();
-      if (this.state.highlightedText !== content) {
+      if (this.state.highlightedText != content) {
         //this only tells the lower components to run their componentWIllReceiveProps methods to check for highlighted text.
         this.setState({ highlightedText: content });
       } else {
         return;
       }
     }
+
   };
 
   checkFlairHover = (ifr, nicktype) => {
@@ -680,48 +507,31 @@ export default class SelectedHeader extends React.Component {
       return ifr;
     }
     if (ifr.contentDocument != null) {
-      $(ifr)
-        .contents()
-        .find(".entity")
-        .each(
-          function (index, entity) {
-            if ($(entity).css("background-color") === "rgb(255, 0, 0)") {
-              $(entity).data("state", "down");
-            } else if ($(entity).data("state") === "down") {
-              $(entity).data("state", "up");
-              let entityid = $(entity).attr("data-entity-id");
-              let entityvalue = $(entity).attr("data-entity-value");
-              let entityobj = $(entity);
-              let ifr = returnifr();
-              let entityoffset = {
-                top: $(entity).offset().top + $(ifr).offset().top,
-                left: $(entity).offset().left + $(ifr).offset().left
-              };
-              this.flairToolbarToggle(
-                entityid,
-                entityvalue,
-                "entity",
-                entityoffset,
-                entityobj
-              );
-            }
-          }.bind(this)
-        );
-      $(ifr)
-        .contents()
-        .find("a")
-        .each(
-          function (index, a) {
-            if ($(a).css("color") === "rgb(255, 0, 0)") {
-              $(a).data("state", "down");
-            } else if ($(a).data("state") === "down") {
-              $(a).data("state", "up");
-              let url = $(a).attr("url");
-              this.linkWarningToggle(url);
-            }
-          }.bind(this)
-        );
+      $(ifr).contents().find('.entity').each(function (index, entity) {
+        if ($(entity).css('background-color') == 'rgb(255, 0, 0)') {
+          $(entity).data('state', 'down');
+        } else if ($(entity).data('state') == 'down') {
+          $(entity).data('state', 'up');
+          let entityid = $(entity).attr('data-entity-id');
+          let entityvalue = $(entity).attr('data-entity-value');
+          let entityobj = $(entity);
+          let ifr = returnifr();
+          let entityoffset = { top: $(entity).offset().top + $(ifr).offset().top, left: $(entity).offset().left + $(ifr).offset().left };
+          this.flairToolbarToggle(entityid, entityvalue, 'entity', entityoffset, entityobj);
+        }
+      }.bind(this));
+      $(ifr).contents().find('a').each(function (index, a) {
+        if ($(a).css('color') == 'rgb(255, 0, 0)') {
+          $(a).data('state', 'down');
+        } else if ($(a).data('state') == 'down') {
+          $(a).data('state', 'up');
+          let url = $(a).attr('url');
+          this.linkWarningToggle(url);
+        }
+      }.bind(this));
     }
+
+
   };
 
   summaryUpdate = () => {

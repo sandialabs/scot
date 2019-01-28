@@ -12,6 +12,7 @@ import Summary from '../components/summary'
 import Task from "../components/task"
 import SelectedPermission from "../components/permission.js";
 import Frame from 'react-frame-component';
+//import Frame from "../components/frame";
 import AddFlair from "../components/add_flair";
 import LinkWarning from "../modal/link_warning"
 import { Link } from 'react-router-dom'
@@ -128,9 +129,10 @@ export default class SelectedEntry extends React.Component {
   };
 
   componentDidUpdate() {
-    if (this.state.runWatcher === true) {
+    if (this.state.runWatcher == true) {
       this.Watcher();
     }
+
   };
 
   componentWillUnmount() {
@@ -237,129 +239,86 @@ export default class SelectedEntry extends React.Component {
   };
 
   Watcher = () => {
-    let containerid = "#" + this.props.type + "-detail-container";
-    if (this.props.type !== "alertgroup") {
-      $(containerid)
-        .find("iframe")
-        .each(
-          function (index, ifr) {
+    let containerid = '#' + this.props.type + '-detail-container';
+        if( this.props.type != 'alertgroup' ) {
+            $( containerid ).find( 'iframe' ).each( function( index,ifr ) {
             //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
-            ifr.contentWindow.requestAnimationFrame(
-              function () {
-                if (ifr.contentDocument != null) {
-                  let arr = [];
-                  //arr.push(this.props.type);
-                  arr.push(this.checkFlairHover);
-                  $(ifr).off("mouseenter");
-                  $(ifr).off("mouseleave");
-                  $(ifr).on(
-                    "mouseenter",
-                    function (v, type) {
-                      let intervalID = setInterval(this[0], 50, ifr); // this.flairToolbarToggle, type, this.props.linkWarningToggle, this.props.id);
-                      $(ifr).data("intervalID", intervalID);
-                      console.log("Now watching iframe " + intervalID);
-                    }.bind(arr)
-                  );
-                  $(ifr).on("mouseleave", function () {
-                    let intervalID = $(ifr).data("intervalID");
-                    window.clearInterval(intervalID);
-                    console.log("No longer watching iframe " + intervalID);
-                  });
-                }
-              }.bind(this)
-            );
-          }.bind(this)
-        );
+                ifr.contentWindow.requestAnimationFrame( function() {
+                    if( ifr.contentDocument != null ) {
+                        let arr = [];
+                        //arr.push(this.props.type);
+                        arr.push( this.checkFlairHover );
+                        $( ifr ).off( 'mouseenter' );
+                        $( ifr ).off( 'mouseleave' );
+                        $( ifr ).on( 'mouseenter', function( v,type ) {
+                            let intervalID = setInterval( this[0], 50, ifr );// this.flairToolbarToggle, type, this.props.linkWarningToggle, this.props.id);
+                            $( ifr ).data( 'intervalID', intervalID );
+                            console.log( 'Now watching iframe ' + intervalID );
+                        }.bind( arr ) );
+                        $( ifr ).on( 'mouseleave', function() {
+                            let intervalID = $( ifr ).data( 'intervalID' );
+                            window.clearInterval( intervalID );
+                            console.log( 'No longer watching iframe ' + intervalID );
+                        } );
+                    }
+                }.bind( this ) );
+            }.bind( this ) );
+
     } else {
-      $(containerid)
-        .find("a, .entity")
-        .not(".not_selectable")
-        .each(
-          function (index, tr) {
-            $(tr).off("mousedown");
-            $(tr).on(
-              "mousedown",
-              function (index) {
-                let thing = index.target;
-                if ($(thing)[0].className === "extras") {
-                  thing = $(thing)[0].parentNode;
-                } //if an extra is clicked reference the parent element
-                if ($(thing).attr("url")) {
-                  //link clicked
-                  let url = $(thing).attr("url");
-                  this.linkWarningToggle(url);
-                } else {
-                  //entity clicked
-                  let entityid = $(thing).attr("data-entity-id");
-                  let entityvalue = $(thing).attr("data-entity-value");
-                  let entityoffset = $(thing).offset();
-                  let entityobj = $(thing);
-                  this.flairToolbarToggle(
-                    entityid,
-                    entityvalue,
-                    "entity",
-                    entityoffset,
-                    entityobj
-                  );
-                }
-              }.bind(this)
-            );
-          }.bind(this)
-        );
+      $(containerid).find('a, .entity').not('.not_selectable').each(function (index, tr) {
+        $(tr).off('mousedown');
+        $(tr).on('mousedown', function (index) {
+          let thing = index.target;
+          if ($(thing)[0].className == 'extras') { thing = $(thing)[0].parentNode; } //if an extra is clicked reference the parent element
+          if ($(thing).attr('url')) {  //link clicked
+            let url = $(thing).attr('url');
+            this.linkWarningToggle(url);
+          } else { //entity clicked
+            let entityid = $(thing).attr('data-entity-id');
+            let entityvalue = $(thing).attr('data-entity-value');
+            let entityoffset = $(thing).offset();
+            let entityobj = $(thing);
+            this.flairToolbarToggle(entityid, entityvalue, 'entity', entityoffset, entityobj);
+          }
+        }.bind(this));
+      }.bind(this));
     }
+
   };
 
   checkFlairHover = ifr => {
     function returnifr() {
       return ifr;
     }
-    if (this.props.type !== "alertgroup") {
+    if (this.props.type != 'alertgroup') {
       if (ifr.contentDocument != null) {
-        $(ifr)
-          .contents()
-          .find(".entity")
-          .each(
-            function (index, entity) {
-              if ($(entity).css("background-color") === "rgb(255, 0, 0)") {
-                $(entity).data("state", "down");
-              } else if ($(entity).data("state") === "down") {
-                $(entity).data("state", "up");
-                let entityid = $(entity).attr("data-entity-id");
-                let entityvalue = $(entity).attr("data-entity-value");
-                let entityobj = $(entity);
-                let ifr = returnifr();
-                let entityoffset = {
-                  top: $(entity).offset().top + $(ifr).offset().top,
-                  left: $(entity).offset().left + $(ifr).offset().left
-                };
-                this.flairToolbarToggle(
-                  entityid,
-                  entityvalue,
-                  "entity",
-                  entityoffset,
-                  entityobj
-                );
-              }
-            }.bind(this)
-          );
+        $(ifr).contents().find('.entity').each(function (index, entity) {
+          if ($(entity).css('background-color') == 'rgb(255, 0, 0)') {
+            $(entity).data('state', 'down');
+          } else if ($(entity).data('state') == 'down') {
+            $(entity).data('state', 'up');
+            let entityid = $(entity).attr('data-entity-id');
+            let entityvalue = $(entity).attr('data-entity-value');
+            let entityobj = $(entity);
+            let ifr = returnifr();
+            let entityoffset = { top: $(entity).offset().top + $(ifr).offset().top, left: $(entity).offset().left + $(ifr).offset().left };
+            this.flairToolbarToggle(entityid, entityvalue, 'entity', entityoffset, entityobj);
+          }
+        }.bind(this));
       }
       if (ifr.contentDocument != null) {
-        $(ifr)
-          .contents()
-          .find("a")
-          .each(
-            function (index, a) {
-              if ($(a).css("color") === "rgb(255, 0, 0)") {
-                $(a).data("state", "down");
-              } else if ($(a).data("state") === "down") {
-                $(a).data("state", "up");
-                let url = $(a).attr("url");
-                this.linkWarningToggle(url);
-              }
-            }.bind(this)
-          );
+        $(ifr).contents().find('a').each(function (index, a) {
+          if ($(a).css('color') == 'rgb(255, 0, 0)') {
+            $(a).data('state', 'down');
+          } else if ($(a).data('state') == 'down') {
+            $(a).data('state', 'up');
+            let url = $(a).attr('url');
+            this.linkWarningToggle(url);
+          }
+        }.bind(this));
       }
     }
+
   };
 
   containerHeightAdjust = () => {
@@ -1767,23 +1726,76 @@ class EntryData extends React.Component {
     };
   }
 
+  // onLoad = () => {
+  //   if (document.getElementById('iframe_' + this.props.id) != undefined) {
+  //     if (document.getElementById('iframe_' + this.props.id).contentDocument.readyState === 'complete') {
+  //       let ifr = $('#iframe_' + this.props.id);
+  //       let ifrContents = $(ifr).contents();
+  //       let ifrContentsHead = $(ifrContents).find('head');
+  //       if (ifrContentsHead) {
+  //         if (!$(ifrContentsHead).find('link')) {
+  //           ifrContentsHead.append($('<link/>', { rel: 'stylesheet', href: 'css/sandbox.css', type: 'text/css' }));
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
+
   onLoad = () => {
-    if (document.getElementById('iframe_' + this.props.id) != undefined) {
-      if (document.getElementById('iframe_' + this.props.id).contentDocument.readyState === 'complete') {
-        let ifr = $('#iframe_' + this.props.id);
+    if (document.getElementById("iframe_" + this.props.id) !== undefined &&
+      document.getElementById("iframe_" + this.props.id) !== null) {
+      if (
+        document.getElementById("iframe_" + this.props.id).contentDocument
+          .readyState === "complete"
+      ) {
+        let ifr = $("#iframe_" + this.props.id);
         let ifrContents = $(ifr).contents();
-        let ifrContentsHead = $(ifrContents).find('head');
+        let ifrContentsHead = $(ifrContents).find("head");
         if (ifrContentsHead) {
-          if (!$(ifrContentsHead).find('link')) {
-            ifrContentsHead.append($('<link/>', { rel: 'stylesheet', href: 'css/sandbox.css', type: 'text/css' }));
+          if (!$(ifrContentsHead).find("link")) {
+            ifrContentsHead.append(
+              $("<link/>", {
+                rel: "stylesheet",
+                href: "css/sandbox.css",
+                type: "text/css"
+              })
+            );
           }
         }
+        //if (this.props.type != 'entity') {
+        setTimeout(
+          function () {
+            if (
+              document.getElementById("iframe_" + this.props.id) !== undefined &&
+              document.getElementById("iframe_" + this.props.id) !== null) {
+              document
+                .getElementById("iframe_" + this.props.id)
+                .contentWindow.requestAnimationFrame(
+                  function () {
+                    let newheight;
+                    newheight = document.getElementById(
+                      "iframe_" + this.props.id
+                    ).contentWindow.document.body.scrollHeight;
+                    newheight = newheight + "px";
+                    if (this.state.height !== newheight) {
+                      this.setState({ height: newheight });
+                    }
+                  }.bind(this)
+                );
+            }
+          }.bind(this),
+          250
+        );
+        //}
+      } else {
+        setTimeout(this.onLoad, 0);
       }
     }
-  }
+  };
+
 
   setHeight = () => {
-    if (document.getElementById('iframe_' + this.props.id) != undefined) {
+    if (document.getElementById('iframe_' + this.props.id) !== undefined) {
       document.getElementById('iframe_' + this.props.id).contentWindow.requestAnimationFrame(function () {
         let newheight;
         newheight = document.getElementById('iframe_' + this.props.id).contentWindow.document.body.scrollHeight;
@@ -1823,7 +1835,6 @@ class EntryData extends React.Component {
         <div id={entry_body_inner_id} className={'row-fluid entry-body-inner'} style={{ marginLeft: 'auto', marginRight: 'auto', width: '99.3%' }}>
           {this.props.editEntryToolbar ? <AddEntry entryAction={'Edit'} type={this.props.type} targetid={this.props.targetid} id={id} addedentry={this.props.editEntryToggle} parent={this.props.subitem.parent} errorToggle={this.props.errorToggle} /> :
             <Frame
-              key={this.generateKey()}
               //Here is new stuff
               // contentDidUpdate={this.setHeight}
               contentDidMount={this.setHeight}
@@ -1833,8 +1844,18 @@ class EntryData extends React.Component {
               sandbox={'allow-same-origin'}
               // styleSheets={['/css/sandbox.css']}
               style={{ width: '100%', height: this.state.height }}>
+
               <div dangerouslySetInnerHTML={{ __html: rawMarkup }} />
-            </Frame>}
+            </Frame>
+            // <Frame
+            //   id={"iframe_" + id}
+            //   sandbox={"allow-same-origin"}
+            //   styleSheets={["/css/sandbox.css"]}
+            //   height={this.state.height} >
+            //   <div dangerouslySetInnerHTML={{ __html: rawMarkup }} />
+            // </Frame>
+
+          }
         </div>
       </div>
     );
