@@ -72,7 +72,7 @@
         "react-scripts": "1.1.4",
         "react-table": "^6.5.1",
         "react-tag-autocomplete": "^5.6.0",
-        "react-tag-input": "^4.0.0",
+        "react-tag-input": "6.2.0",
         "react-time": "^4.0.0",
         "react-tinymce": "latest",
         "recompose": "^0.26.0",
@@ -101,7 +101,7 @@
     },
     "scripts": {
         "build": "rm -rf ../public/ && npm run sass && node scripts/build.js && node scripts/copy.js",
-        "watch": "node scripts/watch.js ",
+        "watch": "node scripts/watch.js --no-cache",
         "sass": "node-sass  ./src/styles/scss --output ./src/styles/css/"
     },
     "proxy": {

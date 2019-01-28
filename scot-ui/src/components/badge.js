@@ -1,7 +1,8 @@
 import React from 'react'
 import Button from 'react-bootstrap/lib/Button';
 import $ from 'jquery'
-const ReactTags = require('react-tag-input').WithContext;
+import { WithContext as ReactTags } from 'react-tag-input';
+
 
 export default class Badge extends React.Component {
   constructor(props) {
@@ -123,7 +124,7 @@ class NewBadge extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      suggestions: this.props.options
+      suggestions: []
     };
   }
 
@@ -163,6 +164,15 @@ class NewBadge extends React.Component {
     }
   }
 
+  handleSuggestionOrTagConversion = (oldarray) => {
+    let formattedSuggArray = oldarray.map(function (item) {
+      let newobj = {}
+      newobj['id'] = item
+      newobj['text'] = item
+      return newobj
+    });
+    return formattedSuggArray;
+  }
 
   handleInputChange = input => {
     let arr = [];
@@ -192,10 +202,11 @@ class NewBadge extends React.Component {
 
   render() {
     let suggestions = this.state.suggestions;
+    suggestions = this.handleSuggestionOrTagConversion(suggestions);
+
     return (
       <span className='tag-new'>
         <ReactTags
-          labelField="hey"
           suggestions={suggestions}
           handleAddition={this.handleAddition}
           handleDelete={this.handleDelete}
