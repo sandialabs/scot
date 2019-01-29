@@ -331,7 +331,9 @@ sub get_target_tlp {
     if ( defined $obj) {
         if ( $obj->meta->does_role("Scot::Role::TLP") ) {
             # get targets tlp, if not defined set it to unset
-            return $obj->tlp // 'unset';
+            my $tlp = $obj->tlp // 'unset';
+            $self->env->log("Setting tlp to $tlp");
+            return $tlp;
         }
     }
     return undef;
