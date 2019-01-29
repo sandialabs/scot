@@ -611,7 +611,9 @@ class AlertParent extends React.Component {
 
   componentDidUpdate = () => {
     //update the table, but not if a tinymce editor window is open as it will break the editing window
-    if (!$(".mce-tinymce")[0] && window.getSelection().toString() === "") {
+
+    // new update 1/29/19 - Adding check if iframes present when performing new gets for alertgroup and alert ie if entries exist and we need to update
+    if (!$(".mce-tinymce")[0] && window.getSelection().toString() === "" && document.getElementsByTagName('iframe').length == 0) {
       $("#sortabletable").trigger(this.state.tableSorterUpdateType);
     }
   };
@@ -1726,41 +1728,34 @@ class EntryData extends React.Component {
     };
   }
 
-  onLoad = () => {
-    if (document.getElementById('iframe_' + this.props.id) != undefined) {
-      if (document.getElementById('iframe_' + this.props.id).contentDocument.readyState === 'complete') {
-        let ifr = $('#iframe_' + this.props.id);
-        let ifrContents = $(ifr).contents();
-        let ifrContentsHead = $(ifrContents).find('head');
-        if (ifrContentsHead) {
-          if (!$(ifrContentsHead).find('link')) {
-            ifrContentsHead.append($('<link/>', { rel: 'stylesheet', href: 'css/sandbox.css', type: 'text/css' }));
-          }
-        }
-      }
-    }
-  }
 
   componentWillReceiveProps() {
-    this.onLoad();
+    // if (this._ismounted) {
+    //   this.setHeight();
+    // }
   }
 
   componentDidMount() {
-    this.onLoad();
+    this._ismounted = true;
+    this.setHeight();
   }
 
-
+  componentWillUnmount() {
+    this._ismounted = false;
+  }
 
   setHeight = () => {
-    if (document.getElementById('iframe_' + this.props.id) != undefined) {
-      document.getElementById('iframe_' + this.props.id).contentWindow.requestAnimationFrame(function () {
-        let newheight;
-        newheight = document.getElementById('iframe_' + this.props.id).contentWindow.document.body.scrollHeight;
-        newheight = newheight + 30 + 'px';
-        if (this.state.height != newheight) {
-          this.setState({ height: newheight });
-        }
-      }.bind(this));
+    if (this._ismounted === true) {
+      if (document.getElementById('iframe_' + this.props.id) != undefined) {
+        document.getElementById('iframe_' + this.props.id).contentWindow.requestAnimationFrame(function () {
+          let newheight;
+          newheight = document.getElementById('iframe_' + this.props.id).contentWindow.document.body.scrollHeight;
+          newheight = newheight + 30 + 'px';
+          if (this.state.height != newheight) {
+            this.setState({ height: newheight });
+          }
+        }.bind(this));
+      }
     }
   }
 
@@ -1784,7 +1779,7 @@ class EntryData extends React.Component {
         <div id={entry_body_inner_id} className={'row-fluid entry-body-inner'} style={{ marginLeft: 'auto', marginRight: 'auto', width: '99.3%' }}>
           {this.props.editEntryToolbar ? <AddEntry entryAction={'Edit'} type={this.props.type} targetid={this.props.targetid} id={id} addedentry={this.props.editEntryToggle} parent={this.props.subitem.parent} errorToggle={this.props.errorToggle} /> :
             <Frame
-              key = {this.props.id}
+              key={this.props.id}
               //Here is new stuff
               // contentDidUpdate={this.setHeight}
               contentDidMount={this.setHeight}
