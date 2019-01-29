@@ -330,7 +330,8 @@ sub get_target_tlp {
     my $obj = $mongo->collection(ucfirst($type))->find_one({id => $id});
     if ( defined $obj) {
         if ( $obj->meta->does_role("Scot::Role::TLP") ) {
-            return $obj->tlp;
+            # get targets tlp, if not defined set it to unset
+            return $obj->tlp // 'unset';
         }
     }
     return undef;

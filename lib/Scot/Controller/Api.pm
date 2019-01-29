@@ -443,7 +443,7 @@ sub get_one {
 
         my $object  = $collection->api_find($req_href);
         if (! defined $object ) {
-            die "Object not found";
+            die "Object not found for request:".Dumper($req_href);
         }
         my $objhref = $self->post_get_one_process($object, $req_href);
 
