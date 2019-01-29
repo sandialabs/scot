@@ -1726,76 +1726,33 @@ class EntryData extends React.Component {
     };
   }
 
-  // onLoad = () => {
-  //   if (document.getElementById('iframe_' + this.props.id) != undefined) {
-  //     if (document.getElementById('iframe_' + this.props.id).contentDocument.readyState === 'complete') {
-  //       let ifr = $('#iframe_' + this.props.id);
-  //       let ifrContents = $(ifr).contents();
-  //       let ifrContentsHead = $(ifrContents).find('head');
-  //       if (ifrContentsHead) {
-  //         if (!$(ifrContentsHead).find('link')) {
-  //           ifrContentsHead.append($('<link/>', { rel: 'stylesheet', href: 'css/sandbox.css', type: 'text/css' }));
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
-
   onLoad = () => {
-    if (document.getElementById("iframe_" + this.props.id) !== undefined &&
-      document.getElementById("iframe_" + this.props.id) !== null) {
-      if (
-        document.getElementById("iframe_" + this.props.id).contentDocument
-          .readyState === "complete"
-      ) {
-        let ifr = $("#iframe_" + this.props.id);
+    if (document.getElementById('iframe_' + this.props.id) != undefined) {
+      if (document.getElementById('iframe_' + this.props.id).contentDocument.readyState === 'complete') {
+        let ifr = $('#iframe_' + this.props.id);
         let ifrContents = $(ifr).contents();
-        let ifrContentsHead = $(ifrContents).find("head");
+        let ifrContentsHead = $(ifrContents).find('head');
         if (ifrContentsHead) {
-          if (!$(ifrContentsHead).find("link")) {
-            ifrContentsHead.append(
-              $("<link/>", {
-                rel: "stylesheet",
-                href: "css/sandbox.css",
-                type: "text/css"
-              })
-            );
+          if (!$(ifrContentsHead).find('link')) {
+            ifrContentsHead.append($('<link/>', { rel: 'stylesheet', href: 'css/sandbox.css', type: 'text/css' }));
           }
         }
-        //if (this.props.type != 'entity') {
-        setTimeout(
-          function () {
-            if (
-              document.getElementById("iframe_" + this.props.id) !== undefined &&
-              document.getElementById("iframe_" + this.props.id) !== null) {
-              document
-                .getElementById("iframe_" + this.props.id)
-                .contentWindow.requestAnimationFrame(
-                  function () {
-                    let newheight;
-                    newheight = document.getElementById(
-                      "iframe_" + this.props.id
-                    ).contentWindow.document.body.scrollHeight;
-                    newheight = newheight + "px";
-                    if (this.state.height !== newheight) {
-                      this.setState({ height: newheight });
-                    }
-                  }.bind(this)
-                );
-            }
-          }.bind(this),
-          250
-        );
-        //}
-      } else {
-        setTimeout(this.onLoad, 0);
       }
     }
-  };
+  }
+
+  componentWillReceiveProps() {
+    this.onLoad();
+  }
+
+  componentDidMount() {
+    this.onLoad();
+  }
+
 
 
   setHeight = () => {
-    if (document.getElementById('iframe_' + this.props.id) !== undefined) {
+    if (document.getElementById('iframe_' + this.props.id) != undefined) {
       document.getElementById('iframe_' + this.props.id).contentWindow.requestAnimationFrame(function () {
         let newheight;
         newheight = document.getElementById('iframe_' + this.props.id).contentWindow.document.body.scrollHeight;
@@ -1806,6 +1763,7 @@ class EntryData extends React.Component {
       }.bind(this));
     }
   }
+
 
   componentWillReceiveProps() {
     this.onLoad();
