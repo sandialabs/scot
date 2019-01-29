@@ -737,12 +737,13 @@ export class Amq {
   };
 
   create_callback_object = (key, callback) => {
-    if (this.cb_map.has(key)) {
-      this.cb_map.get(key).add(callback);
+    let intkey = parseInt(key, 10);
+    if (this.cb_map.has(intkey)) {
+      this.cb_map.get(intkey).add(callback);
     } else {
       let newset = new Set();
       newset.add(callback)
-      this.cb_map.set(key, newset)
+      this.cb_map.set(intkey, newset)
     }
   };
 
@@ -783,9 +784,11 @@ export class Amq {
         });
       }
       let noti = this.cb_map.get('notification');
-      noti.forEach(function (item) {
-        item();
-      })
+      if (noti !== undefined) {
+        noti.forEach(function (item) {
+          item();
+        })
+      }
     } catch (e) {
       throw e;
     }
