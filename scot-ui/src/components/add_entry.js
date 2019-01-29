@@ -382,6 +382,7 @@ export default class AddEntryModal extends React.Component {
             .html(),
           target_id: Number(this.props.targetid),
           target_type: this.props.type,
+          tlp: 'unset',
         };
         $.ajax({
           type: "post",
