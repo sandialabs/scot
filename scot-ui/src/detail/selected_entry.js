@@ -240,29 +240,29 @@ export default class SelectedEntry extends React.Component {
 
   Watcher = () => {
     let containerid = '#' + this.props.type + '-detail-container';
-        if( this.props.type != 'alertgroup' ) {
-            $( containerid ).find( 'iframe' ).each( function( index,ifr ) {
-            //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
-                ifr.contentWindow.requestAnimationFrame( function() {
-                    if( ifr.contentDocument != null ) {
-                        let arr = [];
-                        //arr.push(this.props.type);
-                        arr.push( this.checkFlairHover );
-                        $( ifr ).off( 'mouseenter' );
-                        $( ifr ).off( 'mouseleave' );
-                        $( ifr ).on( 'mouseenter', function( v,type ) {
-                            let intervalID = setInterval( this[0], 50, ifr );// this.flairToolbarToggle, type, this.props.linkWarningToggle, this.props.id);
-                            $( ifr ).data( 'intervalID', intervalID );
-                            console.log( 'Now watching iframe ' + intervalID );
-                        }.bind( arr ) );
-                        $( ifr ).on( 'mouseleave', function() {
-                            let intervalID = $( ifr ).data( 'intervalID' );
-                            window.clearInterval( intervalID );
-                            console.log( 'No longer watching iframe ' + intervalID );
-                        } );
-                    }
-                }.bind( this ) );
-            }.bind( this ) );
+    if (this.props.type != 'alertgroup') {
+      $(containerid).find('iframe').each(function (index, ifr) {
+        //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
+        ifr.contentWindow.requestAnimationFrame(function () {
+          if (ifr.contentDocument != null) {
+            let arr = [];
+            //arr.push(this.props.type);
+            arr.push(this.checkFlairHover);
+            $(ifr).off('mouseenter');
+            $(ifr).off('mouseleave');
+            $(ifr).on('mouseenter', function (v, type) {
+              let intervalID = setInterval(this[0], 50, ifr);// this.flairToolbarToggle, type, this.props.linkWarningToggle, this.props.id);
+              $(ifr).data('intervalID', intervalID);
+              console.log('Now watching iframe ' + intervalID);
+            }.bind(arr));
+            $(ifr).on('mouseleave', function () {
+              let intervalID = $(ifr).data('intervalID');
+              window.clearInterval(intervalID);
+              console.log('No longer watching iframe ' + intervalID);
+            });
+          }
+        }.bind(this));
+      }.bind(this));
 
     } else {
       $(containerid).find('a, .entity').not('.not_selectable').each(function (index, tr) {
@@ -1726,84 +1726,18 @@ class EntryData extends React.Component {
     };
   }
 
-  // onLoad = () => {
-  //   if (document.getElementById('iframe_' + this.props.id) != undefined) {
-  //     if (document.getElementById('iframe_' + this.props.id).contentDocument.readyState === 'complete') {
-  //       let ifr = $('#iframe_' + this.props.id);
-  //       let ifrContents = $(ifr).contents();
-  //       let ifrContentsHead = $(ifrContents).find('head');
-  //       if (ifrContentsHead) {
-  //         if (!$(ifrContentsHead).find('link')) {
-  //           ifrContentsHead.append($('<link/>', { rel: 'stylesheet', href: 'css/sandbox.css', type: 'text/css' }));
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
-
   onLoad = () => {
-    if (document.getElementById("iframe_" + this.props.id) !== undefined &&
-      document.getElementById("iframe_" + this.props.id) !== null) {
-      if (
-        document.getElementById("iframe_" + this.props.id).contentDocument
-          .readyState === "complete"
-      ) {
-        let ifr = $("#iframe_" + this.props.id);
+    if (document.getElementById('iframe_' + this.props.id) != undefined) {
+      if (document.getElementById('iframe_' + this.props.id).contentDocument.readyState === 'complete') {
+        let ifr = $('#iframe_' + this.props.id);
         let ifrContents = $(ifr).contents();
-        let ifrContentsHead = $(ifrContents).find("head");
+        let ifrContentsHead = $(ifrContents).find('head');
         if (ifrContentsHead) {
-          if (!$(ifrContentsHead).find("link")) {
-            ifrContentsHead.append(
-              $("<link/>", {
-                rel: "stylesheet",
-                href: "css/sandbox.css",
-                type: "text/css"
-              })
-            );
+          if (!$(ifrContentsHead).find('link')) {
+            ifrContentsHead.append($('<link/>', { rel: 'stylesheet', href: 'css/sandbox.css', type: 'text/css' }));
           }
         }
-        //if (this.props.type != 'entity') {
-        setTimeout(
-          function () {
-            if (
-              document.getElementById("iframe_" + this.props.id) !== undefined &&
-              document.getElementById("iframe_" + this.props.id) !== null) {
-              document
-                .getElementById("iframe_" + this.props.id)
-                .contentWindow.requestAnimationFrame(
-                  function () {
-                    let newheight;
-                    newheight = document.getElementById(
-                      "iframe_" + this.props.id
-                    ).contentWindow.document.body.scrollHeight;
-                    newheight = newheight + "px";
-                    if (this.state.height !== newheight) {
-                      this.setState({ height: newheight });
-                    }
-                  }.bind(this)
-                );
-            }
-          }.bind(this),
-          250
-        );
-        //}
-      } else {
-        setTimeout(this.onLoad, 0);
       }
-    }
-  };
-
-
-  setHeight = () => {
-    if (document.getElementById('iframe_' + this.props.id) !== undefined) {
-      document.getElementById('iframe_' + this.props.id).contentWindow.requestAnimationFrame(function () {
-        let newheight;
-        newheight = document.getElementById('iframe_' + this.props.id).contentWindow.document.body.scrollHeight;
-        newheight = newheight + 30 + 'px';
-        if (this.state.height != newheight) {
-          this.setState({ height: newheight });
-        }
-      }.bind(this));
     }
   }
 
@@ -1813,6 +1747,21 @@ class EntryData extends React.Component {
 
   componentDidMount() {
     this.onLoad();
+  }
+
+
+
+  setHeight = () => {
+    if (document.getElementById('iframe_' + this.props.id) != undefined) {
+      document.getElementById('iframe_' + this.props.id).contentWindow.requestAnimationFrame(function () {
+        let newheight;
+        newheight = document.getElementById('iframe_' + this.props.id).contentWindow.document.body.scrollHeight;
+        newheight = newheight + 30 + 'px';
+        if (this.state.height != newheight) {
+          this.setState({ height: newheight });
+        }
+      }.bind(this));
+    }
   }
 
   generateKey = () => {
@@ -1835,6 +1784,7 @@ class EntryData extends React.Component {
         <div id={entry_body_inner_id} className={'row-fluid entry-body-inner'} style={{ marginLeft: 'auto', marginRight: 'auto', width: '99.3%' }}>
           {this.props.editEntryToolbar ? <AddEntry entryAction={'Edit'} type={this.props.type} targetid={this.props.targetid} id={id} addedentry={this.props.editEntryToggle} parent={this.props.subitem.parent} errorToggle={this.props.errorToggle} /> :
             <Frame
+              key = {this.props.id}
               //Here is new stuff
               // contentDidUpdate={this.setHeight}
               contentDidMount={this.setHeight}
