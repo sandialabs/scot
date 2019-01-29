@@ -253,7 +253,7 @@ export default class AddEntryModal extends React.Component {
             .html(),
           target_id: Number(this.props.targetid),
           target_type: this.props.type,
-          tlp: ""
+          tlp: "unset"
         });
         $.ajax({
           type: "post",
@@ -335,6 +335,7 @@ export default class AddEntryModal extends React.Component {
             .html(),
           target_id: Number(this.props.targetid),
           target_type: "alert",
+          tlp: 'unset',
           parent: 0
         });
         $.ajax({
@@ -381,7 +382,6 @@ export default class AddEntryModal extends React.Component {
             .html(),
           target_id: Number(this.props.targetid),
           target_type: this.props.type,
-          tlp: "unset"
         };
         $.ajax({
           type: "post",
