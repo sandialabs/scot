@@ -784,7 +784,7 @@ export class Amq {
         });
       }
       let noti = this.cb_map.get('notification');
-      if (noti === undefined) {
+      if (noti !== undefined) {
         noti.forEach(function (item) {
           item();
         })
