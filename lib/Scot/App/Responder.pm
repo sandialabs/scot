@@ -91,7 +91,7 @@ has procmgr => (
 sub _build_procmgr {
     my $self    = shift;
     my $workers = $self->max_workers;
-    return AnyEvent::ForkManager->new(max_workers => 3);
+    return AnyEvent::ForkManager->new(max_workers => $workers);
 }
 
 has stomp   => (
