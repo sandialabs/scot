@@ -252,7 +252,8 @@ export default class AddEntryModal extends React.Component {
             .find("#tinymce")
             .html(),
           target_id: Number(this.props.targetid),
-          target_type: this.props.type
+          target_type: this.props.type,
+          tlp: ""
         });
         $.ajax({
           type: "post",
@@ -379,7 +380,8 @@ export default class AddEntryModal extends React.Component {
             .find("#tinymce")
             .html(),
           target_id: Number(this.props.targetid),
-          target_type: this.props.type
+          target_type: this.props.type,
+          tlp: "unset"
         };
         $.ajax({
           type: "post",
