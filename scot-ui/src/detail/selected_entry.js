@@ -509,11 +509,12 @@ class EntryIterator extends React.Component {
       }
     } else {
       if (type !== "alertgroup") {
+        let key = 0;
         data.forEach(
           function (data) {
             rows.push(
               <EntryParent
-                key={data.id}
+                key={key}
                 items={data}
                 type={type}
                 id={id}
@@ -523,6 +524,7 @@ class EntryIterator extends React.Component {
                 removeCallback={this.props.removeCallback}
               />
             );
+            key = key + 1
           }.bind(this)
         );
       } else {
@@ -1771,7 +1773,7 @@ class EntryData extends React.Component {
         document.getElementById('iframe_' + this.props.id).contentWindow.requestAnimationFrame(function () {
           let newheight;
           newheight = document.getElementById('iframe_' + this.props.id).contentWindow.document.body.scrollHeight;
-          newheight = newheight + 30 + 'px';
+          newheight = newheight + 35 + 'px';
           if (this.state.height != newheight) {
             this.setState({ height: newheight });
           }
@@ -1795,7 +1797,6 @@ class EntryData extends React.Component {
             <Frame
               //Here is new stuff
               key={id}
-              contentDidUpdate={this.lol}
               contentDidMount={this.setHeight}
               head={<link rel="stylesheet" type="text/css" href="/css/sandbox.css" />}
               //end of new stuff
