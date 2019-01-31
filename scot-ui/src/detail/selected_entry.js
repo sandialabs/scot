@@ -12,7 +12,7 @@ import Summary from '../components/summary'
 import Task from "../components/task"
 import SelectedPermission from "../components/permission.js";
 import Frame from 'react-frame-component';
-//import Frame from "../components/frame";
+//import Frame from "../components/frame/src";
 import AddFlair from "../components/add_flair";
 import LinkWarning from "../modal/link_warning"
 import { Link } from 'react-router-dom'
@@ -23,6 +23,7 @@ import EntityCreateModal from "../modal/entity_create"
 import CustomMetaDataTable from "../components/custom_metadata_table";
 import tablesorter from 'tablesorter'
 import axios from 'axios'
+import { connect } from "net";
 
 
 export default class SelectedEntry extends React.Component {
@@ -480,6 +481,7 @@ export default class SelectedEntry extends React.Component {
 }
 
 class EntryIterator extends React.Component {
+
   render = () => {
     let rows = [];
     let data = this.props.data;
@@ -1275,12 +1277,32 @@ class EntryParent extends React.Component {
       permissionsToolbar: false,
       fileUploadToolbar: false,
       showEntityCreateModal: false,
-      highlightedText: null
+      highlightedText: null,
+      items: {},
     };
   }
 
+  componentWillUnmount() {
+    this.props.removeCallback(this.props.items.id)
+  }
+
+  // static getDerivedStateFromProps(nextProps, prevState) {
+  //   if (nextProps.items !== prevState.items) {
+  //     return ({ items: nextProps.items }) // <- this is setState equivalent
+  //   }
+  // }
+
+  // shouldComponentUpdate(nextprops, nextstate) {
+  //   if (nextprops.items.class !== this.props.items.class) {
+  //     return true
+  //   } else {
+  //     return false
+  //   }
+  // }
+
   componentDidMount = () => {
     this.props.createCallback(this.props.items.id, this.refreshButton);
+    // this.setState({ items: this.props.items })
     // Store.storeKey(this.props.items.id);
     // Store.addChangeListener(this.refreshButton);
   };
@@ -1728,24 +1750,23 @@ class EntryData extends React.Component {
     };
   }
 
-
-  componentWillReceiveProps() {
-    // if (this._ismounted) {
-    //   this.setHeight();
-    // }
+  componentWillUnmount() {
+    console.log('hey')
   }
-
-  componentDidMount() {
-    this._ismounted = true;
+  componentWillReceiveProps() {
     this.setHeight();
   }
 
-  componentWillUnmount() {
-    this._ismounted = false;
+  componentDidMount() {
+    this.setHeight();
+  }
+
+  lol = () => {
+    console.log("content chnaged")
   }
 
   setHeight = () => {
-    if (this._ismounted === true) {
+    setTimeout(function () {
       if (document.getElementById('iframe_' + this.props.id) != undefined) {
         document.getElementById('iframe_' + this.props.id).contentWindow.requestAnimationFrame(function () {
           let newheight;
@@ -1756,14 +1777,7 @@ class EntryData extends React.Component {
           }
         }.bind(this));
       }
-    }
-  }
-
-  generateKey = () => {
-    var S4 = function () {
-      return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
-    };
-    return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4());
+    }.bind(this), 250);
   }
 
   render() {
@@ -1779,17 +1793,16 @@ class EntryData extends React.Component {
         <div id={entry_body_inner_id} className={'row-fluid entry-body-inner'} style={{ marginLeft: 'auto', marginRight: 'auto', width: '99.3%' }}>
           {this.props.editEntryToolbar ? <AddEntry entryAction={'Edit'} type={this.props.type} targetid={this.props.targetid} id={id} addedentry={this.props.editEntryToggle} parent={this.props.subitem.parent} errorToggle={this.props.errorToggle} /> :
             <Frame
-              key={this.props.id}
               //Here is new stuff
-              // contentDidUpdate={this.setHeight}
+              key={id}
+              contentDidUpdate={this.lol}
               contentDidMount={this.setHeight}
               head={<link rel="stylesheet" type="text/css" href="/css/sandbox.css" />}
               //end of new stuff
-              frameBorder={'0'} id={'iframe_' + id}
+              frameBorder={'0'}
+              id={'iframe_' + id}
               sandbox={'allow-same-origin'}
-              // styleSheets={['/css/sandbox.css']}
               style={{ width: '100%', height: this.state.height }}>
-
               <div dangerouslySetInnerHTML={{ __html: rawMarkup }} />
             </Frame>
             // <Frame
