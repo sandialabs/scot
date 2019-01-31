@@ -1,7 +1,7 @@
 import React from "react";
 import $ from "jquery";
 import * as SessionStorage from "../utils/session_storage";
-let TinyMCE = require("react-tinymce");
+import { Editor } from '@tinymce/tinymce-react';
 let Button = require("react-bootstrap/lib/Button.js");
 let Prompt = require("react-router-dom").Prompt;
 let Link = require("react-router-dom").Link;
@@ -94,113 +94,6 @@ export default class AddEntryModal extends React.Component {
 
   shouldComponentUpdate = () => {
     return false; //prevent updating this component because it causes the page container to scroll upwards and lose focus due to a bug in paste_preprocess. If this is removed it will cause abnormal scrolling.
-  };
-
-  render = () => {
-    let not_saved_entry_id = "not_saved_entry_" + this.state.key;
-    return (
-      <div id={not_saved_entry_id} className={"not_saved_entry"}>
-        <div
-          className={"row-fluid entry-outer"}
-          style={{
-            border: "3px solid blue",
-            marginLeft: "auto",
-            marginRight: "auto",
-            width: "99.3%"
-          }}
-        >
-          <div className={"row-fluid entry-header"}>
-            <div className="entry-header-inner">
-              [
-              <Link style={{ color: "black" }} to={"not_saved_0"}>
-                Not_Saved_0
-              </Link>
-              ]by {this.state.whoami}
-              <span
-                className="pull-right"
-                style={{ display: "inline-flex", paddingRight: "3px" }}
-              >
-                {this.props.entryAction === "Export" ? (
-                  <Button
-                    bsSize={"xsmall"}
-                    onClick={this.exportContent}
-                    bsStyle={"success"}
-                  >
-                    Export
-                  </Button>
-                ) : (
-                    <Button
-                      bsSize={"xsmall"}
-                      onClick={this.submit}
-                      bsStyle={"success"}
-                    >
-                      Submit
-                  </Button>
-                  )}
-                <Button bsSize={"xsmall"} onClick={this.onCancel}>
-                  Cancel
-                </Button>
-              </span>
-            </div>
-          </div>
-          {this.state.asyncContentLoaded ? (
-            <TinyMCE
-              id={this.state.tinyID}
-              content={this.state.content}
-              className={"inputtext"}
-              config={{
-                auto_focus: this.state.tinyID,
-                selector: "textarea",
-                plugins:
-                  "advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textcolor colorpicker textpattern imagetools",
-                table_clone_elements:
-                  "strong em b i font h1 h2 h3 h4 h5 h6 p div",
-                paste_retain_style_properties: "all",
-                paste_data_images: true,
-                paste_preprocess: function (plugin, args) {
-                  function replaceA(string) {
-                    return string.replace(/<(\/)?a([^>]*)>/g, "<$1span$2>");
-                  }
-                  args.content = replaceA(args.content) + " ";
-                },
-                relative_urls: false,
-                remove_script_host: false,
-                link_assume_external_targets: true,
-                toolbar1:
-                  "full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime | customBlockquote",
-                theme: "modern",
-                content_css: "/css/entryeditor.css",
-                height: 250,
-                verify_html: false,
-                setup: function (editor) {
-                  function blockquote() {
-                    return "<blockquote><p><br></p></blockquote>";
-                  }
-
-                  function insertBlockquote() {
-                    let html = blockquote();
-                    editor.insertContent(html);
-                  }
-
-                  editor.addButton("customBlockquote", {
-                    text: "500px max-height blockquote",
-                    //image: 'http://p.yusukekamiyamane.com/icons/search/fugue/icons/calendar-blue.png',
-                    tooltip: "Insert a 500px max-height div (blockquote)",
-                    onclick: insertBlockquote
-                  });
-                }
-              }}
-            />
-          ) : (
-              <div>Loading Editor...</div>
-            )}
-        </div>
-        <Prompt
-          when={this.state.leaveCatch}
-          message="Unsubmitted entry detected. You may want to submit or copy the contents of the entry before navigating elsewhere. Click CANCEL to prevent navigation elsewhere."
-        />
-      </div>
-    );
   };
 
   onCancel = () => {
@@ -506,4 +399,167 @@ export default class AddEntryModal extends React.Component {
       });
     }
   };
+
+  render = () => {
+    let not_saved_entry_id = "not_saved_entry_" + this.state.key;
+    return (
+      <div id={not_saved_entry_id} className={"not_saved_entry"}>
+        <div
+          className={"row-fluid entry-outer"}
+          style={{
+            border: "3px solid blue",
+            marginLeft: "auto",
+            marginRight: "auto",
+            width: "99.3%"
+          }}
+        >
+          <div className={"row-fluid entry-header"}>
+            <div className="entry-header-inner">
+              [
+              <Link style={{ color: "black" }} to={"not_saved_0"}>
+                Not_Saved_0
+              </Link>
+              ]by {this.state.whoami}
+              <span
+                className="pull-right"
+                style={{ display: "inline-flex", paddingRight: "3px" }}
+              >
+                {this.props.entryAction === "Export" ? (
+                  <Button
+                    bsSize={"xsmall"}
+                    onClick={this.exportContent}
+                    bsStyle={"success"}
+                  >
+                    Export
+                  </Button>
+                ) : (
+                    <Button
+                      bsSize={"xsmall"}
+                      onClick={this.submit}
+                      bsStyle={"success"}
+                    >
+                      Submit
+                  </Button>
+                  )}
+                <Button bsSize={"xsmall"} onClick={this.onCancel}>
+                  Cancel
+                </Button>
+              </span>
+            </div>
+          </div>
+          {this.state.asyncContentLoaded ? (
+            <Editor
+              id={this.state.tinyID}
+              // content={this.state.content}
+              className={"inputtext"}
+              initialValue={this.state.content}
+              plugins={'advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textcolor colorpicker textpattern imagetools'}
+              // init={{
+              //   plugins: 'link image code',
+              //   toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | code'
+              // }}
+              onEditorChange={this.handleEditorChange}
+              init={{
+                auto_focus: this.state.tinyID,
+                selector: "textarea",
+                plugins:
+                  "advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textcolor colorpicker textpattern imagetools",
+                table_clone_elements:
+                  "strong em b i font h1 h2 h3 h4 h5 h6 p div",
+                paste_retain_style_properties: "all",
+                paste_data_images: true,
+                paste_preprocess: function (plugin, args) {
+                  function replaceA(string) {
+                    return string.replace(/<(\/)?a([^>]*)>/g, "<$1span$2>");
+                  }
+                  args.content = replaceA(args.content) + " ";
+                },
+                relative_urls: false,
+                remove_script_host: false,
+                link_assume_external_targets: true,
+                toolbar1:
+                  "full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime | customBlockquote",
+                theme: "modern",
+                content_css: "/css/entryeditor.css",
+                height: 250,
+                verify_html: false,
+                setup: function (editor) {
+                  function blockquote() {
+                    return "<blockquote><p><br></p></blockquote>";
+                  }
+
+                  function insertBlockquote() {
+                    let html = blockquote();
+                    editor.insertContent(html);
+                  }
+
+                  editor.addButton("customBlockquote", {
+                    text: "500px max-height blockquote",
+                    //image: 'http://p.yusukekamiyamane.com/icons/search/fugue/icons/calendar-blue.png',
+                    tooltip: "Insert a 500px max-height div (blockquote)",
+                    onclick: insertBlockquote
+                  });
+                }
+              }}
+            />
+            // <TinyMCE
+            //   id={this.state.tinyID}
+            //   content={this.state.content}
+            //   className={"inputtext"}
+            //   config={{
+            //     auto_focus: this.state.tinyID,
+            //     selector: "textarea",
+            //     plugins:
+            //       "advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textcolor colorpicker textpattern imagetools",
+            //     table_clone_elements:
+            //       "strong em b i font h1 h2 h3 h4 h5 h6 p div",
+            //     paste_retain_style_properties: "all",
+            //     paste_data_images: true,
+            //     paste_preprocess: function (plugin, args) {
+            //       function replaceA(string) {
+            //         return string.replace(/<(\/)?a([^>]*)>/g, "<$1span$2>");
+            //       }
+            //       args.content = replaceA(args.content) + " ";
+            //     },
+            //     relative_urls: false,
+            //     remove_script_host: false,
+            //     link_assume_external_targets: true,
+            //     toolbar1:
+            //       "full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime | customBlockquote",
+            //     theme: "modern",
+            //     content_css: "/css/entryeditor.css",
+            //     height: 250,
+            //     verify_html: false,
+            //     setup: function (editor) {
+            //       function blockquote() {
+            //         return "<blockquote><p><br></p></blockquote>";
+            //       }
+
+            //       function insertBlockquote() {
+            //         let html = blockquote();
+            //         editor.insertContent(html);
+            //       }
+
+            //       editor.addButton("customBlockquote", {
+            //         text: "500px max-height blockquote",
+            //         //image: 'http://p.yusukekamiyamane.com/icons/search/fugue/icons/calendar-blue.png',
+            //         tooltip: "Insert a 500px max-height div (blockquote)",
+            //         onclick: insertBlockquote
+            //       });
+            //     }
+            //   }}
+            // />
+          ) : (
+              <div>Loading Editor...</div>
+            )}
+        </div>
+        <Prompt
+          when={this.state.leaveCatch}
+          message="Unsubmitted entry detected. You may want to submit or copy the contents of the entry before navigating elsewhere. Click CANCEL to prevent navigation elsewhere."
+        />
+      </div>
+    );
+  };
+
+
 }
