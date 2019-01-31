@@ -736,8 +736,20 @@ export class Amq {
     });
   };
 
+  checkNumber(number) {
+    let parsed = parseInt(number, 10);
+    if (isNaN(parsed)) {
+      return false
+    } else {
+      return true;
+    }
+  }
+
   create_callback_object = (key, callback) => {
-    let intkey = parseInt(key, 10);
+    let intkey = key;
+    if (this.checkNumber(intkey)) {
+      intkey = parseInt(intkey, 10)
+    }
     if (this.cb_map.has(intkey)) {
       this.cb_map.get(intkey).add(callback);
     } else {
@@ -784,7 +796,7 @@ export class Amq {
         });
       }
       let noti = this.cb_map.get('notification');
-      if (noti === undefined) {
+      if (noti !== undefined) {
         noti.forEach(function (item) {
           item();
         })

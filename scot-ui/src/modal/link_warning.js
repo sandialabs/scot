@@ -27,13 +27,13 @@ export default class LinkWarning extends React.Component {
     );
     let linkRegResult = this.props.link.match(reg);
     let myDomainRegResult = myDomain.match(reg);
-    if (linkRegResult !== undefined && myDomainRegResult !== undefined) {
+    if (linkRegResult != undefined && myDomainRegResult != undefined) {
       let linkDomain = linkRegResult[3];
       let myDomain = myDomainRegResult[3];
       if (linkDomain === myDomain) {
         this.proceed();
       }
-    } else if (linkRegResult === undefined) {
+    } else if (linkRegResult == undefined) {
       this.proceed();
     }
     /*

@@ -305,7 +305,8 @@ const columnDefinitions = {
     AppliesTo: {
         Header: 'Applies To',
         accessor: 'applies_to',
-        Filter: customFilters.stringFilter,
+        // Filter: customFilters.stringFilter,
+        Filter: customFilters.tagFilter,
         minWidth: 400,
         maxWidth: 5000,
     },

@@ -12,7 +12,7 @@ import Summary from '../components/summary'
 import Task from "../components/task"
 import SelectedPermission from "../components/permission.js";
 import Frame from 'react-frame-component';
-//import Frame from "../components/frame";
+//import Frame from "../components/frame/src";
 import AddFlair from "../components/add_flair";
 import LinkWarning from "../modal/link_warning"
 import { Link } from 'react-router-dom'
@@ -23,6 +23,7 @@ import EntityCreateModal from "../modal/entity_create"
 import CustomMetaDataTable from "../components/custom_metadata_table";
 import tablesorter from 'tablesorter'
 import axios from 'axios'
+import { connect } from "net";
 
 
 export default class SelectedEntry extends React.Component {
@@ -240,29 +241,29 @@ export default class SelectedEntry extends React.Component {
 
   Watcher = () => {
     let containerid = '#' + this.props.type + '-detail-container';
-        if( this.props.type != 'alertgroup' ) {
-            $( containerid ).find( 'iframe' ).each( function( index,ifr ) {
-            //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
-                ifr.contentWindow.requestAnimationFrame( function() {
-                    if( ifr.contentDocument != null ) {
-                        let arr = [];
-                        //arr.push(this.props.type);
-                        arr.push( this.checkFlairHover );
-                        $( ifr ).off( 'mouseenter' );
-                        $( ifr ).off( 'mouseleave' );
-                        $( ifr ).on( 'mouseenter', function( v,type ) {
-                            let intervalID = setInterval( this[0], 50, ifr );// this.flairToolbarToggle, type, this.props.linkWarningToggle, this.props.id);
-                            $( ifr ).data( 'intervalID', intervalID );
-                            console.log( 'Now watching iframe ' + intervalID );
-                        }.bind( arr ) );
-                        $( ifr ).on( 'mouseleave', function() {
-                            let intervalID = $( ifr ).data( 'intervalID' );
-                            window.clearInterval( intervalID );
-                            console.log( 'No longer watching iframe ' + intervalID );
-                        } );
-                    }
-                }.bind( this ) );
-            }.bind( this ) );
+    if (this.props.type != 'alertgroup') {
+      $(containerid).find('iframe').each(function (index, ifr) {
+        //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
+        ifr.contentWindow.requestAnimationFrame(function () {
+          if (ifr.contentDocument != null) {
+            let arr = [];
+            //arr.push(this.props.type);
+            arr.push(this.checkFlairHover);
+            $(ifr).off('mouseenter');
+            $(ifr).off('mouseleave');
+            $(ifr).on('mouseenter', function (v, type) {
+              let intervalID = setInterval(this[0], 50, ifr);// this.flairToolbarToggle, type, this.props.linkWarningToggle, this.props.id);
+              $(ifr).data('intervalID', intervalID);
+              console.log('Now watching iframe ' + intervalID);
+            }.bind(arr));
+            $(ifr).on('mouseleave', function () {
+              let intervalID = $(ifr).data('intervalID');
+              window.clearInterval(intervalID);
+              console.log('No longer watching iframe ' + intervalID);
+            });
+          }
+        }.bind(this));
+      }.bind(this));
 
     } else {
       $(containerid).find('a, .entity').not('.not_selectable').each(function (index, tr) {
@@ -480,6 +481,7 @@ export default class SelectedEntry extends React.Component {
 }
 
 class EntryIterator extends React.Component {
+
   render = () => {
     let rows = [];
     let data = this.props.data;
@@ -507,11 +509,12 @@ class EntryIterator extends React.Component {
       }
     } else {
       if (type !== "alertgroup") {
+        let key = 0;
         data.forEach(
           function (data) {
             rows.push(
               <EntryParent
-                key={data.id}
+                key={key}
                 items={data}
                 type={type}
                 id={id}
@@ -521,6 +524,7 @@ class EntryIterator extends React.Component {
                 removeCallback={this.props.removeCallback}
               />
             );
+            key = key + 1
           }.bind(this)
         );
       } else {
@@ -611,7 +615,9 @@ class AlertParent extends React.Component {
 
   componentDidUpdate = () => {
     //update the table, but not if a tinymce editor window is open as it will break the editing window
-    if (!$(".mce-tinymce")[0] && window.getSelection().toString() === "") {
+
+    // new update 1/29/19 - Adding check if iframes present when performing new gets for alertgroup and alert ie if entries exist and we need to update
+    if (!$(".mce-tinymce")[0] && window.getSelection().toString() === "" && document.getElementsByTagName('iframe').length == 0) {
       $("#sortabletable").trigger(this.state.tableSorterUpdateType);
     }
   };
@@ -1273,12 +1279,32 @@ class EntryParent extends React.Component {
       permissionsToolbar: false,
       fileUploadToolbar: false,
       showEntityCreateModal: false,
-      highlightedText: null
+      highlightedText: null,
+      items: {},
     };
   }
 
+  componentWillUnmount() {
+    this.props.removeCallback(this.props.items.id)
+  }
+
+  // static getDerivedStateFromProps(nextProps, prevState) {
+  //   if (nextProps.items !== prevState.items) {
+  //     return ({ items: nextProps.items }) // <- this is setState equivalent
+  //   }
+  // }
+
+  // shouldComponentUpdate(nextprops, nextstate) {
+  //   if (nextprops.items.class !== this.props.items.class) {
+  //     return true
+  //   } else {
+  //     return false
+  //   }
+  // }
+
   componentDidMount = () => {
     this.props.createCallback(this.props.items.id, this.refreshButton);
+    // this.setState({ items: this.props.items })
     // Store.storeKey(this.props.items.id);
     // Store.addChangeListener(this.refreshButton);
   };
@@ -1726,58 +1752,34 @@ class EntryData extends React.Component {
     };
   }
 
-  onLoad = () => {
-    if (document.getElementById('iframe_' + this.props.id) != undefined) {
-      if (document.getElementById('iframe_' + this.props.id).contentDocument.readyState === 'complete') {
-        let ifr = $('#iframe_' + this.props.id);
-        let ifrContents = $(ifr).contents();
-        let ifrContentsHead = $(ifrContents).find('head');
-        if (ifrContentsHead) {
-          if (!$(ifrContentsHead).find('link')) {
-            ifrContentsHead.append($('<link/>', { rel: 'stylesheet', href: 'css/sandbox.css', type: 'text/css' }));
-          }
-        }
-      }
-    }
+  componentWillUnmount() {
+    console.log('hey')
   }
-
   componentWillReceiveProps() {
-    this.onLoad();
+    this.setHeight();
   }
 
   componentDidMount() {
-    this.onLoad();
+    this.setHeight();
   }
 
-
+  lol = () => {
+    console.log("content chnaged")
+  }
 
   setHeight = () => {
-    if (document.getElementById('iframe_' + this.props.id) != undefined) {
-      document.getElementById('iframe_' + this.props.id).contentWindow.requestAnimationFrame(function () {
-        let newheight;
-        newheight = document.getElementById('iframe_' + this.props.id).contentWindow.document.body.scrollHeight;
-        newheight = newheight + 30 + 'px';
-        if (this.state.height != newheight) {
-          this.setState({ height: newheight });
-        }
-      }.bind(this));
-    }
-  }
-
-
-  componentWillReceiveProps() {
-    this.onLoad();
-  }
-
-  componentDidMount() {
-    this.onLoad();
-  }
-
-  generateKey = () => {
-    var S4 = function () {
-      return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
-    };
-    return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4());
+    setTimeout(function () {
+      if (document.getElementById('iframe_' + this.props.id) != undefined) {
+        document.getElementById('iframe_' + this.props.id).contentWindow.requestAnimationFrame(function () {
+          let newheight;
+          newheight = document.getElementById('iframe_' + this.props.id).contentWindow.document.body.scrollHeight;
+          newheight = newheight + 35 + 'px';
+          if (this.state.height != newheight) {
+            this.setState({ height: newheight });
+          }
+        }.bind(this));
+      }
+    }.bind(this), 250);
   }
 
   render() {
@@ -1794,15 +1796,14 @@ class EntryData extends React.Component {
           {this.props.editEntryToolbar ? <AddEntry entryAction={'Edit'} type={this.props.type} targetid={this.props.targetid} id={id} addedentry={this.props.editEntryToggle} parent={this.props.subitem.parent} errorToggle={this.props.errorToggle} /> :
             <Frame
               //Here is new stuff
-              // contentDidUpdate={this.setHeight}
+              key={id}
               contentDidMount={this.setHeight}
               head={<link rel="stylesheet" type="text/css" href="/css/sandbox.css" />}
               //end of new stuff
-              frameBorder={'0'} id={'iframe_' + id}
+              frameBorder={'0'}
+              id={'iframe_' + id}
               sandbox={'allow-same-origin'}
-              // styleSheets={['/css/sandbox.css']}
               style={{ width: '100%', height: this.state.height }}>
-
               <div dangerouslySetInnerHTML={{ __html: rawMarkup }} />
             </Frame>
             // <Frame
