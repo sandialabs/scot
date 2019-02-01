@@ -105,21 +105,23 @@ sub _build_stomp {
     my $self    = shift;
     my $host    = $self->stomp_host;
     my $port    = $self->stomp_port;
-    return AnyEvent::STOMP::Client->new($host,$port);
+    my $dest    = $self->destination;
+    my $factory = Scot::Util::StompFactory->new({ host => $host, port => $port, destination => $dest});
+    return $factory->get_stomp_client;
 }
 
-has topic   => (
+has destination   => (
     is      => 'rw',
     isa     => 'Str',
     required    => 1,
-    builder     => '_build_topic',
+    builder     => '_build_destination',
 );
 
-sub _build_topic {
+sub _build_destination {
     my $self    = shift;
-    my $attr    = "topic";
+    my $attr    = "destination";
     my $default = "/topic/scot";
-    my $envname = "scot_reflair_topic";
+    my $envname = "scot_stomp_destination";
     return $self->get_config_value($attr, $default, $envname);
 }
 
@@ -133,20 +135,6 @@ sub run {
     my $name    = $self->name;
 
     $log->debug("Starting Responder $name daemon");
-
-    $stomp->connect();
-    $stomp->on_connected(sub {
-        my $stomp    = shift;
-        $stomp->subscribe($topic);
-        $log->debug("subscribed to $topic");
-    });
-
-    $stomp->on_connect_error(sub {
-        my $stomp   = shift;
-        $log->error("ERROR connecting to STOMP server.  Will retry in 10 secs");
-        sleep 10;
-        $stomp->connect();
-    });
 
     $pm->on_start(sub {
         my $pm      = shift;
