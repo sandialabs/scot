@@ -115,13 +115,63 @@ sub create {
 sub pre_create_process {
     my $self        = shift;
     my $req_href    = shift;
+    my $env         = $self->env;
+    my $log         = $env->log;
     my $req         = $req_href->{request};
     my $json        = $req->{json};
     my $collection  = $req_href->{collection};
+    my $usergroups  = $self->session('groups');
 
     if ($collection eq "entitytype") {
         # place data cleansing here for creation of entitytype
         # clean both entity name and type
+    }
+    
+    # hacky way to check for permissions being set explicitly, or if not
+    # set them to the permissions of the user and as a last resort
+    # env->default_groups
+    my @permissions = (qw(Alert Alertgroup Checklist Entry Event File Guide
+                          Incident Intel Signature));
+    if ( grep {/$collection/i} @permissions ) {
+        $log->debug("We have thing that should have permissions");
+        if ( defined $json->{groups} ) {
+            if ( defined $json->{groups}->{read} ) {
+                $log->debug("using passed in read groups: ".
+                    join(', ',@{$json->{groups}->{read}}));
+            }
+            else {
+                if ( defined $usergroups ) {
+                    $json->{groups}->{read} = $usergroups;
+                }
+                else {
+                    $json->{groups}->{read} = $env->default_groups->{read};
+                }
+            }
+            if ( defined $json->{groups}->{modify} ) {
+                $log->debug("using passed in modify groups: ".
+                    join(', ',@{$json->{groups}->{modify}}));
+                    
+            }
+            else {
+                if ( defined $usergroups ) {
+                    $json->{groups}->{modify} = $usergroups;
+                }
+                else {
+                    $json->{groups}->{modify} = $env->default_groups->{modify};
+                }
+            }
+        }
+        else {
+            if ( defined $usergroups ) {
+                $json->{groups} = {
+                    read    => $usergroups,
+                    modify  => $usergroups,
+                };
+            }
+            else {
+                $json->{groups} = $env->default_groups;
+            }
+        }
     }
 }
 
