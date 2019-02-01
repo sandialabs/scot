@@ -913,6 +913,7 @@ export default class SelectedHeader extends React.Component {
                   highlightedText={this.state.highlightedText}
                   form={this.props.form}
                   createCallback={this.props.createCallback}
+                  removeCallback={this.props.removeCallback}
                 />
               ) : null}
               {this.state.showEventData && type === "entity" ? (
