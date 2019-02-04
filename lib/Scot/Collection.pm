@@ -1,6 +1,6 @@
 package Scot::Collection;
 
-use v5.18;
+use v5.16;
 use lib '../../lib';
 use strict;
 use warnings;
@@ -47,12 +47,8 @@ override 'create' => sub {
     push @args, "id" => $iid;
     push @args, "location" => $location;
 
-    if ( $self->class->meta->does_role("Scot::Role::Permittable") ) {
-        $log->trace("Checking for group permissions !!!!!!!");
-        $self->get_group_permissions(\@args);
-    }
 
-    $log->trace("creating with : ",{filter=>\&Dumper, value=>\@args});
+    $log->debug("creating with : ",{filter=>\&Dumper, value=>\@args});
 
     my $obj = $self->class->new( @args, _collection => $self );
     $self->_save($obj);
@@ -69,10 +65,6 @@ sub exact_create {
 #    $log->trace("In exact create");
 
     my @args    = ( ref $args->[0] eq 'HASH' ? %{$args->[0]} : @$args );
-    if ( $self->class->meta->does_role("Scot::Role::Permittable") ) {
-        $log->trace("Checking for group permissions !!!!!!!");
-        $self->get_group_permissions(\@args);
-    }
 
     my $obj;
     eval {
@@ -334,37 +326,6 @@ sub get_targets {
     $self->env->log->debug("get targets: ",{ filter =>\&Dumper, value => $search});
     my $cursor  = $self->find($search);
     return $cursor;
-}
-
-sub get_group_permissions {
-    my $self    = shift;
-    my $aref    = shift;    # using ref allows us to modify array here 
-    my $env     = $self->env;
-    my $log     = $self->env->log;
-
-    # check the araf for readgroups/modifygroups explicitly passed in from api and 
-    # 
-    my $rgflag = 0;
-    my $mgflag = 0;
-    foreach my $arg (@$aref) {
-        $log->trace("arg is $arg");
-        
-        if ( $arg eq "readgroups" ) {
-            $rgflag++;
-        }
-        if ( $arg eq "modifygroups" ) {
-            $mgflag++;
-        }
-    }
-    unless ($rgflag) {
-        $log->trace("adding default readgroups");
-        push @$aref, "readgroups" => $env->default_groups->{read};
-    }
-    unless ($mgflag) {
-        $log->trace("adding default modifygroups");
-        push @$aref, "modifygroups" => $env->default_groups->{modify};
-    }
-
 }
 
 sub get_value_from_request {

@@ -311,12 +311,34 @@ override api_create => sub {
         id      => $target_id,
     };
     $json->{owner}  = $user;
+    if ( ! defined $json->{tlp} ) {
+        $json->{tlp} = $self->get_target_tlp($target_type, $target_id);
+    }
     if ( $json->{class} eq "json" ) {
         # we need to create body from json in metadata
         $json->{body}   = $self->create_json_html($json->{metadata});
     }
     return $self->create($json);
 };
+
+sub get_target_tlp {
+    my $self    = shift;
+    my $type    = shift;
+    my $id      = shift;
+    my $mongo   = $self->env->mongo;
+
+    my $obj = $mongo->collection(ucfirst($type))->find_one({id => $id});
+    if ( defined $obj) {
+        if ( $obj->meta->does_role("Scot::Role::TLP") ) {
+            # get targets tlp, if not defined set it to unset
+            my $tlp = $obj->tlp // 'unset';
+            $self->env->log->debug("Setting tlp to $tlp");
+            return $tlp;
+        }
+    }
+    return undef;
+}
+
 
 sub create_json_html {
     my $self    = shift;

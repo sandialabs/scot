@@ -7,7 +7,7 @@ use lib '../../lib';
 use lib '../../Scot-Internal-Modules/lib';
 use lib '/opt/scot/lib';
 use Scot::Env;
-use v5.18;
+use v5.16;
 
 my $config_file = $ENV{'scot_app_fix_id_config_file'} //
                         '/opt/scot/etc/scot.cfg.pl';

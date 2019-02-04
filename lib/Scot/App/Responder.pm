@@ -23,7 +23,6 @@ use Scot::Env;
 use Scot::App;
 use strict;
 use warnings;
-use v5.18;
 
 use Moose;
 extends 'Scot::App';
@@ -92,7 +91,7 @@ has procmgr => (
 sub _build_procmgr {
     my $self    = shift;
     my $workers = $self->max_workers;
-    return AnyEvent::ForkManager->new(max_workers => 3);
+    return AnyEvent::ForkManager->new(max_workers => $workers);
 }
 
 has stomp   => (

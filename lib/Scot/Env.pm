@@ -1,6 +1,5 @@
 package Scot::Env;
 
-use v5.18;
 use strict;
 use warnings;
 

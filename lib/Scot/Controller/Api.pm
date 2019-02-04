@@ -115,13 +115,63 @@ sub create {
 sub pre_create_process {
     my $self        = shift;
     my $req_href    = shift;
+    my $env         = $self->env;
+    my $log         = $env->log;
     my $req         = $req_href->{request};
     my $json        = $req->{json};
     my $collection  = $req_href->{collection};
+    my $usergroups  = $self->session('groups');
 
     if ($collection eq "entitytype") {
         # place data cleansing here for creation of entitytype
         # clean both entity name and type
+    }
+    
+    # hacky way to check for permissions being set explicitly, or if not
+    # set them to the permissions of the user and as a last resort
+    # env->default_groups
+    my @permissions = (qw(Alert Alertgroup Checklist Entry Event File Guide
+                          Incident Intel Signature));
+    if ( grep {/$collection/i} @permissions ) {
+        $log->debug("We have thing that should have permissions");
+        if ( defined $json->{groups} ) {
+            if ( defined $json->{groups}->{read} ) {
+                $log->debug("using passed in read groups: ".
+                    join(', ',@{$json->{groups}->{read}}));
+            }
+            else {
+                if ( defined $usergroups ) {
+                    $json->{groups}->{read} = $usergroups;
+                }
+                else {
+                    $json->{groups}->{read} = $env->default_groups->{read};
+                }
+            }
+            if ( defined $json->{groups}->{modify} ) {
+                $log->debug("using passed in modify groups: ".
+                    join(', ',@{$json->{groups}->{modify}}));
+                    
+            }
+            else {
+                if ( defined $usergroups ) {
+                    $json->{groups}->{modify} = $usergroups;
+                }
+                else {
+                    $json->{groups}->{modify} = $env->default_groups->{modify};
+                }
+            }
+        }
+        else {
+            if ( defined $usergroups ) {
+                $json->{groups} = {
+                    read    => $usergroups,
+                    modify  => $usergroups,
+                };
+            }
+            else {
+                $json->{groups} = $env->default_groups;
+            }
+        }
     }
 }
 
@@ -178,6 +228,20 @@ sub post_create_process {
         $mongo->collection('Stat')->put_stat(
             'alert created', $object->alert_count
         );
+    }
+
+    if ( ref($object) eq "Scot::Model::Alert" ) {
+        $mongo->collection('Stat')->put_stat(
+            'alert created', 1
+        );
+        $self->env->mq->send("/topic/scot", {
+            action  => "updated",
+            data    => {
+                who     => $self->session('user'),
+                type    => 'alertgroup',
+                id      => $object->alertgroup,
+            }
+        });
     }
 
     return $json;
@@ -312,9 +376,11 @@ sub post_list_process {
         }
     }
     elsif ( $thing      eq "alertgroup" ) {
+        $log->debug("alertgroup processing");
         while ( my $obj = $cursor->next ) {
             my $agid = $obj->id;
             my $href = $obj->as_hash;
+            $log->debug("looking at alertgroup $agid");
             $href->{has_tasks} = 0;
             my $acur = $self->env->mongo->collection('Alert')->find({alertgroup => $agid});
             ALERT:
@@ -325,6 +391,7 @@ sub post_list_process {
                     last ALERT;
                 }
             }
+            $log->debug("pushing on records: ",{filter=>\&Dumper, value=>$href});
             push @records, $href;
         }
     }
@@ -426,7 +493,7 @@ sub get_one {
 
         my $object  = $collection->api_find($req_href);
         if (! defined $object ) {
-            die "Object not found";
+            die "Object not found for request:".Dumper($req_href);
         }
         my $objhref = $self->post_get_one_process($object, $req_href);
 
@@ -1137,7 +1204,7 @@ sub post_update_process {
             # need to write history to Alertgroup
             my $agobj = $agcol->find($object->alertgroup);
             if (defined $agobj) {
-                $self->crete_change_audit($agobj, $uphref);
+                $self->create_change_audit($agobj, $uphref);
             }
         }
     }
@@ -1595,13 +1662,13 @@ sub get_request_params  {
     my $log     = $env->log;
 
     my $mreq    = $self->req;
-    $log->trace("mojolicious request obj: ",{filter=>\&Dumper, value=>$mreq});
+    $log->debug("mojolicious request obj: ",{filter=>\&Dumper, value=>$mreq});
 
     my $params  = $self->req->params->to_hash;
     my $json    = $self->req->json;
 
-    $log->trace("params => ", { filter => \&Dumper, value => $params });
-    $log->trace("json   => ", { filter => \&Dumper, value => $json });
+    $log->debug("params => ", { filter => \&Dumper, value => $params });
+    $log->debug("json   => ", { filter => \&Dumper, value => $json });
 
     if ( $params ) {
         $log->trace("Checking Params for JSON values");

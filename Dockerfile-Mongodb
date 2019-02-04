@@ -48,4 +48,3 @@ USER mongodb:mongodb
 
 
 CMD ["/run.sh"]
-

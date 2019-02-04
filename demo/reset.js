@@ -21,8 +21,10 @@ db.getCollection('group').drop()
 db.apikey.drop();
 db.signature.drop();
 db.sigbody.drop();
+db.getCollection('group').drop()
 
 print ("Creating indexes...");
+db.getCollection('group').ensureIndex({"name": 1},{unique: true, dropDups:true});
 db.alertgroup.ensureIndex(  { "id":          1}, {unique: true, dropDups:true} );
 db.alertgroup.ensureIndex(  { "message_id":  1} );
 db.alertgroup.ensureIndex(  { "updated":     1} );

@@ -16,10 +16,9 @@ ENV no_proxy="elastic,mongodb,scot,activemq,apache"
 ENV NO_PROXY="elastic,mongodb,scot,activemq,apache"
 
 
-
 RUN apt-get update && \
     apt-get -qy upgrade && \
-    apt-get install -qy perl build-essential cpanminus perl-doc perl-base perl-modules \ 
+    apt-get install -qy perl build-essential cpanminus perl-doc perl-base perl-modules curl vim ssmtp \ 
     perlmagick perltidy libcurses-perl libmagic-dev libxml-perl libyaml-perl libwww-mechanize-perl \
     libjson-perl libmath-gmp-perl librose-db-perl libtree-simple-perl libtask-weaken-perl libtree-simple-visitorfactory-perl \
     libalgorithm-c3-perl libapparmor-perl libarchive-zip-perl libauthen-krb5-simple-perl libauthen-sasl-perl \

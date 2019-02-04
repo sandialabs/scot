@@ -30,7 +30,7 @@ use Sys::Hostname;
 use DateTime;
 use strict;
 use warnings;
-use v5.18;
+use v5.16;
 
 use Moose;
 extends 'Scot::App';

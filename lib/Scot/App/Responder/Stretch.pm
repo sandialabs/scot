@@ -2,7 +2,7 @@ package Scot::App::Responder::Stretch;
 
 use Try::Tiny;
 use Data::Dumper;
-use Data::Clean::FromJSON;
+use Data::Clean::JSON;
 use Moose;
 extends 'Scot::App::Responder';
 
@@ -27,6 +27,11 @@ sub process_message {
     my $es          = $self->env->es;
 
     $log->debug("[Wkr $$] Processing Message $action $type $id");
+
+    if ( $type eq "user" or $type eq "group" ) {
+        $log->debug("skipping putting user or group into elasticsearch");
+        return 1;
+    }
 
     if ( $action eq "deleted" ) {
         $es->delete($type, $id, 'scot');

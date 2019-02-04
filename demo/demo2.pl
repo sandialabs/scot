@@ -8,7 +8,7 @@ use Data::Dumper;
 use JSON;
 use strict;
 use warnings;
-use v5.18;
+use v5.16;
 
 my $env = Scot::Env->new({
     config_file => '/opt/scot/etc/scot.cfg.pl',

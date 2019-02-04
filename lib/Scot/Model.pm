@@ -13,7 +13,6 @@ The Base class for Scot Model's
 use lib '../../lib';
 
 use utf8;
-use v5.18;
 # use Encode;
 use Scot::Types;
 use Scot::Env;

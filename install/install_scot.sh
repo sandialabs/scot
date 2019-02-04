@@ -140,7 +140,21 @@ function configure_startup {
     for service in $SCOTSERVICES; do
         echo "-- SERVICE $service"
         if [[ $OS == "Ubuntu" ]]; then
-            if [[ $OSVERSION == "16" ]]; then
+            if [[ $OSVERSION == "18" ]]; then
+                sysfile="${service}.service"
+                target="/etc/systemd/system/$sysfile"
+                if [[ "$REFRESH_INIT" == "yes" ]]; then
+                    rm -f $target
+                fi
+                if [[ ! -e $target ]]; then
+                    echo "-- installing $target from $SRCDIR/$sysfile"
+                    cp $SRCDIR/$sysfile $target
+                else
+                    echo "-- $target exists, skipping..."
+                fi
+                systemctl daemon-reload
+                systemctl enable $sysfile
+            elif [[ $OSVERSION == "16" ]]; then
                 sysfile="${service}.service"
                 target="/etc/systemd/system/$sysfile"
                 if [[ "$REFRESH_INIT" == "yes" ]]; then
@@ -333,6 +347,7 @@ function setup_scot_admin {
         HASH=`$SCOT_CONFIG_SRC/mongodb/passwd.pl`
 
         mongo scot-prod $SCOT_CONFIG_SRC/mongodb/admin_user.js
+        mongo scot-prod $SCOT_CONFIG_SRC/mongodb/defaultgroups.js
         mongo scot-prod --eval "db.user.update({username:'admin'}, {$set:{pwhash:'$HASH'}})"
     fi
 }
@@ -364,7 +379,9 @@ function selinux_to_permissive {
 
 function start_mongo {
     if [[ $OS == "Ubuntu" ]]; then
-        if [[ $OSVERSION == "16" ]]; then
+        if [[ $OSVERSION == "18" ]]; then
+            systemctl --no-pager start mongod.service
+        elif [[ $OSVERSION == "16" ]]; then
             systemctl --no-pager start mongod.service
         else 
             service mongod start
