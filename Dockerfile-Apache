@@ -36,11 +36,6 @@ RUN apt-get update && \
   a2enmod proxy_html && \
   a2enmod headers 
 
-#If you want to use your own SSL certificates, remove the below RUN line and simply add a data volume to the docker-compose file for your certs (i.e. /etc/apache2/ssl/yourcerts)
-RUN mkdir -p /etc/apache2/ssl/ && \
-    openssl genrsa 2048 > /etc/apache2/ssl/scot.key && \
-    openssl req -new -key /etc/apache2/ssl/scot.key -out /tmp/scot.csr -subj '/CN=localhost/O=SCOT Default Cert/C=US' && \
-    openssl x509 -req -days 36530 -in /tmp/scot.csr -signkey /etc/apache2/ssl/scot.key -out /etc/apache2/ssl/scot.crt
    
 COPY docker-configs/apache/scot-revproxy-Ubuntu.conf /etc/apache2/sites-enabled
 

@@ -13,14 +13,13 @@ services:
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
      - "/var/log/apache2:/var/log/apache2/"
-     - "/etc/letsencrypt/live/scotdemo.com:/etc/letsencrypt/live/scotdemo.com/:ro
+     - "./certs/:/etc/letsencrypt/live/scotdemo.com/"
     ports:
      - "443:443"
      - "80:80"
     networks:
      - scot-docker-net
     container_name: apache  
-    image: sandialabs/scot_apache
     deploy:
       restart_policy:
         condition: any
@@ -108,7 +107,6 @@ services:
      - scot-docker-net
     container_name: scot
     image: sandialabs/scot_scot
-    hostname: ${HOSTNAME}
   
   perl:
     build: 

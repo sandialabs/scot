@@ -17,6 +17,7 @@ db.link.drop();
 db.guide.drop();
 db.appearance.drop();
 db.user.drop();
+db.getCollection('group').drop()
 db.apikey.drop();
 db.signature.drop();
 db.sigbody.drop();

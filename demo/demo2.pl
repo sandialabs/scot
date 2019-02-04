@@ -754,5 +754,197 @@ sub load_demo_data {
             },
 
         },
+        {
+            user    => "montgomery",
+            verb    => "post",
+            endpt   => "intel", # 2
+            next    => 1,
+            data    => {
+                source         => [ qw(internal) ],
+                subject         => "Threat Actor: Foobar Gang",
+                tag            => [qw(threat_actor) ],
+                groups          => {
+                    read        => [ qw(wg-scot-ir) ],
+                    modify      => [ qw(wg-scot-ir) ],
+                },
+            },
+        },
+        {
+            user    => "montgomery",
+            verb    => "post",
+            endpt   => "entry",
+            next    => 1,
+            data    => {
+                summary => 1,
+                body    => <<'EOF',
+<table>
+    <tr>
+        <th>
+        <img src="data:image/png;base64,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"></th>
+        <td>Threat Card</td>
+    <tr>
+</table>
+EOF
+                target_id   => 5,
+                target_type => "intel",
+                parent      => 0,
+                groups      => {
+                    read    => [ qw(wg-scot-ir) ],
+                    modify  => [ qw(wg-scot-ir) ],
+                },
+            },
+        },
+        {
+            user    => "montgomery",
+            verb    => "post",
+            endpt   => "entry",
+            next    => 1,
+            data    => {
+                body    => <<'EOF',
+<table>
+	<tr>
+		<th>Names</th>
+	    <td>
+			<ul>
+				<li>Foo Bear (LoudLike)</li>
+			   	<li>APT-45321 (waternose)</li>
+				<li>Fawn Gale (LendMacro)</li>
+			</ul>
+		</td>
+	</tr>
+	<tr>
+		<th>TTP</th>
+		<td>
+			<ul>
+				<li>Spearfishing to deliver malware and gain access</li>
+				<li>Spearfishing to fake password reset site</li>
+				<li>Watering hole attacks via iFrame</li>
+				<li>Lateral movement attempts begin soon after inital compromise</li>
+				<li>Drupal OpenBangImg Attack</li>
+			</ul>
+		</td>
+	</tr>
+	<tr>
+		<th>Tools and Vulnerabilities</th>
+		<td>
+			<ul>
+				<li>OpenBangImg : (drupal exploit)
+				<li>BambooFlame : (backdoor)</li>
+				<li>GoodCatch   : (downloader)</li>
+				<li>Newtrap     : (cred harvester)</li>
+			</ul>
+		</td>
+	</tr>
+	<tr>
+		<th>Network/Host Artifacts</th>
+		<td>
+			<ul>
+				<li>Autostart: %USERPROFILE%\Application Data\Microsoft\Internet Explorer\\Quick Launch\</li>
+				<li>XOR encryption using 0x0c key</li>
+				<li>successful get of obi_upload_image.php</li>
+			</ul>
+		</td>
+	</tr>
+	<tr>
+		<th>Domains</th>
+		<td>
+			<ul>
+				<li>foo.com</li>
+				<li>boombaz.org</li>
+			</ul>
+		</td>
+	</tr>
+	<tr>
+		<th>IP Addrs</th>
+		<td>
+			<ul>
+				<li>192.192.16.0/24</li>
+				<li>16.12.14.12</li>
+			</ul>
+		</td>
+	</tr>
+</table>
+EOF
+                target_id   => 5,
+                target_type => "intel",
+                parent      => 0,
+                groups      => {
+                    read    => [ qw(wg-scot-ir) ],
+                    modify  => [ qw(wg-scot-ir) ],
+                },
+            },
+        },
+        {
+            user    => "admin",
+            verb    => "post",
+            endpt   => "alertgroup",
+            next    => 10,
+            data    => {
+                source         => [ qw(spamilicious) ],
+                subject         => "Spammy Email Detected",
+                tag            => [ qw(email href) ],
+                groups          => {
+                    read        => [ qw(wg-scot-ir) ],
+                    modify      => [ qw(wg-scot-ir) ],
+                },
+                columns         => [ qw(FROM TARGET SUBJECT EMBEDDED_LINKS) ],
+                data            => [
+                    {
+						FROM	=> "surveys\@xfinity.com",
+						TARGET	=> "scot\@scotdemo.com",
+						SUBJECT	=> "5 Question Survey, win \$50 bucks!",
+						EMBEDDED_LINKS	=> "http://xqeraq.boombaz.org/survey",
+                    },
+                    {
+						FROM	=> "surveys\@xfinity.com",
+						TARGET	=> "sydney\@scotdemo.com",
+						SUBJECT	=> "5 Question Survey, win \$50 bucks!",
+						EMBEDDED_LINKS	=> "http://xqeraq.boombaz.org/survey",
+                    },
+                    {
+						FROM	=> "surveys\@xfinity.com",
+						TARGET	=> "maddox\@scotdemo.com",
+						SUBJECT	=> "5 Question Survey, win \$50 bucks!",
+						EMBEDDED_LINKS	=> "http://xqeraq.boombaz.org/survey",
+                    },
+                ],
+            },
+        },
+        {
+            user    => "admin",
+            verb    => "post",
+            endpt   => "alertgroup",
+            next    => 10,
+            data    => {
+                source         => [ qw(wapmagic) ],
+                subject         => "Suspicious Drupal Activity",
+                tag            => [ qw(wap href) ],
+                groups          => {
+                    read        => [ qw(wg-scot-ir) ],
+                    modify      => [ qw(wg-scot-ir) ],
+                },
+                columns         => [ qw(TIME SRC DST METHOD CODE BYTES URL) ],
+                data            => [
+                    {
+						TIME	=> "Fri Jun  1 14:10:47 MDT 2018",
+						SRC		=> "192.192.16.15",
+						DST		=> "4.24.8.2",
+						METHOD	=> "get",
+						CODE	=> 200,
+						BYTES	=> 1232435,
+						URL		=> "http://adfa.foo.com/obi_upload_image.php",
+                    },
+                    {
+						TIME	=> "Fri Jun  1 15:10:47 MDT 2018",
+						SRC		=> "192.192.16.15",
+						DST		=> "4.24.18.105",
+						METHOD	=> "get",
+						CODE	=> 400,
+						BYTES	=> 0,
+						URL		=> "http://adfa.foo.com/obi_upload_image.php",
+                    },
+                ],
+            },
+        },
     );
 } 
