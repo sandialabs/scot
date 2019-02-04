@@ -1,11 +1,30 @@
 package Scot::Collection::Alert;
 use lib '../../../lib';
-use v5.18;
+use v5.16;
 use Moose 2;
 use MooseX::AttributeShortcuts;
 use Type::Params qw/compile/;
 use Types::Standard qw/slurpy :types/;
 use Data::Dumper;
+
+=head1 Name
+
+Scot::Collection::Alert
+
+=head1 Description
+
+Collection methods for Alerts
+
+=head1 Extends
+
+Scot::Collection
+
+=head1 Consumed Roles
+
+Scot::Role::GetByAttr
+Scot::Role::GetTagged
+
+=cut
 
 extends 'Scot::Collection';
 
@@ -14,17 +33,45 @@ with    qw(
     Scot::Role::GetTagged
 );
 
-sub create_from_handler {
-    return {
-        error   => "Direct creation of Alerts from Web API not supported",
-    };
-}
+=head1 Methods
 
-sub api_create {
+=over 4
+
+=item B<api_create($req_href)>
+
+a post to the api will land here
+
+=cut
+
+override api_create => sub {
+    my $self        = shift;
+    my $req_href    = shift;
+    my $env         = $self->env;
+    my $log         = $env->log;
+
+    $log->debug("creating alert from api");
+
+    my $json    = $req_href->{request}->{json};
+
+    my $alert   = $self->create($json);
+    return $alert;
+
+};
+
+=item B<linked_create($href)>
+
+the request to create an alertgroup with embedded alerts in the data attribute
+calls this
+
+=cut
+
+sub linked_create {
     my $self    = shift;
     my $href    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
+
+    $log->debug("in linked_create for alert");
 
     my $data    = $href->{data};
     if ( ! defined $data ) {
@@ -48,12 +95,17 @@ sub api_create {
         return 0;
     }
 
-    my $alert = $self->create({
+
+    my $ref    = {
         data        => $data,
         alertgroup  => $agid,
         status      => 'open',
         columns     => $columns,
-    });
+    };
+
+    $log->debug("attempting to create alert: ",{filter=>\&Dumper, value=>$ref});
+
+    my $alert = $self->create($ref);
 
     if ( ! defined $alert ) {
         $log->error("failed to create alert!");
@@ -63,6 +115,10 @@ sub api_create {
 }
 
 # updating an Alert can cause changes in the alertgroup
+
+=item B<update($obj, $update)>
+
+=cut
 
 override 'update'   => sub {
     state $check    = compile( Object, Object, HashRef );
@@ -306,5 +362,9 @@ sub update_alert_parsed {
 #         $log->error("unsupported subthing $subthing!");
 #     }
 # };
+
+=back
+
+=cut
 
 1;

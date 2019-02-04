@@ -1,6 +1,5 @@
 package Scot::Extractor::Regex;
 
-use v5.18;
 use strict;
 use warnings;
 # use re 'debug';
@@ -508,7 +507,7 @@ has regex_DOMAIN => (
 sub _build_DOMAIN {
     my $self    = shift;
     my $regex   = qr{
-        \b                                      # word boundary
+        (\b|http[s]*//:)                        # word boundary
         (
             (?=[a-z0-9-]{1,63}
             [\(\{\[]*\.[\]\}\)]*)               # optional obsfucation
@@ -521,7 +520,7 @@ sub _build_DOMAIN {
 #            (xn--)?
             [-a-z0-9]{2,63}
         )
-        \b                                      # word boundary
+        (\b|\/)                                      # word boundary
     }xims;
     return {
         regex   => $regex,
@@ -674,7 +673,7 @@ sub _build_COMMON_FILE_EXT {
     return {
         regex   => $regex,
         type    => "file",
-        order   => 100,
+        order   => 9,
         options => { multiword => "no" },
     };
 }

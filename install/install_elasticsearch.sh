@@ -36,14 +36,13 @@ function ensure_elastic_entry {
                 fi
             fi
             echo "-- grabbed ElasticSearch GPG key"
-            # echo "deb http://packages.elastic.co/elasticsearch/2.x/debian stable main" | sudo tee $ES_APT_LIST
             echo "deb https://artifacts.elastic.co/packages/5.x/apt stable main" | sudo tee $ES_APT_LIST
         else
             echo "-- $ES_APT_LIST exists"
         fi
     else
         echo "-importing signing key"
-        rpm --import https::/artifacts.elastic.co/GPG-KEY-elasticsearch
+        rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
         if grep --quiet elastic $ES_YUM_REPO; then
             echo "-- $ES_YUM_REPO exists"
         else
@@ -80,7 +79,14 @@ function create_se_init {
     echo "-- installing init scripts"
 
     if [[ $OS == "Ubuntu" ]]; then
-        if [[ $OSVERSION == "16" ]]; then
+        if [[ $OSVERSION == "18" ]]; then
+            if [[ ! -e $ES_SYSD ]]; then
+                echo "-- installing $ES_SYD from $ES_SYSD_SRC"
+                cp $ES_SYSD_SRC $ES_SYSD
+            else
+                echo "-- $ES_SYD aleady present"
+            fi
+        elif [[ $OSVERSION == "16" ]]; then
             if [[ ! -e $ES_SYSD ]]; then
                 echo "-- installing $ES_SYD from $ES_SYSD_SRC"
                 cp $ES_SYSD_SRC $ES_SYSD
@@ -127,7 +133,11 @@ function install_elasticsearch {
 
 
     if [[ $OS == "Ubuntu" ]]; then
-        if [[ $OSVERSION == "16" ]]; then
+        if [[ $OSVERSION == "18" ]]; then
+            systemctl daemon-reload
+            systemctl enable elasticsearch.service
+            systemctl --no-pager restart elasticsearch.service
+        elif [[ $OSVERSION == "16" ]]; then
             # looks like this happens from the installer
             # ES_SERVICE="/etc/systemd/system/elasticsearch.service"
             # ES_SERVICE_SRC="$SCOT_CONFIG_SRC/elasticsearch/elasticsearch.service"
@@ -154,8 +164,8 @@ function install_elasticsearch {
     sleep 5
 
 
-
-    if curl -i -XHEAD http://localhost:9200/scot | grep -q 404; then
+    echo "~~~ attempting to query localhost:9200 for scot index"
+    if curl -i -f -XHEAD http://localhost:9200/scot | grep -q 404; then
         echo "-- need to init elastic search DB"
         ES_RESET_DB="yes"
     else

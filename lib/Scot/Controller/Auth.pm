@@ -1,7 +1,6 @@
 package Scot::Controller::Auth;
 
 use lib '../../../lib';
-use v5.18;
 use MIME::Base64;
 use Crypt::PBKDF2;
 use Data::Dumper;
@@ -614,6 +613,7 @@ sub get_groups {
     # testing short circuit
     if ( $user eq "scot-testing" ) {
         push @groups, @{$self->env->default_groups->{modify}};
+        push @groups, "scot-testfoo";
         return wantarray ? @groups :\@groups;
     }
 

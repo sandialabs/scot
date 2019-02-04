@@ -4,7 +4,6 @@ use lib '../../../lib';
 use lib '/opt/scot/lib';
 use strict;
 use warnings;
-use v5.18;
 
 use Data::Dumper;
 use DateTime;

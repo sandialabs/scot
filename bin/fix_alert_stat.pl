@@ -4,7 +4,7 @@ use lib '../lib';
 use lib '/opt/scot/lib';
 use Data::Dumper;
 use Scot::Env;
-use v5.18;
+use v5.16;
 
 my $env   = Scot::Env->new(config_file=>'/opt/scot/etc/scot.cfg.pl');
 my $mongo = $env->mongo;

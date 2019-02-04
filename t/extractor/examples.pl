@@ -1322,6 +1322,60 @@ EOF
         userdef => [],
         debug   => 1,
     },
-    
-
+    {
+        testname    => 'http[s] urls',
+        testgroup   => 'domain',
+        testnumber  => 1,
+        source  => <<EOF,
+<html>
+    <div>
+        <br>
+        <div>https://groups.google.com/d/optout</div>
+        <br>
+        <div>http://todd.com/journal/123</div>
+    </div>
+</html>
+EOF
+        plain   => <<EOF,
+   https://groups.google.com/d/optout
+   http://todd.com/journal/123
+EOF
+        flair   => <<EOF,
+<div><div><br /><div>https://<span class="entity domain" data-entity-type="domain" data-entity-value="groups.google.com">groups.google.com</span>/d/optout</div><br /><div>http://<span class="entity domain" data-entity-type="domain" data-entity-value="todd.com">todd.com</span>/journal/123</div></div></div>
+EOF
+        entities    => [
+            {
+                type    => "domain",
+                value   => "groups.google.com",
+            },
+            {
+                type    => "domain",
+                value   => "todd.com",
+            },
+        ],
+    },
+    {
+        testname    => 'newish domain name',
+        testgroup   => 'domain',
+        testnumber  => 2,
+        source  => <<EOF,
+<html>
+    <div>
+        <p>gov.eg</p>
+    </div>
+</html>
+EOF
+        plain   => <<EOF,
+   gov.eg
+EOF
+        flair   => <<EOF,
+<div><div><p><span class="entity domain" data-entity-type="domain" data-entity-value="gov.eg">gov.eg</span></div></div>
+EOF
+        entities    => [
+            {
+                type    => "domain",
+                value   => "gov.eg",
+            },
+        ],
+    },
 );

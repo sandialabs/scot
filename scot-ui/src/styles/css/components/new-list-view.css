@@ -1,0 +1,58 @@
+.ReactTable {
+  flex: 1;
+  max-height: 100%;
+  transition: all .3s ease; }
+  .ReactTable .rt-thead {
+    padding-right: 15px !important;
+    overflow: unset !important; }
+  .ReactTable .rt-tbody {
+    position: relative; }
+  .ReactTable .rt-tr {
+    overflow: unset !important; }
+  .ReactTable .rt-th {
+    overflow: unset !important; }
+  .ReactTable .rt-td {
+    white-space: normal !important;
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    line-height: 13px; }
+  .ReactTable .-loading.-active {
+    pointer-events: none !important;
+    opacity: .4 !important; }
+    .ReactTable .-loading.-active div {
+      transform: none;
+      top: 0; }
+  .ReactTable .rt-tr-group {
+    flex: 0 0 auto;
+    cursor: pointer; }
+    .ReactTable .rt-tr-group .rt-tr.selected {
+      background: #aedaff !important; }
+  .ReactTable .pagination-bottom .-pagination {
+    height: 30px;
+    padding: 0px; }
+    .ReactTable .pagination-bottom .-pagination .-btn {
+      padding: 0px; }
+  .ReactTable .alertStatusCell {
+    text-align: center;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1px 5px; }
+    .ReactTable .alertStatusCell.promoted {
+      box-sizing: border-box;
+      background: none;
+      border-width: 4px;
+      border-style: solid;
+      border-radius: 4px;
+      color: black; }
+    .ReactTable .alertStatusCell.open {
+      border-radius: 10px; }
+
+.ReactTable input, .ReactTable select {
+  padding: 2px 0px 2px 0px !important; }
+
+.ReactTable .select-wrap select {
+  padding: 0px 15px 0px 7px !important; }

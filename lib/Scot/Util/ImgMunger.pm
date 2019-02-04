@@ -1,6 +1,5 @@
 package Scot::Util::ImgMunger;
 
-use v5.10;
 use strict;
 use warnings;
 # use re 'debug';
