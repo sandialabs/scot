@@ -3,7 +3,7 @@ Sandia Cyber Omni Tracker
 =========================
 
 
-![version](http://img.shields.io/badge/version-3.5.2-orange.svg)
+![version](http://img.shields.io/badge/version-3.7.0-orange.svg)
 [![Documentation Status][docs-badge]](http://scot.readthedocs.org/en/latest/)
 [![license](http://img.shields.io/badge/license-Apache%202-red.svg)](https://github.com/sandialabs/scot/blob/master/LICENSE)
 
