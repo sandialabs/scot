@@ -1224,6 +1224,8 @@ class AlertRowBlank extends React.Component {
         id={this.props.id}
         errorToggle={this.props.errorToggle}
         createCallback={this.props.createCallback}
+        removeCallback={this.props.removeCallback}
+
       />
     );
     if (showEntry === true) {
@@ -1240,6 +1242,8 @@ class AlertRowBlank extends React.Component {
                   id={this.props.id}
                   errorToggle={this.props.errorToggle}
                   createCallback={this.props.createCallback}
+                  removeCallback={this.props.removeCallback}
+
                 />
               }
             </div>

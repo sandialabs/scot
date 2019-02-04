@@ -2,6 +2,9 @@ import React from "react";
 import $ from "jquery";
 import * as SessionStorage from "../utils/session_storage";
 import { Editor } from '@tinymce/tinymce-react';
+import Conflict from './conflict'
+import Dialog from '@material-ui/core/Dialog';
+
 let Button = require("react-bootstrap/lib/Button.js");
 let Prompt = require("react-router-dom").Prompt;
 let Link = require("react-router-dom").Link;
@@ -48,7 +51,9 @@ export default class AddEntryModal extends React.Component {
       asyncContentLoaded: asyncContentLoaded,
       leaveCatch: true,
       whoami: undefined,
-      recentlyUpdated: 0
+      recentlyUpdated: 0,
+      showConflict: false,
+      remoteconflict: ""
     };
   }
 
@@ -168,7 +173,9 @@ export default class AddEntryModal extends React.Component {
           url: "/scot/api/v2/entry/" + this.props.id,
           success: function (response) {
             if (this.state.recentlyUpdated !== response.updated) {
+
               this.forEdit(false);
+              // this.setState({ showConflict: true, remoteconflict: response.body })
               let set = false;
               let Confirm = {
                 launch: function (set) {
@@ -350,6 +357,10 @@ export default class AddEntryModal extends React.Component {
     }
   };
 
+  handleClose = () => {
+    this.setState({ showConflict: false });
+  };
+
   forEdit = set => {
     if (set) {
       $("#tiny_" + this.state.key + "_ifr")
@@ -404,6 +415,12 @@ export default class AddEntryModal extends React.Component {
     let not_saved_entry_id = "not_saved_entry_" + this.state.key;
     return (
       <div id={not_saved_entry_id} className={"not_saved_entry"}>
+        {this.state.showConflict ?
+
+          <Dialog open={this.state.showModal} onClose={this.handleClose} aria-labelledby="simple-dialog-title" >
+            <Conflict type={this.props.type} localconflict={this.state.content} handleClose={this.handleClose} remoteconflict={this.state.remoteconflict} /> : null
+          </Dialog> : null
+        }
         <div
           className={"row-fluid entry-outer"}
           style={{
@@ -502,53 +519,7 @@ export default class AddEntryModal extends React.Component {
                 }
               }}
             />
-            // <TinyMCE
-            //   id={this.state.tinyID}
-            //   content={this.state.content}
-            //   className={"inputtext"}
-            //   config={{
-            //     auto_focus: this.state.tinyID,
-            //     selector: "textarea",
-            //     plugins:
-            //       "advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textcolor colorpicker textpattern imagetools",
-            //     table_clone_elements:
-            //       "strong em b i font h1 h2 h3 h4 h5 h6 p div",
-            //     paste_retain_style_properties: "all",
-            //     paste_data_images: true,
-            //     paste_preprocess: function (plugin, args) {
-            //       function replaceA(string) {
-            //         return string.replace(/<(\/)?a([^>]*)>/g, "<$1span$2>");
-            //       }
-            //       args.content = replaceA(args.content) + " ";
-            //     },
-            //     relative_urls: false,
-            //     remove_script_host: false,
-            //     link_assume_external_targets: true,
-            //     toolbar1:
-            //       "full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime | customBlockquote",
-            //     theme: "modern",
-            //     content_css: "/css/entryeditor.css",
-            //     height: 250,
-            //     verify_html: false,
-            //     setup: function (editor) {
-            //       function blockquote() {
-            //         return "<blockquote><p><br></p></blockquote>";
-            //       }
 
-            //       function insertBlockquote() {
-            //         let html = blockquote();
-            //         editor.insertContent(html);
-            //       }
-
-            //       editor.addButton("customBlockquote", {
-            //         text: "500px max-height blockquote",
-            //         //image: 'http://p.yusukekamiyamane.com/icons/search/fugue/icons/calendar-blue.png',
-            //         tooltip: "Insert a 500px max-height div (blockquote)",
-            //         onclick: insertBlockquote
-            //       });
-            //     }
-            //   }}
-            // />
           ) : (
               <div>Loading Editor...</div>
             )}

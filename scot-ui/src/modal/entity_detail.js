@@ -671,6 +671,7 @@ export default class EntityDetail extends React.Component {
             errorToggle={this.props.errorToggle}
             linkWarningToggle={this.props.linkWarningToggle}
             createCallback={this.props.createCallback}
+            removeCallback={this.props.removeCallback}
           />
         </Tab>
       );
@@ -847,6 +848,7 @@ class TabContents extends React.Component {
                 errorToggle={this.props.errorToggle}
                 linkWarningToggle={this.props.linkWarningToggle}
                 createCallback={this.props.createCallback}
+                removeCallback={this.props.removeCallback}
 
               />
             ) : (
@@ -1142,6 +1144,7 @@ class EntityBody extends React.Component {
               isPopUp={1}
               errorToggle={this.props.errorToggle}
               createCallback={this.props.createCallback}
+              removeCallback={this.props.removeCallback}
             />
           </div>
         </Tab>
@@ -2095,6 +2098,8 @@ class GuideBody extends React.Component {
             headerData={this.props.data}
             errorToggle={this.props.errorToggle}
             createCallback={this.props.createCallback}
+            removeCallback={this.props.removeCallback}
+
           />
         </Tab>
       </Tabs>
