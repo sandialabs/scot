@@ -6,8 +6,8 @@ before_script:
   - export http_proxy=http://wwwproxy.sandia.gov:80
   - export https_proxy=http://wwwproxy.sandia.gov:80
   - export no_proxy=*.sandia.gov
-test:
-  stage: test
-  script:
-    - perl -MDevel::Cover t/api/all.t
-  coverage: /Total\s+.+\s(\d+\.\d+?)$/
+  - docker info
+
+ build_image:
+   script:
+     - docker-compose -f docker-compose-custom.yml build
