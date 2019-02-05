@@ -141,8 +141,8 @@ class NewBadge extends React.Component {
         }
       }
     }
-    if (!newBadgeArr.includes(tag)) {
-      newBadgeArr.push(tag);
+    if (!newBadgeArr.includes(tag['text'])) {
+      newBadgeArr.push(tag['text']);
       let newobject = {};
       newobject[badgeType] = newBadgeArr;
       $.ajax({
