@@ -7,7 +7,9 @@ use Moose;
 extends qw(Scot::Factory);
 
 sub make {
-    return shift->get_mongo;
+    my $self    = shift;
+    my $config  = shift;
+    return $self->get_mongo($config);
 }
 
 has product => (
@@ -17,76 +19,24 @@ has product => (
     default     => 'Meerkat',
 );
 
-has db_name => (
-    is          => 'ro',
-    isa         => 'Str',
-    lazy        => 1,
-    required    => 1, 
-    builder     => '_build_db_name',
-);
-
-sub _build_db_name {
-    my $self    = shift;
-    my $attr    = "db_name";
-    my $default = "scot-prod";
-    return $self->get_config_value($attr,$default);
-}
-
-has host    => (
-    is          => 'ro',
-    isa         => 'Str',
-    lazy        => 1,
-    required    => 1, 
-    builder     => '_build_host',
-);
-
-sub _build_host {
-    my $self    = shift;
-    my $attr    = "host";
-    my $default = "mongodb://localhost";
-    return $self->get_config_value($attr,$default);
-}
-    
-has write_safety => (
-    is          => 'ro',
-    isa         => 'Str',
-    lazy        => 1,
-    required    => 1, 
-    builder     => '_build_write_safety',
-);
-
-sub _build_write_safety {
-    my $self    = shift;
-    my $attr    = "write_safety";
-    my $default = 1;
-    return $self->get_config_value($attr,$default);
-}
-
-has find_master    => (
-    is          => 'ro',
-    isa         => 'Str',
-    lazy        => 1,
-    required    => 1, 
-    builder     => '_build_find_master',
-);
-
-sub _build_find_master {
-    my $self    = shift;
-    my $attr    = "find_master";
-    my $default = 1;
-    return $self->get_config_value($attr,$default);
-}
     
 sub get_mongo {
     my $self    = shift;
+    my $config  = shift;
+
+    my $dbname       = $self->get_config_value( "db_name",      $config );
+    my $host         = $self->get_config_value( "host",         $config );
+    my $write_safety = $self->get_config_value( "write_safety", $config );
+    my $find_master  = $self->get_config_value( "find_master",  $config );
+
     my $meerkat = Meerkat->new(
         model_namespace         => 'Scot::Model',
         collection_namespace    => 'Scot::Collection',
-        database_name           => $self->db_name,
+        database_name           => $dbname,
         client_options          => {
-            host        => $self->host,
-            w           => $self->write_safety,
-            find_master => $self->find_master,
+            host        => $host,
+            w           => $write_safety,
+            find_master => $find_master,
             socket_timeout_ms => 600000,
         },
     );

@@ -90,12 +90,12 @@ sub build_factories {
     my @built   = ();
 
     foreach my $facthref (@$todo) {
-        my $class   = $facthref->{class};
-        my $config  = $facthref->{config};
-        my $attr    = $facthref->{attr};
+        my $class    = $facthref->{class};
+        my $defaults = $facthref->{defaults};
+        my $attr     = $facthref->{attr};
         print "Building $class...\n" if $self->debug;
         require_module($class);
-        my $factory = $class->new($config);
+        my $factory = $class->new(defaults => $defaults);
         $meta->add_attribute(
             $attr   => (
                 is      => 'rw',
@@ -112,6 +112,8 @@ sub build_attributes {
     my $self = shift;
     my $meta = shift;
     my $href = shift;
+
+    print "Building Attributes...\n" if $self->debug;
 
     # load attributes in config file
     foreach my $attribute ( keys %{$href} ) {
@@ -143,29 +145,50 @@ sub build_modules {
     my $meta            = shift;
     my $modules_aref    = shift;
     foreach my $href (@{ $modules_aref }) {
+
         my $name    = $href->{attr};
         my $class   = $href->{class};
         my $config  = $href->{config};
-
-        print "Building module $class\n" if $self->debug;
 
         unless (defined $config) {
             warn "No Config for  $class!\n";
         }
 
-        require_module($class);
 
-        my $instance_vars = {
-            log         => $self->log,
-            config      => $config,
-            env         => $self,
-        };
-        my $instance    = $class->new($instance_vars);
+        print "Building module $class\n" if $self->debug;
+
+        my $instance;
+        if ( $class =~ /Scot::Factory/ ) {
+            my $fname   = $href->{factory};
+            my $factory = $self->$fname;
+            $instance = $factory->make({ config => $config });
+        }
+        else {
+            require_module($class);
+            my $instance_vars = {
+                log         => $self->log,
+                config      => $config,
+                env         => $self,
+            };
+            $instance    = $class->new($instance_vars);
+        }
 
         unless (defined $instance) {
             die "Creating $class instance FAILED!\n";
         }
         my $module_type = ref($instance);
+
+        print "module type is $module_type\n" if $self->debug;
+
+        # at this point, new style config files will not have "Factory" in the ref type
+        # but old style config files might, like Scot::Util::LoggerFactory or Scot::Util::MongoFactory
+        if ( $module_type =~ /Factory/ ) {
+            print "Old style factory instance...\n" if $self->debug;
+            my $get_method = "get_".$name;
+            $instance = $instance->$get_method;
+            $module_type = ref($instance);
+        }
+
         print "Adding attribute $name type $module_type\n" if $self->debug;
         $meta->add_attribute( $name => ( is => 'rw', isa => $module_type ) );
         $self->$name($instance);
@@ -175,8 +198,20 @@ sub build_modules {
 sub instantiate_logger {
     my $self    = shift;
     my $meta    = shift;
+    my $log;
+
     print "Building Logger\n" if $self->debug;
-    my $log = $self->logger_factory->make;
+
+    if ( $self->meta->has_attribute('logger_factory') ) {
+        $log = $self->logger_factory->make;
+    }
+    else {
+        print "Old style config...Instantiating Logger...\n" if $self->debug;
+        require_module("Scot::Util::LoggerFactory");
+        my $logconf = $self->log_config;
+        my $factory = Scot::Util::LoggerFactory->new(config => $logconf);
+        $log     = $factory->get_logger;
+    }
     $meta->add_attribute( log => ( is => 'rw', isa => 'Log::Log4perl::Logger'));
     $self->log($log);
     $log->debug("\@INC = ",{filter=>\&Dumper, value => \@INC});
@@ -194,18 +229,18 @@ sub BUILD {
     my $factories   = delete $href->{factories};
     my $modules     = delete $href->{modules};
 
+    # import config items into attributes
+    $self->build_attributes($meta, $href);
+
     # set up factories
     $self->build_factories($meta, $factories);
 
     # now a log factory attribute should be loaded, so let's build 
     $self->instantiate_logger($meta);
 
-    # import config items into attributes
-    $self->build_attributes($meta, $href);
-
     # build modules
     $self->build_modules($meta,$modules);
-    
+
     # lock it down, we are done
     $meta->make_immutable;
 }

@@ -16,6 +16,7 @@ Classes that subclass this will need to implement process_message();
 
 use AnyEvent::STOMP::Client;
 use AnyEvent::ForkManager;
+use Scot::Factory::Stomp;
 use Data::Dumper;
 use Try::Tiny;
 use JSON;
@@ -106,8 +107,9 @@ sub _build_stomp {
     my $host    = $self->stomp_host;
     my $port    = $self->stomp_port;
     my $dest    = $self->destination;
-    my $factory = Scot::Util::StompFactory->new({ host => $host, port => $port, destination => $dest});
-    return $factory->get_stomp_client;
+    my $factory = Scot::Factory::Stomp->new;
+    my $client  = $factory->make({ host => $host, port => $port, destination => $dest});
+    return $client;
 }
 
 has destination   => (
