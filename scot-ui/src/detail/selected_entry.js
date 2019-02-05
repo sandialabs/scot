@@ -1756,9 +1756,6 @@ class EntryData extends React.Component {
     };
   }
 
-  componentWillUnmount() {
-    console.log('hey')
-  }
   componentWillReceiveProps() {
     this.setHeight();
   }
@@ -1766,11 +1763,6 @@ class EntryData extends React.Component {
   componentDidMount() {
     this.setHeight();
   }
-
-  lol = () => {
-    console.log("content chnaged")
-  }
-
   setHeight = () => {
     setTimeout(function () {
       if (document.getElementById('iframe_' + this.props.id) != undefined) {
@@ -1810,14 +1802,6 @@ class EntryData extends React.Component {
               style={{ width: '100%', height: this.state.height }}>
               <div dangerouslySetInnerHTML={{ __html: rawMarkup }} />
             </Frame>
-            // <Frame
-            //   id={"iframe_" + id}
-            //   sandbox={"allow-same-origin"}
-            //   styleSheets={["/css/sandbox.css"]}
-            //   height={this.state.height} >
-            //   <div dangerouslySetInnerHTML={{ __html: rawMarkup }} />
-            // </Frame>
-
           }
         </div>
       </div>
