@@ -31,27 +31,28 @@ $product = ref(Factory->new()->make());
 
 =cut
 
-has config  => (
+=item B<defaults>
+
+when no config data is missing use these as defaults
+
+=cut
+
+has defaults  => (
     is          => 'ro',
     isa         => 'HashRef',
     required    => 1,
+    default     => sub { {} },
 );
 
 sub get_config_value {
     my $self    = shift;
     my $attr    = shift;
-    my $default = shift;
-    my $envname = shift;
+    my $conf    = shift;
 
-    if ( defined $envname ) {
-        if ( defined $ENV{$envname} ) {
-            return $ENV{$envname};
-        }
+    if ( defined $conf->{$attr} ) {
+        return $conf->{$attr};
     }
-    if ( defined $self->config->{$attr} ) {
-        return $self->config->{$attr};
-    }
-    return $default;
+    return $self->defaults->{$attr};
 }
 
 1;
