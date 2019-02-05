@@ -47,10 +47,6 @@ override 'create' => sub {
     push @args, "id" => $iid;
     push @args, "location" => $location;
 
-    if ( $self->class->meta->does_role("Scot::Role::Permittable") ) {
-        $log->debug("Checking for group permissions !!!!!!!");
-        $self->get_group_permissions(\@args);
-    }
 
     $log->debug("creating with : ",{filter=>\&Dumper, value=>\@args});
 
@@ -69,10 +65,6 @@ sub exact_create {
 #    $log->trace("In exact create");
 
     my @args    = ( ref $args->[0] eq 'HASH' ? %{$args->[0]} : @$args );
-    if ( $self->class->meta->does_role("Scot::Role::Permittable") ) {
-        $log->trace("Checking for group permissions !!!!!!!");
-        $self->get_group_permissions(\@args);
-    }
 
     my $obj;
     eval {
@@ -334,39 +326,6 @@ sub get_targets {
     $self->env->log->debug("get targets: ",{ filter =>\&Dumper, value => $search});
     my $cursor  = $self->find($search);
     return $cursor;
-}
-
-sub get_group_permissions {
-    my $self    = shift;
-    my $aref    = shift;    # using ref allows us to modify array here 
-    my $env     = $self->env;
-    my $log     = $self->env->log;
-    $log->debug("get_group_permissions");
-
-    # check the araf for readgroups/modifygroups explicitly passed in from api and 
-    # 
-    my $rgflag = 0;
-    my $mgflag = 0;
-    foreach my $arg (@$aref) {
-        $log->trace("arg is $arg");
-        
-        if ( $arg eq "readgroups" ) {
-            $rgflag++;
-        }
-        if ( $arg eq "modifygroups" ) {
-            $mgflag++;
-        }
-    }
-    unless ($rgflag) {
-        $log->trace("adding default readgroups");
-        push @$aref, "readgroups" => $env->default_groups->{read};
-    }
-    unless ($mgflag) {
-        $log->trace("adding default modifygroups");
-        push @$aref, "modifygroups" => $env->default_groups->{modify};
-    }
-
-    $log->debug("aref is now ",{filter=>\&Dumper, value=>$aref});
 }
 
 sub get_value_from_request {

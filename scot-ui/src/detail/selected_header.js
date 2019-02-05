@@ -913,6 +913,7 @@ export default class SelectedHeader extends React.Component {
                   highlightedText={this.state.highlightedText}
                   form={this.props.form}
                   createCallback={this.props.createCallback}
+                  removeCallback={this.props.removeCallback}
                 />
               ) : null}
               {this.state.showEventData && type === "entity" ? (
@@ -926,6 +927,7 @@ export default class SelectedHeader extends React.Component {
                   errorToggle={this.props.errorToggle}
                   linkWarningToggle={this.linkWarningToggle}
                   createCallback={this.props.createCallback}
+                  removeCallback={this.props.removeCallback}
                 />
               ) : null}
               {this.state.flairToolbar ? (
@@ -946,6 +948,7 @@ export default class SelectedHeader extends React.Component {
                   watcher={this.Watcher}
                   entityobj={this.state.entityobj}
                   createCallback={this.props.createCallback}
+                  removeCallback={this.props.removeCallback}
                 />
               ) : null}
             </div>
