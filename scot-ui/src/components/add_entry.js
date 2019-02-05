@@ -53,7 +53,7 @@ export default class AddEntryModal extends React.Component {
       whoami: undefined,
       recentlyUpdated: 0,
       showConflict: false,
-      remoteconflict: ""
+      localcontent: ""
     };
   }
 
@@ -97,9 +97,9 @@ export default class AddEntryModal extends React.Component {
     }
   };
 
-  shouldComponentUpdate = () => {
-    return false; //prevent updating this component because it causes the page container to scroll upwards and lose focus due to a bug in paste_preprocess. If this is removed it will cause abnormal scrolling.
-  };
+  // shouldComponentUpdate = () => {
+  //   return false; //prevent updating this component because it causes the page container to scroll upwards and lose focus due to a bug in paste_preprocess. If this is removed it will cause abnormal scrolling.
+  // };
 
   onCancel = () => {
     this.setState({ leaveCatch: false });
@@ -173,31 +173,8 @@ export default class AddEntryModal extends React.Component {
           url: "/scot/api/v2/entry/" + this.props.id,
           success: function (response) {
             if (this.state.recentlyUpdated !== response.updated) {
-
               this.forEdit(false);
-              // this.setState({ showConflict: true, remoteconflict: response.body })
-              let set = false;
-              let Confirm = {
-                launch: function (set) {
-                  this.forEdit(set);
-                }.bind(this)
-              };
-              $.confirm({
-                icon: "glyphicon glyphicon-warning",
-                confirmButtonClass: "btn-info",
-                cancelButtonClass: "btn-info",
-                confirmButton: "Yes, override change",
-                cancelButton: "No, Keep edited version from another user",
-                content: "edit:" + "\n\n" + response.body,
-                backgroundDismiss: false,
-                title: "Edit Conflict from another user" + "\n\n",
-                confirm: function () {
-                  Confirm.launch(true);
-                },
-                cancel: function () {
-                  return;
-                }
-              });
+              this.setState({ showConflict: true, remoteconflict: response.body })
             } else {
               this.forEdit(true);
             }
@@ -411,14 +388,17 @@ export default class AddEntryModal extends React.Component {
     }
   };
 
+  handleEditorChange = (e) => {
+    this.setState({ localcontent: e });
+  }
+
   render = () => {
     let not_saved_entry_id = "not_saved_entry_" + this.state.key;
     return (
       <div id={not_saved_entry_id} className={"not_saved_entry"}>
         {this.state.showConflict ?
-
-          <Dialog open={this.state.showModal} onClose={this.handleClose} aria-labelledby="simple-dialog-title" >
-            <Conflict type={this.props.type} localconflict={this.state.content} handleClose={this.handleClose} remoteconflict={this.state.remoteconflict} /> : null
+          <Dialog fullWidth={true} maxWidth={'md'} open={this.state.showConflict} onClose={this.handleClose} aria-labelledby="simple-dialog-title" >
+            <Conflict targetid={this.props.targetid} type={this.props.type} parent={this.props.parent} addedEntry={this.props.addedentry} id={this.props.id} localconflict={this.state.localcontent} handleClose={this.handleClose} remoteconflict={this.state.remoteconflict} />
           </Dialog> : null
         }
         <div
@@ -467,14 +447,9 @@ export default class AddEntryModal extends React.Component {
           {this.state.asyncContentLoaded ? (
             <Editor
               id={this.state.tinyID}
-              // content={this.state.content}
               className={"inputtext"}
               initialValue={this.state.content}
               plugins={'advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textcolor colorpicker textpattern imagetools'}
-              // init={{
-              //   plugins: 'link image code',
-              //   toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | code'
-              // }}
               onEditorChange={this.handleEditorChange}
               init={{
                 auto_focus: this.state.tinyID,
