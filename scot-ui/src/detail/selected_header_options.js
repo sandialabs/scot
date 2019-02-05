@@ -626,7 +626,7 @@ export default class SelectedHeaderOptions extends React.Component {
             <Button eventkey="2" onClick={this.reparseFlair} bsSize="xsmall">
               <i className="fa fa-refresh" aria-hidden="true" /> Reparse Flair
             </Button>
-            {this.props.guideID == null ? null : this.props.guideID !== 0 ? (
+            {this.props.guideID == null ? null : this.props.guideID.length !== 0 ? (
               <Button eventkey="3" onClick={this.guideToggle} bsSize="xsmall">
                 <img src="/images/guide.png" alt="" /> Guide
               </Button>
