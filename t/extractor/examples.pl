@@ -1378,4 +1378,52 @@ EOF
             },
         ],
     },
+    {
+        testname    => 'semi obsfucted ip addr',
+        testgroup   => 'ipaddr',
+        testnumber  => 2,
+        source  => <<EOF,
+<html>
+    <div>
+        <p>10.126.188[.]212</p>
+    </div>
+</html>
+EOF
+        plain   => <<EOF,
+   10.126.188.212
+EOF
+        flair   => <<EOF,
+<div><div><p><span class="entity ipaddr" data-entity-type="ipaddr" data-entity-value="10.126.188.212">10.126.188.212</span></div></div>
+EOF
+        entities    => [
+            {
+                type    => "ipaddr",
+                value   => "10.126.188.212",
+            },
+        ],
+    },
+    {
+        testname    => 'semi obsfucted cidr addr',
+        testgroup   => 'ipaddr',
+        testnumber  => 2,
+        source  => <<EOF,
+<html>
+    <div>
+        <p>10.126.188[.]212/2</p>
+    </div>
+</html>
+EOF
+        plain   => <<EOF,
+   10.126.188.212/2
+EOF
+        flair   => <<EOF,
+<div><div><p><span class="entity cidr" data-entity-type="cidr" data-entity-value="10.126.188.212/2">10.126.188.212/2</span></div></div>
+EOF
+        entities    => [
+            {
+                type    => "cidr",
+                value   => "10.126.188.212/2",
+            },
+        ],
+    },
 );
