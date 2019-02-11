@@ -61,7 +61,8 @@ db.tag.ensureIndex(         { "value":      1}  );
 db.link.ensureIndex(        { "id":         1}, {unique: true, dropDups:true}  );
 db.link.ensureIndex(        { "value":      1 } );
 db.link.ensureIndex(        { "entity_id":  1 } );
-db.link.ensureIndex(        { "target.type": 1, "target.id": 1} );
+db.link.ensureIndex(        { "vertices":  1 } );
+db.link.ensureIndex(        { "vertices.type": 1, "vertices.id": 1} );
 db.link.ensureIndex(        { "when":       1 } );
 
 db.appearance.ensureIndex(  { "id":      1}, {unique: true, dropDups:true} );
