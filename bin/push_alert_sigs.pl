@@ -1,4 +1,4 @@
-#!/bin/env perl
+#!/usr/bin/env perl
 
 use lib '../lib';
 use strict;
@@ -19,31 +19,52 @@ my $mongo   = $env->mongo;
 my $col     = $mongo->collection('Alert');
 my $sigcol  = $mongo->collection('Signature');
 my $sbcol   = $mongo->collection('Sigbody');
-my $cursor  = $col->find();
+my $cursor  = $col->find({
+    subject => qr/^Splunk/,
+    "data.search" => {
+        '$ne'   => undef
+    }
+});
 $cursor->immortal(1);
 
 my %owner_lookup    = (
     ANP     => 'anpease',
     AAQ     => 'aaquint',
+    AJB     => 'ajberry',
+    'AJB-'  => 'ajberry',
+    BUBBLE  => 'BUBBLE',
+    'DMA-'  => 'dmantho',
+    'DMA'   => 'dmantho',
+    'DMA and WD' => 'dmantho',
     SMYG    => 'sygalvi',
     JCJ     => 'jcjaroc',
-    'AJB-'  => 'scot_alex_berry',
+    JDM     => 'jdmaine',
     JJM     => 'jjmande',
     KRG     => 'kgurule',
+    MJY     => 'mjyates',
+    'MJY-'  => 'mjyates',
     Troy    => 'tdevrie',
     SIL     => 'enhan',
-    'DMA-'  => 'dmantho',
     WKL     => 'wklee',
     TB      => 'tbruner',
     JJH     => 'jjhaas',
+    TD      => 'tdean',
+    TMR     => 'tmreed',
+    NRP     => 'nrpeter',
+    RAS     => 'rasuppo',
+    RAU     => 'rauhric',
+    ST      => 'sty',           # Sereyvanthana Ty
+    SMYG    => 'sygalvi',
+    JCS     => 'jcstrom',
+
 );
 
 my %seen    = ();
 
 ALERT:
-while ( my $alert= $cursor->next ) {
-
-    my $name = $alert->name;
+while ( my $alert = $cursor->next ) {
+    # print Dumper({$alert->as_hash});
+    my $name = $alert->subject;
     my $subject;
     my $owner;
 
@@ -56,6 +77,7 @@ while ( my $alert= $cursor->next ) {
     $seen{$subject}++;
 
     my $newname = "($owner) $subject"; # dont move the cheese
+    my $username    = translate_owner($owner);
 
     my %signature   = (
         name            => $newname,
@@ -66,7 +88,7 @@ while ( my $alert= $cursor->next ) {
             description => 'Splunk Alert',
             action      => [ 'alert' ],
             tags        => [ $owner ],
-            owner       => translate_owner($owner),
+            owner       => $username,
             groups      => {
                 read    => [ 'wg-scot-ir', 'wg-scot-researchers' ],
                 modify  => [ 'wg-scot-ir', ],
@@ -98,6 +120,10 @@ while ( my $alert= $cursor->next ) {
     
 }
 
+open (my $fh, ">", "./initials.txt");
+print $fh Dumper(\%owner_lookup);
+close ($fh);
+
 sub translate_owner {
     my $initials     = shift;
     my $username;
@@ -107,7 +133,8 @@ sub translate_owner {
     }
     else {
         print "User $initials, not in lookup table\n";
-        $username    = prompt("Enter username: ");
+        prompt "Enter username: ";
+        $username = $_;
         $owner_lookup{$initials} = $username;
     }
     return $username;
