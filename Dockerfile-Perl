@@ -25,24 +25,11 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*, /tmp/*, /var/tmp/* 
   
 RUN add-apt-repository http://ppa.launchpad.net/maxmind/ppa/ubuntu  && \
-    apt-get update && \
-    apt-get install -y --allow-unauthenticated libgeoip-dev libmaxminddb0 libmaxminddb-dev mmdb-bin
-
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv D68FA50FEA312927 && \
+    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv D68FA50FEA312927 && \
     echo "deb http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.2.list && \
     apt-get update && \
-    apt-get install -y --force-yes pwgen mongodb-org-shell mongodb-org-tools  && \
+    apt-get install -y --allow-unauthenticated libgeoip-dev libmaxminddb0 libmaxminddb-dev mmdb-bin pwgen mongodb-org-shell mongodb-org-tools  && \
     echo "mongodb-org-shell hold" | dpkg --set-selections 
-
-
-COPY lib/ /opt/scot/lib/
-COPY bin/ /opt/scot/bin/
-
-#install geoip 
-
-RUN mkdir mkdir /usr/local/share/GeoIP/ && \
-    touch /usr/local/share/GeoIP/GeoLiteCity.dat  
-
 
 #Install CPAN modules
 COPY docker-scripts/install_perl_modules.sh /opt/scot/perl/
@@ -61,6 +48,15 @@ XML::Twig XML::Simple SVG::Sparkline Email::Stuffer HTML::Entities HTML::Scrubbe
 
 #problem modules that should be run last
 RUN cpanm MaxMind::DB::Reader::XS 
+
+COPY lib/ /opt/scot/lib/
+COPY bin/ /opt/scot/bin/
+
+#install geoip 
+
+RUN mkdir mkdir /usr/local/share/GeoIP/ && \
+    touch /usr/local/share/GeoIP/GeoLiteCity.dat  
+
 
 
 

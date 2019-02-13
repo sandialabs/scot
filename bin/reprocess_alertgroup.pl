@@ -10,6 +10,9 @@ use lib '/opt/scot/lib';
 use Scot::App::Mail;
 use Scot::Env;
 use Data::Dumper;
+use Getopt::Long qw(GetOptions);
+use DateTime::Format::Strptime;
+use DateTime;
 
 # sample code on how to reprocess an alertgroup for flair
 # ./reprocess_alertgroup.pl 123
@@ -26,5 +29,29 @@ my $processor   = Scot::App::Mail->new({
     env => $env,
 });
 
-my $id = $ARGV[0];
-$processor->reprocess_alertgroup($id);
+my $id = 0;
+my $start;
+my $end;
+my $si;
+my $ei;
+
+GetOptions(
+    'id=s'  => \$id,
+    'start'   => \$start,   # mm/dd/yyyy hh:mm::ss
+    'end'   => \$end,
+    'si'    => \$si,
+    'ei'    => \$ei,
+);
+
+
+if ( $id ) {
+    $processor->reprocess_alertgroup($id);
+    exit 0;
+}
+
+print "Reprocessing from $si to $ei\n";
+
+for (my $index = $si; $index <= $ei; $index++ ) {
+    warn "Reprocessing Alertgroup $index\n";
+    $processor->reprocess_alertgroup($index);
+}

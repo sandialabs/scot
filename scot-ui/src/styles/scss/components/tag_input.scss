@@ -2,17 +2,17 @@
 	position: relative;
 	width: 100%;
 	
-	.react-tags {
+	.react-tags_header {
 		display: flex;
 		flex-direction: column;
 	}
 
-	.react-tags__selected {
+	.react-tags__selected_header {
 		text-align: left;
 		white-space: normal;
 		order: 1;
 
-		.react-tags__selected-tag {
+		.react-tags__selected-tag_header {
 			display: inline-block;
 			background: #f1f1f1;
 			border: 1px solid #d1d1d1;
@@ -27,7 +27,7 @@
 		}
 	}
 
-	.react-tags__search {
+	.react-tags__search_header {
 		display: inline-block;
 		width: 100%;
 
@@ -36,7 +36,7 @@
 		}
 	}
 
-	.react-tags__suggestions {
+	.react-tags__suggestions_header {
 		z-index: 1;
         position: absolute;
 		left: 0;
