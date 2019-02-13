@@ -32,6 +32,9 @@ $t  ->post_ok  ('/scot/api/v2/event'  => json => {
     ->json_is('/status' => 'ok');
 
 my $event_id = $t->tx->res->json->{id};
+ print Dumper($t->tx->res->json);
+ done_testing();
+ exit 0;
 
 $t  ->post_ok('/scot/api/v2/entry' => json => {
         body        => "Entry 1 on Event $event_id",
