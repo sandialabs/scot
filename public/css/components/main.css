@@ -1,88 +1,68 @@
 .homePageDisplay .nav-tabs > li > a {
-  padding: 5px;
-}
+  padding: 5px; }
+
 .homePageDisplay .home-grid {
   display: grid;
   padding: 10px;
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 200px 40px;
   grid-gap: 15px;
-  grid-template-areas: "status title game" "activity activity activity";
-}
-.homePageDisplay .home-grid.loggedOut {
-  grid-template-areas: "title title title" "title title title";
-}
-.homePageDisplay .home-grid .title-area {
-  display: inline-grid;
-  grid-area: title;
-  height: 100%;
-  background: url("/images/scot-600h.png") no-repeat center;
-  background-size: contain;
-  text-align: center;
-  text-shadow: 1px 2px 10px rgba(0, 0, 0, 0.5);
-}
-.homePageDisplay .home-grid .title-area h1, .homePageDisplay .home-grid .title-area h3 {
-  justify-self: center;
-  align-self: end;
-}
-.homePageDisplay .home-grid .title-area .sensitivity {
-  justify-self: center;
-  align-self: start;
-  margin: 0;
-}
-.homePageDisplay .home-grid .status-area {
-  grid-area: status;
-  overflow: hidden;
-}
-.homePageDisplay .home-grid .game-area {
-  grid-area: game;
-  overflow: hidden;
-}
-.homePageDisplay .home-grid .activity-area {
-  grid-area: activity;
-  margin-bottom: 0;
-}
-.homePageDisplay #DashboardTabs {
-  margin: 0 !important;
-}
-.homePageDisplay #DashboardTabs > div {
-  padding: 0 !important;
-}
-.homePageDisplay .dashboard {
-  padding: 0 10px;
-}
-.homePageDisplay .dashboard .titleBar form {
-  display: inline-block;
-}
-.homePageDisplay .dashboard .titleBar form button {
-  margin-left: 10px;
-}
-.homePageDisplay .dashboard .titleBar input {
-  width: 300px;
-  height: 30px;
-}
-.homePageDisplay .dashboard .titleBar .edit {
-  float: right;
-}
-.homePageDisplay .dashboard .editable-column {
-  margin-top: 5px;
-  border: 1px dashed rgba(0, 0, 0, 0.5);
-}
-.homePageDisplay .dashboard .add-widget-button {
-  margin: 5px 0;
-  padding: 15px;
-  cursor: pointer;
-  border: 1px solid rgba(0, 0, 0, 0.5);
-}
-.homePageDisplay .dashboard .add-widget-button:hover {
-  background: #EEEEEE;
-}
-.homePageDisplay .dashboard .widget {
-  margin: 10px 0;
-}
-.homePageDisplay .dashboard .widget.editable {
-  cursor: move;
-  margin: 0;
-}
+  grid-template-areas: "status title game" "activity activity activity"; }
+  .homePageDisplay .home-grid.loggedOut {
+    grid-template-areas: "title title title" "title title title"; }
+  .homePageDisplay .home-grid .title-area {
+    display: inline-grid;
+    grid-area: title;
+    height: 100%;
+    background: url("/images/scot-600h.png") no-repeat center;
+    background-size: contain;
+    text-align: center;
+    text-shadow: 1px 2px 10px rgba(0, 0, 0, 0.5); }
+    .homePageDisplay .home-grid .title-area h1, .homePageDisplay .home-grid .title-area h3 {
+      justify-self: center;
+      align-self: end; }
+    .homePageDisplay .home-grid .title-area .sensitivity {
+      justify-self: center;
+      align-self: start;
+      margin: 0; }
+  .homePageDisplay .home-grid .status-area {
+    grid-area: status;
+    overflow: hidden; }
+  .homePageDisplay .home-grid .game-area {
+    grid-area: game;
+    overflow: hidden; }
+  .homePageDisplay .home-grid .activity-area {
+    grid-area: activity;
+    margin-bottom: 0; }
 
-/*# sourceMappingURL=main.css.map */
+.homePageDisplay #DashboardTabs {
+  margin: 0 !important; }
+  .homePageDisplay #DashboardTabs > div {
+    padding: 0 !important; }
+
+.homePageDisplay .dashboard {
+  padding: 0 10px; }
+  .homePageDisplay .dashboard .titleBar form {
+    display: inline-block; }
+    .homePageDisplay .dashboard .titleBar form button {
+      margin-left: 10px; }
+  .homePageDisplay .dashboard .titleBar input {
+    width: 300px;
+    height: 30px; }
+  .homePageDisplay .dashboard .titleBar .edit {
+    float: right; }
+  .homePageDisplay .dashboard .editable-column {
+    margin-top: 5px;
+    border: 1px dashed rgba(0, 0, 0, 0.5); }
+  .homePageDisplay .dashboard .add-widget-button {
+    margin: 5px 0;
+    padding: 15px;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.5); }
+    .homePageDisplay .dashboard .add-widget-button:hover {
+      background: #EEEEEE; }
+  .homePageDisplay .dashboard .widget {
+    margin: 10px 0; }
+    .homePageDisplay .dashboard .widget.editable {
+      cursor: move;
+      margin: 0; }
