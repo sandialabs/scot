@@ -40,6 +40,7 @@ my %owner_lookup    = (
 
 my %seen    = ();
 
+
 ALERT:
 while ( my $alert= $cursor->next ) {
 
@@ -50,6 +51,7 @@ while ( my $alert= $cursor->next ) {
     ($owner, $subject) = $name =~ m/^Splunk Alert:[ ]*\((.*?)\) (.*)$/;
 
     if ( defined $seen{$subject} ) {
+        print ".";
         next ALERT;
     }
 
@@ -95,8 +97,9 @@ while ( my $alert= $cursor->next ) {
             }
         }
     });
-    
+    print "+";
 }
+print "\n";
 
 sub translate_owner {
     my $initials     = shift;
@@ -106,7 +109,7 @@ sub translate_owner {
         $username = $owner_lookup{$initials};
     }
     else {
-        print "User $initials, not in lookup table\n";
+        print "\nUser $initials, not in lookup table\n";
         $username    = prompt("Enter username: ");
         $owner_lookup{$initials} = $username;
     }
