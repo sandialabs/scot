@@ -65,11 +65,17 @@
         border-style: solid;
         color: black;
     }
-    
-    .detail-header-input, .ReactTags__tagInputField  {
+    .ReactTags__tagInputField  {
+      /* background-color: #292929;
+      border-color: #292929; */
+      border-style: solid;
+      margin-top: 5px;
+  }
+    .detail-header-input {
         background-color: #292929;
         border-color: #292929;
         border-style: solid;
+        margin-top: 5px;
     }
     
     .anchor {

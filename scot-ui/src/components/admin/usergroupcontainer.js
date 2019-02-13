@@ -5,7 +5,7 @@ import axios from 'axios'
 import AddIcon from '@material-ui/icons/Add';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
-import UserGroupForm from './usergroupform'
+import { UserGroupForm } from './usergroupform'
 import { Person, Group } from '@material-ui/icons'
 import DeleteRoundedIcon from '@material-ui/icons/DeleteRounded';
 import Dialog from '@material-ui/core/Dialog';
@@ -31,7 +31,7 @@ class UserGroupContainer extends React.Component {
       editObject: null,
       id: null,
       type: "",
-      areYouSure: false
+      areYouSure: false,
     }
   }
 
@@ -61,10 +61,6 @@ class UserGroupContainer extends React.Component {
   componentDidMount() {
     this.fetchData('user')
     this.fetchData('group')
-  }
-
-  toggleDeleteDialog = (id) => {
-    this.setState({ areYouSure: true, id: id })
   }
 
   handleClose = (type) => {
@@ -202,7 +198,7 @@ class UserGroupContainer extends React.Component {
           </Grid>
         </Grid>
         <Dialog open={this.state.showModal} onClose={this.handleClose} aria-labelledby="simple-dialog-title" >
-          <UserGroupForm id={this.state.id} type={this.state.type} editObject={this.state.editObject} handleClose={this.handleClose} fetchData={(type) => { this.fetchData(type) }} />
+          <UserGroupForm id={this.state.id} groups={this.state.groupdata} type={this.state.type} editObject={this.state.editObject} handleClose={this.handleClose} fetchData={(type) => { this.fetchData(type) }} />
         </Dialog>
         {this.state.areYouSure ?
           <Dialog open={this.state.areYouSure} onClose={this.handleAreYouSureClose} aria-labelledby="simple-dialog-title" {...other}>

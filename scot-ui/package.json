@@ -105,7 +105,7 @@
     "scripts": {
         "build": "rm -rf ../public/ && npm run sass && node scripts/build.js && node scripts/copy.js",
         "watch": "node scripts/watch.js --no-cache",
-        "sass": "node-sass  ./src/styles/scss --output ./src/styles/css/"
+        "sass": "node-sass  ./src/styles/scss --output ./public/css/"
     },
     "proxy": {
         "/(api|scotaq|login|sso)": {
