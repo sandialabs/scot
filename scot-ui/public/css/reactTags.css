@@ -44,7 +44,7 @@ div.ReactTags__tagInput input:focus {
     font-size: 12px;
     width: 100%;
     border: 1px solid #eee; 
-    color:white;
+    color:black;
 }
 
 /* Styles for selected tags */
