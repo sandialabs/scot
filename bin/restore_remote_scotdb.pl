@@ -14,13 +14,20 @@ say "= remote SCOT server via SSH and restore ";
 say "= them locally ";
 say "=";
 say "= SCOTDB source = hostname of remove SCOT server ";
+say "=  (enter localhost to restore from local directory ";
 say "= username      = that can read /opt/scotbackups";
 say "= password      = for username";
 say "=================================================";
 
 my $host    = prompt("Enter SCOTDB Source > ");
-my $user    = prompt("Enter Username      > ");
-my $pass    = prompt("Enter Password      > ", -e => '*');
+my $user;
+my $pass;
+
+if ( $host ne "localhost" ) {
+    $user    = prompt("Enter Username      > ");
+    $pass    = prompt("Enter Password      > ", -e => '*');
+}
+
 my $downdir = prompt("Download to Dir     > ");
 my $srcdir  = "/opt/scotbackup";
 

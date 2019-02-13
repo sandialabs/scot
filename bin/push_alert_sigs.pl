@@ -56,11 +56,10 @@ my %owner_lookup    = (
     ST      => 'sty',           # Sereyvanthana Ty
     SMYG    => 'sygalvi',
     JCS     => 'jcstrom',
-
+    SCOT    => 'scot',
 );
 
 my %seen    = ();
-
 
 ALERT:
 while ( my $alert = $cursor->next ) {
@@ -70,6 +69,11 @@ while ( my $alert = $cursor->next ) {
     my $owner;
 
     ($owner, $subject) = $name =~ m/^Splunk Alert:[ ]*\((.*?)\) (.*)$/;
+
+    if ( ! defined $subject ) {
+        $subject = $name;
+        $owner   = "SCOT";
+    }
 
     if ( defined $seen{$subject} ) {
         print ".";
@@ -85,22 +89,19 @@ while ( my $alert = $cursor->next ) {
         name            => $newname,
         status          => 'enabled',
         data_fmt_ver    => 'splunkalert',
+        owner           => $username,
         data            => {
+            signature_group => [ 'splunk' ],
             type        => 'splunk',
-            description => 'Splunk Alert',
+            description => $name,
             action      => [ 'alert' ],
             tags        => [ $owner ],
-            owner       => $username,
-            groups      => {
-                read    => [ 'wg-scot-ir', 'wg-scot-researchers' ],
-                modify  => [ 'wg-scot-ir', ],
-            },
             status      => 'enabled',
         },
     );
 
     my $sigobj  = $sigcol->api_create({
-        user    => 'scot-admin',
+        user    => $username,
         request => {
             json    => \%signature
         }
@@ -119,6 +120,14 @@ while ( my $alert = $cursor->next ) {
             }
         }
     });
+
+    $sigobj->update({
+        '$set'  => {
+            qual_sigbody_id => $bodyobj->id,
+            prod_sigbody_id => $bodyobj->id,
+        }
+    });
+
     print "+";
 }
 print "\n";
@@ -140,6 +149,7 @@ sub translate_owner {
         $username = $_;
         $owner_lookup{$initials} = $username;
     }
+    print "$initials = $username\n";
     return $username;
 }
    
