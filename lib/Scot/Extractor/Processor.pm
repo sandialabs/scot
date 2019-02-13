@@ -316,6 +316,14 @@ sub do_singleword_matches {
                         next REGEX;
                     }
                 }
+                elsif ( $type eq "cidr" ) {
+                    $log->debug("LOOKING 4 Weird CIDR");
+                    $span   = $self->cidr_action($match, $dbhref);
+                    if ( ! defined $span ) {
+                        $log->warn("problem with cidr match!");
+                        next REGEX;
+                    }
+                }
                 elsif ( $type eq "email" ) {
                     $span   = $self->email_action($match, $dbhref);
                     if ( ! defined $span ) {
@@ -389,6 +397,20 @@ sub ipaddr_action {
     };
     return $self->span($match,"ipaddr");
 
+}
+
+sub cidr_action {
+    my $self    = shift;
+    my $match   = shift;
+    my $dbhref  = shift;
+
+    $match      = $self->deobsfucate_ipdomain($match);
+
+    push @{$dbhref->{entities}}, {
+        value   => $match,
+        type    => "cidr",
+    };
+    return $self->span($match,"cidr");
 }
 
 =item B<deobsfucate_ipdomain>
