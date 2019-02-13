@@ -32,6 +32,7 @@ with    qw(
     Scot::Role::Parsed
     Scot::Role::Promotable
     Scot::Role::Status
+    Scot::Role::Subject
     Scot::Role::Times
     Scot::Role::TLP
 );
@@ -48,6 +49,7 @@ with    qw(
     Scot::Role::Parsed
     Scot::Role::Promotable
     Scot::Role::Status
+    Scot::Role::Subject
     Scot::Role::Times
     Scot::Role::TLP
 
