@@ -24,7 +24,8 @@ const styles = theme => ({
     backgroundColor: theme.palette.background.paper,
   },
   textInput: {
-    backgroundColor: 'white'
+    backgroundColor: 'white',
+    color: 'black'
   }
 });
 
@@ -369,11 +370,30 @@ class GroupSelectionComponent extends React.Component {
   }
 
   handleAddition = (tag) => {
-    let newgroups = this.state.groups;
-    newgroups.push(tag);
-    this.setState({ groups: newgroups });
-    this.props.handleGroups(this.state.groups)
+    const { enqueueSnackbar } = this.props;
+    if (this.checkValidGroup(tag['id'])) {
+      let newgroups = this.state.groups;
+      newgroups.push(tag);
+      this.setState({ groups: newgroups });
+      this.props.handleGroups(this.state.groups)
+    }
+    else {
+      enqueueSnackbar(`Invalid group. Please add an existing group`);
+    }
   }
+
+  checkValidGroup(group) {
+    const { suggestions } = this.props;
+    var found = suggestions.some(function (el) {
+      return el.id === group;
+    });
+    if (found) {
+      return true
+    } else {
+      return false;
+    }
+  }
+
 
   render() {
     const { groups } = this.state;
@@ -382,6 +402,10 @@ class GroupSelectionComponent extends React.Component {
     return (
       <div>
         <ReactTags
+          classNames={{
+            tagInput: 'tagInputClass',
+            tagInputField: 'tagInputFieldClass',
+          }}
           placeholder={"Add a new group"}
           inline={false}
           tags={groups}
