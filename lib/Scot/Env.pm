@@ -11,6 +11,7 @@ use Time::HiRes qw(gettimeofday tv_interval);
 use Module::Runtime qw(require_module compose_module_name);
 use Data::Dumper;
 use namespace::autoclean;
+use Scot::Util::Date;
 
 use Moose;
 use MooseX::Singleton;
@@ -107,6 +108,13 @@ sub build_factories {
     }
     $self->available_factories(\@built);
 }
+
+has date_util   => (
+    is          => 'ro',
+    isa         => 'Scot::Util::Date',
+    required    => 1,
+    default     => sub {Scot::Util::Date->new;},
+);
 
 sub build_attributes {
     my $self = shift;
