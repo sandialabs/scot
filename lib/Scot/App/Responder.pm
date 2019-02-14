@@ -132,7 +132,7 @@ sub run {
     my $log     = $self->log;
     my $stomp   = $self->stomp;
     my $pm      = $self->procmgr;
-    my $topic   = $self->topic;
+    my $topic   = $self->env->topic;
 
     my $name    = $self->name;
 
