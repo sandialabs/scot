@@ -22,7 +22,7 @@ $cursor->immortal(1);
 
 my $count   = $alertcol->count($query);
 
-my $cd = $env->get_coutdown($count);
+my $cd = $env->get_countdown($count);
 
 while ( my $obj = $cursor->next ) {
     my $id      = $obj->id + 0;
