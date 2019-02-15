@@ -304,13 +304,13 @@ sub get_countdown {
         $done++;
         my $e = &$timer;
 
-        my $pct  = ( int( ( $done / $total ) * 100 ) / 100 );
+        my $pct  = ( $done / $total );
         my $rate = ( $done / $e );
         my $ect  = ( $remain / $rate );
         my $finish = $ect / 60;
         # return "$pct % complete. $done complete. $remain remain of $total";
         return join(" ",
-            "$done complete ($pct%).",
+            sprintf("%d complete (%.2f%%).",$done, $pct),
             "$remain of $total.",
             sprintf("%.3f/sec", $rate),
             sprintf("Est. Completion Time: %.2f minutes",$finish));
