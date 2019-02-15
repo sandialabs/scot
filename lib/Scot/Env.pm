@@ -304,7 +304,7 @@ sub get_countdown {
         $done++;
         my $e = &$timer;
 
-        my $pct  = ( $done / $total );
+        my $pct  = ( $done / $total )*100;
         my $rate = ( $done / $e );
         my $ect  = ( $remain / $rate );
         my $finish = $ect / 60;
