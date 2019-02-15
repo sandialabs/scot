@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+use lib '/opt/scot/lib';
 use lib '../lib';
 use Scot::Env;
 

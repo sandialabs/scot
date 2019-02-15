@@ -289,16 +289,32 @@ will output  the pct complete, number done and remaining.
 =cut
 
 sub get_countdown {
-    my $self    = shift;
-    my $total   = shift;
+    my $self   = shift;
+    my $total  = shift;
     my $remain = $total;
-    my $done    = 0;
+    my $done   = 0;
+    my $start_time  = [ gettimeofday ];
+    my $timer  = sub {
+        my $begin   = $start_time;
+        my $elapsed = tv_interval($begin, [ gettimeofday ]);
+        return $elapsed;
+    };
     return sub {
         $remain--;
         $done++;
-        my $pct = 100 - ( int(($remain/$total)*100)/100 ); 
-        return "$pct % complete. $done complete. $remain remain of $total";
-    }
+        my $e = &$timer;
+
+        my $pct  = ( int( ( $done / $total ) * 100 ) / 100 );
+        my $rate = ( $done / $e );
+        my $ect  = ( $remain / $rate );
+        my $finish = $ect / 60;
+        # return "$pct % complete. $done complete. $remain remain of $total";
+        return join(" ",
+            "$done complete ($pct%).",
+            "$remain of $total.",
+            sprintf("%.3f/sec", $rate),
+            "Est. Completion Time: $finish minutes");
+      };
 }
 
 sub now {
