@@ -19,18 +19,19 @@ my $cursor  = $alertcol->find($query);
 $cursor->sort({id => -1});
 $cursor->immortal(1);
 
+my $count   = $alertcol->count($query);
+
+my $cd = $env->get_coutdown($count);
+
 while ( my $obj = $cursor->next ) {
     my $id      = $obj->id + 0;
     my $agid    = $obj->alertgroup + 0;
-
-    print "Alert $id linked to alergroup $agid ";
 
     my $ag = $agcol->find_iid($agid);
 
     if ( defined $ag ) {
         my $subject = $ag->subject;
         if ( defined $subject ) {
-            print "subject $subject\n";
             $obj->update_set(subject => $subject);
         }
         else {
@@ -42,4 +43,5 @@ while ( my $obj = $cursor->next ) {
         print "-- alertgroup not found --\n";
         die;
     }
+    print &$cd . "\n";
 }

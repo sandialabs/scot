@@ -281,6 +281,26 @@ sub get_timer {
     };
 }
 
+=item C<get_countdown>
+
+more closure fun.  This will return a code ref that each time called
+will output  the pct complete, number done and remaining.
+
+=cut
+
+sub get_countdown {
+    my $self    = shift;
+    my $total   = shift;
+    my $remain = $total;
+    my $done    = 0;
+    return sub {
+        $remain--;
+        $done++;
+        my $pct = 100 - ( int(($remain/$total)*100)/100 ); 
+        return "$pct % complete. $done complete. $remain remain of $total";
+    }
+}
+
 sub now {
     return time();
 }
