@@ -313,7 +313,7 @@ sub get_countdown {
             "$done complete ($pct%).",
             "$remain of $total.",
             sprintf("%.3f/sec", $rate),
-            "Est. Completion Time: $finish minutes");
+            sprintf("Est. Completion Time: %.2f minutes",$finish));
       };
 }
 
