@@ -215,6 +215,7 @@ function install_cent_perl_packages {
         perl-CPAN
         perl-Geo-IP
         perl-Net-SSLeay
+        perl-File-Slurp
     '
 
     for pkg in $YUMPACKAGES; do
