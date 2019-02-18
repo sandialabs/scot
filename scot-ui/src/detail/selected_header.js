@@ -927,6 +927,7 @@ export default class SelectedHeader extends React.Component {
                   errorToggle={this.props.errorToggle}
                   linkWarningToggle={this.linkWarningToggle}
                   createCallback={this.props.createCallback}
+                  removeCallback={this.props.removeCallback}
                 />
               ) : null}
               {this.state.flairToolbar ? (
@@ -947,6 +948,7 @@ export default class SelectedHeader extends React.Component {
                   watcher={this.Watcher}
                   entityobj={this.state.entityobj}
                   createCallback={this.props.createCallback}
+                  removeCallback={this.props.removeCallback}
                 />
               ) : null}
             </div>

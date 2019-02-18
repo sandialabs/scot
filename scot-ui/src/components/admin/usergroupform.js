@@ -10,6 +10,7 @@ import CardContent from '@material-ui/core/CardContent';
 import axios from 'axios'
 import Typography from '@material-ui/core/Typography';
 import { withSnackbar } from 'notistack';
+import { WithContext as ReactTags } from 'react-tag-input';
 
 
 const styles = theme => ({
@@ -17,6 +18,15 @@ const styles = theme => ({
     marginLeft: '-8px',
     marginRight: theme.spacing.unit,
   },
+  root: {
+    width: '100%',
+    maxWidth: 360,
+    backgroundColor: theme.palette.background.paper,
+  },
+  textInput: {
+    backgroundColor: 'white',
+    color: 'black'
+  }
 });
 
 const initstate = {
@@ -27,17 +37,21 @@ const initstate = {
   description: "",
   name: "",
   id: null,
+  suggestions: [],
+  groups: []
 }
 
 
-class UserGroupForm extends React.Component {
+class UserGroupFormComponent extends React.Component {
 
   constructor(props) {
     super(props);
     this.state = initstate;
   }
 
+
   componentDidMount() {
+    this.formatGroups();
     if (this.props.editObject) {
       if (this.props.type === 'user') {
         this.setState(
@@ -47,6 +61,7 @@ class UserGroupForm extends React.Component {
             password: this.props.editObject.password,
             id: this.props.editObject.id,
             ischecked: this.props.editObject.isChecked,
+            groups: this.props.editObject.groups
           }
         )
       }
@@ -61,6 +76,20 @@ class UserGroupForm extends React.Component {
       }
     }
   }
+
+  formatGroups = () => {
+    if (this.props.groups.length > 0) {
+      let allgroups = [];
+      this.props.groups.forEach(function (element) {
+        let group = {};
+        group['id'] = element.name
+        group['text'] = element.name;
+        allgroups.push(group)
+      });
+      this.setState({ suggestions: allgroups })
+    }
+  }
+
 
   resetState = () => {
     this.setState(initstate)
@@ -86,11 +115,26 @@ class UserGroupForm extends React.Component {
       obj['username'] = this.state.username;
       obj['fullname'] = this.state.fullname;
       obj['password'] = this.state.password;
+      obj['groups'] = this.state.groups
     } else if (type === 'group') {
       obj['name'] = this.state.name;
       obj['description'] = this.state.description
     }
     return obj
+  }
+
+  handleGroups = (groups) => {
+    if (groups.length > 0) {
+      let newgroups = [];
+      groups.forEach(function (element) {
+        newgroups.push(element.id)
+      })
+      this.setState({ groups: newgroups });
+      console.log('new states!!!!')
+      console.log(this.state.groups)
+    } else {
+      console.log('lol')
+    }
   }
 
 
@@ -218,13 +262,6 @@ class UserGroupForm extends React.Component {
                   }}
                   style={{ marginTop: 8, marginBottom: 8 }}
                 /><br />
-                {/* Activate? <Checkbox
-                  checked={this.state.ischecked}
-                  onChange={this.handleChange}
-                  value="ischecked"
-                  color="primary"
-                  label="Activate?"
-                /> <br /> */}
                 <TextField
                   id="password"
                   label="Password"
@@ -241,6 +278,9 @@ class UserGroupForm extends React.Component {
                   }}
                   style={{ marginTop: 8, marginBottom: 8 }}
                 /><br />
+                <b>Groups</b>
+                <GroupSelection editObject={this.props.editObject} handleGroups={this.handleGroups} id={this.state.id} suggestions={this.state.suggestions} />
+                <br />
               </div>
             }
             <br />
@@ -270,4 +310,114 @@ class UserGroupForm extends React.Component {
     );
   }
 }
-export default withSnackbar(withStyles(styles)(UserGroupForm));
+
+
+class GroupSelectionComponent extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      groups: [],
+    };
+
+  }
+
+  componentDidMount() {
+    if (this.props.editObject) {
+      let usersgroups = [];
+      this.props.editObject.groups.forEach(function (element) {
+        let group = {};
+        group['id'] = element
+        group['text'] = element;
+        usersgroups.push(group)
+      })
+      this.setState({ groups: usersgroups });
+    }
+
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if (this.state !== nextState) {
+      this.props.handleGroups(nextState.groups)
+      return true
+    } else {
+      return false
+    }
+  }
+
+  mapUsersGroupsToTags = () => {
+    axios.get(`/scot/api/v2/user?id=${this.props.id}`)
+      .then(response => {
+        const usersgroups = [];
+        if (response.data.totalRecordCount > 0) {
+          response.data.records.forEach(function (element) {
+            let group = {};
+            group['id'] = element.name
+            group['text'] = element.name;
+            usersgroups.push(group)
+          })
+          this.setState({ groups: usersgroups });
+        } else {
+        }
+      })
+  }
+
+  handleDelete = (i) => {
+    const { groups } = this.state;
+    this.setState({
+      groups: groups.filter((tag, index) => index !== i),
+    });
+  }
+
+  handleAddition = (tag) => {
+    const { enqueueSnackbar } = this.props;
+    if (this.checkValidGroup(tag['id'])) {
+      let newgroups = this.state.groups;
+      newgroups.push(tag);
+      this.setState({ groups: newgroups });
+      this.props.handleGroups(this.state.groups)
+    }
+    else {
+      enqueueSnackbar(`Invalid group. Please add an existing group`);
+    }
+  }
+
+  checkValidGroup(group) {
+    const { suggestions } = this.props;
+    var found = suggestions.some(function (el) {
+      return el.id === group;
+    });
+    if (found) {
+      return true
+    } else {
+      return false;
+    }
+  }
+
+
+  render() {
+    const { groups } = this.state;
+    const { suggestions } = this.props;
+    const { classes } = this.props;
+    return (
+      <div>
+        <ReactTags
+          classNames={{
+            tagInput: 'tagInputClass',
+            tagInputField: 'tagInputFieldClass',
+          }}
+          placeholder={"Add a new group"}
+          inline={false}
+          tags={groups}
+          suggestions={suggestions}
+          handleDelete={this.handleDelete}
+          handleAddition={this.handleAddition}
+        />
+      </div>
+    );
+  }
+}
+
+const GroupSelection = withStyles(styles)(GroupSelectionComponent)
+const UserGroupForm = withSnackbar(withStyles(styles)(UserGroupFormComponent));
+export { GroupSelection, UserGroupForm }

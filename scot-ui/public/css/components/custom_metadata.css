@@ -1,22 +1,14 @@
 @media screen, print {
   .custom-metadata-multi-input-tags {
-    padding-left: 20px;
-  }
-
+    padding-left: 20px; }
   .custom-metadata-table span:last-child {
-    width: 100%;
-  }
-
+    width: 100%; }
   .custom-metadata-table select {
-    margin-bottom: 2px;
-  }
-
+    margin-bottom: 2px; }
   .custom-metadata-tableWidth {
     width: 240px;
     display: inline-flex;
-    word-wrap: break-word;
-  }
-
+    word-wrap: break-word; }
   .custom-metadata-table {
     display: table;
     padding: 3px;
@@ -24,56 +16,30 @@
     border: 1px solid black;
     width: 99%;
     box-shadow: 0px 0px 7px;
-    margin-bottom: 10px;
-  }
-
+    margin-bottom: 10px; }
   .custom-metadata-table > div {
-    display: table-row;
-  }
-
+    display: table-row; }
   .custom-metadata-table div:nth-child(odd) {
-    background-color: #EEE;
-  }
-
+    background-color: #EEE; }
   .custom-metadata-table div:nth-child(even) {
-    background-color: #FFF;
-  }
-
+    background-color: #FFF; }
   .custom-metadata-table span:first-child:not(.tagButton) {
     font-weight: bold;
     padding-right: 10px;
-    display: inline-block;
-  }
-
+    display: inline-block; }
   .custom-metadata-table span:last-child {
-    width: 100%;
-  }
-
+    width: 100%; }
   .custom-metadata-table select {
-    margin-bottom: 2px;
-  }
-
+    margin-bottom: 2px; }
   .custom-metadata-input-width {
-    width: 400px;
-  }
-
+    width: 400px; }
   .custom-metadata-textarea-width {
-    width: 400px;
-  }
-
+    width: 400px; }
   .custom-metadata-multi-select-width {
     width: 400px;
-    height: 100%;
-  }
-
+    height: 100%; }
   .custom-metadata-i-span-spacing {
     display: initial;
-    padding-left: 5px;
-  }
-
+    padding-left: 5px; }
   .tooltip-inner th, .tooltip-inner td {
-    border: 1px solid white;
-  }
-}
-
-/*# sourceMappingURL=custom_metadata.css.map */
+    border: 1px solid white; } }

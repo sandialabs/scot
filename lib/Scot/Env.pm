@@ -4,18 +4,14 @@ use strict;
 use warnings;
 
 use lib '../../lib';
-#use lib '../../../lib';
 use lib '../../../Scot-Internal-Modules/lib';
-#use lib '../../../../Scot-Internal-Modules/lib';
 
 use Safe;
 use Time::HiRes qw(gettimeofday tv_interval);
 use Module::Runtime qw(require_module compose_module_name);
 use Data::Dumper;
-use Scot::Util::LoggerFactory;
-use Scot::Util::Date;
 use namespace::autoclean;
-# use CGI::IDS;
+use Scot::Util::Date;
 
 use Moose;
 use MooseX::Singleton;
@@ -25,13 +21,6 @@ has debug   => (
     isa         => 'Int',
     required    => 1,
     default     => 0, # 1 = print messages, 0 = quiet
-);
-
-has date_util => (
-    is          => 'ro',
-    isa         => 'Scot::Util::Date',
-    required    => 1,
-    default     => sub { Scot::Util::Date->new; },
 );
 
 has config_file => (
@@ -46,6 +35,14 @@ has config_file => (
 sub _build_config_file  {
     my $self    = shift;
     my $file    = "/opt/scot/etc/scot.cfg.pl";
+
+    if ( $self->has_config_href ) {
+        if ( $self->debug ) {
+            print "Config being provided by passed in HREF.\n";
+            print "Ignoring configuration files.\n";
+        }
+        return 'ignored';
+    }
 
     print "Config file not provided!\n" if $self->debug;
 
@@ -79,91 +76,180 @@ sub _build_config_href {
     return $self->read_config_file;
 }
 
-sub BUILD {
+has available_factories => (
+    is                  => 'rw',
+    isa                 => 'ArrayRef',
+    required            => 1,
+    lazy                => 1,
+    default             => sub {[]},
+);
+
+sub build_factories {
     my $self    = shift;
-    my $meta    = $self->meta;
-    my $href    = $self->config_href;
+    my $meta    = shift;
+    my $todo    = shift;
+    my @built   = ();
 
-    print "BUILDING SCOT environment\n" if $self->debug;
+    foreach my $facthref (@$todo) {
+        my $class    = $facthref->{class};
+        my $defaults = $facthref->{defaults};
+        my $attr     = $facthref->{attr};
+        print "Building $class...\n" if $self->debug;
+        require_module($class);
+        my $factory = $class->new(defaults => $defaults);
+        $meta->add_attribute(
+            $attr   => (
+                is      => 'rw',
+                isa     => $class,
+            )
+        );
+        $self->$attr($factory);
+        push @built, $attr;
+    }
+    $self->available_factories(\@built);
+}
 
-    $meta->make_mutable;
+has date_util   => (
+    is          => 'ro',
+    isa         => 'Scot::Util::Date',
+    required    => 1,
+    default     => sub {Scot::Util::Date->new;},
+);
 
-    my $modules_aref    = delete $href->{modules};
+sub build_attributes {
+    my $self = shift;
+    my $meta = shift;
+    my $href = shift;
+
+    print "Building Attributes...\n" if $self->debug;
 
     # load attributes in config file
     foreach my $attribute ( keys %{$href} ) {
-        my $ref     = $href->{$attribute};
-        my $type    = ucfirst(lc(ref($ref)))."Ref";
+        my $ref  = $href->{$attribute};
+        my $type = ucfirst( lc( ref($ref) ) ) . "Ref";
 
         if ( $type eq "Ref" ) {
             if ( $type =~ /^\d+$/ ) {
-                $type   = "Int";
+                $type = "Int";
             }
             else {
-                $type   = 'Str';
+                $type = 'Str';
             }
         }
-        print "$type Attribute $attribute = " .Dumper($ref) if $self->debug;
+        print "$type Attribute $attribute = " . Dumper($ref) if $self->debug;
 
         $meta->add_attribute(
-            $attribute  => (
+            $attribute => (
                 is  => 'rw',
                 isa => $type,
             )
         );
         $self->$attribute($ref);
     }
+}
 
-    # now a log config attribute should be loaded, so let's build 
-    # the logger
-
-    print "Building Logger\n" if $self->debug;
-    my $log = $self->build_logger($self->log_config);
-    $meta->add_attribute( log => ( is => 'rw', isa => 'Log::Log4perl::Logger'));
-    $self->log($log);
-
-    $log->debug("\@INC = ",{filter=>\&Dumper, value => \@INC});
-    
-    # now build the modules
+sub build_modules {
+    my $self            = shift;
+    my $meta            = shift;
+    my $modules_aref    = shift;
     foreach my $href (@{ $modules_aref }) {
+
         my $name    = $href->{attr};
         my $class   = $href->{class};
         my $config  = $href->{config};
 
-        print "Building module $class\n" if $self->debug;
-        $log->debug("Building module $class");
-
         unless (defined $config) {
             warn "No Config for  $class!\n";
-            $log->warn("No config for module $class");
         }
 
-        require_module($class);
 
-        my $instance_vars = {
-            log         => $log,
-            config      => $config,
-            env         => $self,
-        };
-        my $instance    = $class->new($instance_vars);
+        print "Building module $class\n" if $self->debug;
+
+        my $instance;
+        if ( $class =~ /Scot::Factory/ ) {
+            my $fname   = $href->{factory};
+            my $factory = $self->$fname;
+            $instance = $factory->make({ config => $config });
+        }
+        else {
+            require_module($class);
+            my $instance_vars = {
+                log         => $self->log,
+                config      => $config,
+                env         => $self,
+            };
+            $instance    = $class->new($instance_vars);
+        }
 
         unless (defined $instance) {
-            $log->error("Creating class $class failed!");
             die "Creating $class instance FAILED!\n";
         }
+        my $module_type = ref($instance);
 
-        if ( $class =~ /Factory/ ) {
+        print "module type is $module_type\n" if $self->debug;
+
+        # at this point, new style config files will not have "Factory" in the ref type
+        # but old style config files might, like Scot::Util::LoggerFactory or Scot::Util::MongoFactory
+        if ( $module_type =~ /Factory/ ) {
+            print "Old style factory instance...\n" if $self->debug;
             my $get_method = "get_".$name;
             $instance = $instance->$get_method;
+            $module_type = ref($instance);
         }
 
-        # some modules are factory types so we need to inspect what is returned
-        my $module_type = ref($instance);
         print "Adding attribute $name type $module_type\n" if $self->debug;
         $meta->add_attribute( $name => ( is => 'rw', isa => $module_type ) );
         $self->$name($instance);
-        # undef($instance);
     }
+}
+        
+sub instantiate_logger {
+    my $self    = shift;
+    my $meta    = shift;
+    my $log;
+
+    print "Building Logger\n" if $self->debug;
+
+    if ( $self->meta->has_attribute('logger_factory') ) {
+        $log = $self->logger_factory->make;
+    }
+    else {
+        print "Old style config...Instantiating Logger...\n" if $self->debug;
+        require_module("Scot::Util::LoggerFactory");
+        my $logconf = $self->log_config;
+        my $factory = Scot::Util::LoggerFactory->new(config => $logconf);
+        $log     = $factory->get_logger;
+    }
+    $meta->add_attribute( log => ( is => 'rw', isa => 'Log::Log4perl::Logger'));
+    $self->log($log);
+    $log->debug("\@INC = ",{filter=>\&Dumper, value => \@INC});
+}
+
+sub BUILD {
+    my $self    = shift;
+    my $meta    = $self->meta;
+    $meta->make_mutable;
+
+    my $href    = $self->config_href;
+
+    print "BUILDING SCOT environment\n" if $self->debug;
+
+    my $factories   = delete $href->{factories};
+    my $modules     = delete $href->{modules};
+
+    # import config items into attributes
+    $self->build_attributes($meta, $href);
+
+    # set up factories
+    $self->build_factories($meta, $factories);
+
+    # now a log factory attribute should be loaded, so let's build 
+    $self->instantiate_logger($meta);
+
+    # build modules
+    $self->build_modules($meta,$modules);
+
+    # lock it down, we are done
     $meta->make_immutable;
 }
 
@@ -193,6 +279,42 @@ sub get_timer {
         $log->debug("$title Elapsed Time: $elapsed");
         return $elapsed;
     };
+}
+
+=item C<get_countdown>
+
+more closure fun.  This will return a code ref that each time called
+will output  the pct complete, number done and remaining.
+
+=cut
+
+sub get_countdown {
+    my $self   = shift;
+    my $total  = shift;
+    my $remain = $total;
+    my $done   = 0;
+    my $start_time  = [ gettimeofday ];
+    my $timer  = sub {
+        my $begin   = $start_time;
+        my $elapsed = tv_interval($begin, [ gettimeofday ]);
+        return $elapsed;
+    };
+    return sub {
+        $remain--;
+        $done++;
+        my $e = &$timer;
+
+        my $pct  = ( $done / $total )*100;
+        my $rate = ( $done / $e );
+        my $ect  = ( $remain / $rate );
+        my $finish = $ect / 60;
+        # return "$pct % complete. $done complete. $remain remain of $total";
+        return join(" ",
+            sprintf("%d complete (%.2f%%).",$done, $pct),
+            "$remain of $total.",
+            sprintf("%.3f/sec", $rate),
+            sprintf("Est. Completion Time: %.2f minutes",$finish));
+      };
 }
 
 sub now {

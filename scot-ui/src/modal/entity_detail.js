@@ -671,6 +671,7 @@ export default class EntityDetail extends React.Component {
             errorToggle={this.props.errorToggle}
             linkWarningToggle={this.props.linkWarningToggle}
             createCallback={this.props.createCallback}
+            removeCallback={this.props.removeCallback}
           />
         </Tab>
       );
@@ -820,6 +821,8 @@ class TabContents extends React.Component {
                   data={this.props.data}
                   errorToggle={this.props.errorToggle}
                   createCallback={this.props.createCallback}
+                  removeCallback={this.props.removeCallback}
+
                 />
               ) : (
                   <div style={{ display: "inline-flex", position: "relative" }}>
@@ -847,6 +850,7 @@ class TabContents extends React.Component {
                 errorToggle={this.props.errorToggle}
                 linkWarningToggle={this.props.linkWarningToggle}
                 createCallback={this.props.createCallback}
+                removeCallback={this.props.removeCallback}
 
               />
             ) : (
@@ -869,6 +873,7 @@ class TabContents extends React.Component {
                         value={this.props.entityid}
                         errorToggle={this.props.errorToggle}
                         createCallback={this.props.createCallback}
+                        removeCallback={this.props.removeCallback}
                       />
                     </span>
                     <div>
@@ -876,6 +881,8 @@ class TabContents extends React.Component {
                         value={this.props.data.applies_to}
                         errorToggle={this.props.errorToggle}
                         createCallback={this.props.createCallback}
+                        removeCallback={this.props.removeCallback}
+
                       />
                     </div>
                   </span>
@@ -897,6 +904,7 @@ class TabContents extends React.Component {
                 data={this.props.data}
                 entitytype={this.props.entitytype}
                 createCallback={this.props.createCallback}
+                removeCallback={this.props.removeCallback}
               />
             ) : (
                 <div>Loading...</div>
@@ -921,6 +929,8 @@ class TabContents extends React.Component {
                 entityid={this.props.entityid}
                 entitytype={this.props.entitytype}
                 createCallback={this.props.createCallback}
+                removeCallback={this.props.removeCallback}
+
               />
             ) : (
                 <div>Loading...</div>
@@ -1142,6 +1152,7 @@ class EntityBody extends React.Component {
               isPopUp={1}
               errorToggle={this.props.errorToggle}
               createCallback={this.props.createCallback}
+              removeCallback={this.props.removeCallback}
             />
           </div>
         </Tab>
@@ -2095,6 +2106,8 @@ class GuideBody extends React.Component {
             headerData={this.props.data}
             errorToggle={this.props.errorToggle}
             createCallback={this.props.createCallback}
+            removeCallback={this.props.removeCallback}
+
           />
         </Tab>
       </Tabs>
