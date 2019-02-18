@@ -207,50 +207,31 @@ function install_ubuntu_packages {
 
 function install_cent_perl_packages {
 
-    # OK, cent is now up to perl 5.16 which will barely work.
-    # perlbrew is tricky and so we are going to skip that
 
-    # <rant> supporting cent sucks.  everything is so old that 
-    # the net no longer knows how to fix there old crappy software.
-    # we most likely just built a modern perl that won't work with
-    # these old yum packages, so I'll try to install the cpanm versions
+    YUMPACKAGES='
+        perl
+        perl-devel
+        patch
+        perl-CPAN
+        perl-Geo-IP
+        perl-Net-SSLeay
+    '
 
-#    YUMPACKAGES='
-#        perl
-#        perl-devel
-#        perl-CPAN
-#        perl-Geo-IP
-#        perl-Net-SSLeay
-#    '
-#
-#    for pkg in $YUMPACKAGES; do
-#        echo ""
-#        echo "-- Installing $pgk"
-#        yum install $pkg -y
-#    done
-#    local PPKGS='
-#        CPAN
-#        Net::SSLeay
-#        LWP
-#    '
-#    for pkg in $PPKGS; do
-#        echo ""
-#        echo "-- using cpanm to install $pkg"
-#        cpanm $pkg
-#    done 
-    echo "-- installing things that should never be pulled out of a perl install, thanks centos"
-    yum install perl perl-devel patch -y
-    #echo "-- installing perlbrew to get around crappy centos perl version"
-    #export PERLBREW_ROOT=/opt/perl5
-    #curl --insecure -L https://install.perlbrew.pl | bash
-    #echo "-- adding perlbrew environment to system profile"
-    #echo "source $PERLBREW_ROOT/etc/bashrc" > /etc/profile.d/perlbrew.sh
-    #source $PERLBREW_ROOT/etc/bashrc
-    #echo "-- installing patchperl"
-    #perlbrew install-patchperl
-    #echo "-- brewing 5.18.2"
-    #perlbrew install perl-5.18.2
-    #perlbrew switch perl-5.18.2
+    for pkg in $YUMPACKAGES; do
+        echo ""
+        echo "-- Installing $pgk"
+        yum install $pkg -y
+    done
+    local PPKGS='
+        CPAN
+        Net::SSLeay
+        LWP
+    '
+    for pkg in $PPKGS; do
+        echo ""
+        echo "-- using cpanm to install $pkg"
+        cpanm $pkg
+    done 
 
     echo "- PERL VERSION IS NOW -"
     perl -V
@@ -426,7 +407,7 @@ function install_perl_modules {
     # test has probles with proxy and ssl 
     # -n skips the test and installs anyway.  
     # should not be a problem (until it is)
-    cpanm -n LWP::Protocol::https
+    /usr/local/bin/cpanm -n LWP::Protocol::https
 
     for module in $PERLMODULES; do
 

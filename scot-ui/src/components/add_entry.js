@@ -2,6 +2,9 @@ import React from "react";
 import $ from "jquery";
 import * as SessionStorage from "../utils/session_storage";
 import { Editor } from '@tinymce/tinymce-react';
+import Conflict from './conflict'
+import Dialog from '@material-ui/core/Dialog';
+
 let Button = require("react-bootstrap/lib/Button.js");
 let Prompt = require("react-router-dom").Prompt;
 let Link = require("react-router-dom").Link;
@@ -48,7 +51,9 @@ export default class AddEntryModal extends React.Component {
       asyncContentLoaded: asyncContentLoaded,
       leaveCatch: true,
       whoami: undefined,
-      recentlyUpdated: 0
+      recentlyUpdated: 0,
+      showConflict: false,
+      localcontent: ""
     };
   }
 
@@ -92,9 +97,9 @@ export default class AddEntryModal extends React.Component {
     }
   };
 
-  shouldComponentUpdate = () => {
-    return false; //prevent updating this component because it causes the page container to scroll upwards and lose focus due to a bug in paste_preprocess. If this is removed it will cause abnormal scrolling.
-  };
+  // shouldComponentUpdate = () => {
+  //   return false; //prevent updating this component because it causes the page container to scroll upwards and lose focus due to a bug in paste_preprocess. If this is removed it will cause abnormal scrolling.
+  // };
 
   onCancel = () => {
     this.setState({ leaveCatch: false });
@@ -169,28 +174,7 @@ export default class AddEntryModal extends React.Component {
           success: function (response) {
             if (this.state.recentlyUpdated !== response.updated) {
               this.forEdit(false);
-              let set = false;
-              let Confirm = {
-                launch: function (set) {
-                  this.forEdit(set);
-                }.bind(this)
-              };
-              $.confirm({
-                icon: "glyphicon glyphicon-warning",
-                confirmButtonClass: "btn-info",
-                cancelButtonClass: "btn-info",
-                confirmButton: "Yes, override change",
-                cancelButton: "No, Keep edited version from another user",
-                content: "edit:" + "\n\n" + response.body,
-                backgroundDismiss: false,
-                title: "Edit Conflict from another user" + "\n\n",
-                confirm: function () {
-                  Confirm.launch(true);
-                },
-                cancel: function () {
-                  return;
-                }
-              });
+              this.setState({ showConflict: true, remoteconflict: response.body })
             } else {
               this.forEdit(true);
             }
@@ -350,6 +334,10 @@ export default class AddEntryModal extends React.Component {
     }
   };
 
+  handleClose = () => {
+    this.setState({ showConflict: false });
+  };
+
   forEdit = set => {
     if (set) {
       $("#tiny_" + this.state.key + "_ifr")
@@ -400,10 +388,19 @@ export default class AddEntryModal extends React.Component {
     }
   };
 
+  handleEditorChange = (e) => {
+    this.setState({ localcontent: e });
+  }
+
   render = () => {
     let not_saved_entry_id = "not_saved_entry_" + this.state.key;
     return (
       <div id={not_saved_entry_id} className={"not_saved_entry"}>
+        {this.state.showConflict ?
+          <Dialog fullWidth={true} maxWidth={'md'} open={this.state.showConflict} onClose={this.handleClose} aria-labelledby="simple-dialog-title" >
+            <Conflict targetid={this.props.targetid} type={this.props.type} parent={this.props.parent} addedEntry={this.props.addedentry} id={this.props.id} localconflict={this.state.localcontent} handleClose={this.handleClose} remoteconflict={this.state.remoteconflict} />
+          </Dialog> : null
+        }
         <div
           className={"row-fluid entry-outer"}
           style={{
@@ -450,14 +447,9 @@ export default class AddEntryModal extends React.Component {
           {this.state.asyncContentLoaded ? (
             <Editor
               id={this.state.tinyID}
-              // content={this.state.content}
               className={"inputtext"}
               initialValue={this.state.content}
               plugins={'advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textcolor colorpicker textpattern imagetools'}
-              // init={{
-              //   plugins: 'link image code',
-              //   toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | code'
-              // }}
               onEditorChange={this.handleEditorChange}
               init={{
                 auto_focus: this.state.tinyID,
@@ -502,53 +494,7 @@ export default class AddEntryModal extends React.Component {
                 }
               }}
             />
-            // <TinyMCE
-            //   id={this.state.tinyID}
-            //   content={this.state.content}
-            //   className={"inputtext"}
-            //   config={{
-            //     auto_focus: this.state.tinyID,
-            //     selector: "textarea",
-            //     plugins:
-            //       "advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textcolor colorpicker textpattern imagetools",
-            //     table_clone_elements:
-            //       "strong em b i font h1 h2 h3 h4 h5 h6 p div",
-            //     paste_retain_style_properties: "all",
-            //     paste_data_images: true,
-            //     paste_preprocess: function (plugin, args) {
-            //       function replaceA(string) {
-            //         return string.replace(/<(\/)?a([^>]*)>/g, "<$1span$2>");
-            //       }
-            //       args.content = replaceA(args.content) + " ";
-            //     },
-            //     relative_urls: false,
-            //     remove_script_host: false,
-            //     link_assume_external_targets: true,
-            //     toolbar1:
-            //       "full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime | customBlockquote",
-            //     theme: "modern",
-            //     content_css: "/css/entryeditor.css",
-            //     height: 250,
-            //     verify_html: false,
-            //     setup: function (editor) {
-            //       function blockquote() {
-            //         return "<blockquote><p><br></p></blockquote>";
-            //       }
 
-            //       function insertBlockquote() {
-            //         let html = blockquote();
-            //         editor.insertContent(html);
-            //       }
-
-            //       editor.addButton("customBlockquote", {
-            //         text: "500px max-height blockquote",
-            //         //image: 'http://p.yusukekamiyamane.com/icons/search/fugue/icons/calendar-blue.png',
-            //         tooltip: "Insert a 500px max-height div (blockquote)",
-            //         onclick: insertBlockquote
-            //       });
-            //     }
-            //   }}
-            // />
           ) : (
               <div>Loading Editor...</div>
             )}
