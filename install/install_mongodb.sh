@@ -125,7 +125,15 @@ function wait_for_mongo {
 
 function initialize_database {
 
-    DBS=`mongo --quiet --eval  "printjson(db.adminCommand('listDatabases'))"`
+    MONGOPGM="/usr/bin/mongo"
+
+    if [[ ! -e $MONGOPGM ]]; then
+        echo "!!! MONGO Client $MONGOPGM not installed !!!"
+        echo "Try installing Mongo via instructions at mongodb.com"
+        exit 1
+    fi
+
+    DBS=`$MONGOPGM --quiet --eval  "printjson(db.adminCommand('listDatabases'))"`
     if echo $DBS | grep -w 'scot-prod'; then
         echo "-- scot-prod EXISTS.  "
         if [[ $RESETDB == "yes" ]]; then
@@ -146,7 +154,7 @@ function initialize_database {
     if [[ "$RESETDB" == "yes" ]] ; then
         echo "-- initializing SCOT database"
         # subshell
-        (cd $DEVDIR/install/src/mongodb; mongo scot-prod reset.js)
+        (cd $DEVDIR/install/src/mongodb; $MONGOPGM scot-prod reset.js)
         if [[ $? -ne 0 ]];then
             echo "!!!!!"
             echo "!!!!! SCOT initialization of database failed!"
