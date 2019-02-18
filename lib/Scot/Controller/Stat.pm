@@ -22,12 +22,13 @@ sub get {
     $log->debug("--- GET viz");
     $log->debug("--- ");
 
-    return $self->pyramid_json          if ( $thing eq "pyramid" );
-    return $self->day_hour_heatmap_json if ( $thing eq "dhheatmap" );
-    return $self->get_statistics_json   if ( $thing eq "statistics" );
-    return $self->get_stats_this_dow    if ( $thing eq "todaystats" );
-    return $self->get_bullet_data       if ( $thing eq "bullet" );
-    return $self->alert_response        if ( $thing eq "alertresponse" );
+    return $self->pyramid_json           if ( $thing eq "pyramid" );
+    return $self->day_hour_heatmap_json  if ( $thing eq "dhheatmap" );
+    return $self->day_hour_heatmap_json2 if ( $thing eq "dhheatmap2" );
+    return $self->get_statistics_json    if ( $thing eq "statistics" );
+    return $self->get_stats_this_dow     if ( $thing eq "todaystats" );
+    return $self->get_bullet_data        if ( $thing eq "bullet" );
+    return $self->alert_response         if ( $thing eq "alertresponse" );
 
 }
 
@@ -174,6 +175,43 @@ sub day_hour_heatmap_json {
     }
     $self->do_render(\@resarray);
 }
+
+sub day_hour_heatmap_json_2 {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+    my $req     = $self->get_request_params;
+    my $col     = $req->{collection} // 'event';
+    my $type    = $req->{type} // 'created';
+    my $year    = $req->{year} + 0 // 2018;
+    my $mre     = qr/$col $type/;
+    my $match   = {
+        metric  => $mre,
+        year    => $year,
+    };
+
+    my $cursor  = $mongo->collection('Stat')->find($match);
+    my %results = ();
+    while ( my $obj = $cursor->next ) {
+        my $dt  = DateTime->from_epoch( epoch => $obj->epoch );
+        $dt->set_time_zone('America/Denver');
+        $results{$dt->dow}{$dt->hour} += $obj->value;
+    }
+
+    my @dowres = ();
+    for ( my $dow = 1; $dow <= 7; $dow ++ ) {
+        my @hres  = ();
+        for ( my $h = 1; $h <= 24; $h++ ) {
+            my $value = defined $results{$dow}{$h} ? $results{$dow}{$h} : 0;
+            push @hres, $value;
+        }
+        push @dowres, \@hres;
+    }
+    $self->do_render(\@dowres);
+}
+
+
 
 sub get_stats_this_dow {
     my $self    = shift;
