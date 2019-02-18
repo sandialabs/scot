@@ -48,10 +48,11 @@ function ensure_mongo_repo {
             echo "-- mongo yum repo already present"
         else
             echo "-- adding mongo yum repo stanza"
+            CENTVER=7
             cat <<- EOF > $MONGO_YUM_REPO
 [mongodb-org-3.6]
 name=MongoDB Repository
-baseurl=http://repo.mongodb.org/yum/redhat/$OSVERSION/mongodb-org/3.6/x86_64/
+baseurl=http://repo.mongodb.org/yum/redhat/$CENTVER/mongodb-org/3.6/x86_64/
 gpgcheck=1
 enabled=1
 gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc
