@@ -36,13 +36,13 @@ while ( my $obj = $cursor->next ) {
             $obj->update_set(subject => $subject);
         }
         else {
-            print "-- subject null --\n";
-            die;
+            print "-- subject null in alertgroup $agid --\n";
+            next;
         }
     }
     else {
-        print "-- alertgroup not found --\n";
-        die;
+        print "-- alertgroup $agid not found --\n";
+        next;
     }
     print &$cd . "\n";
 }
