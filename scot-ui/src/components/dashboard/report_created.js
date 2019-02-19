@@ -3,12 +3,14 @@ import { Button } from "react-bootstrap";
 import * as d3 from "d3";
 import debounce from "../../utils/debounce";
 import $ from "jquery";
+import axios from 'axios'
+
 const margin = {
-    top: 5,
-    left: 40,
-    right: 20,
-    bottom: 60
-  },
+  top: 5,
+  left: 40,
+  right: 20,
+  bottom: 60
+},
   width = 1000 - margin.left - margin.right,
   height = 600 - margin.top - margin.bottom,
   timeWindow = 7 * 24 * 3600 * 1000,
@@ -31,7 +33,7 @@ class ReportCreated extends Component {
     // this.displayModeChange = this.displayModeChange.bind( this );
   }
 
-  initChart() {
+  initChart = () => {
     let now = new Date();
 
     this.xScale = d3
@@ -93,7 +95,7 @@ class ReportCreated extends Component {
     this.chartInit = true;
   }
 
-  updateChart() {
+  updateChart = () => {
     this.yScale
       .domain([
         0,
@@ -152,6 +154,7 @@ class ReportCreated extends Component {
           }
           return row;
         });
+        console.log(`newData = ${newData}`)
         this.setState({
           chartData: newData
         });
@@ -182,7 +185,7 @@ class ReportCreated extends Component {
 
     // Legend Position
     let widthSums = 0;
-    this.LegendHolder.selectAll(".legend").attr("transform", function(d, i) {
+    this.LegendHolder.selectAll(".legend").attr("transform", function (d, i) {
       let value = widthSums;
       widthSums += this.getBBox().width + legendSpacing;
       return `translate( ${value}, 0 )`;
@@ -191,8 +194,8 @@ class ReportCreated extends Component {
     this.LegendHolder.attr(
       "transform",
       `translate( ${width / 2 - legendWidth / 2}, ${height +
-        margin.bottom -
-        legendHeight * 2} )`
+      margin.bottom -
+      legendHeight * 2} )`
     );
 
     // Animate changes
@@ -204,7 +207,7 @@ class ReportCreated extends Component {
       .style("stroke", d => (d.shown ? this.colors(d.name) : "transparent"));
   }
 
-  loadData() {
+  loadData = () => {
     let url = "/scot/api/v2/metric/create_histo";
     let opts = `?range=7`;
 
@@ -227,11 +230,11 @@ class ReportCreated extends Component {
 
       return;
     }
-
-    d3.json(url + opts, dataset => {
+    axios.get(url + opts).then(res => {
       try {
         // Add line visibility to data
-        dataset = dataset.map(line => {
+        console.log(res)
+        res = res.data.map(line => {
           line.shown = this.state.chartData.reduce((shown, d) => {
             return shown && (d.name === line.name ? d.shown : true);
           }, true);
@@ -240,17 +243,17 @@ class ReportCreated extends Component {
         });
 
         this.setState({
-          chartData: dataset
+          chartData: res
         });
       } catch (e) {
         console.log("Malformed data");
-        console.log(dataset);
+        console.log(res);
         console.error(e);
       }
     });
-  }
+  };
 
-  genData() {
+  genData = () => {
     let dataTypes = [
       "alerts",
       "alertgroups",
@@ -310,7 +313,7 @@ class ReportCreated extends Component {
     );
   }
 
-  exportToPNG() {
+  exportToPNG = () => {
     var svgString = new XMLSerializer().serializeToString(
       document.querySelector("#report_created")
     );
@@ -321,7 +324,7 @@ class ReportCreated extends Component {
     var img = new Image();
     var svg = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
     var url = DOMURL.createObjectURL(svg);
-    img.onload = function() {
+    img.onload = function () {
       ctx.drawImage(img, 0, 0);
       var png = canvas.toDataURL("image/png");
       document.querySelector(

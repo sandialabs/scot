@@ -2,10 +2,11 @@ import React, { PureComponent } from "react";
 import { Button } from "react-bootstrap";
 import * as d3 from "d3";
 import debounce from "../../utils/debounce";
+import axios from 'axios'
 import $ from "jquery";
 const wrapText = (text, width) => {
   // FYI: not an arrow function because of 'this' injection
-  text.each(function(value, i) {
+  text.each(function (value, i) {
     if (this.getComputedTextLength() < width) {
       return;
     }
@@ -52,11 +53,11 @@ const wrapText = (text, width) => {
 };
 
 const margin = {
-    top: 5,
-    left: 200,
-    right: 30,
-    bottom: 60
-  },
+  top: 5,
+  left: 200,
+  right: 30,
+  bottom: 60
+},
   width = 1000 - margin.left - margin.right,
   legendHeight = 20,
   legendSpacing = 15,
@@ -77,12 +78,15 @@ class ReportAlertpower extends PureComponent {
 
     // LoadData is automatically debounced
     this.loadData = debounce(this.loadData);
-
-    this.dataChange = this.dataChange.bind(this);
-    this.displayModeChange = this.displayModeChange.bind(this);
   }
 
-  initChart() {
+  componentDidMount() {
+    this.initChart();
+    this.updateChart();
+    this.loadData();
+  }
+
+  initChart = () => {
     // Height is initially 0, is calculated after we have data
     this.height = 0;
 
@@ -125,7 +129,7 @@ class ReportAlertpower extends PureComponent {
     this.chartInit = true;
   }
 
-  updateChart() {
+  updateChart = () => {
     let dataset = this.state.chartData;
 
     // Calculate height
@@ -273,7 +277,7 @@ class ReportAlertpower extends PureComponent {
 
     // Legend Position
     let widthSums = 0;
-    this.LegendHolder.selectAll(".legend").attr("transform", function(d, i) {
+    this.LegendHolder.selectAll(".legend").attr("transform", function (d, i) {
       let value = widthSums;
       widthSums += this.getBBox().width + legendSpacing;
       return `translate( ${value}, 0 )`;
@@ -282,8 +286,8 @@ class ReportAlertpower extends PureComponent {
     this.LegendHolder.transition().attr(
       "transform",
       `translate( ${width / 2 - legendWidth / 2}, ${this.height +
-        margin.bottom -
-        legendHeight} )`
+      margin.bottom -
+      legendHeight} )`
     );
 
     if (this.state.displayMode === "grouped") {
@@ -293,7 +297,7 @@ class ReportAlertpower extends PureComponent {
     }
   }
 
-  transitionStacked() {
+  transitionStacked = () => {
     this.xScale.domain([0, this.stackedMax]).nice();
     this.xAxisEl
       .transition()
@@ -317,7 +321,7 @@ class ReportAlertpower extends PureComponent {
       .delay((d, i) => i * this.dataTypes.length * 5 + i)
       .duration(500)
       .attr("transform", d => `translate( ${this.xScale(d.total) + 10}, 0 )`)
-      .tween("text", function(d) {
+      .tween("text", function (d) {
         let text = d3.select(this);
         let i = d3.interpolateNumber(text.text(), d.score),
           prec = d.score.split("."),
@@ -327,7 +331,7 @@ class ReportAlertpower extends PureComponent {
       });
   }
 
-  transitionGrouped() {
+  transitionGrouped = () => {
     this.xScale.domain([0, this.groupedMax]).nice();
     this.xAxisEl
       .transition()
@@ -357,7 +361,7 @@ class ReportAlertpower extends PureComponent {
       .transition()
       .delay((d, i) => i * 5 + initialDuration)
       .attr("transform", d => `translate( ${this.xScale(d.max) + 10}, 0 )`)
-      .tween("text", function(d) {
+      .tween("text", function (d) {
         let text = d3.select(this);
         let i = d3.interpolateNumber(text.text(), d.score),
           prec = d.score.split("."),
@@ -369,7 +373,7 @@ class ReportAlertpower extends PureComponent {
     this.displayModeChanged = false;
   }
 
-  loadData() {
+  loadData = () => {
     if (!this.state.chartResults || this.props.editMode) {
       return;
     }
@@ -377,24 +381,20 @@ class ReportAlertpower extends PureComponent {
     let url = "/scot/api/v2/metric/alert_power";
     let opts = `?sort=${this.state.chartSort}&dir=${
       this.state.chartSortDir
-    }&count=${this.state.chartResults}&filter=${encodeURIComponent(
-      this.state.chartFilter
-    )}`;
+      }&count=${this.state.chartResults}&filter=${encodeURIComponent(
+        this.state.chartFilter
+      )}`;
 
-    d3.json(url + opts, dataset => {
+    axios.get(url + opts).then(res => {
       this.setState({
-        chartData: dataset
+        chartData: res.data
       });
     });
   }
 
-  componentDidMount() {
-    this.initChart();
-    this.updateChart();
-    this.loadData();
-  }
 
-  dataChange(event) {
+
+  dataChange = (event) => {
     let target = event.target;
 
     if (target.name === "chartResults" && target.value) {
@@ -410,19 +410,19 @@ class ReportAlertpower extends PureComponent {
     );
   }
 
-  displayModeChange(event) {
+  displayModeChang = (event) => {
     this.displayModeChanged = true;
     this.setState({
       displayMode: event.target.value
     });
   }
 
-  preventSubmit(event) {
+  preventSubmit = (event) => {
     event.preventDefault();
     event.stopPropagation();
   }
 
-  exportToPNG() {
+  exportToPNG = () => {
     var svgString = new XMLSerializer().serializeToString(
       document.querySelector("#report_alertpower")
     );
@@ -433,7 +433,7 @@ class ReportAlertpower extends PureComponent {
     var img = new Image();
     var svg = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
     var url = DOMURL.createObjectURL(svg);
-    img.onload = function() {
+    img.onload = function () {
       ctx.drawImage(img, 0, 0);
       var png = canvas.toDataURL("image/png");
       document.querySelector(
