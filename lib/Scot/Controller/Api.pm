@@ -1086,8 +1086,13 @@ sub promote {
         });
     }
 
-    my $what = $object->get_collection_name." promoted to ".
-                       $promotion_obj->get_collection_name;
+    my $what = join(" ", 
+                    $object->get_collection_name,
+                    "promoted to",
+                    $promotion_obj->get_collection_name);
+
+    $log->debug("Promotion what is : $what");
+
     if ( $object->meta->does_role("Scot::Role::Historable") ) {
         $mongo->collection('History')->add_history_entry({
             who     => $user,
