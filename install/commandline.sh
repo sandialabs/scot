@@ -73,6 +73,12 @@ function default_variables {
     APACHE_REFRESH_CONFIG="no"
     # refresh the scot configs, allow Scot-Internal-Modules to overwrite
     SCOT_REFRESH_CONFIG="no"
+
+    # helps on CENT
+    export LANGUAGE="en_US:en"
+    export LC_ALL="en_US.UTF-8"
+    export LC_CTYPE="UTF-8"
+    export LANG="en_US.UTF-8"
 }
 
 
