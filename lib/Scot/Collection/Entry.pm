@@ -42,7 +42,7 @@ sub create_from_promoted_alert {
         qq|<h3>From Alert <a href="/#/alert/$id">$id</a></h3><br>|.
         qq|<h4>|.$subject.qq|</h4>|.
         $self->build_table($alert);
-    $log->debug("Using : ",{filter=>\&Dumper, value => $json});
+    $log->trace("Using : ",{filter=>\&Dumper, value => $json});
 
     my $existing_entry = $self->find_existing_alert_entry("event", $event->id);
 
@@ -69,7 +69,7 @@ sub create_from_promoted_alert {
 
     $log->debug("creating the promoted alert entry");
     my $ahash   = $alert->as_hash;
-    $log->debug("alert has is ",{filter=>\&Dumper, value=>$ahash});
+    $log->trace("alert hash is ",{filter=>\&Dumper, value=>$ahash});
     $json->{metadata}          = { alert => $ahash };
     my $entry_obj              = $self->create($json);
 

@@ -25,7 +25,7 @@ sub create_audit_rec {
     my $data    = {
         who     => $href->{who},
         when    => $self->env->now,
-        what    => $href->{changes},
+        what    => $href->{what},
         data    => $href->{data},
     };
     $log->debug("audit rec: ",{filter=>\&Dumper, value=>$data});

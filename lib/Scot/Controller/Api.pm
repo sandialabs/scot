@@ -433,7 +433,7 @@ sub post_list_process {
             queryRecordCount    => 1,
             totalRecordCount    => 1,
         });
-        $self->audit("get_current_handler", $req_href);
+        # $self->audit("get_current_handler", $req_href);
         return;
     }
 
