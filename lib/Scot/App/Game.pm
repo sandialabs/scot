@@ -162,7 +162,7 @@ sub alarmist {
     
     my $match   = {
         '$match'    => { 
-            what                    => "promotion",
+            what                    => "alert promoted to event",
             "data.source.type"      => "alert",
             when                    => { '$gte' => $when },
         },

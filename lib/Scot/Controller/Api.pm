@@ -217,8 +217,12 @@ sub post_create_process {
     }
 
     $mongo->collection('Audit')->create_audit_rec({
-        handler => $self, 
-        object  => $object,
+        who     => $self->session('user'),
+        what    => "created_thing",
+        data    => {
+            type    => $object->get_collection_name,
+            id      => $object->id,
+        },
     });
     $mongo->collection('Stat')->put_stat(
         $object->get_collection_name." created", 1
@@ -1094,10 +1098,18 @@ sub promote {
     }
 
     $mongo->collection('Audit')->create_audit_rec({
-        handler => $self,
-        object  => $object,
-        changes => $what,
         who     => $user,
+        what    => $what,
+        data    => {
+            source  => {
+                type    => $object->get_collection_name,
+                id      => $object->id,
+            },
+            promoted    => {
+                type    => $promotion_obj->get_collection_name,
+                id      => $promotion_obj->id,
+            },
+        }
     });
 
     # add stat here
@@ -1343,17 +1355,19 @@ sub create_change_audit {
     my $self    = shift;
     my $object  = shift;
     my $href    = shift;
-    my $name    = $object->get_collection_name;
 
+    my $name        = $object->get_collection_name;
     my $auditcol    = $self->env->mongo->collection('Audit');
-    my $what    = $href->{attribute} . " updated";
+    my $what        = $href->{attribute} . " updated";
     my $record      = $auditcol->create_audit_rec({
-        handler => $self,
-        object  => $object,
-        changes => {
-            old => $href->{old_value},
-            new => $href->{new_value},
-        }
+        who     => $self->session('user'),
+        what    => $what,
+        data    => {
+            changes => {
+                old => $href->{old_value},
+                new => $href->{new_value},
+            }
+        },
     });
 }
 
@@ -1550,10 +1564,11 @@ sub post_delete_process {
         }
     }
     my $audit_rec = {
-        handler => $self,
-        object  => $object,
         who     => $self->session('user'),
+        what    => "delete_thing",
+        data    => $mqdata,
     };
+            
     $self->env->mq->send("/topic/scot",{
         action  => "deleted",
         data    => $mqdata,
