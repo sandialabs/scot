@@ -1,5 +1,6 @@
 import React, { PureComponent } from "react";
 import { Well, Panel, Badge } from "react-bootstrap";
+import Emoji from './emoji'
 import $ from "jquery";
 const titleCase = str => str.charAt(0).toUpperCase() + str.slice(1);
 const CATEGORY_INTERVAL = 5000;
@@ -13,10 +14,6 @@ class Gamification extends PureComponent {
       categoryIndex: 0,
       error: null
     };
-
-    this.updateData = this.updateData.bind(this);
-    this.fetchError = this.fetchError.bind(this);
-    this.updateCategory = this.updateCategory.bind(this);
   }
 
   componentDidMount() {
@@ -38,7 +35,7 @@ class Gamification extends PureComponent {
     this._isMounted = false;
   }
 
-  updateCategory() {
+  updateCategory = () => {
     let nextIndex =
       (this.state.categoryIndex + 1) % this.state.gameCategories.length;
     if (this._isMounted) {
@@ -48,17 +45,20 @@ class Gamification extends PureComponent {
     }
   }
 
-  updateData(data) {
+  updateData = (data) => {
     let categories = [];
     for (let category in data) {
-      categories.push(<Category category={category} data={data[category]} />);
+      if (category !== null) {
+        console.log(`${titleCase(category)}`);
+        categories.push(<Category category={category} data={data[category]} />);
+      }
     }
     if (this._isMounted) {
       this.setState({ gameData: data, gameCategories: categories });
     }
   }
 
-  fetchError(error) {
+  fetchError = (error) => {
     if (this._isMounted) {
       this.setState({ error: error });
     }
@@ -81,20 +81,28 @@ class Gamification extends PureComponent {
 
 const Category = ({ category, data }) => (
   <Panel
-    header={`${titleCase(category)} - ${data[0].tooltip}`}
     className="category"
   >
-    <div>
+    <Panel.Title><b>{`${titleCase(category)} - ${data[0].tooltip}`}</b></Panel.Title>
+    <Panel.Body>
       <div>
-        {data[0].username} <Badge>{data[0].count}</Badge>
+        {data[0].username !== "" && data[0].username !== null && data[0].count != null && data[0].count !== "" ?
+          <div>
+            <Emoji symbol="🥇" /> {data[0].username} <Badge>{data[0].count}</Badge>
+          </div> : null
+        }
+        {data[1].username !== "" && data[1].username != null && data[1].count != null && data[1].count !== "" ?
+          <div>
+            <Emoji symbol="🥈" /> {data[1].username} <Badge>{data[1].count}</Badge>
+          </div> : null
+        }
+        {data[2].username !== "" && data[2].username != null && data[2].count != null && data[2].count !== "" ?
+          <div>
+            <Emoji symbol="🥉" /> {data[2].username} <Badge>{data[2].count}</Badge>
+          </div> : null
+        }
       </div>
-      <div>
-        {data[1].username} <Badge>{data[1].count}</Badge>
-      </div>
-      <div>
-        {data[2].username} <Badge>{data[2].count}</Badge>
-      </div>
-    </div>
+    </Panel.Body>
   </Panel>
 );
 
