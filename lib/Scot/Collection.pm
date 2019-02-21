@@ -48,7 +48,7 @@ override 'create' => sub {
     push @args, "location" => $location;
 
 
-    $log->debug("creating with : ",{filter=>\&Dumper, value=>\@args});
+    $log->trace("creating with : ",{filter=>\&Dumper, value=>\@args});
 
     my $obj = $self->class->new( @args, _collection => $self );
     $self->_save($obj);

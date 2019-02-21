@@ -98,6 +98,7 @@ sub linked_create {
 
     my $ref    = {
         data        => $data,
+        subject     => $href->{subject},
         alertgroup  => $agid,
         status      => 'open',
         columns     => $columns,
