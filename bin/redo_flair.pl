@@ -12,19 +12,21 @@ my $env = Scot::Env->new(
 my $mongo   = $env->mongo;
 my $mq      = $env->mq;
 
-my @collections = (qw(alert entry));
+my @collections = (qw(entry alertgroup));
 
 foreach my $colname (@collections) {
 
     print "Updating $colname...\n";
 
     my $col = $mongo->collection(ucfirst($colname));
-    my $cur = $col->find({});
+    my $cur = $col->find({parsed => 0});
 
     while ( my $obj = $cur->next ) {
 
-        $mq->send("scot", {
-            action  => "update",
+        print "updating id = ".$obj->id."\n";
+
+        $mq->send("/topic/scot", {
+            action  => "updated",
             data    => {
                 who     => "reflair",
                 type    => $colname,
