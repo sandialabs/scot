@@ -120,6 +120,7 @@
     "devDependencies": {
         "copy-webpack-plugin": "^4.6.0",
         "react-dev-utils": "^7.0.1",
+        "react-qtip": "^1.0.9",
         "webpack-bundle-analyzer": "^3.0.3"
     }
 }
