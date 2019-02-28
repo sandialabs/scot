@@ -914,6 +914,7 @@ export default class SelectedHeader extends React.Component {
                   form={this.props.form}
                   createCallback={this.props.createCallback}
                   removeCallback={this.props.removeCallback}
+                  addFlair={AddFlair.entityUpdate}
                 />
               ) : null}
               {this.state.showEventData && type === "entity" ? (

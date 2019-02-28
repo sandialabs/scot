@@ -352,15 +352,16 @@
     */
 
     .alertTableHorizontal {
-    display: table;
+    /*display: table;
     padding: 3px;
     border-radius: 5px;
-    border: 1px solid black;
-    width:99.5%;
-    margin-bottom:10px;
+    /*border: 1px solid black;*/
+    /*width:99.5%;
+    margin-bottom:10px;*/
+    overflow: scroll;
     }
 
-    .alertTableHorizontal > div {
+    /* .alertTableHorizontal > div {
     display: table-row;
     border-bottom: 1px solid #333;
     }
@@ -406,7 +407,7 @@
     /*  display: table-cell; */
     //  padding-left:5px; 
     //  padding-right:5px; 
-    }
+    } */
 
     .entityTableHorizontal {
     display: table;
