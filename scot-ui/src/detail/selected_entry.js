@@ -12,7 +12,6 @@ import Summary from '../components/summary'
 import Task from "../components/task"
 import SelectedPermission from "../components/permission.js";
 import Frame from 'react-frame-component';
-//import Frame from "../components/frame/src";
 import AddFlair from "../components/add_flair";
 import LinkWarning from "../modal/link_warning"
 import { Link } from 'react-router-dom'
@@ -21,10 +20,9 @@ import TrafficLightProtocol from "../components/traffic_light_protocol";
 import Marker from "../components/marker"
 import EntityCreateModal from "../modal/entity_create"
 import CustomMetaDataTable from "../components/custom_metadata_table";
-import tablesorter from 'tablesorter'
 import axios from 'axios'
-import { connect } from "net";
-
+import MUIDataTable from "mui-datatables";
+import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
 
 export default class SelectedEntry extends React.Component {
   constructor(props) {
@@ -401,6 +399,7 @@ export default class SelectedEntry extends React.Component {
             data={data}
             type={type}
             id={id}
+            entityData={this.props.entityData}
             alertSelected={this.props.alertSelected}
             headerData={this.props.headerData}
             alertPreSelectedId={this.props.alertPreSelectedId}
@@ -416,6 +415,7 @@ export default class SelectedEntry extends React.Component {
             flairOff={this.props.flairOff}
             createCallback={this.props.createCallback}
             removeCallback={this.props.removeCallback}
+            addFlair={this.props.addFlair}
           />
         ) : (
             <span>Loading...</span>
@@ -528,32 +528,226 @@ class EntryIterator extends React.Component {
           }.bind(this)
         );
       } else {
-        rows.push(
-          <AlertParent
-            key={id}
-            items={data}
-            type={type}
-            id={id}
-            headerData={this.props.headerData}
-            alertSelected={this.props.alertSelected}
-            alertPreSelectedId={this.props.alertPreSelectedId}
-            aType={this.props.aType}
-            aID={this.props.aID}
-            entryToolbar={this.props.entryToolbar}
-            entryToggle={this.props.entryToggle}
-            updated={this.props.updated}
-            fileUploadToggle={this.props.fileUploadToggle}
-            fileUploadToolbar={this.props.fileUploadToolbar}
-            errorToggle={this.props.errorToggle}
-            flairOff={this.props.flairOff}
-            createCallback={this.props.createCallback}
-          />
-        );
+        // rows.push(
+        //   <AlertParent
+        //     key={id}
+        //     items={data}
+        //     type={type}
+        //     id={id}
+        //     headerData={this.props.headerData}
+        //     alertSelected={this.props.alertSelected}
+        //     alertPreSelectedId={this.props.alertPreSelectedId}
+        //     aType={this.props.aType}
+        //     aID={this.props.aID}
+        //     entryToolbar={this.props.entryToolbar}
+        //     entryToggle={this.props.entryToggle}
+        //     updated={this.props.updated}
+        //     fileUploadToggle={this.props.fileUploadToggle}
+        //     fileUploadToolbar={this.props.fileUploadToolbar}
+        //     errorToggle={this.props.errorToggle}
+        //     flairOff={this.props.flairOff}
+        //     createCallback={this.props.createCallback}
+        //   />
+        // );
       }
-      return <div>{rows}</div>;
+      return <div>
+        <NewAlertTable
+          items={data}
+          entityData={this.props.entityData}
+          key={id}
+          type={type}
+          id={id}
+          headerData={this.props.headerData}
+          alertSelected={this.props.alertSelected}
+          alertPreSelectedId={this.props.alertPreSelectedId}
+          aType={this.props.aType}
+          aID={this.props.aID}
+          entryToolbar={this.props.entryToolbar}
+          entryToggle={this.props.entryToggle}
+          updated={this.props.updated}
+          fileUploadToggle={this.props.fileUploadToggle}
+          fileUploadToolbar={this.props.fileUploadToolbar}
+          errorToggle={this.props.errorToggle}
+          flairOff={this.props.flairOff}
+          createCallback={this.props.createCallback}
+          addFlair={this.props.addFlair}
+        />
+      </div>;
     }
   };
 }
+
+
+
+class NewAlertTable extends React.Component {
+
+
+
+  getMuiTheme = () => createMuiTheme({
+    overrides: {
+      MUIDataTableBodyCell: {
+        root: {
+          fontSize: 12,
+          width: 30,
+          maxWidth: 500,
+          maxHeight: 200,
+          height: 40
+        },
+      },
+      MuiTableCell: {
+        head: {
+          fontSize: 13
+        },
+        paddingCheckbox: {
+          width: 10
+        }
+      },
+      MUIDataTable: {
+        root: {
+          // maxHeight: 'none'
+        },
+        responsiveScroll: {
+          maxHeight: 'none'
+        }
+      },
+    }
+  })
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      columns: [{ 'name': 'fakedata', 'label': 'fakedata' }],
+      data: [],
+      entityData: [],
+      type: "",
+      addFlairFunction: null,
+    }
+  }
+
+  componentDidMount() {
+    if (this.props.items.length > 0) {
+      const columns = this.createColumns();
+      const data = this.createData();
+      this.setState({ data, columns })
+    }
+
+    if (this.props.addFlair && this.props.type) {
+      this.setState({ entityData: this.props.entityData, type: this.props.type, addFlairFunction: this.props.addFlair })
+    }
+  }
+
+  createData = () => {
+    const dataarray = [];
+    this.props.items.forEach(function (element) {
+      const dataitem = element.data_with_flair
+      dataitem['id'] = element.id;
+      dataitem['status'] = element.status;
+      dataitem['entry_count'] = element.entry_count;
+      dataarray.push(dataitem);
+    })
+    return dataarray;
+  }
+
+  createColumns = () => {
+    let columns = [];
+    //initial columns that are not under data.columns
+    if (this.props.items.length > 0) {
+      let id_column = { name: 'id', label: 'id' }
+      let status_column = {
+        name: 'status',
+        label: 'status',
+        options: {
+          customBodyRender: (value) => {
+            if (value === 'open') {
+              return (<p style={{ color: 'green' }}>{value}</p>)
+            }
+            if (value === 'closed') {
+              return (<p style={{ color: 'red' }}>{value}</p>)
+            }
+            if (value === 'promoted') {
+              return (<p style={{ color: 'orange' }}>{value}</p>)
+            }
+          }
+        }
+      }
+      let entry_count_column = { name: 'entry_count', label: 'entry_count' }
+      let array = [id_column, status_column, entry_count_column];
+      array.forEach(function (element) {
+        columns.push(element);
+      })
+      this.props.items[0].data.columns.forEach(function (element) {
+        let columnobj = {
+          name: element,
+          label: element,
+          filter: true,
+          options: {
+            customBodyRender: (value, tableMeta, updateValue) => {
+              return (
+                <FlairObject value={value} />
+              )
+            }
+          }
+        };
+        columns.push(columnobj);
+      });
+      return columns;
+    }
+  }
+
+  fakeFunction = () => {
+    if (this.state.type !== "" && this.state.entityData.length !== 0 && this.state.addFlairFunction !== null) {
+      console.log('fake fake fakke')
+      this.state.addFlairFunction(this.state.entityData, null, this.state.type, null, null)
+    }
+
+  }
+
+  render() {
+
+    const { data, columns } = this.state
+    const { addFlair, type, headerData, entityData, updated } = this.props;
+
+    //addFlair()
+    const options = {
+      filter: true,
+      filterType: 'dropdown',
+      responsive: 'scroll',
+      rowsPerPage: 100,
+      onColumnSortChange: this.fakeFunction
+
+    };
+    return (
+      <MuiThemeProvider theme={this.getMuiTheme()}>
+        <MUIDataTable
+          title={"Alerts"}
+          data={data}
+          columns={columns}
+          options={options}
+        />
+      </MuiThemeProvider>
+    )
+  }
+}
+
+class FlairObject extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
+    const { value, index, change } = this.props;
+
+    return (
+      <div style={{ maxWidth: 500, maxHeight: 200, overflow: 'auto' }} className="alertTableHorizontal"
+        dangerouslySetInnerHTML={{ __html: value }}
+      />
+    );
+  }
+}
+
+
+
+
 
 class AlertParent extends React.Component {
   constructor(props) {
@@ -685,8 +879,8 @@ class AlertParent extends React.Component {
         //let min = max - min + 1;
         let range = [];
         /*while (min--) {
-                    range[min]=max--;
-                }*/
+          range[min] = max--;
+        }*/
         for (let q = min; q <= max; q++) {
           range.push(q);
         }
