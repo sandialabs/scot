@@ -23,6 +23,9 @@ import CustomMetaDataTable from "../components/custom_metadata_table";
 import axios from 'axios'
 import MUIDataTable from "mui-datatables";
 import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
+import Button2 from '@material-ui/core/Button';
+
+
 
 export default class SelectedEntry extends React.Component {
   constructor(props) {
@@ -564,7 +567,6 @@ class EntryIterator extends React.Component {
           aID={this.props.aID}
           entryToolbar={this.props.entryToolbar}
           entryToggle={this.props.entryToggle}
-          updated={this.props.updated}
           fileUploadToggle={this.props.fileUploadToggle}
           fileUploadToolbar={this.props.fileUploadToolbar}
           errorToggle={this.props.errorToggle}
@@ -591,7 +593,10 @@ class NewAlertTable extends React.Component {
           width: 30,
           maxWidth: 500,
           maxHeight: 200,
-          height: 40
+          height: 40,
+          padding: 0,
+          textAlign: 'center',
+          verticalAlign: 'middle'
         },
       },
       MuiTableCell: {
@@ -620,7 +625,8 @@ class NewAlertTable extends React.Component {
       data: [],
       entityData: [],
       type: "",
-      addFlairFunction: null,
+      updateFlair: null,
+      promotionId: null,
     }
   }
 
@@ -631,8 +637,11 @@ class NewAlertTable extends React.Component {
       this.setState({ data, columns })
     }
 
-    if (this.props.addFlair && this.props.type) {
-      this.setState({ entityData: this.props.entityData, type: this.props.type, addFlairFunction: this.props.addFlair })
+    if (this.props.type) {
+      this.setState({ type: this.props.type, entityData: this.props.entityData })
+    }
+    if (this.props.addFlair) {
+      this.setState({ updateFlair: this.props.addFlair })
     }
   }
 
@@ -648,7 +657,14 @@ class NewAlertTable extends React.Component {
     return dataarray;
   }
 
-  createColumns = () => {
+  getPromotionInfo(id) {
+
+    let json = axios.get(`/scot/api/v2/alert/${id}/event`);
+    return json
+  }
+
+  createColumns() {
+
     let columns = [];
     //initial columns that are not under data.columns
     if (this.props.items.length > 0) {
@@ -657,7 +673,7 @@ class NewAlertTable extends React.Component {
         name: 'status',
         label: 'status',
         options: {
-          customBodyRender: (value) => {
+          customBodyRender: (value, tableMeta, updateValue) => {
             if (value === 'open') {
               return (<p style={{ color: 'green' }}>{value}</p>)
             }
@@ -665,7 +681,22 @@ class NewAlertTable extends React.Component {
               return (<p style={{ color: 'red' }}>{value}</p>)
             }
             if (value === 'promoted') {
-              return (<p style={{ color: 'orange' }}>{value}</p>)
+              if (Number.isInteger(tableMeta.rowData[0])) {
+                const result = this.getPromotionInfo(tableMeta.rowData[0]);
+                function waitforPromotionData() {
+                  if (result.data.records[0].id === undefined) {
+                    if (result.data.records[0].id !== null) {
+                      return (
+                        <CustomPromotedButton endpoint={result.data.records[0].id} />
+                      )
+                    }
+                  } else {
+                    setTimeout(waitforPromotionData, 250);
+                  }
+                }
+              } else {
+                return (<div> Couldnt return promotion data</div>)
+              }
             }
           }
         }
@@ -695,12 +726,27 @@ class NewAlertTable extends React.Component {
   }
 
   fakeFunction = () => {
-    if (this.state.type !== "" && this.state.entityData.length !== 0 && this.state.addFlairFunction !== null) {
-      console.log('fake fake fakke')
-      this.state.addFlairFunction(this.state.entityData, null, this.state.type, null, null)
-    }
+    this.state.updateFlair(this.state.entityData, null, this.state.type, null, null);
+    // if (this.state.updateFLair) {
+    //   console.log('fake fake fakke')
+
+    // }
 
   }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.entityData !== this.props.entityData) {
+      //Perform some operation here
+      this.setState({ entityData: this.props.entityData });
+    }
+  }
+
+  // static getDerivedStateFromProps(nextProps, prevState) {
+  //   if (nextProps.entityData !== this.state.entityData) {
+  //     return { entityData: nextProps.entityData };
+  //   }
+  //   else return null;
+  // }
 
   render() {
 
@@ -738,13 +784,18 @@ class FlairObject extends React.Component {
     const { value, index, change } = this.props;
 
     return (
-      <div style={{ maxWidth: 500, maxHeight: 200, overflow: 'auto' }} className="alertTableHorizontal"
+      <div style={{ maxHeight: 200, overflow: 'auto', verticalAlign: 'middle', textAlign: 'center' }} className="alertTableHorizontal"
         dangerouslySetInnerHTML={{ __html: value }}
       />
     );
   }
 }
 
+const CustomPromotedButton = props => (
+  <Button2 onClick={function () {
+    window.open(`#/event/${props.endpoint}`)
+  }} variant="contained" size="small" color="primary" style={{ backgroundColor: 'orange' }}>Promoted</Button2>
+);
 
 
 

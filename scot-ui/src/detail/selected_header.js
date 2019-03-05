@@ -43,7 +43,7 @@ export default class SelectedHeader extends React.Component {
       showEntryData: false,
       entryData: "",
       showEntityData: false,
-      entityData: "",
+      entityData: [],
       entityid: null,
       entitytype: null,
       entityoffset: null,
