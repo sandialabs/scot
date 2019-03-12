@@ -609,12 +609,12 @@
     white-space: nowrap;
     }
 
-    .alert_data_cell {
-    overflow-x:hidden;
+    .rt-tr {
+    /* overflow-x:hidden; */
     max-height:200px;
-    overflow-y:auto;
+    /* overflow-y:auto; */
     font-weight: normal !important;
-    padding: 3px;
+    /* padding: 3px; */
     max-width: 500px;
     word-wrap: break-word;
     }
