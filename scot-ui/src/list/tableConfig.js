@@ -151,7 +151,7 @@ export const customCellRenderers = {
       // If the element is there, use it
       if (element) {
         return (
-          <Button2 variant="contained" onclick={navigateTo(element.data.records[0].id)} style={{ backgroundColor: 'orange', color: 'white' }}>{row.value}</Button2>
+          <Button2 variant="contained" onMouseDown={() => navigateTo(element.data.records[0].id)} style={{ backgroundColor: 'orange', color: 'white' }}>{row.value}</Button2>
         );
       }
       // Otherwise show a loading state

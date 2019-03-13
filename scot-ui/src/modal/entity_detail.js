@@ -1791,14 +1791,10 @@ class EntityReferences extends React.Component {
                 this.props.errorToggle('failed to get entity references for entity')
             }.bind(this)
         })*/
-    $("#sortableentitytable" + this.props.entityid).tablesorter();
   };
 
   componentDidUpdate = () => {
-    let config = $("#sortableentitytable" + this.props.entityid)[0].config,
-      // applies or reapplies a sort to the table; use false to not update the sort
-      resort = true; // or [ [0,0], [1,0] ] etc
-    $.tablesorter.updateAll(config, resort);
+
   };
 
   componentWillUnmount = () => {

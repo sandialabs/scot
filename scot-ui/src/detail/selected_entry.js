@@ -486,7 +486,29 @@ class EntryIterator extends React.Component {
     let rows = [];
     let data = this.props.data;
     let type = this.props.type;
+    let items = this.props.items;
+    let linkToSearch = [];
     let id = this.props.id;
+    let search = null;
+    if (this.props.items !== undefined) {
+      if (this.props.items[0].data_with_flair !== undefined && !this.props.flairOff) {
+        search = items[0].data_with_flair.search;
+      } else {
+        search = items[0].data.search;
+      }
+      for (let y = 0; y < this.props.headerData.ahrefs.length; y++) {
+        linkToSearch.push(
+          <a href={this.props.headerData.ahrefs[y].link}>
+            {this.props.headerData.ahrefs[y].subject}
+          </a>
+        );
+        linkToSearch.push(<br />);
+      }
+    }
+
+
+
+
     if (data[0] === undefined) {
       if (type !== "alertgroup") {
         return (
@@ -527,29 +549,32 @@ class EntryIterator extends React.Component {
             key = key + 1
           }.bind(this)
         );
+        return (<div>{rows}</div>)
+      } else {
+        return <div>
+          <NewAlertTable
+            items={data}
+            entityData={this.props.entityData}
+            key={id}
+            type={type}
+            id={id}
+            headerData={this.props.headerData}
+            alertSelected={this.props.alertSelected}
+            alertPreSelectedId={this.props.alertPreSelectedId}
+            aType={this.props.aType}
+            aID={this.props.aID}
+            entryToolbar={this.props.entryToolbar}
+            entryToggle={this.props.entryToggle}
+            fileUploadToggle={this.props.fileUploadToggle}
+            fileUploadToolbar={this.props.fileUploadToolbar}
+            errorToggle={this.props.errorToggle}
+            flairOff={this.props.flairOff}
+            createCallback={this.props.createCallback}
+            addFlair={this.props.addFlair}
+          />
+        </div>
       }
-      return <div>
-        <NewAlertTable
-          items={data}
-          entityData={this.props.entityData}
-          key={id}
-          type={type}
-          id={id}
-          headerData={this.props.headerData}
-          alertSelected={this.props.alertSelected}
-          alertPreSelectedId={this.props.alertPreSelectedId}
-          aType={this.props.aType}
-          aID={this.props.aID}
-          entryToolbar={this.props.entryToolbar}
-          entryToggle={this.props.entryToggle}
-          fileUploadToggle={this.props.fileUploadToggle}
-          fileUploadToolbar={this.props.fileUploadToolbar}
-          errorToggle={this.props.errorToggle}
-          flairOff={this.props.flairOff}
-          createCallback={this.props.createCallback}
-          addFlair={this.props.addFlair}
-        />
-      </div>;
+
     }
   };
 }
@@ -597,98 +622,69 @@ class NewAlertTable extends React.Component {
     return dataarray;
   }
 
+  handleStriping = (rowInfo) => {
+    try {
+      if (rowInfo.index !== undefined) {
+        return ({
+          style: {
+            backgroundColor: (rowInfo.index % 2 == 0 ? '#bababa45' : '')
+          }
+        })
+      }
+    } catch{
+      return ({ style: {} })
+    }
+  }
 
   createColumns = (data) => {
-    let columnindex = 0;
     let columns = [];
     //initial columns that are not under data.columns
     let id_column;
     let status_column;
     if (this.props.items.length > 0) {
       id_column = {
-        columnIndex: columnindex, accessor: 'id', Header: 'id', maxWidth: 100, getProps: (state, rowInfo) => {
-          try {
-            if (rowInfo.index !== undefined) {
-              return ({
-                style: {
-                  backgroundColor: (rowInfo.index % 2 == 0 ? '#bababa45' : '')
-                }
-              })
-            }
-          } catch{
-            return ({ style: {} })
-          }
-        }
+        accessor: 'id', Header: 'id',
+        // maxWidth: 100,
+        getProps: (state, rowInfo) => {
+          return this.handleStriping(rowInfo);
+        },
       }
-      columnindex += 1
       status_column = {
-        columnIndex: columnindex,
         accessor: 'status',
         Header: 'Status',
-        maxWidth: 100,
+        // maxWidth: 100,
         Cell: customCellRenderers.alertStatusAlerts,
         getProps: (state, rowInfo) => {
-          try {
-            if (rowInfo.index !== undefined) {
-              return ({
-                style: {
-                  backgroundColor: (rowInfo.index % 2 == 0 ? '#bababa45' : '')
-                }
-              })
-            }
-          } catch{
-            return ({ style: {} })
-          }
-        }
+          return this.handleStriping(rowInfo);
+        },
       }
     }
 
-    columnindex += 1
     let entry_count_column = {
-      columnIndex: columnindex, accessor: 'entry_count', Header: 'Entries', maxWidth: 80, getProps: (state, rowInfo) => {
-        try {
-          if (rowInfo.index !== undefined) {
-            return ({
-              style: {
-                backgroundColor: (rowInfo.index % 2 == 0 ? '#bababa45' : '')
-              }
-            })
-          }
-        } catch{
-          return ({ style: {} })
-        }
-      }
+      accessor: 'entry_count', Header: 'Entries',
+      // maxWidth: 80,
+      getProps: (state, rowInfo) => {
+        return this.handleStriping(rowInfo);
+      },
     }
     let array = [id_column, status_column, entry_count_column];
     array.forEach(function (element) {
       columns.push(element);
     })
-    columnindex += 1
     this.props.items[0].data.columns.forEach(function (element) {
       let columnobj = {
-        columnIndex: columnindex,
         accessor: element,
         Header: element,
         filter: true,
         Cell: customCellRenderers.flairCell,
-        width: getColumnWidth(data, element, element),
+        width: 300,
+        // width: getColumnWidth(data, element, element),
         getProps: (state, rowInfo) => {
-          try {
-            if (rowInfo.index !== undefined) {
-              return ({
-                style: {
-                  backgroundColor: (rowInfo.index % 2 == 0 ? '#bababa45' : '')
-                }
-              })
-            }
-          } catch{
-            return ({ style: {} })
-          }
-        }
+          return this.handleStriping(rowInfo);
+        },
       }
       columns.push(columnobj);
-      columnindex += 1
-    });
+    }.bind(this));
     return columns;
   }
 
@@ -700,10 +696,6 @@ class NewAlertTable extends React.Component {
     }
   }
 
-  handleSelectiion(row) {
-
-  }
-
 
   render() {
 
@@ -712,6 +704,7 @@ class NewAlertTable extends React.Component {
 
     return (
       <ReactTable
+        key={2}
         data={data}
         columns={columns}
         filterable={true}
@@ -728,7 +721,7 @@ class NewAlertTable extends React.Component {
           addFlair(entityData, null, type, null, null);
         }}
         showPagination={false}
-        defaultPageSize={100}
+        pageSize={data.length}
         getTrGroupProps={(state, rowInfo) => {
           if (rowInfo && rowInfo.row) {
             return {
