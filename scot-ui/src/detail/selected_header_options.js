@@ -100,80 +100,59 @@ export default class SelectedHeaderOptions extends React.Component {
   };
 
   alertPromoteSelected = () => {
-    let data = JSON.stringify({ promote: "new" });
-    let array = [];
-    $("tr.selected").each(function (index, tr) {
-      let id = $(tr).attr("id");
-      array.push(id);
-    });
+    //   let data = JSON.stringify({ promote: "new" });
+    //   let array = [];
+    //   $("tr.selected").each(function (index, tr) {
+    //     let id = $(tr).attr("id");
+    //     array.push(id);
+    //   });
 
-    this.props.ToggleProcessingMessage(true);
+    //   this.props.ToggleProcessingMessage(true);
 
-    //Start by promoting the first one in the array
-    $.ajax({
-      type: "put",
-      url: "/scot/api/v2/alert/" + array[0],
-      data: data,
-      contentType: "application/json; charset=UTF-8",
-      success: function (response) {
-        //With the entry number, promote the others into the existing event
-        let promoteTo = {
-          promote: response.pid
-        };
+    //   //Start by promoting the first one in the array
+    //   $.ajax({
+    //     type: "put",
+    //     url: "/scot/api/v2/alert/" + array[0],
+    //     data: data,
+    //     contentType: "application/json; charset=UTF-8",
+    //     success: function (response) {
+    //       //With the entry number, promote the others into the existing event
+    //       let promoteTo = {
+    //         promote: response.pid
+    //       };
 
-        if (array.length == 1) {
-          this.props.ToggleProcessingMessage(false);
-        }
+    //       if (array.length == 1) {
+    //         this.props.ToggleProcessingMessage(false);
+    //       }
 
-        for (let i = 1; i < array.length; i++) {
-          $.ajax({
-            type: "put",
-            url: "/scot/api/v2/alert/" + array[i],
-            data: JSON.stringify(promoteTo),
-            contentType: "application/json; charset=UTF-8",
-            success: function () {
-              console.log("success");
-              if (i + 1 == array.length) {
-                this.props.ToggleProcessingMessage(false);
-              }
-            }.bind(this),
-            error: function (data) {
-              this.props.errorToggle(
-                "failed to promoted selected alerts",
-                data
-              );
-            }.bind(this)
-          });
-        }
-      }.bind(this),
-      error: function (data) {
-        this.props.errorToggle("failed to promoted selected alerts", data);
-      }.bind(this)
-    });
-  };
-  /*Future use?
-    alertUnpromoteSelected: function() {
-        var data = JSON.stringify({unpromote:this.props.aIndex})
-        var array = [];
-        $('tr.selected').each(function(index,tr) {
-            var id = $(tr).attr('id');
-            array.push(id);
-        }.bind(this));
-        for (i=0; i < array.length; i++) {
-            $.ajax({
-                type:'put',
-                url: '/scot/api/v2/alert/'+array[i],
-                data: data,
-                contentType: 'application/json; charset=UTF-8',
-                success: function(response){
-                    console.log('success');
-                }.bind(this),
-                error: function() {
-                    console.log('failure');
-                }.bind(this)
-            })
-        }
-    },*/
+    //       for (let i = 1; i < array.length; i++) {
+    //         $.ajax({
+    //           type: "put",
+    //           url: "/scot/api/v2/alert/" + array[i],
+    //           data: JSON.stringify(promoteTo),
+    //           contentType: "application/json; charset=UTF-8",
+    //           success: function () {
+    //             console.log("success");
+    //             if (i + 1 == array.length) {
+    //               this.props.ToggleProcessingMessage(false);
+    //             }
+    //           }.bind(this),
+    //           error: function (data) {
+    //             this.props.errorToggle(
+    //               "failed to promoted selected alerts",
+    //               data
+    //             );
+    //           }.bind(this)
+    //         });
+    //       }
+    //     }.bind(this),
+    //     error: function (data) {
+    //       this.props.errorToggle("failed to promoted selected alerts", data);
+    //     }.bind(this)
+    //   });
+    // };
+
+  }
   alertSelectExisting = () => {
     let text = prompt("Please Enter Event ID to promote into");
     let array = [];
@@ -693,6 +672,14 @@ export default class SelectedHeaderOptions extends React.Component {
             >
               <img src="/images/megaphone.png" alt="" /> Promote Selected
             </Button>
+            {/* <Button
+              eventkey="10"
+              onClick={this.alertPromoteSelected}
+              bsSize="xsmall"
+              bsStyle="warning"
+            >
+              <img src="/images/megaphone.png" alt="" /> Promote Selected
+            </Button> */}
             <Button
               eventkey="11"
               onClick={this.alertSelectExisting}

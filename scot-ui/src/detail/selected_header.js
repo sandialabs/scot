@@ -74,7 +74,8 @@ export default class SelectedHeader extends React.Component {
       flairOff: false,
       highlightedText: "",
       flairing: false,
-      isMounted: false
+      isMounted: false,
+      alertsSelected: [],
     };
   }
 
@@ -549,7 +550,6 @@ export default class SelectedHeader extends React.Component {
   };
 
   guideRedirectToAlertListWithFilter = () => {
-    console.log("hey")
     RegExp.escape = function (text) {
       return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
     };
@@ -613,6 +613,23 @@ export default class SelectedHeader extends React.Component {
     }
   };
 
+  //2019 new alert table stuff
+  handleSelection = (alertid) => {
+    console.log(`Got row id: ${alertid}`)
+    if (this.state.alertsSelected.some(item => alertid === item)) {
+      this.setState({
+        alertsSelected: this.state.alertsSelected.filter(function (id) {
+          return id !== alertid
+        })
+      })
+    } else {
+      this.setState({
+        alertsSelected: [...this.state.alertsSelected, alertid]
+      })
+    }
+  }
+
+
   render() {
     let headerData = this.state.headerData;
     let viewedby = this.viewedbyfunc(headerData);
@@ -630,6 +647,8 @@ export default class SelectedHeader extends React.Component {
     } else if (this.state.headerData.body) {
       string = this.state.headerData.body;
     }
+
+
 
     return (
       <div>
@@ -915,6 +934,7 @@ export default class SelectedHeader extends React.Component {
                   createCallback={this.props.createCallback}
                   removeCallback={this.props.removeCallback}
                   addFlair={AddFlair.entityUpdate}
+                  handleSelection={this.handleSelection}
                 />
               ) : null}
               {this.state.showEventData && type === "entity" ? (
