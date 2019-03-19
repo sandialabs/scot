@@ -162,15 +162,15 @@ sub pre_create_process {
             }
         }
         else {
-            if ( defined $usergroups ) {
-                $json->{groups} = {
-                    read    => $usergroups,
-                    modify  => $usergroups,
-                };
-            }
-            else {
+#            if ( defined $usergroups ) {
+#                $json->{groups} = {
+#                    read    => $usergroups,
+#                    modify  => $usergroups,
+#                };
+#            }
+#            else {
                 $json->{groups} = $env->default_groups;
-            }
+#            }
         }
     }
 }
