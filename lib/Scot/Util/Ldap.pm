@@ -205,49 +205,40 @@ sub authenticate_user {
 }
 
 sub do_bind {
-    my $self    =   shift;
-    my $dn      =   shift;
-    my $pass    =   shift;
+    my $self    = shift;
+    my $dn      = shift;
+    my $pass    = shift;
     my $log     = $self->log;
     my $ldap    = $self->ldap;
 
-    $log->debug("Attempting to bind to $dn");
+    $log->debug("attempting bind to $dn");
 
     my $msg;
+    my $success = 0;
 
-    $msg = $ldap->bind($dn, 'password' => $pass);
-
-    if ( $msg->is_error ) {
-        $log->error("LDAP error: ",{filter=>\&Dumper, value=>$msg});
-        return undef;
+    retry {
+        $msg    = $ldap->bind($dn, 'password' => $pass);
+        if ( ! defined $msg ) {
+            $log->error("LDAP failed to return message");
+            die "undefined ldap response";
+        }
+        if ( $msg->is_error ) {
+            $log->error("Bind Error: ".$msg->errorMessage);
+            die $msg->errorMessage;
+        }
+        $success++;
     }
-    $log->debug("Ldap return ",{filter=>\&Dumper, value=>$msg});
-    return 1;
-
-#    retry {
-#        $msg    = $ldap->bind($dn, 'password' => $pass);
-#        if ( $msg->is_error ) {
-#            $log->error("Bind Error: ".$msg->errorMessage);
-#            die "bind error";
-#        }
-#    }
-#    delay_exp { 3, 1e5 }
-#    on_retry {
-#        $log->warn("clearing ldap connection and retrying bind");
-#        $self->clear_ldap_cache;
-#    }
-#    catch {
-#        $log->error("Failed to bind for $dn");
-#        return undef;
-#    };
-    if ( ! defined $msg ) {
-        $log->warn("message not defined");
-        return undef;
+    delay_exp { 3, 1e5 }
+    on_retry {
+        $log->warn("reconnecting to ldap server and retrying bind");
+        $self->clear_ldap_cache;
     }
-    return 1;
+    catch {
+        $log->error("BIND Failed: $_");
+        $success = 0;
+    };
+    return $success;
 }
-
-
 
 sub get_users_groups {
     my $self    = shift;
