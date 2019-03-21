@@ -205,7 +205,7 @@ sub flair_record {
         }
 
         if (ref($data->{$column}) ne "ARRAY" ) {
-            $log->error("WEIRD! $column is not an ARRAY is ",
+            $log->warn("WEIRD! $column is not an ARRAY is ",
                         {filter=>\&Dumper, value=>$data->{$column}});
             $data->{$column} = [ $data->{$column} ];
         }
