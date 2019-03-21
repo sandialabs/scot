@@ -223,8 +223,8 @@ sub do_bind {
             die "undefined ldap response";
         }
         if ( $msg->is_error ) {
-            $log->error("Bind Error: ".$msg->errorMessage);
-            die $msg->errorMessage;
+            $log->error("Bind Error: ".$msg->error_desc);
+            die $msg->error_text;
         }
         $success++;
     }
