@@ -21,3 +21,4 @@ scot-debug.js
 .idea/
 scot-ui/build/static/js/
 scot-ui/build/
+.vscode/

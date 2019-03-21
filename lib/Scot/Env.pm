@@ -281,6 +281,42 @@ sub get_timer {
     };
 }
 
+=item C<get_countdown>
+
+more closure fun.  This will return a code ref that each time called
+will output  the pct complete, number done and remaining.
+
+=cut
+
+sub get_countdown {
+    my $self   = shift;
+    my $total  = shift;
+    my $remain = $total;
+    my $done   = 0;
+    my $start_time  = [ gettimeofday ];
+    my $timer  = sub {
+        my $begin   = $start_time;
+        my $elapsed = tv_interval($begin, [ gettimeofday ]);
+        return $elapsed;
+    };
+    return sub {
+        $remain--;
+        $done++;
+        my $e = &$timer;
+
+        my $pct  = ( $done / $total )*100;
+        my $rate = ( $done / $e );
+        my $ect  = ( $remain / $rate );
+        my $finish = $ect / 60;
+        # return "$pct % complete. $done complete. $remain remain of $total";
+        return join(" ",
+            sprintf("%d complete (%.2f%%).",$done, $pct),
+            "$remain of $total.",
+            sprintf("%.3f/sec", $rate),
+            sprintf("Est. Completion Time: %.2f minutes",$finish));
+      };
+}
+
 sub now {
     return time();
 }

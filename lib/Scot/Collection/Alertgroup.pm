@@ -143,6 +143,7 @@ override api_create => sub {
 
             my $alertscreated += $alert_col->linked_create({
                 data        => $datum,
+                subject     => $alertgroup->subject,
                 alertgroup  => $id,
                 columns     => $alertgroup->columns,
                 owner       => $alertgroup->owner,

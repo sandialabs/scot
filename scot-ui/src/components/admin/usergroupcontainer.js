@@ -12,11 +12,20 @@ import Dialog from '@material-ui/core/Dialog';
 import Typography from '@material-ui/core/Typography';
 import Fab from '@material-ui/core/Fab';
 import AreYouSure from './areyousure'
+import Paper from '@material-ui/core/Paper';
+import Switch from '@material-ui/core/Switch';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import { withSnackbar } from 'notistack';
 
 
 const styles = theme => ({
   root: {
     flexGrow: 1,
+  },
+  paper: {
+    ...theme.mixins.gutters(),
+    paddingTop: theme.spacing.unit * 2,
+    paddingBottom: theme.spacing.unit * 2,
   },
 });
 
@@ -32,6 +41,7 @@ class UserGroupContainer extends React.Component {
       id: null,
       type: "",
       areYouSure: false,
+      updateId: null,
     }
   }
 
@@ -45,6 +55,26 @@ class UserGroupContainer extends React.Component {
         console.log(error);
       });
   }
+
+  componentDidUpdate(prevProps, prevState) {
+    const { enqueueSnackbar } = this.props;
+    if (prevState.userdata !== this.state.userdata) {
+      if (this.state.updateId !== null) {
+        const user = this.getUserObject(this.state.updateId)
+        axios.put(`/scot/api/v2/user/${this.state.updateId}`, { active: user.active })
+          .then(function (response) {
+            enqueueSnackbar(`Successfully updated user.`, { variant: 'success' })
+            this.setState({ updateId: null })
+          }.bind(this))
+          .catch(function (error) {
+
+            enqueueSnackbar(`Failed updating user`, { variant: 'error' });
+          });
+      }
+    }
+  }
+
+
 
   showUserDialog = () => {
     this.setState({ showModal: true, type: 'user' })
@@ -83,12 +113,42 @@ class UserGroupContainer extends React.Component {
         {
           Header: 'Full Name',
           accessor: 'fullname',
-          width: 70
+          width: 90
         },
         {
           Header: 'Username',
           accessor: 'username',
           width: 70
+        },
+        {
+          Header: 'Active',
+          id: 'active',
+          accessor: row => (
+            <center>
+              {row.active === 1 ?
+                <div>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        onChange={() => this.handleActiveToggle(row.id)}
+                        checked={row.active}
+                        value={row.active}
+                      />
+                    }
+                  />
+                </div> :
+                <div>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        onChange={() => this.handleActiveToggle(row.id)}
+                        checked={row.active}
+                        value={row.active} />
+                    }
+                  />
+                </div>}
+            </center>),
+          width: 80
         },
         {
           Header: 'Edit / Delete',
@@ -157,10 +217,41 @@ class UserGroupContainer extends React.Component {
       ));
   }
 
+  handleActiveToggle = (id) => {
+    let user = this.getUserObject(id);
+    this.setState({
+      userdata: this.state.userdata.map(el => (el.id === id ?
+        { ...el, active: !el.active, } : el)),
+      updateId: user.id
+    });
+
+  }
+
+  getUserObject = id => {
+    let user = this.state.userdata.filter(user => id === user.id ? user : null);
+    return user[0];
+  }
   render() {
     const { classes, ...other } = this.props;
+    const { groupdata, userdata } = this.state;
+    const pagesize = 10
+
+    let showuserpagination = userdata.length > pagesize ? true : false
+    let showgrouppagination = groupdata.length > pagesize ? true : false
+
     return (
       <div className={classes.root}>
+        <br />
+        <Paper className={classes.paper} elevation={1}>
+          <Typography variant="h5" component="h3">
+            Please be advised
+            </Typography>
+          <Typography component="p">
+            In order to properly add a user, they must belong to a group. A user is added to a group at time of creatino or upon 'Edit'. Groups MUST include the string 'scot' in the name or they will be ignored
+            by the system. You must activate a user in order to begin logging in as the user.
+            </Typography>
+        </Paper>
+        <br />
         <Grid container spacing={8}>
           <Grid item xs={12} sm={6}>
             <Typography variant="h4" gutterBottom>
@@ -177,6 +268,9 @@ class UserGroupContainer extends React.Component {
             <ReactTable
               data={this.state.userdata}
               columns={this.getColumns('user')}
+              pageSize={this.state.userdata.length}
+              defaultPageSize={10}
+              showPagination={showuserpagination}
             />
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -194,6 +288,9 @@ class UserGroupContainer extends React.Component {
             <ReactTable
               data={this.state.groupdata}
               columns={this.getColumns('group')}
+              pageSize={this.state.groupdata.length}
+              defaultPageSize={10}
+              showPagination={showgrouppagination}
             />
           </Grid>
         </Grid>
@@ -210,4 +307,4 @@ class UserGroupContainer extends React.Component {
   }
 }
 
-export default withStyles(styles)(UserGroupContainer);
+export default withSnackbar(withStyles(styles)(UserGroupContainer));

@@ -509,7 +509,7 @@ sub domain_action {
             return $span;
         }
         else {
-            $log->error("Error getting root domain: ".$self->pdsuffix->error);
+            $log->warn("Error getting root domain: ".$self->pdsuffix->error);
             return undef;
         }
     }

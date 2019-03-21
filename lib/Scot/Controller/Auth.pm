@@ -327,7 +327,9 @@ sub ldap_authenticates {
     $log->debug("seeing if ldap will authenticate");
 
     if ( defined $ldap ) {
-        if ( $ldap->authenticate_user($user, $pass) ) {
+        my $return = $ldap->authenticate_user($user, $pass);
+        $log->debug("return from ldap auth is ",{filter=>\&Dumper, value=>$return});
+        if ( $return != 0 ) {
             $log->debug("$user authenticated by ldap");
             return 1;
         }
