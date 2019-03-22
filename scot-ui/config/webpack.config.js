@@ -23,7 +23,6 @@ const getClientEnvironment = require('./env');
 const ModuleNotFoundPlugin = require('react-dev-utils/ModuleNotFoundPlugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin-alt');
 const typescriptFormatter = require('react-dev-utils/typescriptFormatter');
-const CspHtmlWebpackPlugin = require('csp-html-webpack-plugin');
 const CSP = {
   'Content-Security-Policy': {
     'http-equiv': 'Content-Security-Policy',
@@ -298,36 +297,6 @@ module.exports = function (webpackEnv) {
       ],
     },
 
-
-
-    //CSP
-    module: {
-      rules: [
-        {
-          test: /\.css$/,
-          use: [
-            {
-              loader: 'style-loader',
-              options: { attrs: { nonce: '{{ styleNonce }}' } }
-            },
-            'css-loader'
-          ]
-        },
-        {
-          test: /\.scss$/,
-          use: [
-            {
-              loader: 'style-loader',
-              options: { attrs: { nonce: '{{ styleNonce }}' } }
-            },
-            'css-loader',
-            'sass-loader'
-          ]
-        }
-      ]
-    },
-
-
     module: {
       strictExportPresence: true,
       rules: [
@@ -530,25 +499,7 @@ module.exports = function (webpackEnv) {
             inject: true,
             template: paths.appHtml,
           },
-          // {
-          //   cspPlugin: {
-          //     enabled: true,
-          //     policy: {
-          //       'base-uri': "'self'",
-          //       'object-src': "'none'",
-          //       // 'script-src': ["'self'", "'unsafe-eval'"],
-          //       'style-src': ["'unsafe-inline'", "'self'", "'unsafe-eval'"]
-          //     },
-          //     // hashEnabled: {
-          //     //   'script-src': true,
-          //     //   // 'style-src': true
-          //     // },
-          //     // nonceEnabled: {
-          //     //   'script-src': true,
-          //     //   'style-src': true
-          //     // }
-          //   }
-          // },
+
           isEnvProduction
             ? {
               minify: {
@@ -567,24 +518,6 @@ module.exports = function (webpackEnv) {
             : undefined
         )
       ),
-
-      // new CspHtmlWebpackPlugin({
-      //   'base-uri': "'self'",
-      //   'object-src': "'none'",
-      //   'script-src': ["'unsafe-inline'", "'self'", "'unsafe-eval'"],
-      //   'style-src': ["'unsafe-inline'", "'self'", "'unsafe-eval'"]
-      // }, {
-      //     enabled: true,
-      //     hashingMethod: 'sha256',
-      //     hashEnabled: {
-      //       'script-src': true,
-      //       'style-src': true
-      //     },
-      //     nonceEnabled: {
-      //       'script-src': true,
-      //       'style-src': true
-      //     }
-      //   }),
 
       // Inlines the webpack runtime script. This script is too small to warrant
       // a network request.
