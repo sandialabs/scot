@@ -20,38 +20,15 @@ sub get_history {
 sub create_audit_rec {
     my $self        = shift;
     my $href        = shift;
-    my $handler     = $href->{handler};
-    my $object      = $href->{object};
-    my $changes     = $href->{changes};
-    my $req         = $handler->tx->req;
-    my $log     = $self->env->log;
+    my $log         = $self->env->log;
 
     my $data    = {
-        who     => $handler->session('user'),
-        groups  => $handler->session('groups'),
+        who     => $href->{who},
         when    => $self->env->now,
-        method  => $req->method,
-        url     => $req->url->to_abs->to_string,
-        from    => $handler->tx->remote_address,
-        agent   => $req->headers->user_agent,
-        params  => $req->params->to_hash,
-        json    => $req->json,
+        what    => $href->{what},
+        data    => $href->{data},
     };
-
-
-    if ( defined $object ) {
-        $data->{object} = {
-            id  => $object->id,
-            col => ref($object),
-        };
-    }
-
-    if ( defined $changes ) {
-        $data->{changes} = $changes;
-    }
-
-    $log->trace("audit rec: ",{filter=>\&Dumper, value=>$data});
-
+    $log->debug("audit rec: ",{filter=>\&Dumper, value=>$data});
     $self->create($data);
 }
 

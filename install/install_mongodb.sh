@@ -48,10 +48,11 @@ function ensure_mongo_repo {
             echo "-- mongo yum repo already present"
         else
             echo "-- adding mongo yum repo stanza"
+            CENTVER=7
             cat <<- EOF > $MONGO_YUM_REPO
 [mongodb-org-3.6]
 name=MongoDB Repository
-baseurl=http://repo.mongodb.org/yum/redhat/$OSVERSION/mongodb-org/3.6/x86_64/
+baseurl=http://repo.mongodb.org/yum/redhat/$CENTVER/mongodb-org/3.6/x86_64/
 gpgcheck=1
 enabled=1
 gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc
@@ -124,7 +125,15 @@ function wait_for_mongo {
 
 function initialize_database {
 
-    DBS=`mongo --quiet --eval  "printjson(db.adminCommand('listDatabases'))"`
+    MONGOPGM="/usr/bin/mongo"
+
+    if [[ ! -e $MONGOPGM ]]; then
+        echo "!!! MONGO Client $MONGOPGM not installed !!!"
+        echo "Try installing Mongo via instructions at mongodb.com"
+        exit 1
+    fi
+
+    DBS=`$MONGOPGM --quiet --eval  "printjson(db.adminCommand('listDatabases'))"`
     if echo $DBS | grep -w 'scot-prod'; then
         echo "-- scot-prod EXISTS.  "
         if [[ $RESETDB == "yes" ]]; then
@@ -145,7 +154,7 @@ function initialize_database {
     if [[ "$RESETDB" == "yes" ]] ; then
         echo "-- initializing SCOT database"
         # subshell
-        (cd $DEVDIR/install/src/mongodb; mongo scot-prod reset.js)
+        (cd $DEVDIR/install/src/mongodb; $MONGOPGM scot-prod reset.js)
         if [[ $? -ne 0 ]];then
             echo "!!!!!"
             echo "!!!!! SCOT initialization of database failed!"

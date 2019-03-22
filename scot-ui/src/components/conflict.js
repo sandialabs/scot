@@ -6,8 +6,8 @@ import axios from 'axios'
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
-import { Editor } from '@tinymce/tinymce-react';
 
+import { Editor } from '@tinymce/tinymce-react';
 
 const styles = theme => ({
   card: {
@@ -21,6 +21,7 @@ class Conflict extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+
       editedtext: ""
     }
   }
@@ -51,7 +52,6 @@ class Conflict extends React.Component {
         this.props.handleClose();
       });
   }
-
   handleEditorChange = (e) => {
     this.setState({ editedtext: e })
     console.log(`State is now: ${this.state.editedtext}`)

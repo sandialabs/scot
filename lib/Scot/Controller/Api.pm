@@ -162,15 +162,15 @@ sub pre_create_process {
             }
         }
         else {
-            if ( defined $usergroups ) {
-                $json->{groups} = {
-                    read    => $usergroups,
-                    modify  => $usergroups,
-                };
-            }
-            else {
+#            if ( defined $usergroups ) {
+#                $json->{groups} = {
+#                    read    => $usergroups,
+#                    modify  => $usergroups,
+#                };
+#            }
+#            else {
                 $json->{groups} = $env->default_groups;
-            }
+#            }
         }
     }
 }
@@ -217,8 +217,12 @@ sub post_create_process {
     }
 
     $mongo->collection('Audit')->create_audit_rec({
-        handler => $self, 
-        object  => $object,
+        who     => $self->session('user'),
+        what    => "created_thing",
+        data    => {
+            type    => $object->get_collection_name,
+            id      => $object->id,
+        },
     });
     $mongo->collection('Stat')->put_stat(
         $object->get_collection_name." created", 1
@@ -429,7 +433,7 @@ sub post_list_process {
             queryRecordCount    => 1,
             totalRecordCount    => 1,
         });
-        $self->audit("get_current_handler", $req_href);
+        # $self->audit("get_current_handler", $req_href);
         return;
     }
 
@@ -1082,8 +1086,13 @@ sub promote {
         });
     }
 
-    my $what = $object->get_collection_name." promoted to ".
-                       $promotion_obj->get_collection_name;
+    my $what = join(" ", 
+                    $object->get_collection_name,
+                    "promoted to",
+                    $promotion_obj->get_collection_name);
+
+    $log->debug("Promotion what is : $what");
+
     if ( $object->meta->does_role("Scot::Role::Historable") ) {
         $mongo->collection('History')->add_history_entry({
             who     => $user,
@@ -1094,10 +1103,18 @@ sub promote {
     }
 
     $mongo->collection('Audit')->create_audit_rec({
-        handler => $self,
-        object  => $object,
-        changes => $what,
         who     => $user,
+        what    => $what,
+        data    => {
+            source  => {
+                type    => $object->get_collection_name,
+                id      => $object->id,
+            },
+            promoted    => {
+                type    => $promotion_obj->get_collection_name,
+                id      => $promotion_obj->id,
+            },
+        }
     });
 
     # add stat here
@@ -1343,17 +1360,19 @@ sub create_change_audit {
     my $self    = shift;
     my $object  = shift;
     my $href    = shift;
-    my $name    = $object->get_collection_name;
 
+    my $name        = $object->get_collection_name;
     my $auditcol    = $self->env->mongo->collection('Audit');
-    my $what    = $href->{attribute} . " updated";
+    my $what        = $href->{attribute} . " updated";
     my $record      = $auditcol->create_audit_rec({
-        handler => $self,
-        object  => $object,
-        changes => {
-            old => $href->{old_value},
-            new => $href->{new_value},
-        }
+        who     => $self->session('user'),
+        what    => $what,
+        data    => {
+            changes => {
+                old => $href->{old_value},
+                new => $href->{new_value},
+            }
+        },
     });
 }
 
@@ -1550,10 +1569,11 @@ sub post_delete_process {
         }
     }
     my $audit_rec = {
-        handler => $self,
-        object  => $object,
         who     => $self->session('user'),
+        what    => "delete_thing",
+        data    => $mqdata,
     };
+            
     $self->env->mq->send("/topic/scot",{
         action  => "deleted",
         data    => $mqdata,

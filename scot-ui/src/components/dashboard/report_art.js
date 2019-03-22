@@ -3,6 +3,7 @@ import { Button } from "react-bootstrap";
 import * as d3 from "d3";
 import debounce from "../../utils/debounce";
 import $ from "jquery";
+import axios from 'axios'
 
 const formatTickTime = (domain, count = 10) => {
   let start = domain[0],
@@ -84,10 +85,6 @@ class ReportArt extends PureComponent {
 
     // Load Art is auto debounced
     this.loadArt = debounce(this.loadArt);
-
-    this.unitChange = this.unitChange.bind(this);
-    this.lengthChange = this.lengthChange.bind(this);
-    this.dateChange = this.dateChange.bind(this);
   }
 
   componentDidMount() {
@@ -95,9 +92,9 @@ class ReportArt extends PureComponent {
     this.loadArt();
   }
 
-  componentDidUpdate() {}
+  componentDidUpdate() { }
 
-  initChart() {
+  initChart = () => {
     this.svg = d3
       .select("#report_art")
       .append("g")
@@ -123,7 +120,7 @@ class ReportArt extends PureComponent {
     this.chartInit = true;
   }
 
-  updateChart() {
+  updateChart = () => {
     // Bar names
     let barNames = new Set();
     this.state.chartData.dates.forEach(d => {
@@ -292,7 +289,7 @@ class ReportArt extends PureComponent {
 
     // Legend Position
     let widthSums = 0;
-    LegendHolder.selectAll(".legend").attr("transform", function(d, i) {
+    LegendHolder.selectAll(".legend").attr("transform", function (d, i) {
       let value = widthSums;
       widthSums += this.getBBox().width + legendSpacing;
       return `translate( ${value}, 0 )`;
@@ -301,11 +298,13 @@ class ReportArt extends PureComponent {
     LegendHolder.attr(
       "transform",
       `translate( ${width / 2 - legendWidth / 2}, ${height +
-        margin.bottom / 2} )`
+      margin.bottom / 2} )`
     );
   }
 
-  loadArt() {
+  loadArt = () => {
+
+
     if (!this.state.date || !this.state.length || this.props.editMode) {
       return;
     }
@@ -313,27 +312,28 @@ class ReportArt extends PureComponent {
     let url = "/scot/api/v2/metric/response_avg_last_x_days";
     let opts = `?days=${this.state.length}&targetdate=${this.state.date}&unit=${
       this.state.unit
-    }`;
-    d3.json(url + opts, data => {
+      }`;
+
+    axios.get(url + opts).then(res => {
       this.setState({
-        chartData: data
+        chartData: res.data
       });
     });
   }
 
-  unitChange(event) {
+  unitChange = event => {
     this.setState({ unit: event.target.value }, () => this.loadArt());
   }
 
-  lengthChange(event) {
+  lengthChange = event => {
     this.setState({ length: event.target.value }, () => this.loadArt());
   }
 
-  dateChange(event) {
+  dateChange = event => {
     this.setState({ date: event.target.value }, () => this.loadArt());
   }
 
-  exportToPNG() {
+  exportToPNG = () => {
     var svgString = new XMLSerializer().serializeToString(
       document.querySelector("#report_art")
     );
@@ -344,7 +344,7 @@ class ReportArt extends PureComponent {
     var img = new Image();
     var svg = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
     var url = DOMURL.createObjectURL(svg);
-    img.onload = function() {
+    img.onload = function () {
       ctx.drawImage(img, 0, 0);
       var png = canvas.toDataURL("image/png");
       document.querySelector("#png-container").innerHTML =

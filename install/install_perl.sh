@@ -210,6 +210,7 @@ function install_cent_perl_packages {
         perl-CPAN
         perl-Geo-IP
         perl-Net-SSLeay
+        perl-File-Slurp
     '
 
     for pkg in $YUMPACKAGES; do
@@ -402,7 +403,7 @@ function install_perl_modules {
     # test has probles with proxy and ssl 
     # -n skips the test and installs anyway.  
     # should not be a problem (until it is)
-    cpanm -n LWP::Protocol::https
+    /usr/local/bin/cpanm -n LWP::Protocol::https
 
     for module in $PERLMODULES; do
 
