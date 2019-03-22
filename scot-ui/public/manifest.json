@@ -11,7 +11,5 @@
   "start_url": "./index.html",
   "display": "standalone",
   "theme_color": "#000000",
-  "background_color": "#ffffff",
-  "csp": "script-src 'self' 'unsafe-inline'; object-src 'self'",
-  "Content-Security-Policy": "default-src 'self'; script-src 'self' https://trusted.cdn.com"
+  "background_color": "#ffffff"
 }
