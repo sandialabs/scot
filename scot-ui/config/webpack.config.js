@@ -23,24 +23,22 @@ const getClientEnvironment = require('./env');
 const ModuleNotFoundPlugin = require('react-dev-utils/ModuleNotFoundPlugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin-alt');
 const typescriptFormatter = require('react-dev-utils/typescriptFormatter');
-const CSP = {
-  'Content-Security-Policy': {
-    'http-equiv': 'Content-Security-Policy',
-    'content':
-      'default-src \'self\' \'unsafe-eval\'; \
-script-src \'self\' \'unsafe-eval\'; \
-style-src \'self\' \'unsafe-inline\' \'unsafe-eval\' blob:; \
-img-src \'self\' data: blob:; \
-font-src \'self\' data:; \
-connect-src \'self\' ws.localhost'
-  }
-}
+const CspHtmlWebpackPlugin = require('csp-html-webpack-plugin')
+
+// const CSP = {
+//   'Content-Security-Policy': {
+//     'http-equiv': 'Content-Security-Policy',
+//     'content':
+//       'frame-src \'none\';'
+//   }
+// }
+
 
 // Source maps are resource heavy and can cause out of memory issue for large source files.
 const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false';
 // Some apps do not need the benefits of saving a web request, so not inlining the chunk
 // makes for a smoother build process.
-const shouldInlineRuntimeChunk = process.env.INLINE_RUNTIME_CHUNK !== 'false';
+const shouldInlineRuntimeChunk = 'false';
 
 // Check if TypeScript is setup
 const useTypeScript = fs.existsSync(paths.appTsConfig);
@@ -495,7 +493,7 @@ module.exports = function (webpackEnv) {
         Object.assign(
           {},
           {
-            meta: CSP,
+            // meta: CSP,
             inject: true,
             template: paths.appHtml,
           },
@@ -521,9 +519,6 @@ module.exports = function (webpackEnv) {
 
       // Inlines the webpack runtime script. This script is too small to warrant
       // a network request.
-      isEnvProduction &&
-      shouldInlineRuntimeChunk &&
-      new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/runtime~.+[.]js/]),
       // Makes some environment variables available in index.html.
       // The public URL is available as %PUBLIC_URL% in index.html, e.g.:
       // <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
