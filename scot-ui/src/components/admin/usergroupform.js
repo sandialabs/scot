@@ -11,6 +11,8 @@ import axios from 'axios'
 import Typography from '@material-ui/core/Typography';
 import { withSnackbar } from 'notistack';
 import { WithContext as ReactTags } from 'react-tag-input';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Switch from '@material-ui/core/Switch';
 
 
 const styles = theme => ({
@@ -38,7 +40,8 @@ const initstate = {
   name: "",
   id: null,
   suggestions: [],
-  groups: []
+  groups: [],
+  active: 0,
 }
 
 
@@ -60,7 +63,7 @@ class UserGroupFormComponent extends React.Component {
             fullname: this.props.editObject.fullname,
             password: this.props.editObject.password,
             id: this.props.editObject.id,
-            ischecked: this.props.editObject.isChecked,
+            active: this.props.editObject.active,
             groups: this.props.editObject.groups
           }
         )
@@ -116,24 +119,25 @@ class UserGroupFormComponent extends React.Component {
       obj['fullname'] = this.state.fullname;
       obj['password'] = this.state.password;
       obj['groups'] = this.state.groups
+      obj['active'] = this.state.active ? 1 : 0
     } else if (type === 'group') {
       obj['name'] = this.state.name;
+
       obj['description'] = this.state.description
     }
     return obj
   }
 
   handleGroups = (groups) => {
+    const { enqueueSnackbar, type } = this.props;
     if (groups.length > 0) {
       let newgroups = [];
       groups.forEach(function (element) {
         newgroups.push(element.id)
       })
       this.setState({ groups: newgroups });
-      console.log('new states!!!!')
-      console.log(this.state.groups)
     } else {
-      console.log('lol')
+      enqueueSnackbar(`Error handling groups  ${type}`, { variant: 'error' });
     }
   }
 
@@ -144,7 +148,6 @@ class UserGroupFormComponent extends React.Component {
     if (this.checkBlankInputs(type)) {
       axios.put(`/scot/api/v2/${type}/${this.state.id}`, obj)
         .then(function (response) {
-          console.log(response);
           enqueueSnackbar(`Successfully updated ${type}.`, { variant: 'success' })
           this.resetState();
           this.props.fetchData(type)
@@ -153,7 +156,6 @@ class UserGroupFormComponent extends React.Component {
         .catch(function (error) {
           // handle error
           enqueueSnackbar(`Failed updating ${type}`, { variant: 'error' });
-          console.log(error);
         });
     }
   }
@@ -277,7 +279,19 @@ class UserGroupFormComponent extends React.Component {
                     shrink: true,
                   }}
                   style={{ marginTop: 8, marginBottom: 8 }}
-                /><br />
+                />
+                <br />
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={this.state.active}
+                      onChange={this.handleChange}
+                      value="active"
+                    />
+                  }
+                  label="Active?"
+                />
+                <br />
                 <b>Groups</b>
                 <GroupSelection editObject={this.props.editObject} handleGroups={this.handleGroups} id={this.state.id} suggestions={this.state.suggestions} />
                 <br />
