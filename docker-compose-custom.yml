@@ -57,6 +57,7 @@ services:
      - "/var/lib/mongodb:/var/lib/mongodb/"
      - "/opt/scotbackup/mongo/scot-prod:/opt/scotbackup/mongo/scot-prod/:z"
      - "/var/log:/var/log/"
+     - "./install/src/mongodb:/opt/scot/install/src/mongodb/:ro"
     networks:
      - scot-docker-net
     container_name: mongodb

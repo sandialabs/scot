@@ -1,25 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
-<!--
-        Sandia Cyber Omni Tracker 3.7
-        Copyright 2014-2018 Sandia National Laboratories
-
-        Originally Authored By:
-        Todd Bruner
-
-        Contributions by:
-        Nick Georgieff
-        Bryce Montano
-        -->
 
 <head>
+  <meta http-equiv="Content-Security-Policy"
+    content="script-src 'self' 'unsafe-eval' ; style-src 'self' 'unsafe-inline' blob:; frame-src 'self'; ">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="">
   <meta name="author" content="">
   <meta name="referrer" content="no-referrer">
-  <!-- <meta http-equiv="Content-Security-Policy" content="frame-src 'none'; script-src 'self'"> -->
   <title>SCOT 3.7</title>
+  <script type="text/javascript" src="%PUBLIC_URL%/libs/tinymce/js/tinymce/tinymce.min.js"></script>
   <link rel="stylesheet" href="%PUBLIC_URL%/css/revl.css">
   <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
   <link rel="stylesheet" href="%PUBLIC_URL%/libs/bootstrap/css/bootstrap.min.css">
@@ -55,7 +46,6 @@
   <script type="text/javascript" src="%PUBLIC_URL%/libs/jquery-3.3.1/jquery.min.js"></script>
   <script type="text/javascript" src="%PUBLIC_URL%/libs/bootstrap/js/bootstrap.min.js"></script>
   <script type="text/javascript" src="%PUBLIC_URL%/libs/jquery-2.1.1.1-nav.min.js"></script>
-  <script type="text/javascript" src="%PUBLIC_URL%/libs/tinymce/js/tinymce/tinymce.min.js"></script>
   <script type="text/javascript" src="%PUBLIC_URL%/libs/bootstrap/js/bootstrap-nav.min.js"></script>
   <script type="text/javascript" src="%PUBLIC_URL%/libs/tablesorter-master/js/jquery.tablesorter.js"></script>
   <script type="text/javascript" src="%PUBLIC_URL%/libs/tablesorter-master/js/jquery.tablesorter.widgets.js"></script>
@@ -93,7 +83,8 @@
 
   <div id="notification"></div>
   <div id="admin_notices"></div>
-  <span style="visibility:hidden; position:absolute; s-index: -5; top:0px; left:0px;" id="invisible" class="details-subject"></span>
+  <span style="visibility:hidden; position:absolute; s-index: -5; top:0px; left:0px;" id="invisible"
+    class="details-subject"></span>
   <noscript>
     You need to enable JavaScript to run this app.
   </noscript>

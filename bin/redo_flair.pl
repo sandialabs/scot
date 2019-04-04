@@ -12,23 +12,33 @@ my $env = Scot::Env->new(
 my $mongo   = $env->mongo;
 my $mq      = $env->mq;
 
-my @collections = (qw(entry alertgroup));
+my @collections = (qw(entry)); #  alertgroup));
 
 foreach my $colname (@collections) {
 
     print "Updating $colname...\n";
 
     my $col = $mongo->collection(ucfirst($colname));
-    my $cur = $col->find({parsed => 0});
+    # my $cur = $col->find({parsed => 0});
+
+    my $cur = $col->find({
+        'target.type' =>  'event',
+        'target.id' =>  { 
+            '$gte' => 9183, 
+            '$lte' => 15722 
+        },
+    });
 
     while ( my $obj = $cur->next ) {
 
         print "updating id = ".$obj->id."\n";
 
+        $obj->update_set(parsed => 0);
+
         $mq->send("/topic/scot", {
             action  => "updated",
             data    => {
-                who     => "reflair",
+                who     => "scot-admin",
                 type    => $colname,
                 id      => $obj->id,
             }
