@@ -1198,16 +1198,11 @@ class EntryParent extends React.Component {
     let content;
     let iframe = document.getElementById("iframe_" + this.props.items.id);
     if (iframe) {
-      try {
-        content = iframe.contentWindow.getSelection().toString();
-        if (this.state.highlightedText !== content) {
-          console.log(iframe + " has highlighted text: " + content);
-          this.setState({ highlightedText: content });
-        } else {
-          return;
-        }
-      }
-      catch{
+      content = iframe.contentWindow.getSelection().toString();
+      if (this.state.highlightedText !== content) {
+        console.log(iframe + " has highlighted text: " + content);
+        this.setState({ highlightedText: content });
+      } else {
         return;
       }
     }
