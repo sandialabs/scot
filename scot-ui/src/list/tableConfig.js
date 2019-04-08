@@ -1,20 +1,24 @@
-import React from 'react';
-import { OverlayTrigger, ButtonGroup, Button, Popover } from 'react-bootstrap';
-import DateRangePicker from 'react-daterange-picker';
-import DebounceInput from 'react-debounce-input';
-import { epochRangeToString, epochRangeToMoment, momentRangeToEpoch } from '../utils/time';
-import * as constants from '../utils/constants';
-import LoadingContainer from './LoadingContainer';
-import TagInput from '../components/TagInput';
-import Button2 from '@material-ui/core/Button'
-import axios from 'axios'
+import React from "react";
+import { OverlayTrigger, ButtonGroup, Button, Popover } from "react-bootstrap";
+import DateRangePicker from "react-daterange-picker";
+import DebounceInput from "react-debounce-input";
+import {
+  epochRangeToString,
+  epochRangeToMoment,
+  momentRangeToEpoch
+} from "../utils/time";
+import * as constants from "../utils/constants";
+import LoadingContainer from "./LoadingContainer";
+import TagInput from "../components/TagInput";
+import Button2 from "@material-ui/core/Button";
+import axios from "axios";
 
-const getPromotionInfo = (id) => {
+const getPromotionInfo = id => {
   let json = axios.get(`/scot/api/v2/alert/${id}/event`);
-  return json
+  return json;
 };
 
-const navigateTo = (id) => {
+const navigateTo = id => {
   window.open("#/event/" + id);
 };
 
@@ -22,262 +26,321 @@ const customFilters = {
   numberFilter: ({ filter, onChange }) => (
     <DebounceInput
       debounceTimeout={200}
-      type='number'
+      type="number"
       minLength={1}
       min={0}
-      value={filter ? filter.value : ''}
+      value={filter ? filter.value : ""}
       onChange={e => onChange(e.target.value)}
-      style={{ width: '100%' }}
+      style={{ width: "100%" }}
     />
   ),
   stringFilter: ({ filter, onChange }) => (
     <DebounceInput
       debounceTimeout={200}
       minLength={1}
-      value={filter ? filter.value : ''}
+      value={filter ? filter.value : ""}
       onChange={e => onChange(e.target.value)}
-      style={{ width: '100%' }}
+      style={{ width: "100%" }}
     />
   ),
-  dropdownFilter: (options = ['open', 'closed', 'promoted'], align) => ({ filter, onChange }) => (
-    <OverlayTrigger trigger='focus' placement='bottom' overlay={
-      <Popover id='status_popover' style={{ maxWidth: '400px' }}>
-        <ButtonGroup vertical style={{ maxHeight: '50vh', overflowY: 'auto', position: 'relative' }}>
-          {options.map(option => (
+  dropdownFilter: (options = ["open", "closed", "promoted"], align) => ({
+    filter,
+    onChange
+  }) => (
+    <OverlayTrigger
+      trigger="focus"
+      placement="bottom"
+      overlay={
+        <Popover id="status_popover" style={{ maxWidth: "400px" }}>
+          <ButtonGroup
+            vertical
+            style={{
+              maxHeight: "50vh",
+              overflowY: "auto",
+              position: "relative"
+            }}
+          >
+            {options.map(option => (
+              <Button
+                key={option}
+                onClick={() => onChange(option)}
+                active={filter && filter.value === option}
+                style={{
+                  textTransform: "capitalize",
+                  textAlign: align ? align : null
+                }}
+              >
+                {option}
+              </Button>
+            ))}
+          </ButtonGroup>
+          {filter && (
             <Button
-              key={option}
-              onClick={() => onChange(option)}
-              active={filter && filter.value === option}
-              style={{ textTransform: 'capitalize', textAlign: align ? align : null }}
-            >{option}</Button>
-          ))}
-        </ButtonGroup>
-        {filter &&
-          <Button
-            block
-            onClick={() => onChange('')}
-            bsStyle='primary'
-            style={{ marginTop: '3px' }}
-          >Clear</Button>
-        }
-      </Popover>
-    }>
-      <input type='text' value={filter ? filter.value : ''} readOnly style={{ width: '100%', cursor: 'pointer' }} />
+              block
+              onClick={() => onChange("")}
+              bsStyle="primary"
+              style={{ marginTop: "3px" }}
+            >
+              Clear
+            </Button>
+          )}
+        </Popover>
+      }
+    >
+      <input
+        type="text"
+        value={filter ? filter.value : ""}
+        readOnly
+        style={{ width: "100%", cursor: "pointer" }}
+      />
     </OverlayTrigger>
   ),
   dateRange: ({ filter, onChange }) => (
-    <OverlayTrigger trigger='click' rootClose placement='bottom' overlay={
-      <Popover id='daterange_popover' style={{ maxWidth: '350px' }}>
-        <DateRangePicker numberOfCalendars={2} selectionType='range' showLegend={false} singleDateRange={true} onSelect={
-          (range, states) => { onChange(momentRangeToEpoch(range)); }
-        } value={filter ? epochRangeToMoment(filter.value) : null} />
-        {filter &&
-          <Button block onClick={() => {
-            onChange('');
-            document.dispatchEvent(new MouseEvent('click'));
-          }} bsStyle='primary'>Clear</Button>
-        }
-      </Popover>
-    }>
-      <input type='text' value={filter ? epochRangeToString(filter.value) : ''} readOnly style={{ width: '100%', cursor: 'pointer' }} />
+    <OverlayTrigger
+      trigger="click"
+      rootClose
+      placement="bottom"
+      overlay={
+        <Popover id="daterange_popover" style={{ maxWidth: "350px" }}>
+          <DateRangePicker
+            numberOfCalendars={2}
+            selectionType="range"
+            showLegend={false}
+            singleDateRange={true}
+            onSelect={(range, states) => {
+              onChange(momentRangeToEpoch(range));
+            }}
+            value={filter ? epochRangeToMoment(filter.value) : null}
+          />
+          {filter && (
+            <Button
+              block
+              onClick={() => {
+                onChange("");
+                document.dispatchEvent(new MouseEvent("click"));
+              }}
+              bsStyle="primary"
+            >
+              Clear
+            </Button>
+          )}
+        </Popover>
+      }
+    >
+      <input
+        type="text"
+        value={filter ? epochRangeToString(filter.value) : ""}
+        readOnly
+        style={{ width: "100%", cursor: "pointer" }}
+      />
     </OverlayTrigger>
   ),
-  tagFilter: (type = 'tag') => ({ filter, onChange }) => (
-    <TagInput type={type} onChange={onChange} value={filter ? filter.value : []} />
-  ),
+  tagFilter: (type = "tag") => ({ filter, onChange }) => (
+    <TagInput
+      type={type}
+      onChange={onChange}
+      value={filter ? filter.value : []}
+    />
+  )
 };
 
 export const customCellRenderers = {
   dateFormater: row => {
     let date = new Date(row.value * 1000);
-    return (
-      <span>{date.toLocaleString()}</span>
-    );
+    return <span>{date.toLocaleString()}</span>;
   },
   alertStatus: row => {
-    let [open, closed, promoted] = row.value.split('/').map(value => parseInt(value.trim(), 10));
-    let className = 'open btn-danger';
+    let [open, closed, promoted] = row.value
+      .split("/")
+      .map(value => parseInt(value.trim(), 10));
+    let className = "open btn-danger";
     if (promoted) {
-      className = 'promoted btn-warning';
+      className = "promoted btn-warning";
     } else if (closed) {
       if (!open) {
-        className = 'closed btn-success';
+        className = "closed btn-success";
       }
     }
 
-    return (
-      <div className={`alertStatusCell ${className}`}>{row.value}</div>
-    );
+    return <div className={`alertStatusCell ${className}`}>{row.value}</div>;
   },
   textStatus: row => {
-    let color = 'green';
-    if (row.value === 'open' || row.value === 'disabled' || row.value === 'assigned') {
-      color = 'red';
-    } else if (row.value === 'promoted') {
-      color = 'orange';
+    let color = "green";
+    if (
+      row.value === "open" ||
+      row.value === "disabled" ||
+      row.value === "assigned"
+    ) {
+      color = "red";
+    } else if (row.value === "promoted") {
+      color = "orange";
     }
 
-    return (
-      <span style={{ color: color }}>{row.value}</span>
-    );
+    return <span style={{ color: color }}>{row.value}</span>;
   },
 
   alertStatusAlerts: row => {
+    const [element, setElement] = React.useState();
 
-    const [element, setElement] = React.useState()
-
-    if (row.value === 'closed') {
-      return (<p style={{ color: 'red' }}>{row.value}</p>)
-    } else if (row.value === 'open') {
-      return (<p style={{ color: 'green' }}>{row.value}</p>);
-    } else if (row.value === 'promoted') {
+    if (row.value === "closed") {
+      return <p style={{ color: "red" }}>{row.value}</p>;
+    } else if (row.value === "open") {
+      return <p style={{ color: "green" }}>{row.value}</p>;
+    } else if (row.value === "promoted") {
       React.useEffect(() => {
         // Use cancelled to only apply the latest request
-        let cancelled
+        let cancelled;
         // Get the promotional info
         getPromotionInfo(row.original.id).then(element => {
           // If this request has been cancelled, don't apply it
           if (cancelled) {
-            return
+            return;
           }
           // Save the element to our state
-          setElement(element)
-        })
+          setElement(element);
+        });
         return () => {
           // If the id changes, set the old requested to cancelled
-          cancelled = true
-        }
-      }, [row.original.id]) // Use the original.id to watch for changes
+          cancelled = true;
+        };
+      }, [row.original.id]); // Use the original.id to watch for changes
       // If the element is there, use it
       if (element) {
         return (
-          <Button2 variant="contained" onMouseDown={() => navigateTo(element.data.records[0].id)} style={{ backgroundColor: 'orange', color: 'white' }}>{row.value}</Button2>
+          <Button2
+            variant="contained"
+            onMouseDown={() => navigateTo(element.data.records[0].id)}
+            style={{ backgroundColor: "orange", color: "white" }}
+          >
+            {row.value}
+          </Button2>
         );
       }
       // Otherwise show a loading state
-      return <span>Loading...</span>
+      return <span>Loading...</span>;
     }
   },
   flairCell: row => {
-    return (
-      <FlairObject value={row.value} />
-    )
-  },
-
-}
+    return <FlairObject value={row.value} />;
+  }
+};
 
 const customTableComponents = {
   loading: ({ loading }) => (
-    <div className={'-loading' + (loading ? ' -active' : '')}>
+    <div className={"-loading" + (loading ? " -active" : "")}>
       <LoadingContainer loading={loading} />
     </div>
-  ),
+  )
 };
 
 const columnDefinitions = {
   Id: {
-    Header: 'ID',
-    accessor: 'id',
+    Header: "ID",
+    accessor: "id",
     maxWidth: 100,
-    Filter: customFilters.numberFilter,
+    Filter: customFilters.numberFilter
   },
 
   AlertStatus: {
-    Header: 'Status',
-    accessor: d => d.open_count + ' / ' + d.closed_count + ' / ' + d.promoted_count,
-    column: ['open_count', 'closed_count', 'promoted_count'],
-    id: 'status',
+    Header: "Status",
+    accessor: d =>
+      d.open_count + " / " + d.closed_count + " / " + d.promoted_count,
+    column: ["open_count", "closed_count", "promoted_count"],
+    id: "status",
     maxWidth: 150,
     Filter: customFilters.dropdownFilter(),
     Cell: customCellRenderers.alertStatus,
     style: {
-      padding: 0,
-    },
+      padding: 0
+    }
   },
 
   EventStatus: {
-    Header: 'Status',
-    accessor: 'status',
+    Header: "Status",
+    accessor: "status",
     maxWidth: 100,
     Cell: customCellRenderers.textStatus,
-    Filter: customFilters.dropdownFilter(),
+    Filter: customFilters.dropdownFilter()
   },
 
   IncidentStatus: {
-    Header: 'Status',
-    accessor: 'status',
+    Header: "Status",
+    accessor: "status",
     maxWidth: 100,
     Cell: customCellRenderers.textStatus,
-    Filter: customFilters.dropdownFilter(['open', 'closed']),
+    Filter: customFilters.dropdownFilter(["open", "closed"])
   },
 
   SigStatus: {
-    Header: 'Status',
-    accessor: 'status',
+    Header: "Status",
+    accessor: "status",
     maxWidth: 100,
     Cell: customCellRenderers.textStatus,
-    Filter: customFilters.dropdownFilter(['enabled', 'disabled']),
+    Filter: customFilters.dropdownFilter(["enabled", "disabled"])
   },
 
   TaskStatus: {
-    Header: 'Task Status',
+    Header: "Task Status",
     accessor: d => d.metadata.task.status,
-    id: 'metadata.task.status',
-    column: 'metadata',
+    id: "metadata.task.status",
+    column: "metadata",
     Cell: customCellRenderers.textStatus,
-    Filter: customFilters.dropdownFilter(['open', 'assigned', 'closed']),
+    Filter: customFilters.dropdownFilter(["open", "assigned", "closed"])
   },
 
   TaskSummary: {
-    Header: 'Task Summary',
-    accessor: d => d.body_plain.length > 200 ? d.body_plain.substr(0, 200) + '...' : d.body_plain,
-    id: 'summary',
+    Header: "Task Summary",
+    accessor: d =>
+      d.body_plain.length > 200
+        ? d.body_plain.substr(0, 200) + "..."
+        : d.body_plain,
+    id: "summary",
     minWidth: 400,
     maxWidth: 5000,
-    Filter: customFilters.stringFilter,
+    Filter: customFilters.stringFilter
   },
 
   Subject: {
-    Header: 'Subject',
-    accessor: 'subject',
+    Header: "Subject",
+    accessor: "subject",
     minWidth: 400,
     maxWidth: 5000,
-    Filter: customFilters.stringFilter,
+    Filter: customFilters.stringFilter
   },
 
   Location: {
-    Header: 'Location',
-    accessor: 'location',
+    Header: "Location",
+    accessor: "location",
     minWidth: 80,
     maxWidth: 180,
-    Filter: customFilters.stringFilter,
+    Filter: customFilters.stringFilter
   },
 
   Created: {
-    Header: 'Created',
-    accessor: 'created',
+    Header: "Created",
+    accessor: "created",
     minWidth: 100,
     maxWidth: 180,
     Filter: customFilters.dateRange,
-    Cell: customCellRenderers.dateFormater,
+    Cell: customCellRenderers.dateFormater
   },
 
   Updated: {
-    Header: 'Updated',
-    accessor: 'updated',
+    Header: "Updated",
+    accessor: "updated",
     minWidth: 100,
     maxWidth: 180,
     Filter: customFilters.dateRange,
-    Cell: customCellRenderers.dateFormater,
+    Cell: customCellRenderers.dateFormater
   },
 
   Occurred: {
-    Header: 'When',
-    accessor: 'when',
+    Header: "When",
+    accessor: "when",
     minWidth: 100,
     maxWidth: 180,
     Filter: customFilters.dateRange,
-    Cell: customCellRenderers.dateFormater,
+    Cell: customCellRenderers.dateFormater
   },
 
   //Changing due to Todd's change of Incident data structure as of 10/19
@@ -291,153 +354,152 @@ const columnDefinitions = {
   // },
 
   Sources: {
-    Header: 'Sources',
-    accessor: 'source', //d => d.source ? d.source.join( ', ' ) : '',
-    column: 'source',
-    id: 'source',
+    Header: "Sources",
+    accessor: "source", //d => d.source ? d.source.join( ', ' ) : '',
+    column: "source",
+    id: "source",
     minWidth: 120,
     //maxWidth: 150,
-    Filter: customFilters.tagFilter('source'),
+    Filter: customFilters.tagFilter("source")
   },
 
   Tags: {
-    Header: 'Tags',
-    accessor: 'tag', //d => d.tag ? d.tag.join( ', ' ) : '',
-    column: 'tag',
-    id: 'tag',
+    Header: "Tags",
+    accessor: "tag", //d => d.tag ? d.tag.join( ', ' ) : '',
+    column: "tag",
+    id: "tag",
     minWidth: 120,
     //maxWidth: 150,
-    Filter: customFilters.tagFilter('tag'),
+    Filter: customFilters.tagFilter("tag")
   },
 
   TaskOwner: {
-    Header: 'Task Owner',
-    accessor: 'owner',
+    Header: "Task Owner",
+    accessor: "owner",
     maxWidth: 80,
-    Filter: customFilters.stringFilter,
+    Filter: customFilters.stringFilter
   },
 
   Owner: {
-    Header: 'Owner',
-    accessor: 'owner',
+    Header: "Owner",
+    accessor: "owner",
     maxWidth: 80,
-    Filter: customFilters.stringFilter,
+    Filter: customFilters.stringFilter
   },
 
   Entries: {
-    Header: 'Entries',
-    accessor: 'entry_count',
+    Header: "Entries",
+    accessor: "entry_count",
     maxWidth: 70,
-    Filter: customFilters.numberFilter,
+    Filter: customFilters.numberFilter
   },
 
   Views: {
-    Header: 'Views',
-    accessor: 'views',
+    Header: "Views",
+    accessor: "views",
     maxWidth: 70,
-    Filter: customFilters.numberFilter,
+    Filter: customFilters.numberFilter
   },
 
   DOE: {
-    Header: 'DOE',
-    accessor: 'doe_report_id',
+    Header: "DOE",
+    accessor: "doe_report_id",
     maxWidth: 100,
-    Filter: customFilters.stringFilter,
+    Filter: customFilters.stringFilter
   },
 
   IncidentType: {
-    Header: 'Type',
-    accessor: 'type',
+    Header: "Type",
+    accessor: "type",
     minWidth: 200,
     maxWidth: 250,
-    Filter: customFilters.dropdownFilter(constants.INCIDENT_TYPES, 'left'),
+    Filter: customFilters.dropdownFilter(constants.INCIDENT_TYPES, "left")
   },
 
   AppliesTo: {
-    Header: 'Applies To',
-    accessor: 'applies_to',
+    Header: "Applies To",
+    accessor: "applies_to",
     // Filter: customFilters.stringFilter,
     Filter: customFilters.tagFilter,
     minWidth: 400,
-    maxWidth: 5000,
+    maxWidth: 5000
   },
 
   Value: {
-    Header: 'Value',
-    accessor: 'value',
+    Header: "Value",
+    accessor: "value",
     Filter: customFilters.stringFilter,
     minWidth: 400,
-    maxWidth: 5000,
+    maxWidth: 5000
   },
 
   Name: {
-    Header: 'Name',
-    accessor: 'name',
+    Header: "Name",
+    accessor: "name",
     Filter: customFilters.stringFilter,
     minWidth: 200,
-    maxWidth: 300,
+    maxWidth: 300
   },
 
   Group: {
-    Header: 'Group',
-    accessor: d => d.data.signature_group ? d.data.signature_group.join(', ') : '',
-    column: 'signature_group',
-    id: 'data.signature_group',
-    Filter: customFilters.stringFilter,
+    Header: "Group",
+    accessor: d =>
+      d.data.signature_group ? d.data.signature_group.join(", ") : "",
+    column: "signature_group",
+    id: "data.signature_group",
+    Filter: customFilters.stringFilter
   },
 
   Type: {
-    Header: 'Type',
+    Header: "Type",
     accessor: d => d.data.type,
-    id: 'data.type',
+    id: "data.type",
     Filter: customFilters.stringFilter,
     minWidth: 100,
-    maxWidth: 150,
+    maxWidth: 150
   },
 
   EntityType: {
-    Header: 'Type',
-    accessor: 'type',
+    Header: "Type",
+    accessor: "type",
     Filter: customFilters.stringFilter,
     minWidth: 100,
-    maxWidth: 150,
+    maxWidth: 150
   },
 
-
   Description: {
-    Header: 'Description',
+    Header: "Description",
     // accessor: 'description',
     accessor: d => d.data.description,
     Filter: customFilters.stringFilter,
     minWidth: 400,
-    id: 'data.description',
-    maxWidth: 5000,
+    id: "data.description",
+    maxWidth: 5000
   },
 
-
   TargetType: {
-    Header: 'Type',
+    Header: "Type",
     accessor: d => d.target.type,
-    column: 'target',
-    id: 'target_type',
-    Filter: customFilters.stringFilter,
+    column: "target",
+    id: "target_type",
+    Filter: customFilters.stringFilter
   },
 
   TargetId: {
-    Header: 'Target Id',
+    Header: "Target Id",
     accessor: d => d.target.id,
-    column: 'target',
-    id: 'target_id',
-    Filter: customFilters.numberFilter,
+    column: "target",
+    id: "target_id",
+    Filter: customFilters.numberFilter
   },
 
   OpenTasks: {
-    Header: 'Open Tasks',
-    accessor: 'has_tasks',
+    Header: "Open Tasks",
+    accessor: "has_tasks",
     Filter: customFilters.numberFilter,
     maxWidth: 90,
-    filterable: false,
-  },
+    filterable: false
+  }
 };
 
 const defaultTableSettings = {
@@ -445,87 +507,156 @@ const defaultTableSettings = {
   sortable: true,
   filterable: true,
   resizable: true,
-  styleName: 'styles.ReactTable',
-  className: '-striped -highlight',
+  styleName: "styles.ReactTable",
+  className: "-striped -highlight",
   minRows: 0,
 
-  LoadingComponent: customTableComponents.loading,
-
+  LoadingComponent: customTableComponents.loading
 };
 
 export const defaultTypeTableSettings = {
   page: 0,
   pageSize: 50,
-  sorted: [{
-    id: 'id',
-    desc: true,
-  }],
-  filtered: [],
+  sorted: [
+    {
+      id: "id",
+      desc: true
+    }
+  ],
+  filtered: []
 };
 
 const defaultColumnSettings = {
   style: {
-    padding: '5px 5px',
-  },
+    padding: "5px 5px"
+  }
 };
 
 const typeColumns = {
-  alertgroup: ['Id', 'Location', 'AlertStatus', 'Subject', 'Created', 'Sources', 'Tags', 'Views', 'OpenTasks'],
-  event: ['Id', 'Location', 'EventStatus', 'Subject', 'Created', 'Updated', 'Sources', 'Tags', 'Owner', 'Entries', 'Views', 'OpenTasks'],
-  incident: ['Id', 'Location', 'DOE', 'IncidentStatus', 'Owner', 'Subject', 'Occurred', 'IncidentType',
-    {
-      title: 'Tags',
-      options: { minWidth: 100, maxWidth: 150 },
-    },
-    {
-      title: 'Sources',
-      options: { minWidth: 100, maxWidth: 150 },
-    },
+  alertgroup: [
+    "Id",
+    "Location",
+    "AlertStatus",
+    "Subject",
+    "Created",
+    "Sources",
+    "Tags",
+    "Views",
+    "OpenTasks"
   ],
-  intel: ['Id', 'Location', 'Subject', 'Created', 'Updated', 'Sources',
-    {
-      title: 'Tags',
-      options: { minWidth: 200, maxWidth: 250 },
-    }, 'Owner', 'Entries', 'Views',],
-  task: ['Id', 'Location', 'Subject', 'TargetType', 'TargetId',
-    {
-      title: 'TaskOwner',
-      options: { minWidth: 150, maxWidth: 500 },
-    },
-    'TaskStatus', 'TaskSummary',
-    {
-      title: 'Updated',
-      options: { minWidth: 150, maxWidth: 500 },
-    },
+  event: [
+    "Id",
+    "Location",
+    "EventStatus",
+    "Subject",
+    "Created",
+    "Updated",
+    "Sources",
+    "Tags",
+    "Owner",
+    "Entries",
+    "Views",
+    "OpenTasks"
   ],
-  signature: ['Id', 'Location', 'Name', 'Type', 'SigStatus', 'Group', 'Description', 'Owner', 'Tags', 'Sources', 'Updated',],
-  guide: ['Id', 'Location', 'Subject', 'AppliesTo'],
-  entity: ['Id', 'Location', 'Value', 'EntityType', 'Entries',],
-  default: ['Id', 'Location', 'AlertStatus', 'Subject', 'Created', 'Sources', 'Tags', 'Views',],
+  incident: [
+    "Id",
+    "Location",
+    "DOE",
+    "IncidentStatus",
+    "Owner",
+    "Subject",
+    "Occurred",
+    "IncidentType",
+    {
+      title: "Tags",
+      options: { minWidth: 100, maxWidth: 150 }
+    },
+    {
+      title: "Sources",
+      options: { minWidth: 100, maxWidth: 150 }
+    }
+  ],
+  intel: [
+    "Id",
+    "Location",
+    "Subject",
+    "Created",
+    "Updated",
+    "Sources",
+    {
+      title: "Tags",
+      options: { minWidth: 200, maxWidth: 250 }
+    },
+    "Owner",
+    "Entries",
+    "Views"
+  ],
+  task: [
+    "Id",
+    "Location",
+    "Subject",
+    "TargetType",
+    "TargetId",
+    {
+      title: "TaskOwner",
+      options: { minWidth: 150, maxWidth: 500 }
+    },
+    "TaskStatus",
+    "TaskSummary",
+    {
+      title: "Updated",
+      options: { minWidth: 150, maxWidth: 500 }
+    }
+  ],
+  signature: [
+    "Id",
+    "Location",
+    "Name",
+    "Type",
+    "SigStatus",
+    "Group",
+    "Description",
+    "Owner",
+    "Tags",
+    "Sources",
+    "Updated"
+  ],
+  guide: ["Id", "Location", "Subject", "AppliesTo"],
+  entity: ["Id", "Location", "Value", "EntityType", "Entries"],
+  default: [
+    "Id",
+    "Location",
+    "AlertStatus",
+    "Subject",
+    "Created",
+    "Sources",
+    "Tags",
+    "Views"
+  ]
 };
 
-export const buildTypeColumns = (type) => {
+export const buildTypeColumns = type => {
   if (!typeColumns.hasOwnProperty(type)) {
     // throw new Error( 'No columns defined for type: '+ type );
-    type = 'default';
+    type = "default";
   }
 
   let columns = [];
   for (let col of typeColumns[type]) {
     let colOptions = {};
 
-    if (typeof col === 'object') {
+    if (typeof col === "object") {
       colOptions = {
         ...columnDefinitions[col.title],
-        ...col.options,
+        ...col.options
       };
-    } else if (typeof col === 'string') {
+    } else if (typeof col === "string") {
       colOptions = columnDefinitions[col];
     }
 
     columns.push({
       ...defaultColumnSettings,
-      ...colOptions,
+      ...colOptions
     });
   }
 
@@ -541,33 +672,36 @@ class FlairObject extends React.Component {
     const { value } = this.props;
 
     return (
-      <div style={{ overflow: 'auto', paddingBottom: 5, paddingTop: 5 }} className="alertTableHorizontal"
+      <div
+        style={{ overflow: "auto", paddingBottom: 5, paddingTop: 5 }}
+        className="alertTableHorizontal"
         dangerouslySetInnerHTML={{ __html: value }}
       />
     );
   }
 }
 
-
 export const getColumnWidth = (data, accessor, headerText) => {
-  if (typeof accessor === 'string' || accessor instanceof String) {
+  if (typeof accessor === "string" || accessor instanceof String) {
     accessor = d => d[accessor]; // eslint-disable-line no-param-reassign
   }
   const maxWidth = 600;
   let magicLength = 0;
   const cellLength = Math.max(
-    ...data.map(function (row) {
+    ...data.map(function(row) {
       let newtext = row[headerText];
-      var canvas = document.createElement('canvas');
+      var canvas = document.createElement("canvas");
       var ctx = canvas.getContext("2d");
-      if (newtext.includes('entity')) {
-        magicLength = 100
-        newtext = newtext.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "")
+      if (newtext !== undefined) {
+        if (newtext.includes("entity")) {
+          magicLength = 100;
+          newtext = newtext.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "");
+        }
+        var width = ctx.measureText(newtext).width;
+        return width;
       }
-      var width = ctx.measureText(newtext).width;
-      return width
     }),
-    headerText.length,
+    headerText.length
   );
 
   return Math.min(maxWidth, cellLength + magicLength);
