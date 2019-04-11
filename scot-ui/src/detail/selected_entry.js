@@ -399,24 +399,25 @@ export default class SelectedEntry extends React.Component {
             data={data}
             type={type}
             id={id}
-            entityData={this.props.entityData}
-            alertSelected={this.props.alertSelected}
-            headerData={this.props.headerData}
-            alertPreSelectedId={this.props.alertPreSelectedId}
-            isPopUp={this.props.isPopUp}
-            entryToggle={this.props.entryToggle}
-            updated={this.updatedCB}
-            aType={this.props.aType}
-            aID={this.props.aID}
-            entryToolbar={this.props.entryToolbar}
-            errorToggle={this.props.errorToggle}
-            fileUploadToggle={this.props.fileUploadToggle}
-            fileUploadToolbar={this.props.fileUploadToolbar}
-            flairOff={this.props.flairOff}
-            createCallback={this.props.createCallback}
-            removeCallback={this.props.removeCallback}
-            addFlair={this.props.addFlair}
-            handleSelection={this.props.handleSelection}
+            {...this.props}
+          // entityData={this.props.entityData}
+          // alertSelected={this.props.alertSelected}
+          // headerData={this.props.headerData}
+          // alertPreSelectedId={this.props.alertPreSelectedId}
+          // isPopUp={this.props.isPopUp}
+          // entryToggle={this.props.entryToggle}
+          // updated={this.updatedCB}
+          // aType={this.props.aType}
+          // aID={this.props.aID}
+          // entryToolbar={this.props.entryToolbar}
+          // errorToggle={this.props.errorToggle}
+          // fileUploadToggle={this.props.fileUploadToggle}
+          // fileUploadToolbar={this.props.fileUploadToolbar}
+          // flairOff={this.props.flairOff}
+          // createCallback={this.props.createCallback}
+          // removeCallback={this.props.removeCallback}
+          // addFlair={this.props.addFlair}
+          // handleSelection={this.props.handleSelection}
           />
         ) : (
             <span>Loading...</span>
@@ -551,25 +552,26 @@ class EntryIterator extends React.Component {
       } else {
         return <div>
           <NewAlertTable
-            items={data}
-            entityData={this.props.entityData}
+            {...this.props}
             key={id}
             type={type}
             id={id}
-            headerData={this.props.headerData}
-            alertSelected={this.props.alertSelected}
-            alertPreSelectedId={this.props.alertPreSelectedId}
-            aType={this.props.aType}
-            aID={this.props.aID}
-            entryToolbar={this.props.entryToolbar}
-            entryToggle={this.props.entryToggle}
-            fileUploadToggle={this.props.fileUploadToggle}
-            fileUploadToolbar={this.props.fileUploadToolbar}
-            errorToggle={this.props.errorToggle}
-            flairOff={this.props.flairOff}
-            createCallback={this.props.createCallback}
-            addFlair={this.props.addFlair}
-            handleSelection={this.props.handleSelection}
+            items={data}
+          // entityData={this.props.entityData}
+          // headerData={this.props.headerData}
+          // alertSelected={this.props.alertSelected}
+          // alertPreSelectedId={this.props.alertPreSelectedId}
+          // aType={this.props.aType}
+          // aID={this.props.aID}
+          // entryToolbar={this.props.entryToolbar}
+          // entryToggle={this.props.entryToggle}
+          // fileUploadToggle={this.props.fileUploadToggle}
+          // fileUploadToolbar={this.props.fileUploadToolbar}
+          // errorToggle={this.props.errorToggle}
+          // flairOff={this.props.flairOff}
+          // createCallback={this.props.createCallback}
+          // addFlair={this.props.addFlair}
+          // handleSelection={this.props.handleSelection}
           />
         </div>
       }
@@ -579,7 +581,6 @@ class EntryIterator extends React.Component {
 }
 
 class NewAlertTable extends React.Component {
-
 
   constructor(props) {
     super(props);
@@ -591,7 +592,8 @@ class NewAlertTable extends React.Component {
       addFlair: null,
       promotionId: null,
       selected: [],
-      flairOff: false
+      flairOff: false,
+      expanded: {}
     }
   }
 
@@ -628,10 +630,13 @@ class NewAlertTable extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.entityData !== this.props.entityData) {
-      //Perform some operation here
       this.setState({ entityData: this.props.entityData });
     }
     if (prevState.flairOff !== this.state.flairOff) {
+      let data = this.createData();
+      this.setState({ data })
+    }
+    if (prevProps.items !== this.props.items) {
       let data = this.createData();
       this.setState({ data })
     }
@@ -640,6 +645,9 @@ class NewAlertTable extends React.Component {
   static getDerivedStateFromProps(nextProps, prevState) {
     if (nextProps.flairOff !== prevState.flairOff) {
       return { flairOff: nextProps.flairOff };
+    }
+    if (nextProps.alertsSelected !== prevState.selected) {
+      return { selected: nextProps.alertsSelected }
     }
     else return null;
   }
@@ -670,70 +678,67 @@ class NewAlertTable extends React.Component {
       id_column = {
         accessor: 'id', Header: 'id',
         // maxWidth: 100,
-        getProps: (state, rowInfo) => {
-          return this.handleStriping(rowInfo);
-        },
       }
       status_column = {
         accessor: 'status',
         Header: 'Status',
         // maxWidth: 100,
         Cell: customCellRenderers.alertStatusAlerts,
-        getProps: (state, rowInfo) => {
-          return this.handleStriping(rowInfo);
-        },
       }
     }
 
     let entry_count_column = {
+      resizable: true,
+      expander: true,
       accessor: 'entry_count', Header: 'Entries',
-      // maxWidth: 80,
-      getProps: (state, rowInfo) => {
-        return this.handleStriping(rowInfo);
+      Expander: ({ isExpanded, ...rest }) => {
+        if (rest.original.entry_count == 0) {
+          return <div>0</div>;
+        } else {
+          return (
+            <div>
+              {isExpanded
+                ? <span>Expanded</span>
+                : <span>{rest.original.entry_count}</span>
+              }
+            </div>
+          );
+        }
       },
+      getProps: (state, rowInfo, column) => {
+        // console.log('getProps:',{state,ri:rowInfo,column});
+        if (rowInfo) {
+          // same test as above
+          if (rowInfo.original.entry_count == 0) {
+            // hijack the onClick so it doesn't open
+            return {
+              onClick: () => { },
+            }
+          }
+        }
+        return {
+          className: 'show-pointer',
+        };
+      },
+      width: getColumnWidth(data, 'entry_count', 'Entries'),
     }
     let array = [id_column, status_column, entry_count_column];
     array.forEach(function (element) {
       columns.push(element);
     })
-    this.props.items[0].data.columns.forEach(function (element) {
-      let columnobj = {
-        accessor: element,
-        Header: element,
-        filter: true,
-        Cell: customCellRenderers.flairCell,
-        width: getColumnWidth(data, element, element),
-        getProps: (state, rowInfo) => {
-          return this.handleStriping(rowInfo);
-        },
-      }
-      columns.push(columnobj);
-    }.bind(this));
-    return columns;
-  }
-
-
-  handleSelection(rowid) {
-    this.props.handleSelection(rowid);
-    if (this.state.selected.some(item => rowid === item)) {
-      this.setState({
-        selected: this.state.selected.filter(function (id) {
-          return id !== rowid
-        })
-      })
-    } else {
-      this.setState({
-        selected: [...this.state.selected, rowid]
-      })
+    if (this.props.items[0].data.columns) {
+      this.props.items[0].data.columns.forEach(function (element) {
+        let columnobj = {
+          accessor: element,
+          Header: element,
+          filter: true,
+          Cell: customCellRenderers.flairCell,
+          width: getColumnWidth(data, element, element),
+        }
+        columns.push(columnobj);
+      }.bind(this));
     }
-  }
-
-  handleSelectAll() {
-    //need to handle select all here
-    let newarray = this.state.data.map(element => element.id);
-    this.setState({
-      selected: newarray
-    })
+    return columns;
   }
 
   handleStriping = (rowInfo) => {
@@ -749,26 +754,33 @@ class NewAlertTable extends React.Component {
       return ({ style: {} })
     }
   }
-
-
-
   render() {
-
     const { data, columns } = this.state
     const { addFlair, type, headerData, entityData, updated } = this.props;
 
     return (
       <ReactTable
+        className="-striped -highlight"
         key={2}
         data={data}
         columns={columns}
         filterable={true}
+        style={{ 'white-space': 'unset' }}
+        expanded={this.state.expanded}
+        onExpandedChange={(expanded, index, event) => {
+          this.setState({ expanded });
+        }}
         defaultFilterMethod={(filter, row) => {
           if (row[filter.id].includes(filter.value)) {
             return (row)
           }
         }
         }
+        SubComponent={row => {
+          return (
+            <div style={{ padding: "20px" }}>Sub Component!</div>
+          );
+        }}
         onFilteredChange={(filter, column) => {
           addFlair(entityData, null, type, null, null);
         }}
@@ -777,16 +789,26 @@ class NewAlertTable extends React.Component {
         }}
         showPagination={false}
         pageSize={data.length}
-        getTrGroupProps={(state, rowInfo) => {
-          if (rowInfo && rowInfo.row) {
+        getTrProps={(state, rowInfo) => {
+          if (rowInfo && rowInfo.row && this.props.alertsSelected !== undefined) {
             return {
               onClick: (e) => {
+                if (e.ctrlKey || e.metaKey && e.keyCode === 83) {
+                  this.props.handleSelectAll(state.sortedData)
+                }
+                if (e.ctrlKey || e.metaKey) {
+                  e.preventDefault();
+                  this.props.handleMultiSelection(rowInfo.original.id)
+                }
+                else if (e.shiftKey) {
+                  document.getSelection().removeAllRanges();
+                  this.props.handleShiftSelect(this.state.selected[0], rowInfo.original.id, state.sortedData)
+                } else {
+                  this.props.handleSelection(rowInfo.original.id)
+                }
 
-                this.handleSelection(rowInfo.original.id)
               },
               style: {
-                // background: rowInfo.index === this.state.selected ? '#00afec' : 'white',
-                // color: rowInfo.index === this.state.selected ? 'white' : 'black'
                 background: this.state.selected.some(item => rowInfo.original.id === item) ? '#00afec' : 'white',
                 color: this.state.selected.some(item => rowInfo.original.id === item) ? 'white' : 'black'
               }

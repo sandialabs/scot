@@ -614,21 +614,57 @@ export default class SelectedHeader extends React.Component {
   };
 
   //2019 new alert table stuff
-  handleSelection = (alertid) => {
-    console.log(`Got row id: ${alertid}`)
-    if (this.state.alertsSelected.some(item => alertid === item)) {
+  checkSelection(rowid) {
+    if (this.state.alertsSelected.some(item => rowid === item)) {
+      return true
+    } else {
+      return false
+    }
+  }
+
+  handleSelection = (rowid) => {
+    console.log('Got selection click!')
+    this.setState({
+      alertsSelected: [rowid]
+    })
+  }
+
+  handleMultiSelection = (rowid) => {
+    if (!this.checkSelection(rowid)) {
+      let temparray = [...this.state.alertsSelected, rowid]
       this.setState({
-        alertsSelected: this.state.alertsSelected.filter(function (id) {
-          return id !== alertid
-        })
+        alertsSelected: temparray
       })
     } else {
       this.setState({
-        alertsSelected: [...this.state.alertsSelected, alertid]
+        selected: this.state.alertsSelected.filter(function (id) {
+          return id !== rowid
+        })
       })
     }
   }
 
+  handleSelectAll = (data) => {
+    const selection = data.map(object => object.id);
+    this.setState({
+      alertsSelected: selection
+    })
+  }
+
+  handleShiftSelect = (startIndex, endIndex, data) => {
+    if (startIndex > endIndex) {
+      startIndex = [endIndex, endIndex = startIndex][0]
+    }
+    let temparray = []
+    data.forEach(function (row) {
+      if (row.id <= endIndex && row.id >= startIndex) {
+        if (!this.checkSelection(row.id)) {
+          temparray.push(row.id)
+        }
+      }
+    }.bind(this))
+    this.setState({ alertsSelected: [...this.state.alertsSelected, ...temparray] });
+  }
 
   render() {
     let headerData = this.state.headerData;
@@ -647,8 +683,6 @@ export default class SelectedHeader extends React.Component {
     } else if (this.state.headerData.body) {
       string = this.state.headerData.body;
     }
-
-
 
     return (
       <div>
@@ -889,6 +923,7 @@ export default class SelectedHeader extends React.Component {
                     ToggleProcessingMessage={this.ToggleProcessingMessage}
                     errorToggle={this.props.errorToggle}
                     toggleFlair={this.toggleFlair}
+                    alertsSelected={this.state.alertsSelected}
                   />
                 ) : null}
                 {this.state.permissionsToolbar ? (
@@ -904,6 +939,7 @@ export default class SelectedHeader extends React.Component {
                 ) : null}
               </div>
               {this.state.showEventData && type !== "entity" ? (
+
                 <SelectedEntry
                   id={id}
                   type={type}
@@ -920,9 +956,6 @@ export default class SelectedHeader extends React.Component {
                   flairToolbarOff={this.flairToolbarOff}
                   linkWarningToggle={this.linkWarningToggle}
                   entryToolbar={this.state.entryToolbar}
-                  isAlertSelected={this.state.alertSelected}
-                  aType={this.state.aType}
-                  aID={this.state.aID}
                   alertPreSelectedId={this.props.alertPreSelectedId}
                   errorToggle={this.props.errorToggle}
                   fileUploadToggle={this.fileUploadToggle}
@@ -935,6 +968,10 @@ export default class SelectedHeader extends React.Component {
                   removeCallback={this.props.removeCallback}
                   addFlair={AddFlair.entityUpdate}
                   handleSelection={this.handleSelection}
+                  handleShiftSelect={this.handleShiftSelect}
+                  handleMultiSelection={this.handleMultiSelection}
+                  handleSelectAll={this.handleSelectAll}
+                  alertsSelected={this.state.alertsSelected}
                 />
               ) : null}
               {this.state.showEventData && type === "entity" ? (

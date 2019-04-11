@@ -13,10 +13,7 @@ import TagInput from "../components/TagInput";
 import Button2 from "@material-ui/core/Button";
 import axios from "axios";
 
-const getPromotionInfo = id => {
-  let json = axios.get(`/scot/api/v2/alert/${id}/event`);
-  return json;
-};
+
 
 const navigateTo = id => {
   window.open("#/event/" + id);
@@ -47,54 +44,54 @@ const customFilters = {
     filter,
     onChange
   }) => (
-    <OverlayTrigger
-      trigger="focus"
-      placement="bottom"
-      overlay={
-        <Popover id="status_popover" style={{ maxWidth: "400px" }}>
-          <ButtonGroup
-            vertical
-            style={{
-              maxHeight: "50vh",
-              overflowY: "auto",
-              position: "relative"
-            }}
-          >
-            {options.map(option => (
-              <Button
-                key={option}
-                onClick={() => onChange(option)}
-                active={filter && filter.value === option}
-                style={{
-                  textTransform: "capitalize",
-                  textAlign: align ? align : null
-                }}
-              >
-                {option}
-              </Button>
-            ))}
-          </ButtonGroup>
-          {filter && (
-            <Button
-              block
-              onClick={() => onChange("")}
-              bsStyle="primary"
-              style={{ marginTop: "3px" }}
+      <OverlayTrigger
+        trigger="focus"
+        placement="bottom"
+        overlay={
+          <Popover id="status_popover" style={{ maxWidth: "400px" }}>
+            <ButtonGroup
+              vertical
+              style={{
+                maxHeight: "50vh",
+                overflowY: "auto",
+                position: "relative"
+              }}
             >
-              Clear
+              {options.map(option => (
+                <Button
+                  key={option}
+                  onClick={() => onChange(option)}
+                  active={filter && filter.value === option}
+                  style={{
+                    textTransform: "capitalize",
+                    textAlign: align ? align : null
+                  }}
+                >
+                  {option}
+                </Button>
+              ))}
+            </ButtonGroup>
+            {filter && (
+              <Button
+                block
+                onClick={() => onChange("")}
+                bsStyle="primary"
+                style={{ marginTop: "3px" }}
+              >
+                Clear
             </Button>
-          )}
-        </Popover>
-      }
-    >
-      <input
-        type="text"
-        value={filter ? filter.value : ""}
-        readOnly
-        style={{ width: "100%", cursor: "pointer" }}
-      />
-    </OverlayTrigger>
-  ),
+            )}
+          </Popover>
+        }
+      >
+        <input
+          type="text"
+          value={filter ? filter.value : ""}
+          readOnly
+          style={{ width: "100%", cursor: "pointer" }}
+        />
+      </OverlayTrigger>
+    ),
   dateRange: ({ filter, onChange }) => (
     <OverlayTrigger
       trigger="click"
@@ -180,45 +177,7 @@ export const customCellRenderers = {
   },
 
   alertStatusAlerts: row => {
-    const [element, setElement] = React.useState();
-
-    if (row.value === "closed") {
-      return <p style={{ color: "red" }}>{row.value}</p>;
-    } else if (row.value === "open") {
-      return <p style={{ color: "green" }}>{row.value}</p>;
-    } else if (row.value === "promoted") {
-      React.useEffect(() => {
-        // Use cancelled to only apply the latest request
-        let cancelled;
-        // Get the promotional info
-        getPromotionInfo(row.original.id).then(element => {
-          // If this request has been cancelled, don't apply it
-          if (cancelled) {
-            return;
-          }
-          // Save the element to our state
-          setElement(element);
-        });
-        return () => {
-          // If the id changes, set the old requested to cancelled
-          cancelled = true;
-        };
-      }, [row.original.id]); // Use the original.id to watch for changes
-      // If the element is there, use it
-      if (element) {
-        return (
-          <Button2
-            variant="contained"
-            onMouseDown={() => navigateTo(element.data.records[0].id)}
-            style={{ backgroundColor: "orange", color: "white" }}
-          >
-            {row.value}
-          </Button2>
-        );
-      }
-      // Otherwise show a loading state
-      return <span>Loading...</span>;
-    }
+    return <PromotionButton row={row}></PromotionButton>
   },
   flairCell: row => {
     return <FlairObject value={row.value} />;
@@ -673,7 +632,7 @@ class FlairObject extends React.Component {
 
     return (
       <div
-        style={{ overflow: "auto", paddingBottom: 5, paddingTop: 5 }}
+        // style={{ overflow: "auto", marginBottom: 5, marginTop: 15 }}
         className="alertTableHorizontal"
         dangerouslySetInnerHTML={{ __html: value }}
       />
@@ -685,16 +644,16 @@ export const getColumnWidth = (data, accessor, headerText) => {
   if (typeof accessor === "string" || accessor instanceof String) {
     accessor = d => d[accessor]; // eslint-disable-line no-param-reassign
   }
-  const maxWidth = 600;
+  const maxWidth = 500;
   let magicLength = 0;
   const cellLength = Math.max(
-    ...data.map(function(row) {
+    ...data.map(function (row) {
       let newtext = row[headerText];
       var canvas = document.createElement("canvas");
       var ctx = canvas.getContext("2d");
       if (newtext !== undefined) {
         if (newtext.includes("entity")) {
-          magicLength = 100;
+          magicLength = 75;
           newtext = newtext.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "");
         }
         var width = ctx.measureText(newtext).width;
@@ -706,5 +665,51 @@ export const getColumnWidth = (data, accessor, headerText) => {
 
   return Math.min(maxWidth, cellLength + magicLength);
 };
+
+class PromotionButton extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      element: null,
+      loading: true
+    }
+  }
+
+  componentDidMount() {
+    this.getPromotionInfo(this.props.row.original.id).then(element => {
+      if (element) {
+        this.setState({ element });
+      }
+    });
+  }
+
+  getPromotionInfo = id => {
+    let json = axios.get(`/scot/api/v2/alert/${id}/event`);
+    return json;
+  };
+
+  render() {
+    if (this.props.row.value === "closed") {
+      return <p style={{ color: "red" }}>{this.props.row.value}</p>;
+    } else if (this.props.row.value === "open") {
+      return <p style={{ color: "green" }}>{this.props.row.value}</p>;
+    } else if (this.props.row.value === "promoted") {
+
+      if (this.state.element) {
+        return (
+          <Button2
+            variant="contained"
+            onMouseDown={() => navigateTo(this.state.element.data.records[0].id)}
+            style={{ backgroundColor: "orange", color: "white" }}
+          >
+            {this.props.row.value}
+          </Button2>
+        );
+      } else {
+        return <span>Loading...</span>;
+      }
+    }
+  }
+}
 
 export default defaultTableSettings;
