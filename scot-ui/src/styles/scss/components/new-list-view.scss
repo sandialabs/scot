@@ -9,7 +9,6 @@
 		// Should be removed after react-table fixes issue
 		//overflow-y: scroll;
 	    padding-right: 15px !important;
-        overflow: unset !important;
     }
 
 	.rt-tbody {
@@ -18,18 +17,11 @@
 		position: relative;
 	}
     
-    .rt-tr {
-        overflow: unset !important;
-    }
-
-	.rt-th {
-		//overflow: visible;
-	    overflow: unset !important;
-    }
 
 	.rt-td {
+    overflow: auto;
 		white-space: normal !important;
-		display: flex;
+		display: grid;
 		align-items: center;
 	    font-size: 12px;
         line-height: 13px;
