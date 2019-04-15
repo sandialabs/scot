@@ -94,11 +94,12 @@ services:
      - "/etc/localtime:/etc/localtime:ro"
      - "/opt/scotfiles:/opt/scotfiles/"
      - "./public/:/opt/scot/public/"
-     - "./pubdev/:/opt/scot/pubdev"
      - "/var/lib/elasticsearch:/var/lib/elasticsearch/"
      - "/var/lib/mongodb:/var/lib/mongodb/"
      - "/opt/scotbackup:/opt/scotbackup/:z"
      - "/opt/scot/public/cached_images:/opt/scot/public/cached_images/"
+     - "./lib/:/opt/scot/lib/:ro"
+     - "./bin/:/opt/scot/bin/:ro"
     depends_on:
      - perl
      - mongodb

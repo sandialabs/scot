@@ -105,8 +105,8 @@ read -n 1 selection
 if [ "$selection" == "1" ]; then
   echo "You selected demo mode."
   echo " "
-  sudo -E docker-compose pull
-  sudo -E docker-compose up --build
+  sudo -E docker-compose -f docker-compose-scotdemo.yml pull
+  sudo -E docker-compose -f docker-compose-scotdemo.yml  up --build
 elif [ "$selection" == "2" ]; then
   echo "You selected custom mode."
   echo " "
