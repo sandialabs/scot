@@ -22,6 +22,7 @@ import EntityCreateModal from "../modal/entity_create"
 import CustomMetaDataTable from "../components/custom_metadata_table";
 import { customCellRenderers, getColumnWidth } from '../list/tableConfig'
 import ReactTable from "react-table";
+import Fab from '@material-ui/core/Fab';
 
 
 export default class SelectedEntry extends React.Component {
@@ -677,12 +678,12 @@ class NewAlertTable extends React.Component {
     if (this.props.items.length > 0) {
       id_column = {
         accessor: 'id', Header: 'id',
-        // maxWidth: 100,
+        maxWidth: 100,
       }
       status_column = {
         accessor: 'status',
         Header: 'Status',
-        // maxWidth: 100,
+        maxWidth: 100,
         Cell: customCellRenderers.alertStatusAlerts,
       }
     }
@@ -690,6 +691,7 @@ class NewAlertTable extends React.Component {
     let entry_count_column = {
       resizable: true,
       expander: true,
+      filter: true,
       accessor: 'entry_count', Header: 'Entries',
       Expander: ({ isExpanded, ...rest }) => {
         if (rest.original.entry_count == 0) {
@@ -698,17 +700,19 @@ class NewAlertTable extends React.Component {
           return (
             <div>
               {isExpanded
-                ? <span>Expanded</span>
-                : <span>{rest.original.entry_count}</span>
+                ? <span>See entries below</span>
+                : <center><span>
+                  <Fab color="secondary" size="small" aria-label="Edit">
+                    {rest.original.entry_count}
+                  </Fab>
+                </span></center>
               }
             </div>
           );
         }
       },
       getProps: (state, rowInfo, column) => {
-        // console.log('getProps:',{state,ri:rowInfo,column});
         if (rowInfo) {
-          // same test as above
           if (rowInfo.original.entry_count == 0) {
             // hijack the onClick so it doesn't open
             return {
@@ -765,7 +769,6 @@ class NewAlertTable extends React.Component {
         data={data}
         columns={columns}
         filterable={true}
-        style={{ 'white-space': 'unset' }}
         expanded={this.state.expanded}
         onExpandedChange={(expanded, index, event) => {
           this.setState({ expanded });
@@ -778,7 +781,14 @@ class NewAlertTable extends React.Component {
         }
         SubComponent={row => {
           return (
-            <div style={{ padding: "20px" }}>Sub Component!</div>
+            <SelectedEntry
+              type='alert'
+              id={row.original.id}
+              showEntryData={this.props.showEntryData}
+            // errorToggle={this.props.errorToggle}
+            // createCallback={this.props.createCallback}
+            // removeCallback={this.props.removeCallback} 
+            />
           );
         }}
         onFilteredChange={(filter, column) => {
