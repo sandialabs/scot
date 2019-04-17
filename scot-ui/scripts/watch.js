@@ -2,11 +2,10 @@ process.env.BABEL_ENV = 'development';
 process.env.NODE_ENV = 'development';
 const fs = require('fs-extra');
 const webpack = require('webpack');
-//const config = require('../config/webpack.config.js');
-const webpackconfig = require('../config/webpack.config.js');
+const webpackconfig = require('react-scripts/config/webpack.config.js');
+const paths = require('react-scripts/config/paths');
 const config = webpackconfig('development');
-const paths = require('../config/paths.js');
-// removes react-dev-utils/webpackHotDevClient.js at first in the array
+
 
 config.entry = config.entry.filter(
   entry => !entry.includes('webpackHotDevClient')
