@@ -59,7 +59,7 @@
 		"start": "react-scripts start",
 		"test": "react-scripts test",
 		"eject": "react-scripts eject",
-		"build": "rm -rf ../public/ && npm run sass && react-scripts build && node scripts/copy.js",
+		"build": "rm -rf ../public/ && npm run sass && INLINE_RUNTIME_CHUNK=false react-scripts build && node scripts/copy.js",
 		"watch": "node scripts/watch.js --no-cache",
 		"sass": "node-sass  ./src/styles/scss --output ./public/css/"
 	},
