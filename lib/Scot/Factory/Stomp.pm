@@ -39,6 +39,11 @@ sub get_stomp {
     my $port = $self->get_config_value( "port",        $config );
     my $dest = $self->get_config_value( "destination", $config );
 
+    if ( ! defined $dest ) {
+        $dest = "/topic/scot";
+    }
+
+
     my $stomp = AnyEvent::STOMP::Client->new( $host, $port, );
     $stomp->connect();
     $stomp->on_connected(
