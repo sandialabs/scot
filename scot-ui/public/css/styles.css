@@ -442,13 +442,17 @@ body {
   max-height: 100%;
   transition: all .3s ease; }
   .ReactTable .rt-thead {
-    padding-right: 15px !important; }
+    padding-right: 15px !important;
+    overflow: unset !important; }
   .ReactTable .rt-tbody {
     position: relative; }
+  .ReactTable .rt-tr {
+    overflow: unset !important; }
+  .ReactTable .rt-th {
+    overflow: unset !important; }
   .ReactTable .rt-td {
-    overflow: auto;
     white-space: normal !important;
-    display: grid;
+    display: flex;
     align-items: center;
     font-size: 12px;
     line-height: 13px; }
