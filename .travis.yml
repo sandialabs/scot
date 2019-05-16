@@ -8,7 +8,7 @@ before_install:
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
 script:
-  'docker-compose -f docker-compose-custom.yml build'
+  '/usr/local/bin/docker-compose -f docker-compose-custom.yml build'
 deploy:
   provider: script
   script: bash script/docker-build-push
