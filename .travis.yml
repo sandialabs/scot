@@ -11,6 +11,3 @@ deploy:
   script: bash script/docker-build-push
   on:
     branch: master
-
-script:
-  - bundle exec rake test
