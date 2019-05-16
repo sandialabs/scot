@@ -8,7 +8,7 @@ before_install:
   - sudo mv docker-compose /usr/local/bin
 deploy:
   provider: script
-  script: bash script/docker_build_push
+  script: bash script/docker-build-push
   on:
     branch: master
 
