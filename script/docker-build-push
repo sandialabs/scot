@@ -1,0 +1,4 @@
+#!/bin/bash
+docker-compose -f docker-compose-custom.yml build
+echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+docker-compose -f docker-compose-custom.yml push
