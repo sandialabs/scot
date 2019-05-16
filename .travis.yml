@@ -1,6 +1,9 @@
 language: generic
 services:
   - docker
+  
+env:
+  - DOCKER_COMPOSE_VERSION=3.4
 
 before_install:
   - sudo rm /usr/local/bin/docker-compose
