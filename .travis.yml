@@ -3,7 +3,7 @@ services:
   - docker
   
 install:
-  - docker-compose -f docker-compose-custom.yml
+  - docker-compose -f docker-compose-custom.yml build
   
 deploy:
   provider: script
