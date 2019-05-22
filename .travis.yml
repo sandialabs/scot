@@ -1,8 +1,12 @@
-language: perl
-cache:
-  - apt
-perl:
-  - "5.18"
-install: "sudo ./ubuntu_installer.sh -m test"
-script: "cd /opt/sandia/webapps/scot3/t/ && perl /opt/sandia/webapps/scot3/t/all.t"
-after_success: $DEPLOY
+language: generic
+services:
+  - docker
+  
+install:
+  - docker-compose -f docker-compose-custom.yml build
+  
+deploy:
+  provider: script
+  script: bash script/docker-build-push
+  on:
+    branch: master

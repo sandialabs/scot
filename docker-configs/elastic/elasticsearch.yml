@@ -8,4 +8,4 @@ discovery.zen.minimum_master_nodes: 1
 xpack.security.enabled: false
 path.repo: [ '/opt/scotbackup/elastic', '/opt/scotbackup/']
 path.data: /var/lib/elasticsearch/
-#path.logs: /var/log/elasticsearch/
+discovery.type: single-node

@@ -21,7 +21,6 @@ import Notification from "react-notification-system"
 import LinkContainer from "react-router-bootstrap/lib/LinkContainer.js";
 import Admin from '../components/admin/'
 import { Amq } from '../utils/activemq'
-import App2 from './new'
 
 window.jQuery = window.$ = require("jquery/dist/jquery");
 

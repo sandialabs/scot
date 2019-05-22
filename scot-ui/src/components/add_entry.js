@@ -449,13 +449,13 @@ export default class AddEntryModal extends React.Component {
               id={this.state.tinyID}
               className={"inputtext"}
               initialValue={this.state.content}
-              plugins={'advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textcolor colorpicker textpattern imagetools'}
+              plugins={'advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textpattern imagetools'}
               onEditorChange={this.handleEditorChange}
               init={{
                 auto_focus: this.state.tinyID,
                 selector: "textarea",
                 plugins:
-                  "advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textcolor colorpicker textpattern imagetools",
+                  "advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textpattern imagetools",
                 table_clone_elements:
                   "strong em b i font h1 h2 h3 h4 h5 h6 p div",
                 paste_retain_style_properties: "all",
@@ -471,7 +471,6 @@ export default class AddEntryModal extends React.Component {
                 link_assume_external_targets: true,
                 toolbar1:
                   "full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime | customBlockquote",
-                theme: "modern",
                 content_css: "/css/entryeditor.css",
                 height: 250,
                 verify_html: false,
@@ -485,11 +484,12 @@ export default class AddEntryModal extends React.Component {
                     editor.insertContent(html);
                   }
 
-                  editor.addButton("customBlockquote", {
+                  editor.ui.registry.addMenuButton("customBlockquote", {
                     text: "500px max-height blockquote",
                     //image: 'http://p.yusukekamiyamane.com/icons/search/fugue/icons/calendar-blue.png',
                     tooltip: "Insert a 500px max-height div (blockquote)",
-                    onclick: insertBlockquote
+                    fetch: insertBlockquote
+                    // onclick: insertBlockquote
                   });
                 }
               }}
