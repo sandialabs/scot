@@ -1,273 +1,272 @@
 @media screen {
-    .entity {
-    background-color: rgba(255, 245, 168, 0.5);
-    border: 1px dotted green;
-    border-radius: 6px 6px 6px 6px;
-    cursor: pointer;
-    /*  padding: 1px; */
-    }
+  .entity {
+  background-color: rgba(255, 245, 168, 0.5);
+  border: 1px dotted green;
+  border-radius: 6px 6px 6px 6px;
+  cursor: pointer;
+  /*  padding: 1px; */
+  }
 
-    .entity:active {
-    background-color: red;
-    }
+  .entity:active {
+  background-color: red;
+  }
 
-    a:active {
-    color: red !important;
-    }
+  a:active {
+  color: red !important;
+  }
 
-    body {
-    background-color: rgba(0,0,0,0);
-    overflow:auto;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 11pt;
-    }
+  body {
+  background-color: rgba(0,0,0,0);
+  overflow:auto;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 11pt;
+  }
 
-    body:active {
-    background-color: rgba(255,255,255,1);
-    }
+  body:active {
+  background-color: rgba(255,255,255,1);
+  }
 
-    .circleNumber {
-    background: lightblue;
-    border: 1px solid black;
-    border-radius: 5em 5em 5em 5em;
-    -moz-border-radius: 5em 5em 5em 5em;
-    -webkit-border-radius: 5em 5em 5em 5em;
-    margin:1px;
-    margin-left:3px;
-    padding:1px;
-    }
+  .circleNumber {
+  background: lightblue;
+  border: 1px solid black;
+  border-radius: 5em 5em 5em 5em;
+  -moz-border-radius: 5em 5em 5em 5em;
+  -webkit-border-radius: 5em 5em 5em 5em;
+  margin:1px;
+  margin-left:3px;
+  padding:1px;
+  }
 
-    pre {
-    overflow: auto;
-    display: block;
-    padding: 9.5px;
-    margin: 0 0 10px;
-    font-size: 13px;
-    line-height: 20px;
-    white-space: pre-wrap;
-    background-color: #f5f5f5;
-    border: 1px solid #ccc;
-    border: 1px solid rgba(0, 0, 0, 0.15);
-    -webkit-border-radius: 4px;
-    -moz-border-radius: 4px;
-    border-radius: 4px;
-    }
+  pre {
+  overflow: auto;
+  display: block;
+  padding: 9.5px;
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 20px;
+  white-space: pre-wrap;
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+  }
 
-    p {
-        word-wrap: break-word;
-    }
+  p {
+      word-wrap: break-word;
+  }
 
-    blockquote {
-        max-height: 500px;
-        overflow-y: auto;
-        /*display: inline-flex;*/
-        background-color: #f5f5f5;
-        width: 90%;
-    }
+  blockquote {
+      max-height: 500px;
+      overflow-y: auto;
+      /*display: inline-flex;*/
+      background-color: #f5f5f5;
+      width: 90%;
+  }
 
-    .alertTableHorizontal {
-    display: table;
-    padding: 3px;
-    border-radius: 5px;
-    border: 1px solid black;
-    width:99.5%;
-    padding-bottom:40px;
-    /*adding in other sizing things not normally in alertTableHorizontal but normally found in the .tablesorter-default*/
-    font: 12px/18px Arial, Sans-serif;
-    color: #333;
-    background-color: #fff;
-    border-spacing: 0;
-    margin: 10px 0 15px;
-    text-align: left;
-    }
+  .alertTableHorizontal {
+  display: table;
+  padding: 3px;
+  border-radius: 5px;
+  border: 1px solid black;
+  width:99.5%;
+  padding-bottom:40px;
+  /*adding in other sizing things not normally in alertTableHorizontal but normally found in the .tablesorter-default*/
+  font: 12px/18px Arial, Sans-serif;
+  color: #333;
+  background-color: #fff;
+  border-spacing: 0;
+  margin: 10px 0 15px;
+  text-align: left;
+  }
 
-    .alertTableHorizontal > div {
-    display: table-row;
-    border-bottom: 1px solid #333;
-    }
+  .alertTableHorizontal > div {
+  display: table-row;
+  border-bottom: 1px solid #333;
+  }
 
-    .alertTableHorizontal > div:first-child  {
-    font-weight:bold;
-    }
+  .alertTableHorizontal > div:first-child  {
+  font-weight:bold;
+  }
 
-    .alertTableHorizontal tr:nth-child(odd) {
-        background-color: #EEE;
-    }
+  .alertTableHorizontal tr:nth-child(odd) {
+      background-color: #EEE;
+  }
 
-    .alertTableHorizontal tr:nth-child(even) {
-        background-color: #FFF;
-    }
+  .alertTableHorizontal tr:nth-child(even) {
+      background-color: #FFF;
+  }
 
-    .alertTableHorizontal tr:not(.not_selectable) {
-        border-bottom-width:1px;
-        border-bottom-style:solid;
-        border-bottom-color:black;
-    }
+  .alertTableHorizontal tr:not(.not_selectable) {
+      border-bottom-width:1px;
+      border-bottom-style:solid;
+      border-bottom-color:black;
+  }
 
-    .alertTableHorizontal th:nth-child(even) {
-    background-color: rgba(0,0,0,0.05) !important;
-    }
+  .alertTableHorizontal th:nth-child(even) {
+  background-color: rgba(0,0,0,0.05) !important;
+  }
 
-    .alertTableHorizontal th:nth-child(odd) {
-    background-color: rgba(0,0,0,0.1) !important;
-    }
+  .alertTableHorizontal th:nth-child(odd) {
+  background-color: rgba(0,0,0,0.1) !important;
+  }
 
-    .alertTableHorizontal th {
-    box-shadow: 0px -10px 5px -10px  black inset;
-    }
+  .alertTableHorizontal th {
+  box-shadow: 0px -10px 5px -10px  black inset;
+  }
 
-    .alertTableHorizontal td:nth-child(odd) {
-    background-color: rgba(0,0,0,0.05);
-    }
+  .alertTableHorizontal td:nth-child(odd) {
+  background-color: rgba(0,0,0,0.05);
+  }
 
-    .alertTableHorizontal span:last-child {
-    }
+  .alertTableHorizontal span:last-child {
+  }
 
-    .mce-content-body {
-        font-size: 11pt;
-    }
+  .mce-content-body {
+      font-size: 11pt;
+  }
 
-    .noselect {
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        -khtml-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-        pointer-events: none;
-    }
+  .noselect {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      pointer-events: none;
+  }
 
-    /** [contenteditable=true] {border: 1px dashed red;}*/
-    /** [contenteditable=true] { background-color: rgba(0, 200, 0, 0.1); }*/
+  /** [contenteditable=true] {border: 1px dashed red;}*/
+  /** [contenteditable=true] { background-color: rgba(0, 200, 0, 0.1); }*/
 }
 
 @media print {
-   .entity {
-        -webkit-print-color-adjust: exact !important;
-        background-color: rgba(255, 245, 168, 0.5) !important;
-        border: 1px dotted green;
-        border-radius: 6px 6px 6px 6px;
-        cursor: pointer;
-        padding: 1px;
-    }
+ .entity {
+      -webkit-print-color-adjust: exact !important;
+      background-color: rgba(255, 245, 168, 0.5) !important;
+      border: 1px dotted green;
+      border-radius: 6px 6px 6px 6px;
+      cursor: pointer;
+      padding: 1px;
+  }
 
-    .circleNumber {
-        -webkit-print-color-adjust: exact !important;
-        background: lightblue !important;
-        border: 1px solid black;
-        border-radius: 5em 5em 5em 5em;
-        -moz-border-radius: 5em 5em 5em 5em;
-        -webkit-border-radius: 5em 5em 5em 5em;
-        margin:1px;
-        margin-left:3px;
-        padding:1px;
-    } 
-    
-    body {
-        -webkit-print-color-adjust: exact !important;
-        background-color: rgba(0,0,0,0);
-        overflow: visible;
-        height: 180px;
-        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-        font-size: 11pt;
-        margin-bottom: 20px;
-    }
+  .circleNumber {
+      -webkit-print-color-adjust: exact !important;
+      background: lightblue !important;
+      border: 1px solid black;
+      border-radius: 5em 5em 5em 5em;
+      -moz-border-radius: 5em 5em 5em 5em;
+      -webkit-border-radius: 5em 5em 5em 5em;
+      margin:1px;
+      margin-left:3px;
+      padding:1px;
+  } 
+  
+  body {
+      -webkit-print-color-adjust: exact !important;
+      background-color: rgba(0,0,0,0);
+      overflow: visible;
+      height: 180px;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 11pt;
+      margin-bottom: 20px;
+  }
 
-    body:active {
-        -webkit-print-color-adjust: exact !important;
-        background-color: rgba(255,255,255,1);
-    }
-    
-    pre {
-        overflow: auto;
-        display: block;
-        padding: 9.5px;
-        margin: 0 0 10px;
-        font-size: 13px;
-        line-height: 20px;
-        white-space: pre-wrap;
-        background-color: #f5f5f5;
-        border: 1px solid #ccc;
-        border: 1px solid rgba(0, 0, 0, 0.15);
-        -webkit-border-radius: 4px;
-        -moz-border-radius: 4px;
-        border-radius: 4px;
-    }
+  body:active {
+      -webkit-print-color-adjust: exact !important;
+      background-color: rgba(255,255,255,1);
+  }
+  
+  pre {
+      overflow: auto;
+      display: block;
+      padding: 9.5px;
+      margin: 0 0 10px;
+      font-size: 13px;
+      line-height: 20px;
+      white-space: pre-wrap;
+      background-color: #f5f5f5;
+      border: 1px solid #ccc;
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      -webkit-border-radius: 4px;
+      -moz-border-radius: 4px;
+      border-radius: 4px;
+  }
 
-    p {
-        word-wrap: break-word;
-    }
+  p {
+      word-wrap: break-word;
+  }
 
-    blockquote {
-        overflow-y: visible;
-        /*display: inline-flex;*/
-        background-color: #f5f5f5;
-        width: 90%;
-    } 
-    .alertTableHorizontal {
-        -webkit-print-color-adjust: exact !important;
-        display: table;
-        padding: 3px;
-        border-radius: 5px;
-        border: 1px solid black;
-        width:99.5%;
-        margin-bottom:10px;
-        /*adding in other sizing things not normally in alertTableHorizontal but normally found in the .tablesorter-default*/
-        font: 12px/18px Arial, Sans-serif;
-        color: #333 !important;
-        background-color: #fff !important;
-        border-spacing: 0;
-        margin: 10px 0 15px;
-        text-align: left;
-        word-break: break-word;
-    }
-    .alertTableHorizontal > div {
-        -webkit-print-color-adjust: exact !important;
-        display: table-row !important; 
-        border-bottom: 1px solid #333 !important;
-    }
+  blockquote {
+      overflow-y: visible;
+      /*display: inline-flex;*/
+      background-color: #f5f5f5;
+      width: 90%;
+  } 
+  .alertTableHorizontal {
+      -webkit-print-color-adjust: exact !important;
+      display: table;
+      padding: 3px;
+      border-radius: 5px;
+      border: 1px solid black;
+      width:99.5%;
+      margin-bottom:10px;
+      /*adding in other sizing things not normally in alertTableHorizontal but normally found in the .tablesorter-default*/
+      font: 12px/18px Arial, Sans-serif;
+      color: #333 !important;
+      background-color: #fff !important;
+      border-spacing: 0;
+      margin: 10px 0 15px;
+      text-align: left;
+      word-break: break-word;
+  }
+  .alertTableHorizontal > div {
+      -webkit-print-color-adjust: exact !important;
+      display: table-row !important; 
+      border-bottom: 1px solid #333 !important;
+  }
 
-    .alertTableHorizontal > div:first-child  {
-        -webkit-print-color-adjust: exact !important;
-        font-weight:bold !important;
-    }
+  .alertTableHorizontal > div:first-child  {
+      -webkit-print-color-adjust: exact !important;
+      font-weight:bold !important;
+  }
 
-    .alertTableHorizontal tr:nth-child(odd) {
-        -webkit-print-color-adjust: exact !important;
-        background-color: #EEE !important;
-    }
+  .alertTableHorizontal tr:nth-child(odd) {
+      -webkit-print-color-adjust: exact !important;
+      background-color: #EEE !important;
+  }
 
-    .alertTableHorizontal tr:nth-child(even) {
-        -webkit-print-color-adjust: exact !important;
-        background-color: #FFF !important;
-    }
+  .alertTableHorizontal tr:nth-child(even) {
+      -webkit-print-color-adjust: exact !important;
+      background-color: #FFF !important;
+  }
 
-    .alertTableHorizontal tr:not(.not_selectable) {
-        -webkit-print-color-adjust: exact !important;
-        border-bottom-width:1px !important;
-        border-bottom-style:solid !important;
-        border-bottom-color:black !important;
-    }
+  .alertTableHorizontal tr:not(.not_selectable) {
+      -webkit-print-color-adjust: exact !important;
+      border-bottom-width:1px !important;
+      border-bottom-style:solid !important;
+      border-bottom-color:black !important;
+  }
 
-    .alertTableHorizontal th:nth-child(even) {
-        -webkit-print-color-adjust: exact !important;
-        background-color: rgba(0,0,0,0.05) !important;
-    }
+  .alertTableHorizontal th:nth-child(even) {
+      -webkit-print-color-adjust: exact !important;
+      background-color: rgba(0,0,0,0.05) !important;
+  }
 
-    .alertTableHorizontal th:nth-child(odd) {
-        -webkit-print-color-adjust: exact !important;
-        background-color: rgba(0,0,0,0.1) !important;
-    }
+  .alertTableHorizontal th:nth-child(odd) {
+      -webkit-print-color-adjust: exact !important;
+      background-color: rgba(0,0,0,0.1) !important;
+  }
 
-    .alertTableHorizontal th {
-        -webkit-print-color-adjust: exact !important;
-        box-shadow: 0px -10px 5px -10px  black inset !important;
-    }
+  .alertTableHorizontal th {
+      -webkit-print-color-adjust: exact !important;
+      box-shadow: 0px -10px 5px -10px  black inset !important;
+  }
 
-    .alertTableHorizontal td:nth-child(odd) {
-        -webkit-print-color-adjust: exact !important;
-        background-color: rgba(0,0,0,0.05) !important;
-    }
-    
+  .alertTableHorizontal td:nth-child(odd) {
+      -webkit-print-color-adjust: exact !important;
+      background-color: rgba(0,0,0,0.05) !important;
+  }
+  
 }
-

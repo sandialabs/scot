@@ -1,4 +1,5 @@
-![ScotLogo](https://raw.githubusercontent.com/sandialabs/scot/master/deploy/scot_logo_highrez_64x64.png)
+![ScotLogo](https://raw.githubusercontent.com/sandialabs/scot/master/public/images/scot_logo_highrez_64x64.png)
+            
 Sandia Cyber Omni Tracker
 =========================
 
@@ -6,6 +7,8 @@ Sandia Cyber Omni Tracker
 ![version](http://img.shields.io/badge/version-3.5.2-orange.svg)
 [![Documentation Status][docs-badge]](http://scot.readthedocs.org/en/latest/)
 [![license](http://img.shields.io/badge/license-Apache%202-red.svg)](https://github.com/sandialabs/scot/blob/master/LICENSE)
+![pipeline status](https://api.travis-ci.org/sandialabs/scot.svg?branch=master)
+
 
 SCOT Online Demo
 ----------------
