@@ -22,11 +22,11 @@ foreach my $colname (@collections) {
     # my $cur = $col->find({parsed => 0});
 
     my $cur = $col->find({
-        'target.type' =>  'event',
+        'target.type' =>  'intel',
         'target.id' =>  { 
-            '$gte' => 9183, 
-            '$lte' => 15722 
+            '$lte' => 655 
         },
+        id  => { '$gt' => 349232 },
     });
 
     while ( my $obj = $cur->next ) {
@@ -43,7 +43,7 @@ foreach my $colname (@collections) {
                 id      => $obj->id,
             }
         });
-        sleep 1;
+        sleep 3;
     }
 }
 
