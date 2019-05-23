@@ -1,0 +1,14 @@
+
+version: '3.4'
+services:
+  perl:
+    build: 
+      dockerfile: Dockerfile-Perl
+      context: ./
+      args:
+        http_proxy: ${http_proxy}
+        https_proxy: ${https_proxy}
+        HTTP_PROXY: ${HTTP_PROXY}
+        HTTPS_PROXY: ${HTTPS_PROXY}
+    image: sandialabs/scot_perl 
+  
