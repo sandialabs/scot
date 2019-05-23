@@ -7,24 +7,23 @@ import MenuItem from "react-bootstrap/lib/MenuItem.js";
 import Button from "react-bootstrap/lib/Button.js";
 import AddEntry from "../components/add_entry.js";
 import FileUpload from "../components/file_upload.js";
-import { DeleteEntry } from '../modal/delete';
-import Summary from '../components/summary'
-import Task from "../components/task"
+import { DeleteEntry } from "../modal/delete";
+import Summary from "../components/summary";
+import Task from "../components/task";
 import SelectedPermission from "../components/permission.js";
-import Frame from 'react-frame-component';
+import Frame from "react-frame-component";
 //import Frame from "../components/frame/src";
 import AddFlair from "../components/add_flair";
-import LinkWarning from "../modal/link_warning"
-import { Link } from 'react-router-dom'
-import SignatureTable from "../components/signature_table"
+import LinkWarning from "../modal/link_warning";
+import { Link } from "react-router-dom";
+import SignatureTable from "../components/signature_table";
 import TrafficLightProtocol from "../components/traffic_light_protocol";
-import Marker from "../components/marker"
-import EntityCreateModal from "../modal/entity_create"
+import Marker from "../components/marker";
+import EntityCreateModal from "../modal/entity_create";
 import CustomMetaDataTable from "../components/custom_metadata_table";
-import tablesorter from 'tablesorter'
-import axios from 'axios'
+import tablesorter from "tablesorter";
+import axios from "axios";
 import { connect } from "net";
-
 
 export default class SelectedEntry extends React.Component {
   constructor(props) {
@@ -59,17 +58,17 @@ export default class SelectedEntry extends React.Component {
       $.ajax({
         type: "get",
         url: "scot/api/v2/" + this.props.type + "/" + this.props.id + "/entry",
-        success: function (result) {
+        success: function(result) {
           let entryResult = result.records;
           if (this.state.isMounted) {
             this.setState({ showEntryData: true, entryData: entryResult });
             for (let i = 0; i < result.records.length; i++) {
-              this.props.createCallback(result.records[i].id, this.updatedCB)
+              this.props.createCallback(result.records[i].id, this.updatedCB);
             }
             this.Watcher();
           }
         }.bind(this),
-        error: function (result) {
+        error: function(result) {
           if (this.state.isMounted) {
             this.setState({ showEntryData: true });
             this.props.errorToggle("Failed to load entry data.", result);
@@ -79,17 +78,17 @@ export default class SelectedEntry extends React.Component {
       $.ajax({
         type: "get",
         url: "scot/api/v2/" + this.props.type + "/" + this.props.id + "/entity",
-        success: function (result) {
+        success: function(result) {
           let entityResult = result.records;
           if (this.state.isMounted) {
             this.setState({ showEntityData: true, entityData: entityResult });
             let waitForEntry = {
-              waitEntry: function () {
+              waitEntry: function() {
                 if (this.state.showEntryData === false) {
                   setTimeout(waitForEntry.waitEntry, 50);
                 } else {
                   setTimeout(
-                    function () {
+                    function() {
                       AddFlair.entityUpdate(
                         entityResult,
                         this.flairToolbarToggle,
@@ -105,40 +104,38 @@ export default class SelectedEntry extends React.Component {
             waitForEntry.waitEntry();
           }
         }.bind(this),
-        error: function (result) {
+        error: function(result) {
           if (this.state.isMounted) {
             this.setState({ showEntityData: true });
             this.props.errorToggle("Failed to load entity data.", result);
           }
         }.bind(this)
       });
-      this.props.createCallback(this.props.id, this.updatedCB)
+      this.props.createCallback(this.props.id, this.updatedCB);
     }
 
     this.containerHeightAdjust();
     window.addEventListener("resize", this.containerHeightAdjust);
     $("#ReactTable").resize(
-      function () {
+      function() {
         this.containerHeightAdjust();
       }.bind(this)
     );
-  };
-
+  }
 
   componentWillReceiveProps() {
     this.containerHeightAdjust();
-  };
+  }
 
   componentDidUpdate() {
     if (this.state.runWatcher == true) {
       this.Watcher();
     }
-
-  };
+  }
 
   componentWillUnmount() {
     this.setState({ isMounted: false });
-  };
+  }
 
   updatedCB = () => {
     if (
@@ -149,18 +146,17 @@ export default class SelectedEntry extends React.Component {
       $.ajax({
         type: "get",
         url: "scot/api/v2/" + this.props.type + "/" + this.props.id + "/entry",
-        success: function (result) {
+        success: function(result) {
           let entryResult = result.records;
           if (this.state.isMounted) {
             this.setState({ showEntryData: true, entryData: entryResult });
             for (let i = 0; i < result.records.length; i++) {
-
               this.props.createCallback(result.records[i].id, this.updatedCB);
             }
             this.Watcher();
           }
         }.bind(this),
-        error: function (result) {
+        error: function(result) {
           if (this.state.isMounted) {
             this.setState({ showEntryData: true });
             this.props.errorToggle("Failed to load entry data ", result);
@@ -170,17 +166,17 @@ export default class SelectedEntry extends React.Component {
       $.ajax({
         type: "get",
         url: "scot/api/v2/" + this.props.type + "/" + this.props.id + "/entity",
-        success: function (result) {
+        success: function(result) {
           let entityResult = result.records;
           if (this.state.isMounted) {
             this.setState({ showEntityData: true, entityData: entityResult });
             let waitForEntry = {
-              waitEntry: function () {
+              waitEntry: function() {
                 if (this.state.showEntryData === false) {
                   setTimeout(waitForEntry.waitEntry, 50);
                 } else {
                   setTimeout(
-                    function () {
+                    function() {
                       AddFlair.entityUpdate(
                         entityResult,
                         this.flairToolbarToggle,
@@ -196,7 +192,7 @@ export default class SelectedEntry extends React.Component {
             waitForEntry.waitEntry();
           }
         }.bind(this),
-        error: function (result) {
+        error: function(result) {
           if (this.state.isMounted) {
             this.setState({ showEntityData: true });
             this.props.errorToggle("Failed to load entity data", result);
@@ -240,94 +236,139 @@ export default class SelectedEntry extends React.Component {
   };
 
   Watcher = () => {
-    let containerid = '#' + this.props.type + '-detail-container';
-    if (this.props.type != 'alertgroup') {
-      $(containerid).find('iframe').each(function (index, ifr) {
-        //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
-        ifr.contentWindow.requestAnimationFrame(function () {
-          if (ifr.contentDocument != null) {
-            let arr = [];
-            //arr.push(this.props.type);
-            arr.push(this.checkFlairHover);
-            $(ifr).off('mouseenter');
-            $(ifr).off('mouseleave');
-            $(ifr).on('mouseenter', function (v, type) {
-              let intervalID = setInterval(this[0], 50, ifr);// this.flairToolbarToggle, type, this.props.linkWarningToggle, this.props.id);
-              $(ifr).data('intervalID', intervalID);
-              console.log('Now watching iframe ' + intervalID);
-            }.bind(arr));
-            $(ifr).on('mouseleave', function () {
-              let intervalID = $(ifr).data('intervalID');
-              window.clearInterval(intervalID);
-              console.log('No longer watching iframe ' + intervalID);
-            });
-          }
-        }.bind(this));
-      }.bind(this));
-
+    let containerid = "#" + this.props.type + "-detail-container";
+    if (this.props.type != "alertgroup") {
+      $(containerid)
+        .find("iframe")
+        .each(
+          function(index, ifr) {
+            //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
+            ifr.contentWindow.requestAnimationFrame(
+              function() {
+                if (ifr.contentDocument != null) {
+                  let arr = [];
+                  //arr.push(this.props.type);
+                  arr.push(this.checkFlairHover);
+                  $(ifr).off("mouseenter");
+                  $(ifr).off("mouseleave");
+                  $(ifr).on(
+                    "mouseenter",
+                    function(v, type) {
+                      let intervalID = setInterval(this[0], 50, ifr); // this.flairToolbarToggle, type, this.props.linkWarningToggle, this.props.id);
+                      $(ifr).data("intervalID", intervalID);
+                      console.log("Now watching iframe " + intervalID);
+                    }.bind(arr)
+                  );
+                  $(ifr).on("mouseleave", function() {
+                    let intervalID = $(ifr).data("intervalID");
+                    window.clearInterval(intervalID);
+                    console.log("No longer watching iframe " + intervalID);
+                  });
+                }
+              }.bind(this)
+            );
+          }.bind(this)
+        );
     } else {
-      $(containerid).find('a, .entity').not('.not_selectable').each(function (index, tr) {
-        $(tr).off('mousedown');
-        $(tr).on('mousedown', function (index) {
-          let thing = index.target;
-          if ($(thing)[0].className == 'extras') { thing = $(thing)[0].parentNode; } //if an extra is clicked reference the parent element
-          if ($(thing).attr('url')) {  //link clicked
-            let url = $(thing).attr('url');
-            this.linkWarningToggle(url);
-          } else { //entity clicked
-            let entityid = $(thing).attr('data-entity-id');
-            let entityvalue = $(thing).attr('data-entity-value');
-            let entityoffset = $(thing).offset();
-            let entityobj = $(thing);
-            this.flairToolbarToggle(entityid, entityvalue, 'entity', entityoffset, entityobj);
-          }
-        }.bind(this));
-      }.bind(this));
+      $(containerid)
+        .find("a, .entity")
+        .not(".not_selectable")
+        .each(
+          function(index, tr) {
+            $(tr).off("mousedown");
+            $(tr).on(
+              "mousedown",
+              function(index) {
+                let thing = index.target;
+                if ($(thing)[0].className == "extras") {
+                  thing = $(thing)[0].parentNode;
+                } //if an extra is clicked reference the parent element
+                if ($(thing).attr("url")) {
+                  //link clicked
+                  let url = $(thing).attr("url");
+                  this.linkWarningToggle(url);
+                } else {
+                  //entity clicked
+                  let entityid = $(thing).attr("data-entity-id");
+                  let entityvalue = $(thing).attr("data-entity-value");
+                  let entityoffset = $(thing).offset();
+                  let entityobj = $(thing);
+                  this.flairToolbarToggle(
+                    entityid,
+                    entityvalue,
+                    "entity",
+                    entityoffset,
+                    entityobj
+                  );
+                }
+              }.bind(this)
+            );
+          }.bind(this)
+        );
     }
-
   };
 
   checkFlairHover = ifr => {
     function returnifr() {
       return ifr;
     }
-    if (this.props.type != 'alertgroup') {
+    if (this.props.type != "alertgroup") {
       if (ifr.contentDocument != null) {
-        $(ifr).contents().find('.entity').each(function (index, entity) {
-          if ($(entity).css('background-color') == 'rgb(255, 0, 0)') {
-            $(entity).data('state', 'down');
-          } else if ($(entity).data('state') == 'down') {
-            $(entity).data('state', 'up');
-            let entityid = $(entity).attr('data-entity-id');
-            let entityvalue = $(entity).attr('data-entity-value');
-            let entityobj = $(entity);
-            let ifr = returnifr();
-            let entityoffset = { top: $(entity).offset().top + $(ifr).offset().top, left: $(entity).offset().left + $(ifr).offset().left };
-            this.flairToolbarToggle(entityid, entityvalue, 'entity', entityoffset, entityobj);
-          }
-        }.bind(this));
+        $(ifr)
+          .contents()
+          .find(".entity")
+          .each(
+            function(index, entity) {
+              if ($(entity).css("background-color") == "rgb(255, 0, 0)") {
+                $(entity).data("state", "down");
+              } else if ($(entity).data("state") == "down") {
+                $(entity).data("state", "up");
+                let entityid = $(entity).attr("data-entity-id");
+                let entityvalue = $(entity).attr("data-entity-value");
+                let entityobj = $(entity);
+                let ifr = returnifr();
+                let entityoffset = {
+                  top: $(entity).offset().top + $(ifr).offset().top,
+                  left: $(entity).offset().left + $(ifr).offset().left
+                };
+                this.flairToolbarToggle(
+                  entityid,
+                  entityvalue,
+                  "entity",
+                  entityoffset,
+                  entityobj
+                );
+              }
+            }.bind(this)
+          );
       }
       if (ifr.contentDocument != null) {
-        $(ifr).contents().find('a').each(function (index, a) {
-          if ($(a).css('color') == 'rgb(255, 0, 0)') {
-            $(a).data('state', 'down');
-          } else if ($(a).data('state') == 'down') {
-            $(a).data('state', 'up');
-            let url = $(a).attr('url');
-            this.linkWarningToggle(url);
-          }
-        }.bind(this));
+        $(ifr)
+          .contents()
+          .find("a")
+          .each(
+            function(index, a) {
+              if ($(a).css("color") == "rgb(255, 0, 0)") {
+                $(a).data("state", "down");
+              } else if ($(a).data("state") == "down") {
+                $(a).data("state", "up");
+                let url = $(a).attr("url");
+                this.linkWarningToggle(url);
+              }
+            }.bind(this)
+          );
       }
     }
-
   };
 
   containerHeightAdjust = () => {
     //Using setTimeout so full screen toggle animation has time to finish before resizing detail section
     setTimeout(
-      function () {
+      function() {
         let scrollHeight;
-        let ListViewTableHeight = document.getElementsByClassName('ReactTable')[0].clientHeight
+        let ListViewTableHeight = document.getElementsByClassName(
+          "ReactTable"
+        )[0].clientHeight;
         if (ListViewTableHeight !== undefined) {
           if (ListViewTableHeight !== 0) {
             scrollHeight =
@@ -418,8 +459,8 @@ export default class SelectedEntry extends React.Component {
             removeCallback={this.props.removeCallback}
           />
         ) : (
-            <span>Loading...</span>
-          )}
+          <span>Loading...</span>
+        )}
         {this.props.entryToolbar ? (
           <div>
             {this.props.isAlertSelected === false ? (
@@ -481,7 +522,6 @@ export default class SelectedEntry extends React.Component {
 }
 
 class EntryIterator extends React.Component {
-
   render = () => {
     let rows = [];
     let data = this.props.data;
@@ -511,7 +551,7 @@ class EntryIterator extends React.Component {
       if (type !== "alertgroup") {
         let key = 0;
         data.forEach(
-          function (data) {
+          function(data) {
             rows.push(
               <EntryParent
                 key={key}
@@ -524,7 +564,7 @@ class EntryIterator extends React.Component {
                 removeCallback={this.props.removeCallback}
               />
             );
-            key = key + 1
+            key = key + 1;
           }.bind(this)
         );
       } else {
@@ -547,6 +587,7 @@ class EntryIterator extends React.Component {
             errorToggle={this.props.errorToggle}
             flairOff={this.props.flairOff}
             createCallback={this.props.createCallback}
+            removeCallback={this.props.removeCallback}
           />
         );
       }
@@ -592,7 +633,7 @@ class AlertParent extends React.Component {
 
     //Ctrl + A to select all alerts
     $("#main-detail-container").keydown(
-      function (event) {
+      function(event) {
         //prevent from working when in input
         if ($("input").is(":focus")) {
           return;
@@ -617,7 +658,11 @@ class AlertParent extends React.Component {
     //update the table, but not if a tinymce editor window is open as it will break the editing window
 
     // new update 1/29/19 - Adding check if iframes present when performing new gets for alertgroup and alert ie if entries exist and we need to update
-    if (!$(".mce-tinymce")[0] && window.getSelection().toString() === "" && document.getElementsByTagName('iframe').length == 0) {
+    if (
+      !$(".mce-tinymce")[0] &&
+      window.getSelection().toString() === "" &&
+      document.getElementsByTagName("iframe").length == 0
+    ) {
       $("#sortabletable").trigger(this.state.tableSorterUpdateType);
     }
   };
@@ -674,7 +719,7 @@ class AlertParent extends React.Component {
       $(".alertTableHorizontal")
         .find("tr")
         .not(".not_selectable")
-        .each(function (index, x) {
+        .each(function(index, x) {
           let id = $(x).attr("id");
           keyObj[id] = i;
           i++;
@@ -820,6 +865,7 @@ class AlertParent extends React.Component {
             fileUploadToolbar={this.props.fileUploadToolbar}
             errorToggle={this.props.errorToggle}
             createCallback={this.props.createCallback}
+            removeCallback={this.props.removeCallback}
           />
         );
       }
@@ -976,12 +1022,12 @@ class AlertBody extends React.Component {
       $.ajax({
         type: "GET",
         url: "/scot/api/v2/alert/" + this.props.data.id + "/event",
-        success: function (response) {
+        success: function(response) {
           if (this.state.isMounted) {
             this.setState({ promotedNumber: response.records[0].id });
           }
         }.bind(this),
-        error: function (data) {
+        error: function(data) {
           this.props.errorToggle("failed to get promoted id", data);
         }.bind(this)
       });
@@ -1009,12 +1055,12 @@ class AlertBody extends React.Component {
         $.ajax({
           type: "GET",
           url: "/scot/api/v2/alert/" + this.props.data.id + "/event",
-          success: function (response) {
+          success: function(response) {
             if (this.state.isMounted) {
               this.setState({ promotedNumber: response.records[0].id });
             }
           }.bind(this),
-          error: function (data) {
+          error: function(data) {
             this.props.errorToggle("failed to get promoted id", data);
           }.bind(this)
         });
@@ -1126,37 +1172,37 @@ class AlertBody extends React.Component {
             {data.status !== "promoted" ? (
               <span style={{ color: buttonStyle }}>{data.status}</span>
             ) : (
-                <Button
-                  bsSize="xsmall"
-                  bsStyle={buttonStyle}
-                  id={id}
-                  onMouseDown={this.navigateTo}
-                  style={{
-                    lineHeight: "12pt",
-                    fontSize: "10pt",
-                    marginLeft: "auto"
-                  }}
-                >
-                  {data.status}
-                </Button>
-              )}
+              <Button
+                bsSize="xsmall"
+                bsStyle={buttonStyle}
+                id={id}
+                onMouseDown={this.navigateTo}
+                style={{
+                  lineHeight: "12pt",
+                  fontSize: "10pt",
+                  marginLeft: "auto"
+                }}
+              >
+                {data.status}
+              </Button>
+            )}
           </td>
           {data.entry_count === 0 ? (
             <td style={{ marginRight: "4px" }}>{data.entry_count}</td>
           ) : (
-              <td style={{ marginRight: "4px" }}>
-                <span
-                  style={{
-                    color: "blue",
-                    textDecoration: "underline",
-                    cursor: "pointer"
-                  }}
-                  onMouseDown={this.toggleEntry}
-                >
-                  {data.entry_count}
-                </span>
-              </td>
-            )}
+            <td style={{ marginRight: "4px" }}>
+              <span
+                style={{
+                  color: "blue",
+                  textDecoration: "underline",
+                  cursor: "pointer"
+                }}
+                onMouseDown={this.toggleEntry}
+              >
+                {data.entry_count}
+              </span>
+            </td>
+          )}
           {rowReturn}
         </tr>
         <AlertRowBlank
@@ -1172,6 +1218,7 @@ class AlertBody extends React.Component {
           toggleOffFileUpload={this.toggleOffFileUpload}
           errorToggle={this.props.errorToggle}
           createCallback={this.props.createCallback}
+          removeCallback={this.props.removeCallback}
         />
       </tbody>
     );
@@ -1225,7 +1272,6 @@ class AlertRowBlank extends React.Component {
         errorToggle={this.props.errorToggle}
         createCallback={this.props.createCallback}
         removeCallback={this.props.removeCallback}
-
       />
     );
     if (showEntry === true) {
@@ -1243,7 +1289,6 @@ class AlertRowBlank extends React.Component {
                   errorToggle={this.props.errorToggle}
                   createCallback={this.props.createCallback}
                   removeCallback={this.props.removeCallback}
-
                 />
               }
             </div>
@@ -1284,12 +1329,12 @@ class EntryParent extends React.Component {
       fileUploadToolbar: false,
       showEntityCreateModal: false,
       highlightedText: null,
-      items: {},
+      items: {}
     };
   }
 
   componentWillUnmount() {
-    this.props.removeCallback(this.props.items.id)
+    this.props.removeCallback(this.props.items.id);
   }
 
   // static getDerivedStateFromProps(nextProps, prevState) {
@@ -1358,10 +1403,10 @@ class EntryParent extends React.Component {
       url: "/scot/api/v2/entry/" + this.props.items.id,
       data: JSON.stringify({ parsed: 0 }),
       contentType: "application/json; charset=UTF-8",
-      success: function () {
+      success: function() {
         console.log("reparsing started");
       },
-      error: function (data) {
+      error: function(data) {
         this.props.errorToggle("failed to start reparsing of data", data);
       }.bind(this)
     });
@@ -1435,30 +1480,32 @@ class EntryParent extends React.Component {
       />
     );
     for (let prop in items) {
-      let childfunc = (prop) => {
+      let childfunc = prop => {
         if (prop === "children") {
           let childobj = items[prop];
-          items[prop].forEach(function (childobj) {
-            subitemarr.push(
-              new Array(
-                (
-                  <EntryParent
-                    items={childobj}
-                    id={id}
-                    type={type}
-                    editEntryToolbar={editEntryToolbar}
-                    editEntryToggle={editEntryToggle}
-                    isPopUp={isPopUp}
-                    errorToggle={errorToggle}
-                    createCallback={this.props.createCallback}
-                    removeCallback={this.props.removeCallback}
-                  />
+          items[prop].forEach(
+            function(childobj) {
+              subitemarr.push(
+                new Array(
+                  (
+                    <EntryParent
+                      items={childobj}
+                      id={id}
+                      type={type}
+                      editEntryToolbar={editEntryToolbar}
+                      editEntryToggle={editEntryToggle}
+                      isPopUp={isPopUp}
+                      errorToggle={errorToggle}
+                      createCallback={this.props.createCallback}
+                      removeCallback={this.props.removeCallback}
+                    />
+                  )
                 )
-              )
-            );
-          }.bind(this));
+              );
+            }.bind(this)
+          );
         }
-      }
+      };
       childfunc(prop);
     }
     itemarr.push(subitemarr);
@@ -1509,6 +1556,7 @@ class EntryParent extends React.Component {
             ToggleCreateEntity={this.ToggleCreateEntity}
             errorToggle={this.props.errorToggle}
             createCallback={this.props.createCallback}
+            removeCallback={this.props.removeCallback}
           />
         ) : null}
         <div
@@ -1546,22 +1594,22 @@ class EntryParent extends React.Component {
               />
               )
               {this.state.highlightedText !== "" &&
-                this.state.highlightedText != null ? (
-                  <Button
-                    bsSize="xsmall"
-                    bsStyle="success"
-                    onClick={this.ToggleCreateEntity}
-                  >
-                    Create Entity
+              this.state.highlightedText != null ? (
+                <Button
+                  bsSize="xsmall"
+                  bsStyle="success"
+                  onClick={this.ToggleCreateEntity}
+                >
+                  Create Entity
                 </Button>
-                ) : null}
+              ) : null}
               {this.props.items.body_flair !== "" &&
-                this.props.items.parsed === 0 ? (
-                  <span style={{ color: "green", fontWeight: "bold" }}>
-                    {" "}
-                    Entry awaiting flair engine. Content may be inaccurate.
+              this.props.items.parsed === 0 ? (
+                <span style={{ color: "green", fontWeight: "bold" }}>
+                  {" "}
+                  Entry awaiting flair engine. Content may be inaccurate.
                 </span>
-                ) : null}
+              ) : null}
               <span
                 className="pull-right"
                 style={{ display: "inline-flex", paddingRight: "3px" }}
@@ -1694,8 +1742,7 @@ class EntryParent extends React.Component {
         } else {
           return;
         }
-      }
-      catch{
+      } catch {
         return;
       }
     }
@@ -1722,11 +1769,11 @@ class EntryAction extends React.Component {
     $.ajax({
       type: "post",
       url: url,
-      success: function (response) {
+      success: function(response) {
         this.setState({ [id]: true, disabled: false });
         console.log("submitted the entry action");
       }.bind(this),
-      error: function (data) {
+      error: function(data) {
         this.props.errorToggle("failed to submit the entry action", data);
         this.setState({ disabled: false });
       }.bind(this)
@@ -1769,48 +1816,80 @@ class EntryData extends React.Component {
     this.setHeight();
   }
   setHeight = () => {
-    setTimeout(function () {
-      if (document.getElementById('iframe_' + this.props.id) != undefined) {
-        document.getElementById('iframe_' + this.props.id).contentWindow.requestAnimationFrame(function () {
-          let newheight;
-          newheight = document.getElementById('iframe_' + this.props.id).contentWindow.document.body.scrollHeight;
-          newheight = newheight + 35 + 'px';
-          if (this.state.height != newheight) {
-            this.setState({ height: newheight });
-          }
-        }.bind(this));
-      }
-    }.bind(this), 250);
-  }
+    setTimeout(
+      function() {
+        if (document.getElementById("iframe_" + this.props.id) != undefined) {
+          document
+            .getElementById("iframe_" + this.props.id)
+            .contentWindow.requestAnimationFrame(
+              function() {
+                let newheight;
+                newheight = document.getElementById("iframe_" + this.props.id)
+                  .contentWindow.document.body.scrollHeight;
+                newheight = newheight + 35 + "px";
+                if (this.state.height != newheight) {
+                  this.setState({ height: newheight });
+                }
+              }.bind(this)
+            );
+        }
+      }.bind(this),
+      250
+    );
+  };
 
   render() {
     let rawMarkup = this.props.subitem.body_flair;
-    if (this.props.subitem.body_flair == '') {
+    if (this.props.subitem.body_flair == "") {
       rawMarkup = this.props.subitem.body;
     }
     let id = this.props.id;
-    let entry_body_id = 'entry-body-' + this.props.id;
-    let entry_body_inner_id = 'entry-body-inner-' + this.props.id;
+    let entry_body_id = "entry-body-" + this.props.id;
+    let entry_body_inner_id = "entry-body-inner-" + this.props.id;
     return (
-      <div id={entry_body_id} key={this.props.id} className={'row-fluid entry-body'}>
-        <div id={entry_body_inner_id} className={'row-fluid entry-body-inner'} style={{ marginLeft: 'auto', marginRight: 'auto', width: '99.3%' }}>
-          {this.props.editEntryToolbar ? <AddEntry entryAction={'Edit'} type={this.props.type} targetid={this.props.targetid} id={id} addedentry={this.props.editEntryToggle} parent={this.props.subitem.parent} errorToggle={this.props.errorToggle} /> :
+      <div
+        id={entry_body_id}
+        key={this.props.id}
+        className={"row-fluid entry-body"}
+      >
+        <div
+          id={entry_body_inner_id}
+          className={"row-fluid entry-body-inner"}
+          style={{ marginLeft: "auto", marginRight: "auto", width: "99.3%" }}
+        >
+          {this.props.editEntryToolbar ? (
+            <AddEntry
+              entryAction={"Edit"}
+              type={this.props.type}
+              targetid={this.props.targetid}
+              id={id}
+              addedentry={this.props.editEntryToggle}
+              parent={this.props.subitem.parent}
+              errorToggle={this.props.errorToggle}
+            />
+          ) : (
             <Frame
               //Here is new stuff
               key={id}
               contentDidMount={this.setHeight}
-              head={<link rel="stylesheet" type="text/css" href="/css/sandbox.css" />}
+              head={
+                <link
+                  rel="stylesheet"
+                  type="text/css"
+                  href="/css/sandbox.css"
+                />
+              }
               //end of new stuff
-              frameBorder={'0'}
-              id={'iframe_' + id}
-              sandbox={'allow-same-origin'}
-              style={{ width: '100%', height: this.state.height }}>
+              frameBorder={"0"}
+              id={"iframe_" + id}
+              sandbox={"allow-same-origin"}
+              style={{ width: "100%", height: this.state.height }}
+            >
               <div dangerouslySetInnerHTML={{ __html: rawMarkup }} />
             </Frame>
-          }
+          )}
         </div>
       </div>
     );
   }
-
 }
