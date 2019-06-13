@@ -14,6 +14,7 @@ override api_create => sub {
     my $json    = $href->{request}->{json};
 
     my @entries = @{delete $json->{entry}};
+    $self->validate_permissions($json);
     my $checklist   = $self->create($json);
 
     my $entry_col   = $mongo->collection('Entry');

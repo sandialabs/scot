@@ -45,12 +45,7 @@ override api_create => sub  {
         @entries    = ();
     }
 
-    unless ( $json->{group}->{read} ) {
-        $json->{group}->{read}   = $env->default_groups->{read};
-    }
-    unless ( $json->{group}->{modify} ) {
-        $json->{group}->{modify} = $env->default_groups->{modify};
-    }
+    $self->validate_permissions($json);
 
     my $guide   = $self->create($json);
 

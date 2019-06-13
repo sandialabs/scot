@@ -28,8 +28,10 @@ sub create_from_promoted_alert {
 
     $json->{groups}->{read}    = $alert->groups->{read} // 
                                  $env->default_groups->{read};
+    $json->{groups}->{read} = $self->lc_array($json->{groups}->{read});
     $json->{groups}->{modify}  = $alert->groups->{modify} // 
                                  $env->default_groups->{modify};
+    $json->{groups}->{modify} = $self->lc_array($json->{groups}->{modify});
     $json->{target}            = {
         type                  => 'event',
         id                    => $event->id,
@@ -301,11 +303,8 @@ override api_create => sub {
         $json->{metadata}   = { task => $task};
     }
 
-    my $default_groups = $self->get_default_permissions($target_type, $target_id);
-    $json->{groups}->{read} = 
-        $default_groups->{read} if (!defined $req->{readgroups});
-    $json->{groups}->{modify} = 
-        $default_groups->{modify} if (!defined $req->{modifygroups});
+    $self->validate_permissions($json);
+
     $json->{target} = {
         type    => $target_type,
         id      => $target_id,

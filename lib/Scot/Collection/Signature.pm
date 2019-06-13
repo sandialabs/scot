@@ -39,6 +39,8 @@ override api_create => sub {
     my @sources     = $env->get_req_array($json, "sources");
 
     $log->debug("json is ". Dumper($json));
+
+    $self->validate_permissions($json);
     
     my $signature   = $self->create($json);
 
@@ -71,8 +73,7 @@ sub get_bundled_sigbody {
     my $id      = $sigobj->id + 0;
     my $match   = { signature_id => $id };
     my $col     = $self->meerkat->collection('Sigbody');
-    my $cur     = $col->find($match);
-    $cur->sort({created => -1});
+    my $cur     = $col->find($match); $cur->sort({created => -1});
     while ( my $sigbody = $cur->next ) {
         my $ahref = $sigbody->as_hash;
         $href->{version}->{$sigbody->revision} = $ahref;
