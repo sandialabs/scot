@@ -41,6 +41,8 @@ override api_create => sub {
 
     my @tags    = $env->get_req_array($json, "tags");
 
+    $self->validate_permissions($json);
+
     my $incident    = $self->create($json);
 
     unless ($incident) {
