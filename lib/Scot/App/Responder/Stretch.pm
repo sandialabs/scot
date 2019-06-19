@@ -120,7 +120,7 @@ sub process_all {
     $log->debug("last_completed = $last_completed");
 
     my $continue = 1;
-    my $cleanser = Data::Clean::FromJSON->get_cleanser;
+    my $cleanser = Data::Clean::JSON->get_cleanser;
 
     while ( $continue ) {
         
