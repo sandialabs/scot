@@ -37,8 +37,6 @@ services:
     networks:
      - scot-docker-net
     container_name: mongodb
-    depends_on: 
-     - perl
     image: sandialabs/scot_mongodb
 
   elastic:
@@ -65,7 +63,6 @@ services:
      - "/opt/scotbackup:/opt/scotbackup/"
      - "/opt/scot/public/cached_images:/opt/scot/public/cached_images/"
    depends_on:
-     - perl
      - mongodb
      - activemq
    networks:
