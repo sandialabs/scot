@@ -1,7 +1,7 @@
-Docker-SCOT v 0.03
+Docker-SCOT v 0.04
 ******************
 
-v0.03 relase date - 9/21/2018
+v0.04 relase date - 5/16/2018
 
 =================
 Table of Contents
@@ -51,13 +51,14 @@ Next, Docker-SCOT relies on docker-compose to build, run and manage services. Do
 SCOT Installation
 -----------------------
 
+**Note** These steps will most likely change slightly in 2019 as the SCOT team will be working on making the install script more robust, but easier to use so you can begin using (and even developing) with SCOT quickly.  
 
 There are two methods for getting started with SCOT. Run the SCOT/restart-build-deploy.sh script (will be promopted to enter sudo credentials) and follow the on screen prompts for either. 
 
 
-1. Demo mode - this mode will pull all necessary docker images from from Dockerhub (preconfigured). For demo purposes, this is the preferred method if you do are not concerned with any of the below bullet points. Demo mode should not be ran in production. 
+1. Quick mode - this mode will pull all necessary docker images from from Dockerhub (preconfigured). For demo purposes, this is the preferred method if you do are not concerned with any of the below bullet points. Demo mode should not be ran in production. 
     * Using self-signed certificates for apache
-    * Making changes to the underlying SCOT perl source code
+    * Adding additional perl libraries to the system
     * Configuring the mail service to integrate with you a corporate email account
     * **IMPORTANT** The easy install assumes that you do not already have elasticsearch, mongodb, and scot user accounts on  host. If you do, please remove them PRIOR to running the install. In order to make sure mongo and elasticsearch data is perssited, we have to user accounts on the host and container keep those in sync, otherwise elasticsearch and mongo will die on restarts due to being unable to read / write to their various data stores. 
 2. Custom Mode - If you are concerned with the above, you should use the custom mode which builds the docker containers from source and deploys them.  
@@ -66,6 +67,9 @@ There are two methods for getting started with SCOT. Run the SCOT/restart-build-
 
 Managing the containers
 -----------------------
+
+The restart-build-deploy.sh script will handle stopping and then restarting containers automaticaly. However if you need more granular control run the following:
+
 To stop Docker-SCOT::
 
     sudo docker-compose stop
@@ -84,16 +88,19 @@ To restart a specific service and build in any particular changes you have made 
     sudo docker-compose up -d --build name_of_service
     
 
-
-
 Configuration
 -------------
 
 Docker-SCOT relies on the docker-compose.yml or docker-compose-custom.yml file to define the execution of the services, the DockerFiles that define the dependencies for each container, and two directories (docker-scripts & docker-configs).  
 
-**docker-compose-custom.yml**
+
+**docker-compose.yml**
 
 The docker-compose.yml simply defines the port mappings, data volumes, build contexts, etc. Most of this can be configured as you please but keep in mind some of the data volume mapping and all of the static IPs are currently required unless you modify the configuration files in docker-configs. 
+
+**docker-compose-custom.yml**
+
+The docker-compose-custom.yml file, instead of building the containers on the host from the provided Dockerfiles will pull down the images from Dockerhub. 
 
 **docker-scripts**
 
@@ -106,7 +113,6 @@ The following scripts are currently supported:
 3. restore.pl
 
 To execute one of the above scripts, simply connect to the scot container via:: 
-
 
     sudo docker exec -i -t -u scot scot /bin/bash
 

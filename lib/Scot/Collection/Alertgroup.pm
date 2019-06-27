@@ -113,20 +113,22 @@ override api_create => sub {
         my $tags        = $request->{request}->{json}->{tag};
         my $sources     = $request->{request}->{json}->{source};
         my $data        = delete $request->{request}->{json}->{data};
-        if ( ! defined $request->{request}->{json}->{groups} ) {
-            if ( defined $request->{groups} and 
-                 ref($request->{groups}) eq "ARRAY" and
-                 scalar(@{$request->{groups}}) > 0 ) {
-                    $request->{request}->{json}->{groups} = {
-                        read    => $request->{groups},
-                        modify  => $request->{groups},
-                    };
-            }
-            else {
-                $request->{request}->{json}->{groups} = $env->default_groups;
-            }
-        }
-        my $alertgroup  = $self->create($request->{request}->{json});
+        my $json        = $request->{request}->{json};
+        $self->validate_permissions($json);
+        #if ( ! defined $request->{request}->{json}->{groups} ) {
+        #    if ( defined $request->{groups} and 
+        #         ref($request->{groups}) eq "ARRAY" and
+        #         scalar(@{$request->{groups}}) > 0 ) {
+        #            $request->{request}->{json}->{groups} = {
+        #                read    => $request->{groups},
+        #                modify  => $request->{groups},
+        #            };
+        #    }
+        #    else {
+        #        $request->{request}->{json}->{groups} = $env->default_groups;
+        #    }
+        #}
+        my $alertgroup  = $self->create($json);
         my $alertscreated   = 0;
 
         if ( ! defined $alertgroup ) {

@@ -97,8 +97,9 @@ sub is_permitted {
         $users_groups = [ $users_groups ];
     }
 
+    # force everything to lc to remove case sensitivity
     $log->debug("Permitted groups for $operation: " . 
-                join(',', @{$perm_aref}) );
+                join(',', map {lc($_)} @{$perm_aref}) );
 
     $log->debug("Users groups are ". join(',', @{$users_groups}));
 

@@ -15,7 +15,7 @@ const customStyles = {
 
 export default class LinkWarning extends React.Component {
   proceed = () => {
-    window.open(this.props.link);
+    window.open(this.props.link, '_blank' ).opener = null;
     this.props.linkWarningToggle();
   };
 

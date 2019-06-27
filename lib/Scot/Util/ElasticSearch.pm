@@ -59,7 +59,7 @@ sub _build_es {
     my %conparams   = (
         nodes   => $self->nodes,
         # cxn_pool    => 'Sniff',
-        trace_to  => 'Stderr',
+        # trace_to  => 'Stderr',
     );
 
     try {

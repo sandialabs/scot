@@ -185,6 +185,10 @@ sub create_file {
     $log->debug("Creating File: $name");
     $log->debug("Storage method is ".$storage);
 
+    $name =~ s/\?.*$//g; # chop of ?param=asdfas...
+
+    $log->debug("truncated params, name = $name");
+
     my @parts   = split(/\./,$name);
     my $ext     = '';
 

@@ -161,7 +161,7 @@ export default class SelectedHeaderOptions extends React.Component {
             contentType: "application/json; charset=UTF-8",
             success: function () {
               if ($.isNumeric(text)) {
-                window.location = "#/event/" + text;
+                window.open("#/event/" + text);
               }
             },
             error: function (data) {
