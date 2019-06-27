@@ -59,7 +59,7 @@
             class   => 'Scot::Util::MongoFactory',
             config  => {
                 db_name         => 'scot-prod',
-                host            => 'mongodb://localhost',
+                host            => 'mongodb://mongodb',
                 write_safety    => 1,
                 find_master     => 1,
             },

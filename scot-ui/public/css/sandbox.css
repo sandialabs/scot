@@ -85,7 +85,6 @@
   display: table-row;
   border-bottom: 1px solid #333;
   } */
-
   .alertTableHorizontal > div:first-child  {
   font-weight:bold;
   }
@@ -270,4 +269,3 @@
   }
   
 }
-

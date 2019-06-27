@@ -51,6 +51,8 @@ override api_create => sub {
     my $entry_body = $request->{entry};
     delete $request->{entry};
 
+    $self->validate_permissions($json);
+
     my $event   = $self->create($json);
 
     unless ($event) {
@@ -114,8 +116,8 @@ sub create_alert_entry {
             type => "event",
             id   => $event->id,
         },
-        readgroups  => $event->readgroups,
-        modifygroups=> $event->modifygroups,
+        readgroups  => $self->lc_array($event->readgroups),
+        modifygroups=> $self->lc_array($event->modifygroups),
         summary     => 0,
         body        => $body,
     };

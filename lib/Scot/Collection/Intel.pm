@@ -44,12 +44,7 @@ override api_create => sub {
     my @tags    = $env->get_req_array($json, "tags");
     my @sources = $env->get_req_array($json, "sources");
 
-    unless ( $json->{readgroups} ) {
-        $json->{groups}->{read}   = $env->default_groups->{read};
-    }
-    unless ( $json->{modifygroups} ) {
-        $json->{groups}->{modify} = $env->default_groups->{modify};
-    }
+    $self->validate_permissions($json);
 
     my $intel   = $self->create($json);
 

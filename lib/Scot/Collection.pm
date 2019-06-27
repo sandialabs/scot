@@ -687,4 +687,44 @@ sub api_update {
     return wantarray ? @uprecs : \@uprecs;
 }
 
+sub lc_array {
+    my $self    = shift;
+    my $aref    = shift;
+    my @lcarray = map { lc($_) } @{$aref};
+    return wantarray ? @lcarray : \@lcarray;
+}
+
+sub validate_permissions {
+    my $self    = shift;
+    my $json    = shift;
+    my $target  = shift;
+    my $env     = $self->env;
+    my $type    = lc((split(/::/,ref($self)))[-1]);
+    my @permittables = (qw(alertgroup alert checklist entry event 
+                          file guide incident intel signature));
+
+    if ( grep {/$type/} @permittables ) {
+
+        my $defgroups;
+        if (defined $target) {
+            $defgroups = $self->get_default_permissions($target->{target_type}, $target->{target_id});
+        }
+        else {
+            $defgroups = $env->default_groups;
+        }
+
+        my $read_groups = $json->{groups}->{read} // $defgroups->{read};
+        my $modify_groups = $json->{groups}->{modify} // $defgroups->{modify};
+
+        $read_groups = $self->lc_array($read_groups);
+        $modify_groups = $self->lc_array($modify_groups);
+
+        $json->{groups} = {
+            read    => $read_groups,
+            modify  => $modify_groups,
+        };
+    }
+}
+
+
 1;

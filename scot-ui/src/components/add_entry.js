@@ -454,6 +454,8 @@ export default class AddEntryModal extends React.Component {
               init={{
                 auto_focus: this.state.tinyID,
                 selector: "textarea",
+                browser_spellcheck : true,
+                contextmenu: false,
                 plugins:
                   "advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textpattern imagetools",
                 table_clone_elements:
@@ -470,7 +472,7 @@ export default class AddEntryModal extends React.Component {
                 remove_script_host: false,
                 link_assume_external_targets: true,
                 toolbar1:
-                  "full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime | customBlockquote",
+                  "full screen  | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime | customBlockquote",
                 content_css: "/css/entryeditor.css",
                 height: 250,
                 verify_html: false,
