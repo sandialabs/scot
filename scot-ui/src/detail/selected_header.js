@@ -946,7 +946,6 @@ export default class SelectedHeader extends React.Component {
                   entryToggle={this.entryToggle}
                   updated={this.updated}
                   entryData={this.state.entryData}
-                  entityData={this.state.entityData}
                   headerData={this.state.headerData}
                   showEntryData={this.state.showEntryData}
                   showEntityData={this.state.showEntityData}
