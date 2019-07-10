@@ -21,6 +21,7 @@ Scot::Model
 extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
+    Scot::Role::Data;
     Scot::Role::Permission
     Scot::Role::Target
     Scot::Role::Times
@@ -31,6 +32,7 @@ with    qw(
 =head1 Consumed Roles
 
     Meerkat::Role::Document
+    Scot::Role::Data;
     Scot::Role::Permission
     Scot::Role::Target
     Scot::Role::Times

@@ -12,27 +12,22 @@ use Data::Dumper;
 
 
 my $config_file = $ENV{'scot_app_esquery_config_file'} // 
-                    '/opt/scot/etc/esquery.cfg.pl';
+                    '/opt/scot/etc/scot.cfg.pl';
 
 my $env = Scot::Env->new(
     config_file => $config_file,
 );
 
+my $qstring = "S-1-5-86-1544737700-199408000-2549878335-3519669259-381336952";
+
 my $query   = {
     query   => {
-        filtered    => {
-            filter      => {
-                or          => [
-                    { term => { _type => { value => "alert" } } },
-                    { term => { _type => { value => "entry" } } },
-                ]
-            },
-            query => {
-                query_string    => {
-                    query   => $qstring
-                }
-            }
+        match   => {
+            body_plain    => $qstring,
         }
-    },
-    highlight   => {
-        require_field_match => \0,
+    }
+};
+
+my $json = $env->es->search("scot", ['entry','alert'], $query);
+
+say Dumper($json);
