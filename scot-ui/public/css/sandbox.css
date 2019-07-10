@@ -222,7 +222,7 @@
   }
   .alertTableHorizontal > div {
       -webkit-print-color-adjust: exact !important;
-      display: table-row !important; 
+      display: table-row !important;
       border-bottom: 1px solid #333 !important;
   }
 
@@ -267,5 +267,5 @@
       -webkit-print-color-adjust: exact !important;
       background-color: rgba(0,0,0,0.05) !important;
   }
-  
+
 }

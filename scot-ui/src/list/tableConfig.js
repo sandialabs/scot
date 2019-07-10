@@ -631,8 +631,9 @@ class FlairObject extends React.Component {
     const { value } = this.props;
 
     return (
+
       <div
-        // style={{ overflow: "auto", marginBottom: 5, marginTop: 15 }}
+        style={{ wordWrap: 'break-word' }}
         className="alertTableHorizontal"
         dangerouslySetInnerHTML={{ __html: value }}
       />
@@ -651,19 +652,29 @@ export const getColumnWidth = (data, accessor, headerText) => {
       let newtext = row[headerText];
       var canvas = document.createElement("canvas");
       var ctx = canvas.getContext("2d");
+      let re = new RegExp("^<svg\\b[^>]*>(.*?)<\\/svg>$");
       if (newtext !== undefined) {
-        if (newtext.includes("entity")) {
-          magicLength = 75;
-          newtext = newtext.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "");
+        if (re.test(newtext)){
+          return 300
+        } else{
+          if (newtext.includes("entity")) {
+            magicLength = 75;
+            newtext = newtext.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "");
+          }
+          var width = ctx.measureText(newtext).width;
+          return width;
         }
-        var width = ctx.measureText(newtext).width;
-        return width;
       }
     }),
     headerText.length
   );
 
-  return Math.min(maxWidth, cellLength + magicLength);
+  let re = new RegExp("^<svg\\b[^>]*>(.*?)<\\/svg>$")
+  if (headerText === 'Entries') {
+    return 70
+  }  else{
+    return Math.min(maxWidth, cellLength + magicLength);
+  }
 };
 
 class PromotionButton extends React.Component {
