@@ -54,9 +54,16 @@ COPY bin/ /opt/scot/bin/
 
 #install geoip 
 
-RUN mkdir mkdir /usr/local/share/GeoIP/ && \
-    touch /usr/local/share/GeoIP/GeoLiteCity.dat  
+RUN cd /usr/share/GeoIP/ && \ 
+    curl -k -s -S https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz | tar -xz && mv GeoLite2-City_*/GeoLite2-City.mmdb ./GeoIP2-City.mmdb && \ 
+    curl -k -s -S https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz | tar -xz && mv GeoLite2-Country_*/GeoLite2-Country.mmdb ./GeoIP2-Country.mmdb && \ 
+    curl -k -s -S https://geolite.maxmind.com/download/geoip/database/GeoLite2-ASN.tar.gz | tar -xz && mv GeoLite2-ASN_*/GeoLite2-ASN.mmdb ./GeoIP2-ISP.mmdb && \ 
+    rm -rf Geo*.tar.gz  
+    
+#install mozilla stuff
 
+RUN mkdir /opt/scot/etc/ && \ 
+    bash /opt/scot/bin/download_public_suffix.sh
 
 
 
