@@ -683,6 +683,16 @@ class PromotionButton extends React.Component {
     };
   }
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.row.value !== this.props.row.value) {
+      this.getPromotionInfo(this.props.row.original.id).then(element => {
+        if (element) {
+          this.setState({ element });
+        }
+      });
+    }
+  }
+
   componentDidMount() {
     this.getPromotionInfo(this.props.row.original.id).then(element => {
       if (element) {
