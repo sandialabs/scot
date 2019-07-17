@@ -1,9 +1,9 @@
 import React from "react";
 import $ from "jquery";
 import * as SessionStorage from "../utils/session_storage";
-import { Editor } from '@tinymce/tinymce-react';
-import Conflict from './conflict'
-import Dialog from '@material-ui/core/Dialog';
+import { Editor } from "@tinymce/tinymce-react";
+import Conflict from "./conflict";
+import Dialog from "@material-ui/core/Dialog";
 
 let Button = require("react-bootstrap/lib/Button.js");
 let Prompt = require("react-router-dom").Prompt;
@@ -67,7 +67,7 @@ export default class AddEntryModal extends React.Component {
       $.ajax({
         type: "GET",
         url: "/scot/api/v2/entry/" + this.props.id,
-        success: function (response) {
+        success: function(response) {
           this.setState({
             content: response.body,
             asyncContentLoaded: true,
@@ -75,7 +75,7 @@ export default class AddEntryModal extends React.Component {
           });
           this.forceUpdate();
         }.bind(this),
-        error: function (data) {
+        error: function(data) {
           this.props.errorToggle(
             "Error getting original data from source. Copy/Paste original",
             data
@@ -92,7 +92,7 @@ export default class AddEntryModal extends React.Component {
     if ($("#not_saved_entry_" + this.state.key).position()) {
       $(".entry-wrapper").scrollTop(
         $(".entry-wrapper").scrollTop() +
-        $("#not_saved_entry_" + this.state.key).position().top
+          $("#not_saved_entry_" + this.state.key).position().top
       );
     }
   };
@@ -125,10 +125,10 @@ export default class AddEntryModal extends React.Component {
         $("#tiny_" + this.state.key + "_ifr")
           .contents()
           .find("#tinymce")
-          .each(function (x, y) {
+          .each(function(x, y) {
             $(y)
               .find("img")
-              .each(function (key, value) {
+              .each(function(key, value) {
                 if ($(value)[0].src.startsWith("blob")) {
                   //Checking to see if it's a locally copied file
                   let canvas = document.createElement("canvas");
@@ -159,11 +159,11 @@ export default class AddEntryModal extends React.Component {
           data: data,
           contentType: "application/json; charset=UTF-8",
           dataType: "json",
-          success: function (response) {
+          success: function(response) {
             this.setState({ leaveCatch: false });
             this.props.addedentry();
           }.bind(this),
-          error: function (response) {
+          error: function(response) {
             this.props.errorToggle("Failed to add entry.", response);
           }.bind(this)
         });
@@ -171,15 +171,18 @@ export default class AddEntryModal extends React.Component {
         $.ajax({
           type: "GET",
           url: "/scot/api/v2/entry/" + this.props.id,
-          success: function (response) {
+          success: function(response) {
             if (this.state.recentlyUpdated !== response.updated) {
               this.forEdit(false);
-              this.setState({ showConflict: true, remoteconflict: response.body })
+              this.setState({
+                showConflict: true,
+                remoteconflict: response.body
+              });
             } else {
               this.forEdit(true);
             }
           }.bind(this),
-          error: function (data) {
+          error: function(data) {
             this.props.errorToggle("failed to get data for edit", data);
           }.bind(this)
         });
@@ -187,10 +190,10 @@ export default class AddEntryModal extends React.Component {
         $("#tiny_" + this.state.key + "_ifr")
           .contents()
           .find("#tinymce")
-          .each(function (x, y) {
+          .each(function(x, y) {
             $(y)
               .find("img")
-              .each(function (key, value) {
+              .each(function(key, value) {
                 if ($(value)[0].src.startsWith("blob")) {
                   //Checking if it's a locally copied file
                   let canvas = document.createElement("canvas");
@@ -212,7 +215,7 @@ export default class AddEntryModal extends React.Component {
             .html(),
           target_id: Number(this.props.targetid),
           target_type: "alert",
-          tlp: 'unset',
+          tlp: "unset",
           parent: 0
         });
         $.ajax({
@@ -221,11 +224,12 @@ export default class AddEntryModal extends React.Component {
           data: data,
           contentType: "application/json; charset=UTF-8",
           dataType: "json",
-          success: function (response) {
+          success: function(response) {
             this.setState({ leaveCatch: false });
             this.props.addedentry();
+            this.props.toggleVisibility();
           }.bind(this),
-          error: function (response) {
+          error: function(response) {
             this.props.errorToggle("Failed to add entry.", response);
           }.bind(this)
         });
@@ -233,10 +237,10 @@ export default class AddEntryModal extends React.Component {
         $("#tiny_" + this.state.key + "_ifr")
           .contents()
           .find("#tinymce")
-          .each(function (x, y) {
+          .each(function(x, y) {
             $(y)
               .find("img")
-              .each(function (key, value) {
+              .each(function(key, value) {
                 if ($(value)[0].src.startsWith("blob")) {
                   //Checking if its a locally copied file
                   let canvas = document.createElement("canvas");
@@ -259,7 +263,7 @@ export default class AddEntryModal extends React.Component {
             .html(),
           target_id: Number(this.props.targetid),
           target_type: this.props.type,
-          tlp: 'unset',
+          tlp: "unset"
         };
         $.ajax({
           type: "post",
@@ -267,11 +271,11 @@ export default class AddEntryModal extends React.Component {
           data: JSON.stringify(data),
           contentType: "application/json; charset=UTF-8",
           dataType: "json",
-          success: function (response) {
+          success: function(response) {
             this.setState({ leaveCatch: false });
             this.props.addedentry();
           }.bind(this),
-          error: function (response) {
+          error: function(response) {
             this.props.errorToggle("Failed to add entry.", response);
           }.bind(this)
         });
@@ -285,10 +289,10 @@ export default class AddEntryModal extends React.Component {
       $("#tiny_" + this.state.key + "_ifr")
         .contents()
         .find("#tinymce")
-        .each(function (x, y) {
+        .each(function(x, y) {
           $(y)
             .find("img")
-            .each(function (key, value) {
+            .each(function(key, value) {
               if ($(value)[0].src.startsWith("blob")) {
                 //Checking to see if it's a locally copied file
                 let canvas = document.createElement("canvas");
@@ -317,11 +321,11 @@ export default class AddEntryModal extends React.Component {
         data: data,
         contentType: "application/json; charset=UTF-8",
         dataType: "json",
-        success: function () {
+        success: function() {
           this.setState({ leaveCatch: false });
           this.props.exportResponse("success");
         }.bind(this),
-        error: function (response) {
+        error: function(response) {
           this.props.errorToggle(
             "Failed to export " + this.props.type,
             response
@@ -343,10 +347,10 @@ export default class AddEntryModal extends React.Component {
       $("#tiny_" + this.state.key + "_ifr")
         .contents()
         .find("#tinymce")
-        .each(function (x, y) {
+        .each(function(x, y) {
           $(y)
             .find("img")
-            .each(function (key, value) {
+            .each(function(key, value) {
               if ($(value)[0].src.startsWith("blob")) {
                 //Checking if its a lcoally copied file
                 let canvas = document.createElement("canvas");
@@ -377,30 +381,45 @@ export default class AddEntryModal extends React.Component {
         data: JSON.stringify(data),
         contentType: "application/json; charset=UTF-8",
         dataType: "json",
-        success: function (response) {
+        success: function(response) {
           this.setState({ leaveCatch: false });
           this.props.addedentry();
         }.bind(this),
-        error: function (response) {
+        error: function(response) {
           this.props.errorToggle("Failed to edit entry.", response);
         }.bind(this)
       });
     }
   };
 
-  handleEditorChange = (e) => {
+  handleEditorChange = e => {
     this.setState({ localcontent: e });
-  }
+  };
 
   render = () => {
     let not_saved_entry_id = "not_saved_entry_" + this.state.key;
     return (
       <div id={not_saved_entry_id} className={"not_saved_entry"}>
-        {this.state.showConflict ?
-          <Dialog fullWidth={true} maxWidth={'md'} open={this.state.showConflict} onClose={this.handleClose} aria-labelledby="simple-dialog-title" >
-            <Conflict targetid={this.props.targetid} type={this.props.type} parent={this.props.parent} addedEntry={this.props.addedentry} id={this.props.id} localconflict={this.state.localcontent} handleClose={this.handleClose} remoteconflict={this.state.remoteconflict} />
-          </Dialog> : null
-        }
+        {this.state.showConflict ? (
+          <Dialog
+            fullWidth={true}
+            maxWidth={"md"}
+            open={this.state.showConflict}
+            onClose={this.handleClose}
+            aria-labelledby="simple-dialog-title"
+          >
+            <Conflict
+              targetid={this.props.targetid}
+              type={this.props.type}
+              parent={this.props.parent}
+              addedEntry={this.props.addedentry}
+              id={this.props.id}
+              localconflict={this.state.localcontent}
+              handleClose={this.handleClose}
+              remoteconflict={this.state.remoteconflict}
+            />
+          </Dialog>
+        ) : null}
         <div
           className={"row-fluid entry-outer"}
           style={{
@@ -430,14 +449,14 @@ export default class AddEntryModal extends React.Component {
                     Export
                   </Button>
                 ) : (
-                    <Button
-                      bsSize={"xsmall"}
-                      onClick={this.submit}
-                      bsStyle={"success"}
-                    >
-                      Submit
+                  <Button
+                    bsSize={"xsmall"}
+                    onClick={this.submit}
+                    bsStyle={"success"}
+                  >
+                    Submit
                   </Button>
-                  )}
+                )}
                 <Button bsSize={"xsmall"} onClick={this.onCancel}>
                   Cancel
                 </Button>
@@ -449,12 +468,14 @@ export default class AddEntryModal extends React.Component {
               id={this.state.tinyID}
               className={"inputtext"}
               initialValue={this.state.content}
-              plugins={'advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textpattern imagetools'}
+              plugins={
+                "advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textpattern imagetools"
+              }
               onEditorChange={this.handleEditorChange}
               init={{
                 auto_focus: this.state.tinyID,
                 selector: "textarea",
-                browser_spellcheck : true,
+                browser_spellcheck: true,
                 contextmenu: false,
                 plugins:
                   "advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textpattern imagetools",
@@ -462,7 +483,7 @@ export default class AddEntryModal extends React.Component {
                   "strong em b i font h1 h2 h3 h4 h5 h6 p div",
                 paste_retain_style_properties: "all",
                 paste_data_images: true,
-                paste_preprocess: function (plugin, args) {
+                paste_preprocess: function(plugin, args) {
                   function replaceA(string) {
                     return string.replace(/<(\/)?a([^>]*)>/g, "<$1span$2>");
                   }
@@ -476,7 +497,7 @@ export default class AddEntryModal extends React.Component {
                 content_css: "/css/entryeditor.css",
                 height: 250,
                 verify_html: false,
-                setup: function (editor) {
+                setup: function(editor) {
                   function blockquote() {
                     return "<blockquote><p><br></p></blockquote>";
                   }
@@ -496,10 +517,9 @@ export default class AddEntryModal extends React.Component {
                 }
               }}
             />
-
           ) : (
-              <div>Loading Editor...</div>
-            )}
+            <div>Loading Editor...</div>
+          )}
         </div>
         <Prompt
           when={this.state.leaveCatch}
@@ -508,6 +528,4 @@ export default class AddEntryModal extends React.Component {
       </div>
     );
   };
-
-
 }

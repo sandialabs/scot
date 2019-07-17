@@ -353,15 +353,18 @@ export default class SelectedHeader extends React.Component {
   };
 
   entryToggle = () => {
+    let entityoffset = { top: 0, left: 0 }; //set to 0 so it appears in a default location.
+    this.flairToolbarToggle(
+        this.props.id,
+        null,
+        "entry",
+        entityoffset,
+        null
+    );
     if (this.state.entryToolbar === false) {
       this.setState({ entryToolbar: true });
     } else {
       this.setState({ entryToolbar: false });
-      //click refresh detail button on screen to refresh data while the tinymce window was open since it held back updates of the DOM
-      //hold off on refresh as the tinymce preventing update is currently commented out
-      /*if ($('#refresh-detail')) {
-                $('#refresh-detail').click();
-            }*/
     }
   };
 
@@ -910,7 +913,7 @@ export default class SelectedHeader extends React.Component {
                     flairToolbarToggle={this.flairToolbarToggle}
                     flairToolbarOff={this.flairToolbarOff}
                     sourceToggle={this.sourceToggle}
-                    guideID={this.state.guideID}
+                    // guideID={this.state.guideID}
                     subjectName={this.state.headerData.subject}
                     fileUploadToggle={this.fileUploadToggle}
                     fileUploadToolbar={this.state.fileUploadToolbar}
