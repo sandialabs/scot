@@ -31,8 +31,7 @@ class TagInput extends Component {
   static propTypes = {
     onChange: PropTypes.func.isRequired,
     type: PropTypes.oneOf(["source", "tag", "userdef"]).isRequired,
-    value: PropTypes.array.isRequired,
-    suggestions: PropTypes.array.isRequired
+    value: PropTypes.array.isRequired
   };
 
   handleDelete(i) {

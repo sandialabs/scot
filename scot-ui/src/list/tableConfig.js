@@ -11,9 +11,7 @@ import * as constants from "../utils/constants";
 import LoadingContainer from "./LoadingContainer";
 import TagInput from "../components/TagInput";
 import Button2 from "@material-ui/core/Button";
-import axios from "axios";
-
-
+import { get_data } from "../utils/XHR";
 
 const navigateTo = id => {
   window.open("#/event/" + id);
@@ -44,54 +42,54 @@ const customFilters = {
     filter,
     onChange
   }) => (
-      <OverlayTrigger
-        trigger="focus"
-        placement="bottom"
-        overlay={
-          <Popover id="status_popover" style={{ maxWidth: "400px" }}>
-            <ButtonGroup
-              vertical
-              style={{
-                maxHeight: "50vh",
-                overflowY: "auto",
-                position: "relative"
-              }}
-            >
-              {options.map(option => (
-                <Button
-                  key={option}
-                  onClick={() => onChange(option)}
-                  active={filter && filter.value === option}
-                  style={{
-                    textTransform: "capitalize",
-                    textAlign: align ? align : null
-                  }}
-                >
-                  {option}
-                </Button>
-              ))}
-            </ButtonGroup>
-            {filter && (
+    <OverlayTrigger
+      trigger="focus"
+      placement="bottom"
+      overlay={
+        <Popover id="status_popover" style={{ maxWidth: "400px" }}>
+          <ButtonGroup
+            vertical
+            style={{
+              maxHeight: "50vh",
+              overflowY: "auto",
+              position: "relative"
+            }}
+          >
+            {options.map(option => (
               <Button
-                block
-                onClick={() => onChange("")}
-                bsStyle="primary"
-                style={{ marginTop: "3px" }}
+                key={option}
+                onClick={() => onChange(option)}
+                active={filter && filter.value === option}
+                style={{
+                  textTransform: "capitalize",
+                  textAlign: align ? align : null
+                }}
               >
-                Clear
+                {option}
+              </Button>
+            ))}
+          </ButtonGroup>
+          {filter && (
+            <Button
+              block
+              onClick={() => onChange("")}
+              bsStyle="primary"
+              style={{ marginTop: "3px" }}
+            >
+              Clear
             </Button>
-            )}
-          </Popover>
-        }
-      >
-        <input
-          type="text"
-          value={filter ? filter.value : ""}
-          readOnly
-          style={{ width: "100%", cursor: "pointer" }}
-        />
-      </OverlayTrigger>
-    ),
+          )}
+        </Popover>
+      }
+    >
+      <input
+        type="text"
+        value={filter ? filter.value : ""}
+        readOnly
+        style={{ width: "100%", cursor: "pointer" }}
+      />
+    </OverlayTrigger>
+  ),
   dateRange: ({ filter, onChange }) => (
     <OverlayTrigger
       trigger="click"
@@ -177,7 +175,7 @@ export const customCellRenderers = {
   },
 
   alertStatusAlerts: row => {
-    return <PromotionButton row={row}></PromotionButton>
+    return <PromotionButton row={row} />;
   },
   flairCell: row => {
     return <FlairObject value={row.value} />;
@@ -631,9 +629,8 @@ class FlairObject extends React.Component {
     const { value } = this.props;
 
     return (
-
       <div
-        style={{ wordWrap: 'break-word' }}
+        style={{ wordWrap: "break-word" }}
         className="alertTableHorizontal"
         dangerouslySetInnerHTML={{ __html: value }}
       />
@@ -648,15 +645,15 @@ export const getColumnWidth = (data, accessor, headerText) => {
   const maxWidth = 500;
   let magicLength = 0;
   const cellLength = Math.max(
-    ...data.map(function (row) {
+    ...data.map(function(row) {
       let newtext = row[headerText];
       var canvas = document.createElement("canvas");
       var ctx = canvas.getContext("2d");
       let re = new RegExp("^<svg\\b[^>]*>(.*?)<\\/svg>$");
       if (newtext !== undefined) {
-        if (re.test(newtext)){
-          return 300
-        } else{
+        if (re.test(newtext)) {
+          return 300;
+        } else {
           if (newtext.includes("entity")) {
             magicLength = 75;
             newtext = newtext.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "");
@@ -669,10 +666,10 @@ export const getColumnWidth = (data, accessor, headerText) => {
     headerText.length
   );
 
-  let re = new RegExp("^<svg\\b[^>]*>(.*?)<\\/svg>$")
-  if (headerText === 'Entries') {
-    return 70
-  }  else{
+  let re = new RegExp("^<svg\\b[^>]*>(.*?)<\\/svg>$");
+  if (headerText === "Entries") {
+    return 70;
+  } else {
     return Math.min(maxWidth, cellLength + magicLength);
   }
 };
@@ -683,7 +680,7 @@ class PromotionButton extends React.Component {
     this.state = {
       element: null,
       loading: true
-    }
+    };
   }
 
   componentDidMount() {
@@ -695,7 +692,7 @@ class PromotionButton extends React.Component {
   }
 
   getPromotionInfo = id => {
-    let json = axios.get(`/scot/api/v2/alert/${id}/event`);
+    let json = get_data(`/scot/api/v2/alert/${id}/event`, {});
     return json;
   };
 
@@ -705,12 +702,13 @@ class PromotionButton extends React.Component {
     } else if (this.props.row.value === "open") {
       return <p style={{ color: "green" }}>{this.props.row.value}</p>;
     } else if (this.props.row.value === "promoted") {
-
       if (this.state.element) {
         return (
           <Button2
             variant="contained"
-            onMouseDown={() => navigateTo(this.state.element.data.records[0].id)}
+            onMouseDown={() =>
+              navigateTo(this.state.element.data.records[0].id)
+            }
             style={{ backgroundColor: "orange", color: "white" }}
           >
             {this.props.row.value}

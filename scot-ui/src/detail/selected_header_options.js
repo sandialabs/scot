@@ -19,7 +19,7 @@ export default class SelectedHeaderOptions extends React.Component {
     let newGlobalFlairState = !this.state.globalFlairState;
     this.props.toggleFlair();
     $("iframe").each(
-      function (index, ifr) {
+      function(index, ifr) {
         if (ifr.contentDocument != null) {
           let ifrContents = $(ifr).contents();
           let off = ifrContents.find(".entity-off");
@@ -27,14 +27,14 @@ export default class SelectedHeaderOptions extends React.Component {
           if (this.state.globalFlairState === false) {
             ifrContents.find(".extras").show();
             ifrContents.find(".flair-off").hide();
-            off.each(function (index, entity) {
+            off.each(function(index, entity) {
               $(entity).addClass("entity");
               $(entity).removeClass("entity-off");
             });
           } else {
             ifrContents.find(".extras").hide();
             ifrContents.find(".flair-off").show();
-            on.each(function (index, entity) {
+            on.each(function(index, entity) {
               $(entity).addClass("entity-off");
               $(entity).removeClass("entity");
             });
@@ -47,8 +47,8 @@ export default class SelectedHeaderOptions extends React.Component {
 
   //All methods containing alert are only used by selected_entry when viewing an alertgroupand interacting with an alert.
   alertOpenSelected = () => {
-    let array = this.props.alertsSelected.map(function (id) {
-      return { id: id, status: "open" }
+    let array = this.props.alertsSelected.map(function(id) {
+      return { id: id, status: "open" };
     });
     let data = JSON.stringify({ alerts: array });
 
@@ -59,11 +59,11 @@ export default class SelectedHeaderOptions extends React.Component {
       url: "/scot/api/v2/" + this.props.type + "/" + this.props.id,
       data: data,
       contentType: "application/json; charset=UTF-8",
-      success: function () {
+      success: function() {
         console.log("success");
         this.props.ToggleProcessingMessage(false);
       }.bind(this),
-      error: function (data) {
+      error: function(data) {
         this.props.errorToggle("failed to open selected alerts", data);
         this.props.ToggleProcessingMessage(false);
       }.bind(this)
@@ -72,8 +72,8 @@ export default class SelectedHeaderOptions extends React.Component {
 
   alertCloseSelected = () => {
     let time = Math.round(new Date().getTime() / 1000);
-    let array = this.props.alertsSelected.map(function (id) {
-      return { id: id, status: "closed", closed: time }
+    let array = this.props.alertsSelected.map(function(id) {
+      return { id: id, status: "closed", closed: time };
     });
     let data = JSON.stringify({ alerts: array });
 
@@ -84,11 +84,11 @@ export default class SelectedHeaderOptions extends React.Component {
       url: "/scot/api/v2/" + this.props.type + "/" + this.props.id,
       data: data,
       contentType: "application/json; charset=UTF-8",
-      success: function () {
+      success: function() {
         console.log("success");
         this.props.ToggleProcessingMessage(false);
       }.bind(this),
-      error: function (data) {
+      error: function(data) {
         this.props.errorToggle("failed to close selected alerts", data);
         this.props.ToggleProcessingMessage(false);
       }.bind(this)
@@ -107,7 +107,7 @@ export default class SelectedHeaderOptions extends React.Component {
       url: "/scot/api/v2/alert/" + array[0],
       data: data,
       contentType: "application/json; charset=UTF-8",
-      success: function (response) {
+      success: function(response) {
         //With the entry number, promote the others into the existing event
         let promoteTo = {
           promote: response.pid
@@ -123,13 +123,13 @@ export default class SelectedHeaderOptions extends React.Component {
             url: "/scot/api/v2/alert/" + array[i],
             data: JSON.stringify(promoteTo),
             contentType: "application/json; charset=UTF-8",
-            success: function () {
+            success: function() {
               console.log("success");
               if (i + 1 == array.length) {
                 this.props.ToggleProcessingMessage(false);
               }
             }.bind(this),
-            error: function (data) {
+            error: function(data) {
               this.props.errorToggle(
                 "failed to promoted selected alerts",
                 data
@@ -138,11 +138,11 @@ export default class SelectedHeaderOptions extends React.Component {
           });
         }
       }.bind(this),
-      error: function (data) {
+      error: function(data) {
         this.props.errorToggle("failed to promoted selected alerts", data);
       }.bind(this)
     });
-  }
+  };
 
   alertSelectExisting = () => {
     let text = prompt("Please Enter Event ID to promote into");
@@ -159,12 +159,12 @@ export default class SelectedHeaderOptions extends React.Component {
             url: "/scot/api/v2/alert/" + array[i],
             data: JSON.stringify(data),
             contentType: "application/json; charset=UTF-8",
-            success: function () {
+            success: function() {
               if ($.isNumeric(text)) {
                 window.open("#/event/" + text);
               }
             },
-            error: function (data) {
+            error: function(data) {
               this.props.errorToggle(
                 "failed to promote into existing event",
                 data
@@ -183,16 +183,16 @@ export default class SelectedHeaderOptions extends React.Component {
     let keys = [];
     $(".alertTableHorizontal")
       .find("th")
-      .each(function (key, value) {
+      .each(function(key, value) {
         let obj = $(value).text();
         keys.push(obj);
       });
     let csv = "";
-    $("tr.selected").each(function (x, y) {
+    $("tr.selected").each(function(x, y) {
       let storearray = [];
       $(y)
         .find("td")
-        .each(function (x, y) {
+        .each(function(x, y) {
           let copy = $(y).clone(false);
           $(copy)
             .find(".extras")
@@ -235,7 +235,7 @@ export default class SelectedHeaderOptions extends React.Component {
     //   }
     // }
     let array = [];
-    $("tr.selected").each(function (index, tr) {
+    $("tr.selected").each(function(index, tr) {
       let id = $(tr).attr("id");
       array.push(id);
     });
@@ -243,10 +243,10 @@ export default class SelectedHeaderOptions extends React.Component {
       $.ajax({
         type: "delete",
         url: "/scot/api/v2/alert/" + array[i],
-        success: function () {
+        success: function() {
           console.log("success");
         },
-        error: function (data) {
+        error: function(data) {
           this.props.errorToggle("failed to delete selected alerts", data);
         }.bind(this)
       });
@@ -256,25 +256,25 @@ export default class SelectedHeaderOptions extends React.Component {
   PrintPrepare = () => {
     $("iframe")
       .contents()
-      .each(function (x, y) {
+      .each(function(x, y) {
         $(y)
           .find("blockquote")
-          .each(function (index, block) {
+          .each(function(index, block) {
             $(block).css({ "max-height": "5000px" });
           });
         $(y)
           .find("pre")
-          .each(function (index, pre) {
+          .each(function(index, pre) {
             $(pre).css({ "max-height": "5000px", "word-wrap": "break-word" });
           });
       });
     setTimeout(
-      function () {
+      function() {
         this.forceUpdate();
       }.bind(this),
       500
     );
-    setTimeout(function () {
+    setTimeout(function() {
       $("#print-button").click();
     }, 1000);
   };
@@ -287,7 +287,7 @@ export default class SelectedHeaderOptions extends React.Component {
     //open, close SELECTED alerts
     if (this.props.type === "alertgroup" || this.props.type === "alert") {
       $("#main-detail-container").keydown(
-        function (event) {
+        function(event) {
           if ($("input").is(":focus")) {
             return;
           }
@@ -307,7 +307,7 @@ export default class SelectedHeaderOptions extends React.Component {
       );
     }
     $("#main-detail-container").keydown(
-      function (event) {
+      function(event) {
         if ($("input").is(":focus")) {
           return;
         }
@@ -357,10 +357,10 @@ export default class SelectedHeaderOptions extends React.Component {
       url: "/scot/api/v2/guide",
       data: data,
       contentType: "application/json; charset=UTF-8",
-      success: function (response) {
+      success: function(response) {
         window.open("/#/guide/" + response.id);
       },
-      error: function (data) {
+      error: function(data) {
         this.props.errorToggle("failed to create a new guide", data);
       }.bind(this)
     });
@@ -371,10 +371,10 @@ export default class SelectedHeaderOptions extends React.Component {
       url: "/scot/api/v2/" + this.props.type + "/" + this.props.id,
       data: JSON.stringify({ parsed: 0 }),
       contentType: "application/json; charset=UTF-8",
-      success: function () {
+      success: function() {
         console.log("reparsing started");
       },
-      error: function (data) {
+      error: function(data) {
         this.props.errorToggle("failed to reparse flair", data);
       }.bind(this)
     });
@@ -390,11 +390,11 @@ export default class SelectedHeaderOptions extends React.Component {
         status: "disabled"
       }),
       contentType: "application/json; charset=UTF-8",
-      success: function (response) {
+      success: function(response) {
         const url = "/#/signature/" + response.id;
         window.open(url, "_blank");
       },
-      error: function (data) {
+      error: function(data) {
         this.props.errorToggle("failed to create a signature", data);
       }.bind(this)
     });
@@ -593,15 +593,16 @@ export default class SelectedHeaderOptions extends React.Component {
             <Button eventkey="2" onClick={this.reparseFlair} bsSize="xsmall">
               <i className="fa fa-refresh" aria-hidden="true" /> Reparse Flair
             </Button>
-            {this.props.guideID == null ? null : this.props.guideID.length !== 0 ? (
+            {this.props.guideID == null ? null : this.props.guideID.length !==
+              0 ? (
               <Button eventkey="3" onClick={this.guideToggle} bsSize="xsmall">
                 <img src="/images/guide.png" alt="" /> Guide
               </Button>
             ) : (
-                <Button eventkey="3" onClick={this.createGuide} bsSize="xsmall">
-                  <img src="/images/guide.png" alt="" /> Create Guide
+              <Button eventkey="3" onClick={this.createGuide} bsSize="xsmall">
+                <img src="/images/guide.png" alt="" /> Create Guide
               </Button>
-              )}
+            )}
             {this.props.headerData == null ? null : (
               <Button eventkey="4" onClick={this.sourceToggle} bsSize="xsmall">
                 <img src="/images/code.png" alt="" /> View Source
@@ -675,13 +676,6 @@ export default class SelectedHeaderOptions extends React.Component {
             >
               <img src="/images/megaphone_plus.png" alt="" /> Add Selected to{" "}
               <b>Existing Event</b>
-            </Button>
-            <Button
-              eventkey="12"
-              onClick={this.props.entryToggle}
-              bsSize="xsmall"
-            >
-              <i className="fa fa-plus-circle" aria-hidden="true" /> Add Entry
             </Button>
             <Button
               eventkey="13"
@@ -769,14 +763,14 @@ export default class SelectedHeaderOptions extends React.Component {
                     <img src="/images/guide.png" alt="" /> Guide
                   </Button>
                 ) : (
-                    <Button
-                      eventkey="3"
-                      onClick={this.createGuide}
-                      bsSize="xsmall"
-                    >
-                      <img src="/images/guide.png" alt="" /> Create Guide
+                  <Button
+                    eventkey="3"
+                    onClick={this.createGuide}
+                    bsSize="xsmall"
+                  >
+                    <img src="/images/guide.png" alt="" /> Create Guide
                   </Button>
-                  )}
+                )}
               </span>
             )}
             {this.props.headerData == null ? null : (

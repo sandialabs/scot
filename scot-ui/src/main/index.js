@@ -22,8 +22,6 @@ import LinkContainer from "react-router-bootstrap/lib/LinkContainer.js";
 import Admin from '../components/admin/'
 import { Amq } from '../utils/activemq'
 
-// window.jQuery = window.$ = require("jquery/dist/jquery");
-
 export default class App extends React.Component {
   constructor(props) {
     super(props);
