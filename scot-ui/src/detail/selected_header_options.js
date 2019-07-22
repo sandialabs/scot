@@ -584,7 +584,7 @@ export default class SelectedHeaderOptions extends React.Component {
         </div>
       );
     } else {
-      if (this.props.aIndex !== undefined) {
+      if (this.props.alertsSelected.length > 0) {
         return (
           <div className="entry-header second-menu detail-buttons">
             <Button eventkey="1" onClick={this.toggleFlair} bsSize="xsmall">
@@ -624,6 +624,7 @@ export default class SelectedHeaderOptions extends React.Component {
                 <img src="/images/clock.png" alt="" /> Viewed By History
               </Button>
             ) : null}
+
             <Button
               eventkey="7"
               onClick={this.props.changeHistoryToggle}
@@ -661,14 +662,6 @@ export default class SelectedHeaderOptions extends React.Component {
             >
               <img src="/images/megaphone.png" alt="" /> Promote Selected
             </Button>
-            {/* <Button
-              eventkey="10"
-              onClick={this.alertPromoteSelected}
-              bsSize="xsmall"
-              bsStyle="warning"
-            >
-              <img src="/images/megaphone.png" alt="" /> Promote Selected
-            </Button> */}
             <Button
               eventkey="11"
               onClick={this.alertSelectExisting}
@@ -676,13 +669,6 @@ export default class SelectedHeaderOptions extends React.Component {
             >
               <img src="/images/megaphone_plus.png" alt="" /> Add Selected to{" "}
               <b>Existing Event</b>
-            </Button>
-            <Button
-              eventkey="13"
-              onClick={this.props.fileUploadToggle}
-              bsSize="xsmall"
-            >
-              <i className="fa fa-upload" aria-hidden="true" /> Upload File
             </Button>
             <Button eventkey="14" onClick={this.alertExportCSV} bsSize="xsmall">
               <img src="/images/csv_text.png" alt="" /> Export to CSV

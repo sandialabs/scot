@@ -634,16 +634,16 @@ export default class SelectedHeader extends React.Component {
 
   handleMultiSelection = (rowid) => {
     if (!this.checkSelection(rowid)) {
-      let temparray = [...this.state.alertsSelected, rowid]
+      let temparray = [...this.state.alertsSelected, rowid];
       this.setState({
         alertsSelected: temparray
-      })
+      });
     } else {
       this.setState({
-        selected: this.state.alertsSelected.filter(function (id) {
-          return id !== rowid
+        selected: this.state.alertsSelected.filter(function(id) {
+          return id !== rowid;
         })
-      })
+      });
     }
   }
 
