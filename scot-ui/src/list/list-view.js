@@ -4,15 +4,14 @@ import { buildTypeColumns } from "./tableConfig";
 import $ from "jquery";
 import * as Cookies from "../utils/cookies";
 import listColumnsJSON from "../utils/list-columns";
-import SelectedContainer from '../detail/selected_container';
+import SelectedContainer from "../detail/selected_container";
 import Button from "react-bootstrap/lib/Button";
-import LoadingContainer from "./LoadingContainer/index"
-import EntityCreateModal from "../modal/entity_create"
+import LoadingContainer from "./LoadingContainer/index";
+import EntityCreateModal from "../modal/entity_create";
 let datasource;
 let listStartY;
 let listStartHeight;
 let listQuery;
-
 
 export default class ListView extends React.Component {
   constructor(props) {
@@ -151,10 +150,10 @@ export default class ListView extends React.Component {
     $.ajax({
       type: "get",
       url: "/scot/api/v2/form",
-      success: function (data) {
+      success: function(data) {
         this.setState({ form: data });
       }.bind(this),
-      error: function (data) {
+      error: function(data) {
         this.props.errorToggle("Failed to get form structure", data);
       }.bind(this)
     });
@@ -198,7 +197,7 @@ export default class ListView extends React.Component {
     //add sort to the data object
     if (sortBy !== undefined || sortBy === null) {
       let sortObj = {};
-      $.each(sortBy, function (key, value) {
+      $.each(sortBy, function(key, value) {
         let sortInt = -1;
         if (!value.desc) {
           sortInt = 1;
@@ -210,7 +209,7 @@ export default class ListView extends React.Component {
 
     //add filter to the data object
     if (sortBy !== undefined || sortBy === null) {
-      $.each(filterBy, function (key, value) {
+      $.each(filterBy, function(key, value) {
         if (value.id === "source" || value.id === "tag") {
           let stringArr = [];
           for (let each of value.value) {
@@ -233,15 +232,15 @@ export default class ListView extends React.Component {
       url: url,
       data: data,
       traditional: true,
-      success: function (response) {
+      success: function(response) {
         datasource = response;
         $.each(
           datasource.records,
-          function (key, value) {
+          function(key, value) {
             finalarray[key] = {};
             $.each(
               value,
-              function (num, item) {
+              function(num, item) {
                 if (num === "sources" || num === "source") {
                   if (item !== undefined) {
                     let sourcearr = item.join(", ");
@@ -290,7 +289,7 @@ export default class ListView extends React.Component {
           this.setState({ showSelectedContainer: true });
         }
       }.bind(this),
-      error: function (data) {
+      error: function(data) {
         if (!data.statusText === "abort") {
           this.props.errorToggle("failed to get list data", data);
         }
@@ -300,7 +299,7 @@ export default class ListView extends React.Component {
     $("#list-view-container").keydown(this.keyNavigate);
 
     $(document.body).keydown(
-      function (e) {
+      function(e) {
         if ($("input").is(":focus")) {
           return;
         }
@@ -320,7 +319,7 @@ export default class ListView extends React.Component {
 
   togglePreventClick = () => {
     this.setState({ preventClick: !this.state.preventClick });
-  }
+  };
 
   keyNavigate = event => {
     if (event.type !== "click") {
@@ -399,11 +398,7 @@ export default class ListView extends React.Component {
       showClearFilter = true;
     }
 
-    /*if ( this.state.manualScrollHeight ) {
-            scrollheight = this.state.manualScrollHeight;
-        }*/
-
-    let columns = buildTypeColumns(this.props.type);
+    let columns = buildTypeColumns(this.props.type, {}, {});
 
     return (
       <div>
@@ -418,41 +413,42 @@ export default class ListView extends React.Component {
                         eventkey="1"
                         onClick={this.props.notificationToggle}
                         bsSize="xsmall"
-                      >Mute Notifications
-                                             </Button>
+                      >
+                        Mute Notifications
+                      </Button>
                     ) : (
-                        <Button
-                          eventkey="2"
-                          onClick={this.props.notificationToggle}
-                          bsSize="xsmall"
-                        >
-                          Turn On Notifications
-                                                </Button>
-                      )}
+                      <Button
+                        eventkey="2"
+                        onClick={this.props.notificationToggle}
+                        bsSize="xsmall"
+                      >
+                        Turn On Notifications
+                      </Button>
+                    )}
                     {this.props.type === "event" ||
-                      this.props.type === "intel" ||
-                      this.props.type === "incident" ||
-                      this.props.type === "signature" ||
-                      this.props.type === "guide" ||
-                      this.props.type === "entity" ? (
-                        <Button
-                          onClick={this.createNewThing}
-                          eventkey="6"
-                          bsSize="xsmall"
-                        >
-                          Create {this.state.typeCapitalized}
-                        </Button>
-                      ) : null}
+                    this.props.type === "intel" ||
+                    this.props.type === "incident" ||
+                    this.props.type === "signature" ||
+                    this.props.type === "guide" ||
+                    this.props.type === "entity" ? (
+                      <Button
+                        onClick={this.createNewThing}
+                        eventkey="6"
+                        bsSize="xsmall"
+                      >
+                        Create {this.state.typeCapitalized}
+                      </Button>
+                    ) : null}
                     <Button
                       eventkey="5"
                       bsSize="xsmall"
                       onClick={this.exportCSV}
                     >
                       Export to CSV
-                                        </Button>
+                    </Button>
                     <Button bsSize="xsmall" onClick={this.toggleView}>
                       Full Screen Toggle (f)
-                                        </Button>
+                    </Button>
                     {showClearFilter ? (
                       <Button
                         onClick={this.clearAll}
@@ -461,7 +457,7 @@ export default class ListView extends React.Component {
                         bsStyle={"info"}
                       >
                         Clear All Filters
-                                        </Button>
+                      </Button>
                     ) : null}
                   </div>
                   <div id="list-view-container" tabIndex="1">
@@ -625,14 +621,14 @@ export default class ListView extends React.Component {
       $.ajax({
         type: "get",
         url: "scot/api/v2/alert/" + id,
-        success: function (response1) {
+        success: function(response1) {
           let newresponse = response1;
           this.setState({
             id: newresponse.alertgroup,
             showSelectedContainer: true
           });
         }.bind(this),
-        error: function (data) {
+        error: function(data) {
           this.props.errorToggle(
             "failed to convert alert id to alertgroup id",
             data
@@ -649,7 +645,7 @@ export default class ListView extends React.Component {
         type: "get",
         url: "scot/api/v2/entry/" + id,
         async: false,
-        success: function (response) {
+        success: function(response) {
           this.selected(
             response.target.type,
             response.target.id,
@@ -657,7 +653,7 @@ export default class ListView extends React.Component {
           );
           //this.setState({id: response.target.id, type: response.target.type, showSelectedContainer:true});
         }.bind(this),
-        error: function (data) {
+        error: function(data) {
           this.props.errorToggle(
             "failed to convert alert id to alertgroup id",
             data
@@ -669,7 +665,7 @@ export default class ListView extends React.Component {
 
   //This is used for the dragging portrait and landscape views
   startdrag = e => {
-    $("iframe").each(function (index, ifr) {
+    $("iframe").each(function(index, ifr) {
       $(ifr).addClass("pointerEventsOff");
     });
 
@@ -680,7 +676,7 @@ export default class ListView extends React.Component {
   };
 
   stopdrag = e => {
-    $("iframe").each(function (index, ifr) {
+    $("iframe").each(function(index, ifr) {
       $(ifr).removeClass("pointerEventsOff");
     });
     document.onmousemove = null;
@@ -849,24 +845,30 @@ export default class ListView extends React.Component {
     //add sort to the data object
     if (sortBy != undefined) {
       let sortObj = {};
-      $.each(sortBy, function (key, value) {
+      $.each(sortBy, function(key, value) {
         let sortInt = -1;
-        if (!value.desc) { sortInt = 1; }
+        if (!value.desc) {
+          sortInt = 1;
+        }
         sortObj[value.id] = sortInt;
       });
-      data['sort'] = JSON.stringify(sortObj);
+      data["sort"] = JSON.stringify(sortObj);
     }
 
     //add filter to the data object
     if (filterBy != undefined) {
-      $.each(filterBy, function (key, value) {
-        if (value.id == 'source' || value.id == 'tag') {
+      $.each(filterBy, function(key, value) {
+        if (value.id == "source" || value.id == "tag") {
           let stringArr = [];
           for (let each of value.value) {
             stringArr.push(each.name);
           }
           data[value.id] = JSON.stringify(stringArr);
-        } else if (value.id == 'created' || value.id == 'updated' || value.id == 'occurred') {
+        } else if (
+          value.id == "created" ||
+          value.id == "updated" ||
+          value.id == "occurred"
+        ) {
           let arr = [];
           arr.push(value.value.start);
           arr.push(value.value.end);
@@ -880,52 +882,64 @@ export default class ListView extends React.Component {
     let newarray = [];
 
     //Update 5/17/18 - removed below check as it was breaking clicking on an alert in alert group, closing alert and then immediately switching to a new alert group would cancel ajax call and majorly lag network traffic
-    if (this.state.loading == true) { listQuery.abort(); }
+    if (this.state.loading == true) {
+      listQuery.abort();
+    }
     listQuery = $.ajax({
-      type: 'GET',
-      url: '/scot/api/v2/' + this.state.type,
+      type: "GET",
+      url: "/scot/api/v2/" + this.state.type,
       data: data,
       traditional: true,
-      success: function (response) {
+      success: function(response) {
         datasource = response;
-        $.each(datasource.records, function (key, value) {
-          newarray[key] = {};
-          $.each(value, function (num, item) {
-            if (num == 'sources' || num == 'source') {
-              if (item != undefined) {
-                let sourcearr = item.join(', ');
-                newarray[key]['source'] = sourcearr;
-              }
+        $.each(
+          datasource.records,
+          function(key, value) {
+            newarray[key] = {};
+            $.each(
+              value,
+              function(num, item) {
+                if (num == "sources" || num == "source") {
+                  if (item != undefined) {
+                    let sourcearr = item.join(", ");
+                    newarray[key]["source"] = sourcearr;
+                  }
+                } else if (num == "tags" || num == "tag") {
+                  if (item != undefined) {
+                    let tagarr = item.join(", ");
+                    newarray[key]["tag"] = tagarr;
+                  }
+                } else {
+                  newarray[key][num] = item;
+                }
+                if (num == "id") {
+                  this.props.createCallback(item, this.reloadactive);
+                  newidsarray.push(item);
+                }
+              }.bind(this)
+            );
+            if (key % 2 == 0) {
+              newarray[key]["classname"] = "table-row roweven";
+            } else {
+              newarray[key]["classname"] = "table-row rowodd";
             }
-            else if (num == 'tags' || num == 'tag') {
-              if (item != undefined) {
-                let tagarr = item.join(', ');
-                newarray[key]['tag'] = tagarr;
-              }
-            }
-            else {
-              newarray[key][num] = item;
-            }
-            if (num == 'id') {
-              this.props.createCallback(item, this.reloadactive);
-              newidsarray.push(item);
-            }
-          }.bind(this));
-          if (key % 2 == 0) {
-            newarray[key]['classname'] = 'table-row roweven';
-          }
-          else {
-            newarray[key]['classname'] = 'table-row rowodd';
-          }
-        }.bind(this));
+          }.bind(this)
+        );
 
         let totalPages = this.getPages(response.totalRecordCount); //get pages for list view
 
-        this.setState({ totalCount: response.totalRecordCount, activepage: { page: pageNumber, limit: pageLimit }, objectarray: newarray, loading: false, idsarray: newidsarray, totalPages: totalPages });
+        this.setState({
+          totalCount: response.totalRecordCount,
+          activepage: { page: pageNumber, limit: pageLimit },
+          objectarray: newarray,
+          loading: false,
+          idsarray: newidsarray,
+          totalPages: totalPages
+        });
       }.bind(this),
-      error: function (data) {
-        if (!data.statusText == 'abort') {
-          this.props.errorToggle('failed to get list data', data);
+      error: function(data) {
+        if (!data.statusText == "abort") {
+          this.props.errorToggle("failed to get list data", data);
         }
       }.bind(this)
     });
@@ -934,17 +948,17 @@ export default class ListView extends React.Component {
   exportCSV = () => {
     let keys = [];
     let columns = this.state.columns;
-    $.each(columns, function (key, value) {
+    $.each(columns, function(key, value) {
       keys.push(value);
     });
     let csv = "";
     $(".rt-tbody")
       .find(".rt-tr")
-      .each(function (key, value) {
+      .each(function(key, value) {
         let storearray = [];
         $(value)
           .find(".rt-td")
-          .each(function (x, y) {
+          .each(function(x, y) {
             let obj = $(y).text();
             obj = obj.replace(/,/g, "|");
             storearray.push(obj);
@@ -1035,10 +1049,10 @@ export default class ListView extends React.Component {
       type: "POST",
       url: "/scot/api/v2/" + this.props.type,
       data: data,
-      success: function (response) {
+      success: function(response) {
         this.selected(this.props.type, response.id);
       }.bind(this),
-      error: function (data) {
+      error: function(data) {
         this.props.errorToggle("failed to create new thing", data);
       }.bind(this)
     });
@@ -1075,22 +1089,36 @@ export default class ListView extends React.Component {
             return;
           }
           let scrollheight = this.state.scrollheight;
-          if (this.state.display == 'block') {
-            scrollheight = '30vh';
+          if (this.state.display == "block") {
+            scrollheight = "30vh";
           }
-          if (this.state.type === 'task') {
-            this.props.history.push('/task/' + rowInfo.row.target_type + '/' + rowInfo.row.target_id + '/' + rowInfo.row.id);
+          if (this.state.type === "task") {
+            this.props.history.push(
+              "/task/" +
+                rowInfo.row.target_type +
+                "/" +
+                rowInfo.row.target_id +
+                "/" +
+                rowInfo.row.id
+            );
           } else {
-            this.props.history.push('/' + this.state.type + '/' + rowInfo.row.id);
+            this.props.history.push(
+              "/" + this.state.type + "/" + rowInfo.row.id
+            );
           }
-          this.setState({ alertPreSelectedId: 0, scrollheight: scrollheight, showSelectedContainer: true });
+          this.setState({
+            alertPreSelectedId: 0,
+            scrollheight: scrollheight,
+            showSelectedContainer: true
+          });
           return;
-        }
-        else {
-          this.props.errorToggle('Currently processing action(s). Please wait.')
+        } else {
+          this.props.errorToggle(
+            "Currently processing action(s). Please wait."
+          );
         }
       },
-      className: rowInfo.row.id === parseInt(this.props.id) ? 'selected' : null,
+      className: rowInfo.row.id === parseInt(this.props.id) ? "selected" : null
     };
   }
 }

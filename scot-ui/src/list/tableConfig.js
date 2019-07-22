@@ -300,16 +300,6 @@ const columnDefinitions = {
     Cell: customCellRenderers.dateFormater
   },
 
-  //Changing due to Todd's change of Incident data structure as of 10/19
-  // Occurred: {
-  //     Header: 'Occurred',
-  //     accessor: 'occurred',
-  //     minWidth: 100,
-  //     maxWidth: 180,
-  //     Filter: customFilters.dateRange,
-  //     Cell: customCellRenderers.dateFormater,
-  // },
-
   Sources: {
     Header: "Sources",
     accessor: "source", //d => d.source ? d.source.join( ', ' ) : '',
@@ -456,6 +446,60 @@ const columnDefinitions = {
     Filter: customFilters.numberFilter,
     maxWidth: 90,
     filterable: false
+  },
+
+  //alert stuff - 2019 - bemonta
+  Status: {
+    accessor: "status",
+    Header: "Status",
+    maxWidth: 100,
+    Cell: customCellRenderers.alertStatusAlerts
+  },
+
+  EntryCountColumn: {
+    resizable: true,
+    expander: true,
+    filter: true,
+    accessor: "entry_count",
+    Header: "Entries",
+    Expander: ({ isExpanded, ...rest }) => {
+      return (
+        <div>
+          {isExpanded ? (
+            <Button2
+              variant="contained"
+              style={{ backgroundColor: "orange", color: "white" }}
+            >
+              Close entries
+            </Button2>
+          ) : (
+            <div>
+              {rest.original.entry_count == 0 ? (
+                <Button2
+                  variant="contained"
+                  style={{ backgroundColor: "#5cb85c", color: "white" }}
+                >
+                  Add entry
+                </Button2>
+              ) : (
+                <Button2
+                  variant="contained"
+                  style={{ backgroundColor: "#5bc0de", color: "white" }}
+                >
+                  {rest.original.entry_count} entries
+                </Button2>
+              )}
+            </div>
+          )}
+        </div>
+      );
+    },
+    getProps: (state, rowInfo, column) => {
+      return {
+        className: "show-pointer"
+      };
+    },
+    width: 100
   }
 };
 
@@ -490,6 +534,8 @@ const defaultColumnSettings = {
 };
 
 const typeColumns = {
+  alert: ["Id", "Status", "EntryCountColumn"],
+
   alertgroup: [
     "Id",
     "Location",
@@ -592,7 +638,7 @@ const typeColumns = {
   ]
 };
 
-export const buildTypeColumns = type => {
+export const buildTypeColumns = (type, rowData, propData) => {
   if (!typeColumns.hasOwnProperty(type)) {
     // throw new Error( 'No columns defined for type: '+ type );
     type = "default";
@@ -614,6 +660,35 @@ export const buildTypeColumns = type => {
     columns.push({
       ...defaultColumnSettings,
       ...colOptions
+    });
+  }
+
+  if (type === "alert") {
+    if (propData[0].data.columns) {
+      propData[0].data.columns.forEach(
+        function(element, index) {
+          let columnobj = {
+            accessor: element,
+            Header: element,
+            filter: true,
+            Cell: customCellRenderers.flairCell,
+            width: getColumnWidth(rowData, element, element)
+          };
+          columns.push(columnobj);
+        }.bind(this)
+      );
+    }
+  }
+
+  if (type === "alert") {
+    columns.forEach(function(column, index) {
+      column["getProps"] = function(state, rowInfo) {
+        return {
+          style: {
+            backgroundColor: index % 2 === 0 ? "#bababa45" : ""
+          }
+        };
+      };
     });
   }
 

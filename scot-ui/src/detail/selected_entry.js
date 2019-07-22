@@ -19,10 +19,14 @@ import TrafficLightProtocol from "../components/traffic_light_protocol";
 import Marker from "../components/marker";
 import EntityCreateModal from "../modal/entity_create";
 import CustomMetaDataTable from "../components/custom_metadata_table";
-import { customCellRenderers, getColumnWidth } from "../list/tableConfig";
 import ReactTable from "react-table";
 import { get_data, put_data, post_data } from "../utils/XHR";
-import AddEntryToAlert from "./add_entry_to_alert";
+import AlertSubComponent from "./alert_subcomponent";
+import {
+  buildTypeColumns,
+  customCellRenderers,
+  getColumnWidth
+} from "../list/tableConfig";
 import Button2 from "@material-ui/core/Button";
 
 export default class SelectedEntry extends React.Component {
@@ -393,22 +397,13 @@ export default class SelectedEntry extends React.Component {
             id={id}
             {...this.props}
             entityData={this.state.entityData}
-            // alertSelected={this.props.alertSelected}
             // headerData={this.props.headerData}
             // alertPreSelectedId={this.props.alertPreSelectedId}
             // isPopUp={this.props.isPopUp}
             entryToggle={this.props.entryToggle}
-            // updated={this.updatedCB}
-            // aType={this.props.aType}
-            // aID={this.props.aID}
+            subcomponent={this.props.subcomponent}
             // entryToolbar={this.props.entryToolbar}
             // errorToggle={this.props.errorToggle}
-            // fileUploadToggle={this.props.fileUploadToggle}
-            // fileUploadToolbar={this.props.fileUploadToolbar}
-            // flairOff={this.props.flairOff}
-            // createCallback={this.props.createCallback}
-            // removeCallback={this.props.removeCallback}
-            // addFlair={this.props.addFlair}
             // handleSelection={this.props.handleSelection}
           />
         ) : (
@@ -530,6 +525,7 @@ class EntryIterator extends React.Component {
           function(data) {
             rows.push(
               <EntryParent
+                subcomponent={this.props.subcomponent}
                 key={key}
                 items={data}
                 type={type}
@@ -550,17 +546,14 @@ class EntryIterator extends React.Component {
         return (
           <div>
             <NewAlertTable
+              subcomponent={this.props.subcomponent}
               {...this.props}
               key={id}
               type={type}
               id={id}
               items={data}
               entityData={entityData}
-              // headerData={this.props.headerData}
-              // entryToolbar={this.props.entryToolbar}
               entryToggle={this.props.entryToggle}
-              // fileUploadToggle={this.props.fileUploadToggle}
-              // fileUploadToolbar={this.props.fileUploadToolbar}
               createCallback={this.props.createCallback}
               removeCallback={this.props.removeCallback}
               addFlair={this.props.addFlair}
@@ -591,7 +584,7 @@ class NewAlertTable extends React.Component {
   componentDidMount() {
     if (this.props.items.length > 0) {
       const data = this.createData();
-      const columns = this.createColumns(data);
+      const columns = buildTypeColumns("alert", data, this.props.items);
       this.setState({ data, columns });
     }
     if (this.props.type) {
@@ -602,6 +595,11 @@ class NewAlertTable extends React.Component {
     }
     if (this.props.addFlair) {
       this.setState({ addFlair: this.props.addFlair });
+    }
+
+    //handle alertselection from SelectedHeader
+    if (this.props.alertsSelected) {
+      this.setState({ selected: this.props.alertsSelected });
     }
 
     $("#main-detail-container").keydown(
@@ -634,6 +632,13 @@ class NewAlertTable extends React.Component {
       let data = this.createData();
       this.setState({ data });
     }
+
+    if (
+      this.props.alertsSelected !== prevState.selected &&
+      this.props.alertsSelected !== undefined
+    ) {
+      this.setState({ selected: this.props.alertsSelected });
+    }
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -664,105 +669,6 @@ class NewAlertTable extends React.Component {
     return dataarray;
   };
 
-  createColumns = data => {
-    let columns = [];
-    //initial columns that are not under data.columns
-    let id_column;
-    let status_column;
-    if (this.props.items.length > 0) {
-      id_column = {
-        accessor: "id",
-        Header: "id",
-        maxWidth: 100
-      };
-      status_column = {
-        accessor: "status",
-        Header: "Status",
-        maxWidth: 100,
-        Cell: customCellRenderers.alertStatusAlerts
-      };
-    }
-
-    let entry_count_column = {
-      resizable: true,
-      expander: true,
-      filter: true,
-      accessor: "entry_count",
-      Header: "Entries",
-      Expander: ({ isExpanded, ...rest }) => {
-        return (
-          <div>
-            {isExpanded ? (
-              <Button2
-                variant="contained"
-                style={{ backgroundColor: "orange", color: "white" }}
-              >
-                Close entries
-              </Button2>
-            ) : (
-              <div>
-                {rest.original.entry_count == 0 ? (
-                  <Button2
-                    variant="contained"
-                    style={{ backgroundColor: "#5cb85c", color: "white" }}
-                  >
-                    Add entry
-                  </Button2>
-                ) : (
-                  <Button2
-                    variant="contained"
-                    style={{ backgroundColor: "#5bc0de", color: "white" }}
-                  >
-                    {rest.original.entry_count} entries
-                  </Button2>
-                )}
-              </div>
-            )}
-          </div>
-        );
-      },
-      getProps: (state, rowInfo, column) => {
-        return {
-          className: "show-pointer"
-        };
-      },
-      width: 100
-    };
-    let array = [id_column, status_column, entry_count_column];
-    array.forEach(function(element) {
-      columns.push(element);
-    });
-    if (this.props.items[0].data.columns) {
-      this.props.items[0].data.columns.forEach(
-        function(element) {
-          let columnobj = {
-            accessor: element,
-            Header: element,
-            filter: true,
-            Cell: customCellRenderers.flairCell,
-            width: getColumnWidth(data, element, element)
-          };
-          columns.push(columnobj);
-        }.bind(this)
-      );
-    }
-    return columns;
-  };
-
-  handleStriping = rowInfo => {
-    try {
-      if (rowInfo.index !== undefined) {
-        return {
-          style: {
-            backgroundColor: rowInfo.index % 2 == 0 ? "#bababa45" : ""
-          }
-        };
-      }
-    } catch {
-      return { style: {} };
-    }
-  };
-
   render() {
     const { data, columns } = this.state;
     const { addFlair, type, headerData, entityData, updated } = this.props;
@@ -770,7 +676,6 @@ class NewAlertTable extends React.Component {
     return (
       <ReactTable
         styleName="styles.ReactTable"
-        className="-striped -highlight"
         key={2}
         data={data}
         columns={columns}
@@ -787,7 +692,8 @@ class NewAlertTable extends React.Component {
         }}
         SubComponent={({ row }) => {
           return (
-            <AddEntryToAlert
+            <AlertSubComponent
+              flag={this.props.subcomponent}
               row={row}
               entryToggle={this.props.entryToggle}
               errorToggle={this.props.errorToggle}
@@ -810,7 +716,6 @@ class NewAlertTable extends React.Component {
         showPagination={false}
         pageSize={data.length}
         getTrProps={(state, rowInfo) => {
-          this.handleStriping(rowInfo);
           if (
             rowInfo &&
             rowInfo.row &&
