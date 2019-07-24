@@ -5,13 +5,18 @@ import Button from "react-bootstrap/lib/Button.js";
 import Promote from "../components/promote.js";
 import Marker from "../components/marker.js";
 import TrafficLightProtocol from "../components/traffic_light_protocol.js";
+import Dialog from "@material-ui/core/Dialog";
+import AreYouSure from "../components/areyousure";
+import { CSVLink } from "react-csv";
 
 export default class SelectedHeaderOptions extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       globalFlairState: true,
-      promoteRemaining: null
+      promoteRemaining: null,
+      areYouSure: false,
+      dataToDownload: []
     };
   }
 
@@ -180,77 +185,55 @@ export default class SelectedHeaderOptions extends React.Component {
   };
 
   alertExportCSV = () => {
-    let keys = [];
-    $(".alertTableHorizontal")
-      .find("th")
-      .each(function(key, value) {
-        let obj = $(value).text();
-        keys.push(obj);
-      });
-    let csv = "";
-    $("tr.selected").each(function(x, y) {
-      let storearray = [];
-      $(y)
-        .find("td")
-        .each(function(x, y) {
-          let copy = $(y).clone(false);
-          $(copy)
-            .find(".extras")
-            .remove();
-          let value = $(copy).text();
-          value = value.replace(/,/g, "|");
-          storearray.push(value);
-        });
-      csv += storearray.join() + "\n";
-    });
-    let result = keys.join() + "\n";
-    csv = result + csv;
-    let data_uri = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
-    window.open(data_uri);
+    // const currentRecords = this.reactTable.getResolvedState().sortedData;
+    // var data_to_download = [];
+    // for (var index = 0; index < currentRecords.length; index++) {
+    //   let record_to_download = {};
+    //   for (var colIndex = 0; colIndex < columns.length; colIndex++) {
+    //     record_to_download[columns[colIndex].Header] =
+    //       currentRecords[index][columns[colIndex].accessor];
+    //   }
+    //   data_to_download.push(record_to_download);
+    // }
+    // this.setState({ dataToDownload: data_to_download }, () => {
+    //   // click the CSVLink component to trigger the CSV download
+    //   this.csvLink.link.click();
+    // });
+    // let keys = [];
+    // $(".alertTableHorizontal")
+    //   .find("th")
+    //   .each(function(key, value) {
+    //     let obj = $(value).text();
+    //     keys.push(obj);
+    //   });
+    // let csv = "";
+    // $("tr.selected").each(function(x, y) {
+    //   let storearray = [];
+    //   $(y)
+    //     .find("td")
+    //     .each(function(x, y) {
+    //       let copy = $(y).clone(false);
+    //       $(copy)
+    //         .find(".extras")
+    //         .remove();
+    //       let value = $(copy).text();
+    //       value = value.replace(/,/g, "|");
+    //       storearray.push(value);
+    //     });
+    //   csv += storearray.join() + "\n";
+    // });
+    // let result = keys.join() + "\n";
+    // csv = result + csv;
+    // let data_uri = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+    // window.open(data_uri);
   };
 
   alertDeleteSelected = () => {
-    //TODO: FIX IMMEDIATELY
-    // if (
-    //   confirm("Are you sure you want to Delete? This action can not be undone.")
-    // ) {
-    //   let array = [];
-    //   $("tr.selected").each(
-    //     function(index, tr) {
-    //       let id = $(tr).attr("id");
-    //       array.push(id);
-    //     }.bind(this)
-    //   );
-    //   for (let i = 0; i < array.length; i++) {
-    //     $.ajax({
-    //       type: "delete",
-    //       url: "/scot/api/v2/alert/" + array[i],
-    //       success: function() {
-    //         console.log("success");
-    //       }.bind(this),
-    //       error: function(data) {
-    //         this.props.errorToggle("failed to delete selected alerts", data);
-    //       }.bind(this)
-    //     });
-    //   }
-    // }
-    let array = [];
-    $("tr.selected").each(function(index, tr) {
-      let id = $(tr).attr("id");
-      array.push(id);
-    });
-    for (let i = 0; i < array.length; i++) {
-      $.ajax({
-        type: "delete",
-        url: "/scot/api/v2/alert/" + array[i],
-        success: function() {
-          console.log("success");
-        },
-        error: function(data) {
-          this.props.errorToggle("failed to delete selected alerts", data);
-        }.bind(this)
-      });
-    }
+    this.setState({ areYouSure: true });
+  };
+
+  handleAreYouSureClose = () => {
+    this.setState({ areYouSure: false });
   };
 
   PrintPrepare = () => {
@@ -405,6 +388,7 @@ export default class SelectedHeaderOptions extends React.Component {
   };
 
   render = () => {
+    const { ...other } = this.props;
     let subjectType = this.props.subjectType;
     let type = this.props.type;
     let id = this.props.id;
@@ -559,7 +543,7 @@ export default class SelectedHeaderOptions extends React.Component {
           <Button
             bsStyle="danger"
             eventkey="9"
-            onClick={this.props.deleteToggle}
+            onClick={() => this.props.deleteToggle(type)}
             bsSize="xsmall"
           >
             <i className="fa fa-trash" aria-hidden="true" /> Delete{" "}
@@ -584,9 +568,24 @@ export default class SelectedHeaderOptions extends React.Component {
         </div>
       );
     } else {
-      if (this.props.aIndex !== undefined) {
+      if (this.props.alertsSelected.length > 0) {
         return (
           <div className="entry-header second-menu detail-buttons">
+            {/* {this.state.areYouSure ? (
+              <Dialog
+                open={this.state.areYouSure}
+                onClose={this.handleAreYouSureClose}
+                aria-labelledby="simple-dialog-title"
+                {...other}
+              >
+                <AreYouSure
+                  type={"alert"}
+                  onClose={this.handleAreYouSureClose}
+                  id={this.props.alertsSelected}
+                  updated={this.props.updated}
+                />
+              </Dialog>
+            ) : null} */}
             <Button eventkey="1" onClick={this.toggleFlair} bsSize="xsmall">
               <i className="fa fa-eye-slash" aria-hidden="true" /> Toggle Flair
             </Button>
@@ -624,6 +623,7 @@ export default class SelectedHeaderOptions extends React.Component {
                 <img src="/images/clock.png" alt="" /> Viewed By History
               </Button>
             ) : null}
+
             <Button
               eventkey="7"
               onClick={this.props.changeHistoryToggle}
@@ -661,14 +661,6 @@ export default class SelectedHeaderOptions extends React.Component {
             >
               <img src="/images/megaphone.png" alt="" /> Promote Selected
             </Button>
-            {/* <Button
-              eventkey="10"
-              onClick={this.alertPromoteSelected}
-              bsSize="xsmall"
-              bsStyle="warning"
-            >
-              <img src="/images/megaphone.png" alt="" /> Promote Selected
-            </Button> */}
             <Button
               eventkey="11"
               onClick={this.alertSelectExisting}
@@ -676,13 +668,6 @@ export default class SelectedHeaderOptions extends React.Component {
             >
               <img src="/images/megaphone_plus.png" alt="" /> Add Selected to{" "}
               <b>Existing Event</b>
-            </Button>
-            <Button
-              eventkey="13"
-              onClick={this.props.fileUploadToggle}
-              bsSize="xsmall"
-            >
-              <i className="fa fa-upload" aria-hidden="true" /> Upload File
             </Button>
             <Button eventkey="14" onClick={this.alertExportCSV} bsSize="xsmall">
               <img src="/images/csv_text.png" alt="" /> Export to CSV
@@ -696,6 +681,7 @@ export default class SelectedHeaderOptions extends React.Component {
               string={string}
               isAlert={true}
               getSelectedAlerts={this.getSelectedAlerts}
+              alertsSelected={this.props.alertsSelected}
             />
             <Button bsSize="xsmall" onClick={this.createLinkSignature}>
               <i className="fa fa-pencil" aria-hidden="true" /> Create & Link
@@ -711,7 +697,7 @@ export default class SelectedHeaderOptions extends React.Component {
             />
             <Button
               eventkey="15"
-              onClick={this.alertDeleteSelected}
+              onClick={() => this.props.deleteToggle("alert")}
               bsSize="xsmall"
               bsStyle="danger"
             >
@@ -720,7 +706,7 @@ export default class SelectedHeaderOptions extends React.Component {
             <Button
               bsStyle="danger"
               eventkey="17"
-              onClick={this.props.deleteToggle}
+              onClick={() => this.props.deleteToggle(type)}
               bsSize="xsmall"
             >
               <i className="fa fa-trash" aria-hidden="true" /> Delete{" "}
@@ -824,7 +810,7 @@ export default class SelectedHeaderOptions extends React.Component {
             <Button
               bsStyle="danger"
               eventkey="8"
-              onClick={this.props.deleteToggle}
+              onClick={() => this.props.deleteToggle(type)}
               bsSize="xsmall"
             >
               <i className="fa fa-trash" aria-hidden="true" /> Delete{" "}
