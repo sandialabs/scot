@@ -175,7 +175,11 @@ export const customCellRenderers = {
   },
 
   alertStatusAlerts: row => {
-    return <PromotionButton row={row} />;
+    return (
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <PromotionButton row={row} />
+      </div>
+    );
   },
   flairCell: row => {
     return <FlairObject value={row.value} />;
@@ -299,16 +303,6 @@ const columnDefinitions = {
     Filter: customFilters.dateRange,
     Cell: customCellRenderers.dateFormater
   },
-
-  //Changing due to Todd's change of Incident data structure as of 10/19
-  // Occurred: {
-  //     Header: 'Occurred',
-  //     accessor: 'occurred',
-  //     minWidth: 100,
-  //     maxWidth: 180,
-  //     Filter: customFilters.dateRange,
-  //     Cell: customCellRenderers.dateFormater,
-  // },
 
   Sources: {
     Header: "Sources",
@@ -456,6 +450,60 @@ const columnDefinitions = {
     Filter: customFilters.numberFilter,
     maxWidth: 90,
     filterable: false
+  },
+
+  //alert stuff - 2019 - bemonta
+  Status: {
+    accessor: "status",
+    Header: "Status",
+    maxWidth: 100,
+    Cell: customCellRenderers.alertStatusAlerts
+  },
+
+  EntryCountColumn: {
+    width: 102,
+    resizable: true,
+    expander: true,
+    filter: false,
+    accessor: "entry_count",
+    Header: "Entries",
+    Expander: ({ isExpanded, ...rest }) => {
+      return (
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          {isExpanded ? (
+            <Button2
+              variant="contained"
+              style={{ backgroundColor: "orange", color: "white" }}
+            >
+              Close entries
+            </Button2>
+          ) : (
+            <div>
+              {rest.original.entry_count == 0 ? (
+                <Button2
+                  variant="contained"
+                  style={{ backgroundColor: "#5cb85c", color: "white" }}
+                >
+                  Add entry
+                </Button2>
+              ) : (
+                <Button2
+                  variant="contained"
+                  style={{ backgroundColor: "#5bc0de", color: "white" }}
+                >
+                  {rest.original.entry_count} entries
+                </Button2>
+              )}
+            </div>
+          )}
+        </div>
+      );
+    },
+    getProps: (state, rowInfo, column) => {
+      return {
+        className: "show-pointer"
+      };
+    }
   }
 };
 
@@ -490,6 +538,8 @@ const defaultColumnSettings = {
 };
 
 const typeColumns = {
+  alert: ["Id", "Status", "EntryCountColumn"],
+
   alertgroup: [
     "Id",
     "Location",
@@ -592,7 +642,7 @@ const typeColumns = {
   ]
 };
 
-export const buildTypeColumns = type => {
+export const buildTypeColumns = (type, rowData, propData) => {
   if (!typeColumns.hasOwnProperty(type)) {
     // throw new Error( 'No columns defined for type: '+ type );
     type = "default";
@@ -617,6 +667,32 @@ export const buildTypeColumns = type => {
     });
   }
 
+  if (type === "alert") {
+    if (propData[0].data.columns) {
+      propData[0].data.columns.forEach(
+        function(element, index) {
+          let columnobj = {
+            accessor: element,
+            Header: element,
+            filter: true,
+            Cell: customCellRenderers.flairCell,
+            width: getColumnWidth(rowData, element, element)
+          };
+          columns.push(columnobj);
+        }.bind(this)
+      );
+    }
+    //do vertical striping
+    columns.forEach(function(column, index) {
+      column["getProps"] = function(state, rowInfo) {
+        return {
+          style: {
+            backgroundColor: index % 2 === 0 ? "#bababa45" : ""
+          }
+        };
+      };
+    });
+  }
   return columns;
 };
 
@@ -630,7 +706,9 @@ class FlairObject extends React.Component {
 
     return (
       <div
-        style={{ wordWrap: "break-word" }}
+        style={{
+          wordWrap: "break-word"
+        }}
         className="alertTableHorizontal"
         dangerouslySetInnerHTML={{ __html: value }}
       />
@@ -655,7 +733,7 @@ export const getColumnWidth = (data, accessor, headerText) => {
           return 300;
         } else {
           if (newtext.includes("entity")) {
-            magicLength = 75;
+            magicLength = 85;
             newtext = newtext.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "");
           }
           var width = ctx.measureText(newtext).width;
