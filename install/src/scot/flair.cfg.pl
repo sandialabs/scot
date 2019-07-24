@@ -1,4 +1,6 @@
 %environment = (
+    #mozilla public suffic file
+    mozilla_public_suffix_file  => '/opt/scot/etc/public_suffix_list.dat',
     time_zone   => 'America/Denver',
     # server name of the SCOT server
     servername  => 'localhost',

@@ -1,5 +1,7 @@
 %environment = (
     time_zone   => 'America/Denver',
+    # this does flairing for DNS
+    mozilla_public_suffix_file  => '/opt/scot/etc/public_suffix_list.dat',
     # server name of the SCOT server
     servername  => 'scot',
     # username with sufficient scot perms to create alert(groups)
