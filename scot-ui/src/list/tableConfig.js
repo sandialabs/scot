@@ -465,6 +465,7 @@ const columnDefinitions = {
     resizable: true,
     expander: true,
     filter: false,
+
     accessor: "entry_count",
     Header: "Entries",
     Expander: ({ isExpanded, ...rest }) => {
@@ -682,7 +683,6 @@ export const buildTypeColumns = (type, rowData, propData) => {
         }.bind(this)
       );
     }
-    //do vertical striping
     columns.forEach(function(column, index) {
       column["getProps"] = function(state, rowInfo) {
         return {
