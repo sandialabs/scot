@@ -400,16 +400,11 @@ export default class SelectedEntry extends React.Component {
             data={data}
             type={type}
             id={id}
-            {...this.props}
             entityData={this.state.entityData}
-            // headerData={this.props.headerData}
-            // alertPreSelectedId={this.props.alertPreSelectedId}
-            // isPopUp={this.props.isPopUp}
             entryToggle={this.props.entryToggle}
             subcomponent={this.props.subcomponent}
-            // entryToolbar={this.props.entryToolbar}
-            // errorToggle={this.props.errorToggle}
-            // handleSelection={this.props.handleSelection}
+            setAlertColumns={this.props.setAlertColumns}
+            {...this.props}
           />
         ) : (
           <span>Loading...</span>
@@ -560,6 +555,7 @@ class EntryIterator extends React.Component {
               createCallback={this.props.createCallback}
               removeCallback={this.props.removeCallback}
               addFlair={this.props.addFlair}
+              setAlertColumns={this.props.setAlertColumns}
             />
           </div>
         );
@@ -680,6 +676,7 @@ class NewAlertTable extends React.Component {
       <div>
         <ReactTable
           styleName="styles.ReactTable"
+          ref={r => (this.reactTable = r)}
           key={2}
           data={data}
           columns={columns}
@@ -732,21 +729,21 @@ class NewAlertTable extends React.Component {
                   }
                   if (e.ctrlKey || e.metaKey) {
                     e.preventDefault();
-                    this.props.handleMultiSelection(rowInfo.original.id);
+                    this.props.handleMultiSelection(rowInfo.original);
                   } else if (e.shiftKey) {
                     document.getSelection().removeAllRanges();
                     this.props.handleShiftSelect(
-                      this.state.selected[0],
+                      this.state.selected[0].id,
                       rowInfo.original.id,
                       state.sortedData
                     );
                   } else {
-                    this.props.handleSelection(rowInfo.original.id);
+                    this.props.handleSelection(rowInfo.original);
                   }
                 },
                 style: {
                   background: this.state.selected.some(
-                    item => rowInfo.original.id === item
+                    item => rowInfo.original.id === item.id
                   )
                     ? "#a7c6a5"
                     : "",
@@ -795,7 +792,15 @@ class AlertTableSearchDiv extends React.Component {
     return (
       <div>
         {search !== undefined ? (
-          <div className="alertTableHorizontal">
+          <div
+            className="alertTableHorizontal"
+            style={{
+              outline: "1px solid black",
+              borderRadius: 5,
+              padding: 3,
+              margin: "10px 0 15px"
+            }}
+          >
             {linkToSearch}
             <div dangerouslySetInnerHTML={{ __html: search }} />
           </div>

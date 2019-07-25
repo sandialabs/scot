@@ -70,7 +70,9 @@ export default class SelectedHeader extends React.Component {
       highlightedText: "",
       flairing: false,
       isMounted: false,
-      alertsSelected: []
+      alertsSelected: [],
+      alertsColumns: [],
+      dataToDownload: []
     };
   }
 
@@ -779,23 +781,23 @@ export default class SelectedHeader extends React.Component {
 
   //2019 new alert table stuff
   checkSelection(rowid) {
-    if (this.state.alertsSelected.some(item => rowid === item)) {
+    if (this.state.alertsSelected.some(item => rowid === item.id)) {
       return true;
     } else {
       return false;
     }
   }
 
-  handleSelection = rowid => {
+  handleSelection = row => {
     console.log("Got selection click!");
     this.setState({
-      alertsSelected: [rowid]
+      alertsSelected: [row]
     });
   };
 
-  handleMultiSelection = rowid => {
-    if (!this.checkSelection(rowid)) {
-      let temparray = [...this.state.alertsSelected, rowid];
+  handleMultiSelection = row => {
+    if (!this.checkSelection(row.id)) {
+      let temparray = [...this.state.alertsSelected, row];
       this.setState({
         alertsSelected: temparray
       });
@@ -804,7 +806,7 @@ export default class SelectedHeader extends React.Component {
       with new array returned from filter**/
       this.setState({
         alertsSelected: this.state.alertsSelected.filter(function(id) {
-          return id !== rowid;
+          return id["id"] !== row.id;
         })
       });
     }
@@ -825,8 +827,8 @@ export default class SelectedHeader extends React.Component {
     data.forEach(
       function(row) {
         if (row.id <= endIndex && row.id >= startIndex) {
-          if (!this.checkSelection(row.id)) {
-            temparray.push(row.id);
+          if (!this.checkSelection(row)) {
+            temparray.push(row);
           }
         }
       }.bind(this)
@@ -1105,6 +1107,8 @@ export default class SelectedHeader extends React.Component {
                   errorToggle={this.props.errorToggle}
                   toggleFlair={this.toggleFlair}
                   alertsSelected={this.state.alertsSelected}
+                  dataToDownload={this.state.dataToDownload}
+                  alertColumns={this.state.alertColumns}
                 />
               ) : null}
               {this.state.permissionsToolbar ? (
@@ -1129,7 +1133,6 @@ export default class SelectedHeader extends React.Component {
                 headerData={this.state.headerData}
                 showEntryData={this.state.showEntryData}
                 showEntityData={this.state.showEntityData}
-                alertSelected={this.alertSelected}
                 summaryUpdate={this.summaryUpdate}
                 flairToolbarToggle={this.flairToolbarToggle}
                 flairToolbarOff={this.flairToolbarOff}
