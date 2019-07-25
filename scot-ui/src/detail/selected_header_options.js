@@ -6,7 +6,6 @@ import Promote from "../components/promote.js";
 import Marker from "../components/marker.js";
 import TrafficLightProtocol from "../components/traffic_light_protocol.js";
 import Dialog from "@material-ui/core/Dialog";
-import AreYouSure from "../components/areyousure";
 import { CSVLink } from "react-csv";
 
 export default class SelectedHeaderOptions extends React.Component {
@@ -15,7 +14,6 @@ export default class SelectedHeaderOptions extends React.Component {
     this.state = {
       globalFlairState: true,
       promoteRemaining: null,
-      areYouSure: false,
       dataToDownload: []
     };
   }
@@ -185,20 +183,28 @@ export default class SelectedHeaderOptions extends React.Component {
   };
 
   alertExportCSV = () => {
-    // const currentRecords = this.reactTable.getResolvedState().sortedData;
-    // var data_to_download = [];
-    // for (var index = 0; index < currentRecords.length; index++) {
-    //   let record_to_download = {};
-    //   for (var colIndex = 0; colIndex < columns.length; colIndex++) {
-    //     record_to_download[columns[colIndex].Header] =
-    //       currentRecords[index][columns[colIndex].accessor];
-    //   }
-    //   data_to_download.push(record_to_download);
-    // }
-    // this.setState({ dataToDownload: data_to_download }, () => {
-    //   // click the CSVLink component to trigger the CSV download
-    //   this.csvLink.link.click();
-    // });
+    const currentRecords = this.props.alertsSelected;
+    var data_to_download = [];
+    currentRecords.forEach(
+      function(row) {
+        Object.keys(row).forEach(
+          function(key) {
+            //here lets strip html tags
+            if (typeof row[key] === "string") {
+              let regex = /(<([^>]+)>)/gi;
+              let body = row[key];
+              row[key] = body.replace(regex, "");
+            }
+          }.bind(this)
+        );
+        data_to_download.push(row);
+      }.bind(this)
+    );
+
+    this.setState({ dataToDownload: data_to_download }, () => {
+      // click the CSVLink component to trigger the CSV download
+      this.csvLink.link.click();
+    });
     // let keys = [];
     // $(".alertTableHorizontal")
     //   .find("th")
@@ -226,14 +232,6 @@ export default class SelectedHeaderOptions extends React.Component {
     // csv = result + csv;
     // let data_uri = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
     // window.open(data_uri);
-  };
-
-  alertDeleteSelected = () => {
-    this.setState({ areYouSure: true });
-  };
-
-  handleAreYouSureClose = () => {
-    this.setState({ areYouSure: false });
   };
 
   PrintPrepare = () => {
@@ -571,21 +569,6 @@ export default class SelectedHeaderOptions extends React.Component {
       if (this.props.alertsSelected.length > 0) {
         return (
           <div className="entry-header second-menu detail-buttons">
-            {/* {this.state.areYouSure ? (
-              <Dialog
-                open={this.state.areYouSure}
-                onClose={this.handleAreYouSureClose}
-                aria-labelledby="simple-dialog-title"
-                {...other}
-              >
-                <AreYouSure
-                  type={"alert"}
-                  onClose={this.handleAreYouSureClose}
-                  id={this.props.alertsSelected}
-                  updated={this.props.updated}
-                />
-              </Dialog>
-            ) : null} */}
             <Button eventkey="1" onClick={this.toggleFlair} bsSize="xsmall">
               <i className="fa fa-eye-slash" aria-hidden="true" /> Toggle Flair
             </Button>
@@ -669,6 +652,13 @@ export default class SelectedHeaderOptions extends React.Component {
               <img src="/images/megaphone_plus.png" alt="" /> Add Selected to{" "}
               <b>Existing Event</b>
             </Button>
+            <CSVLink
+              data={this.state.dataToDownload}
+              filename="data.csv"
+              className="hidden"
+              ref={r => (this.csvLink = r)}
+              target="_blank"
+            />
             <Button eventkey="14" onClick={this.alertExportCSV} bsSize="xsmall">
               <img src="/images/csv_text.png" alt="" /> Export to CSV
             </Button>
