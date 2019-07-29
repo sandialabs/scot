@@ -5,8 +5,8 @@ import Button from "react-bootstrap/lib/Button.js";
 import Promote from "../components/promote.js";
 import Marker from "../components/marker.js";
 import TrafficLightProtocol from "../components/traffic_light_protocol.js";
-import Dialog from "@material-ui/core/Dialog";
 import { CSVLink } from "react-csv";
+import { put_data } from "../utils/XHR";
 
 export default class SelectedHeaderOptions extends React.Component {
   constructor(props) {
@@ -50,135 +50,124 @@ export default class SelectedHeaderOptions extends React.Component {
 
   //All methods containing alert are only used by selected_entry when viewing an alertgroupand interacting with an alert.
   alertOpenSelected = () => {
-    let array = this.props.alertsSelected.map(function(id) {
-      return { id: id, status: "open" };
+    let array = this.props.alertsSelected.map(function(alert) {
+      return { id: alert.id, status: "open" };
     });
-    let data = JSON.stringify({ alerts: array });
+    let data = { alerts: array };
 
     this.props.ToggleProcessingMessage(true);
-
-    $.ajax({
-      type: "put",
-      url: "/scot/api/v2/" + this.props.type + "/" + this.props.id,
-      data: data,
-      contentType: "application/json; charset=UTF-8",
-      success: function() {
-        console.log("success");
-        this.props.ToggleProcessingMessage(false);
-      }.bind(this),
-      error: function(data) {
-        this.props.errorToggle("failed to open selected alerts", data);
-        this.props.ToggleProcessingMessage(false);
-      }.bind(this)
-    });
+    let endpoint = `/scot/api/v2/${this.props.type}/${this.props.id}`;
+    let response = put_data(endpoint, data);
+    response
+      .then(
+        function() {
+          console.log("success");
+          this.props.ToggleProcessingMessage(false);
+        }.bind(this)
+      )
+      .catch(
+        function(data) {
+          this.props.errorToggle("failed to open selected alerts", data);
+          this.props.ToggleProcessingMessage(false);
+        }.bind(this)
+      );
   };
 
   alertCloseSelected = () => {
     let time = Math.round(new Date().getTime() / 1000);
-    let array = this.props.alertsSelected.map(function(id) {
-      return { id: id, status: "closed", closed: time };
+    let array = this.props.alertsSelected.map(function(alert) {
+      return { id: alert.id, status: "closed", closed: time };
     });
-    let data = JSON.stringify({ alerts: array });
+    let data = { alerts: array };
 
     this.props.ToggleProcessingMessage(true);
 
-    $.ajax({
-      type: "put",
-      url: "/scot/api/v2/" + this.props.type + "/" + this.props.id,
-      data: data,
-      contentType: "application/json; charset=UTF-8",
-      success: function() {
-        console.log("success");
-        this.props.ToggleProcessingMessage(false);
-      }.bind(this),
-      error: function(data) {
-        this.props.errorToggle("failed to close selected alerts", data);
-        this.props.ToggleProcessingMessage(false);
-      }.bind(this)
-    });
+    let endpoint = `/scot/api/v2/${this.props.type}/${this.props.id}`;
+    let response = put_data(endpoint, data);
+    response
+      .then(
+        function() {
+          console.log("success");
+          this.props.ToggleProcessingMessage(false);
+        }.bind(this)
+      )
+      .catch(
+        function(data) {
+          this.props.errorToggle("failed to open selected alerts", data);
+          this.props.ToggleProcessingMessage(false);
+        }.bind(this)
+      );
   };
 
   alertPromoteSelected = () => {
     let data = JSON.stringify({ promote: "new" });
-    let array = this.props.alertsSelected;
+    let array = this.props.alertsSelected.map(alert => alert.id);
 
     this.props.ToggleProcessingMessage(true);
 
     //Start by promoting the first one in the array
-    $.ajax({
-      type: "put",
-      url: "/scot/api/v2/alert/" + array[0],
-      data: data,
-      contentType: "application/json; charset=UTF-8",
-      success: function(response) {
-        //With the entry number, promote the others into the existing event
+    let endpoint = `/scot/api/v2/alert/${array[0]}`;
+    let response = put_data(endpoint, data);
+    response.then(
+      function(response) {
         let promoteTo = {
-          promote: response.pid
+          promote: response.data.pid
         };
-
         if (array.length == 1) {
           this.props.ToggleProcessingMessage(false);
         }
-
-        for (let i = 1; i < array.length; i++) {
-          $.ajax({
-            type: "put",
-            url: "/scot/api/v2/alert/" + array[i],
-            data: JSON.stringify(promoteTo),
-            contentType: "application/json; charset=UTF-8",
-            success: function() {
-              console.log("success");
-              if (i + 1 == array.length) {
-                this.props.ToggleProcessingMessage(false);
-              }
-            }.bind(this),
-            error: function(data) {
-              this.props.errorToggle(
-                "failed to promoted selected alerts",
-                data
-              );
-            }.bind(this)
-          });
-        }
-      }.bind(this),
-      error: function(data) {
-        this.props.errorToggle("failed to promoted selected alerts", data);
+        array.forEach(
+          function(alert_id, index) {
+            if (index === 0) {
+              console.log("promoting rest of alerts");
+            } else {
+              let endpoint = `/scot/api/v2/alert/${alert_id}`;
+              let response2 = put_data(endpoint, promoteTo);
+              response2
+                .then(
+                  function() {
+                    if (index + 1 === array.length) {
+                      this.props.ToggleProcessingMessage(false);
+                    }
+                  }.bind(this)
+                )
+                .catch(
+                  function(data) {
+                    this.props.errorToggle(
+                      "failed to promoted selected alerts",
+                      data
+                    );
+                  }.bind(this)
+                );
+            }
+          }.bind(this)
+        );
       }.bind(this)
-    });
+    );
   };
 
   alertSelectExisting = () => {
     let text = prompt("Please Enter Event ID to promote into");
-    let array = [];
     if (text !== "" && text !== null) {
-      array = this.props.alertsSelected;
-      for (let i = 0; i < array.length; i++) {
-        if ($.isNumeric(text)) {
-          let data = {
-            promote: parseInt(text, 10)
-          };
-          $.ajax({
-            type: "PUT",
-            url: "/scot/api/v2/alert/" + array[i],
-            data: JSON.stringify(data),
-            contentType: "application/json; charset=UTF-8",
-            success: function() {
-              if ($.isNumeric(text)) {
+      this.props.alertsSelected.forEach(
+        function(alert) {
+          let data = { promote: parseInt(text, 10) };
+          let endpoint = `/scot/api/v2/alert/${alert.id}`;
+          let response = put_data(endpoint, data);
+          response
+            .then(
+              function() {
                 window.open("#/event/" + text);
-              }
-            },
-            error: function(data) {
-              this.props.errorToggle(
-                "failed to promote into existing event",
-                data
-              );
-            }.bind(this)
-          });
-        } else {
-          prompt("Please use numbers only");
-          this.selectExisting();
-        }
-      }
+              }.bind(this)
+            )
+            .catch(
+              function() {
+                prompt("Please use numbers only");
+                this.selectExisting();
+              }.bind(this)
+            );
+        }.bind(this)
+      );
     }
   };
 
@@ -205,33 +194,6 @@ export default class SelectedHeaderOptions extends React.Component {
       // click the CSVLink component to trigger the CSV download
       this.csvLink.link.click();
     });
-    // let keys = [];
-    // $(".alertTableHorizontal")
-    //   .find("th")
-    //   .each(function(key, value) {
-    //     let obj = $(value).text();
-    //     keys.push(obj);
-    //   });
-    // let csv = "";
-    // $("tr.selected").each(function(x, y) {
-    //   let storearray = [];
-    //   $(y)
-    //     .find("td")
-    //     .each(function(x, y) {
-    //       let copy = $(y).clone(false);
-    //       $(copy)
-    //         .find(".extras")
-    //         .remove();
-    //       let value = $(copy).text();
-    //       value = value.replace(/,/g, "|");
-    //       storearray.push(value);
-    //     });
-    //   csv += storearray.join() + "\n";
-    // });
-    // let result = keys.join() + "\n";
-    // csv = result + csv;
-    // let data_uri = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
-    // window.open(data_uri);
   };
 
   PrintPrepare = () => {

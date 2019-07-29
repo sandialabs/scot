@@ -805,8 +805,8 @@ export default class SelectedHeader extends React.Component {
       /** item already selected, lets filter out item (uncheck and reset state
       with new array returned from filter**/
       this.setState({
-        alertsSelected: this.state.alertsSelected.filter(function(id) {
-          return id["id"] !== row.id;
+        alertsSelected: this.state.alertsSelected.filter(function(alert) {
+          return alert["id"] !== row.id;
         })
       });
     }

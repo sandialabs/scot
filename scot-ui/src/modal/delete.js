@@ -97,7 +97,7 @@ class DeleteThing extends React.Component {
       deleteText = ` ${deleteType}: ${this.props.id}`;
     } else if (deleteType === "alert") {
       let deleteTempArray = this.props.alertsSelected.map(function(alert) {
-        return <span style={{ paddingRight: 10 }}>{alert}</span>;
+        return <span style={{ paddingRight: 10 }}>{alert.id}</span>;
       });
       deleteText = (
         <span>
