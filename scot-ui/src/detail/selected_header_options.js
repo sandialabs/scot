@@ -48,11 +48,15 @@ export default class SelectedHeaderOptions extends React.Component {
     this.setState({ globalFlairState: newGlobalFlairState });
   };
 
-  //All methods containing alert are only used by selected_entry when viewing an alertgroupand interacting with an alert.
-  alertOpenSelected = () => {
+  alertOpenOrCloseSelected = flag => {
     let array = this.props.alertsSelected.map(function(alert) {
-      return { id: alert.id, status: "open" };
+      let object = { id: alert.id, status: flag };
+      if (flag === "closed") {
+        object["closed"] = Math.round(new Date().getTime() / 1000);
+      }
+      return object;
     });
+
     let data = { alerts: array };
 
     this.props.ToggleProcessingMessage(true);
@@ -67,33 +71,7 @@ export default class SelectedHeaderOptions extends React.Component {
       )
       .catch(
         function(data) {
-          this.props.errorToggle("failed to open selected alerts", data);
-          this.props.ToggleProcessingMessage(false);
-        }.bind(this)
-      );
-  };
-
-  alertCloseSelected = () => {
-    let time = Math.round(new Date().getTime() / 1000);
-    let array = this.props.alertsSelected.map(function(alert) {
-      return { id: alert.id, status: "closed", closed: time };
-    });
-    let data = { alerts: array };
-
-    this.props.ToggleProcessingMessage(true);
-
-    let endpoint = `/scot/api/v2/${this.props.type}/${this.props.id}`;
-    let response = put_data(endpoint, data);
-    response
-      .then(
-        function() {
-          console.log("success");
-          this.props.ToggleProcessingMessage(false);
-        }.bind(this)
-      )
-      .catch(
-        function(data) {
-          this.props.errorToggle("failed to open selected alerts", data);
+          this.props.errorToggle(`failed to ${flag} selected alerts`, data);
           this.props.ToggleProcessingMessage(false);
         }.bind(this)
       );
@@ -238,13 +216,13 @@ export default class SelectedHeaderOptions extends React.Component {
             event.keyCode === 79 &&
             (event.ctrlKey !== true && event.metaKey !== true)
           ) {
-            this.alertOpenSelected();
+            this.alertOpenOrCloseSelected("open");
           }
           if (
             event.keyCode === 67 &&
             (event.ctrlKey !== true && event.metaKey !== true)
           ) {
-            this.alertCloseSelected();
+            this.alertOpenOrCloseSelected("closed");
           }
         }.bind(this)
       );
@@ -583,7 +561,7 @@ export default class SelectedHeaderOptions extends React.Component {
             />
             <Button
               eventkey="8"
-              onClick={this.alertOpenSelected}
+              onClick={() => this.alertOpenOrCloseSelected("open")}
               bsSize="xsmall"
               bsStyle="danger"
             >
@@ -591,7 +569,7 @@ export default class SelectedHeaderOptions extends React.Component {
             </Button>
             <Button
               eventkey="9"
-              onClick={this.alertCloseSelected}
+              onClick={() => this.alertOpenOrCloseSelected("closed")}
               bsSize="xsmall"
               bsStyle="success"
             >
