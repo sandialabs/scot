@@ -502,93 +502,7 @@ export default class SelectedHeaderOptions extends React.Component {
       );
     } else {
       return (
-        <div>
-          {this.props.alertsSelected.length > 0 ? (
-            <div className="entry-header second-menu detail-buttons">
-              <Button
-                eventkey="8"
-                onClick={() => this.alertOpenOrCloseSelected("open")}
-                bsSize="xsmall"
-                bsStyle="danger"
-              >
-                <img src="/images/open.png" alt="" /> Open Selected
-              </Button>
-              <Button
-                eventkey="9"
-                onClick={() => this.alertOpenOrCloseSelected("closed")}
-                bsSize="xsmall"
-                bsStyle="success"
-              >
-                <i className="fa fa-flag-checkered" aria-hidden="true" /> Close
-                Selected
-              </Button>
-              <Button
-                eventkey="10"
-                onClick={this.alertPromoteSelected}
-                bsSize="xsmall"
-                bsStyle="warning"
-              >
-                <img src="/images/megaphone.png" alt="" /> Promote Selected
-              </Button>
-              <Button
-                eventkey="11"
-                onClick={this.alertSelectExisting}
-                bsSize="xsmall"
-              >
-                <img src="/images/megaphone_plus.png" alt="" /> Add Selected to{" "}
-                <b>Existing Event</b>
-              </Button>
-              <CSVLink
-                data={this.state.dataToDownload}
-                filename="data.csv"
-                className="hidden"
-                ref={r => (this.csvLink = r)}
-                target="_blank"
-              />
-              <Button
-                eventkey="14"
-                onClick={this.alertExportCSV}
-                bsSize="xsmall"
-              >
-                <img src="/images/csv_text.png" alt="" /> Export to CSV
-              </Button>
-              <Button onClick={this.props.linksModalToggle} bsSize="xsmall">
-                <i className="fa fa-link" aria-hidden="true" /> Links
-              </Button>
-              <Marker
-                type={type}
-                id={id}
-                string={string}
-                isAlert={true}
-                getSelectedAlerts={this.getSelectedAlerts}
-                alertsSelected={this.props.alertsSelected}
-              />
-              <Button bsSize="xsmall" onClick={this.createLinkSignature}>
-                <i className="fa fa-pencil" aria-hidden="true" /> Create & Link
-                Signature
-              </Button>
-              <Button
-                onClick={this.PrintPrepare}
-                bsSize="xsmall"
-                bsStyle="info"
-              >
-                <i className="fa fa-print" aria-hidden="true" /> Print
-              </Button>
-              <Button
-                onClick={this.Print}
-                style={{ display: "none" }}
-                id="print-button"
-              />
-              <Button
-                eventkey="15"
-                onClick={() => this.props.deleteToggle("alert")}
-                bsSize="xsmall"
-                bsStyle="danger"
-              >
-                <i className="fa fa-trash" aria-hidden="true" /> Delete Selected
-              </Button>
-            </div>
-          ) : null}
+        <div className="entry-header second-menu detail-buttons">
           <ButtonGroup style={{ float: "right" }}>
             <Marker type={type} id={id} string={string} />
             <Button onClick={this.props.markModalToggle} bsSize="xsmall">
@@ -604,7 +518,7 @@ export default class SelectedHeaderOptions extends React.Component {
               <i className="fa fa-refresh" aria-hidden="true" />
             </Button>
           </ButtonGroup>
-          <div className="entry-header detail-buttons">
+          <span className="entry-header detail-buttons">
             <Button eventkey="1" onClick={this.toggleFlair} bsSize="xsmall">
               <i className="fa fa-eye-slash" aria-hidden="true" /> Toggle Flair
             </Button>
@@ -677,7 +591,86 @@ export default class SelectedHeaderOptions extends React.Component {
               <i className="fa fa-trash" aria-hidden="true" /> Delete{" "}
               {subjectType}
             </Button>
-          </div>
+          </span>
+          {this.props.alertsSelected.length > 0 ? (
+            <span>
+              <Button
+                eventkey="8"
+                onClick={() => this.alertOpenOrCloseSelected("open")}
+                bsSize="xsmall"
+                bsStyle="danger"
+              >
+                <img src="/images/open.png" alt="" /> Open Selected
+              </Button>
+              <Button
+                eventkey="9"
+                onClick={() => this.alertOpenOrCloseSelected("closed")}
+                bsSize="xsmall"
+                bsStyle="success"
+              >
+                <i className="fa fa-flag-checkered" aria-hidden="true" /> Close
+                Selected
+              </Button>
+              <Button
+                eventkey="10"
+                onClick={this.alertPromoteSelected}
+                bsSize="xsmall"
+                bsStyle="warning"
+              >
+                <img src="/images/megaphone.png" alt="" /> Promote Selected
+              </Button>
+              <Button
+                eventkey="11"
+                onClick={this.alertSelectExisting}
+                bsSize="xsmall"
+              >
+                <img src="/images/megaphone_plus.png" alt="" /> Add Selected to{" "}
+                <b>Existing Event</b>
+              </Button>
+              <CSVLink
+                data={this.state.dataToDownload}
+                filename="data.csv"
+                className="hidden"
+                ref={r => (this.csvLink = r)}
+                target="_blank"
+              />
+              <Button
+                eventkey="14"
+                onClick={this.alertExportCSV}
+                bsSize="xsmall"
+              >
+                <img src="/images/csv_text.png" alt="" /> Export to CSV
+              </Button>
+              <Marker
+                type={type}
+                id={id}
+                string={string}
+                isAlert={true}
+                getSelectedAlerts={this.getSelectedAlerts}
+                alertsSelected={this.props.alertsSelected}
+              />
+              <Button
+                onClick={this.PrintPrepare}
+                bsSize="xsmall"
+                bsStyle="info"
+              >
+                <i className="fa fa-print" aria-hidden="true" /> Print
+              </Button>
+              <Button
+                onClick={this.Print}
+                style={{ display: "none" }}
+                id="print-button"
+              />
+              <Button
+                eventkey="15"
+                onClick={() => this.props.deleteToggle("alert")}
+                bsSize="xsmall"
+                bsStyle="danger"
+              >
+                <i className="fa fa-trash" aria-hidden="true" /> Delete Selected
+              </Button>
+            </span>
+          ) : null}
         </div>
       );
     }

@@ -121,7 +121,7 @@ export default class Marker extends React.Component {
   }
 
   getSelectedAlerts() {
-    return this.props.alertsSelected;
+    return this.props.alertsSelected.map(alert => alert.id);
   }
 }
 
