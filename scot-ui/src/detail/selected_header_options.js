@@ -91,7 +91,7 @@ export default class SelectedHeaderOptions extends React.Component {
         let promoteTo = {
           promote: response.data.pid
         };
-        if (array.length == 1) {
+        if (array.length === 1) {
           this.props.ToggleProcessingMessage(false);
         }
         array.forEach(
@@ -133,11 +133,9 @@ export default class SelectedHeaderOptions extends React.Component {
           let endpoint = `/scot/api/v2/alert/${alert.id}`;
           let response = put_data(endpoint, data);
           response
-            .then(
-              function() {
-                window.open("#/event/" + text);
-              }.bind(this)
-            )
+            .then(function() {
+              window.open("#/event/" + text);
+            })
             .catch(
               function() {
                 prompt("Please use numbers only");
@@ -154,16 +152,14 @@ export default class SelectedHeaderOptions extends React.Component {
     var data_to_download = [];
     currentRecords.forEach(
       function(row) {
-        Object.keys(row).forEach(
-          function(key) {
-            //here lets strip html tags
-            if (typeof row[key] === "string") {
-              let regex = /(<([^>]+)>)/gi;
-              let body = row[key];
-              row[key] = body.replace(regex, "");
-            }
-          }.bind(this)
-        );
+        Object.keys(row).forEach(function(key) {
+          //here lets strip html tags
+          if (typeof row[key] === "string") {
+            let regex = /(<([^>]+)>)/gi;
+            let body = row[key];
+            row[key] = body.replace(regex, "");
+          }
+        });
         data_to_download.push(row);
       }.bind(this)
     );
@@ -326,7 +322,6 @@ export default class SelectedHeaderOptions extends React.Component {
   };
 
   render = () => {
-    const { ...other } = this.props;
     let subjectType = this.props.subjectType;
     let type = this.props.type;
     let id = this.props.id;
@@ -506,161 +501,109 @@ export default class SelectedHeaderOptions extends React.Component {
         </div>
       );
     } else {
-      if (this.props.alertsSelected.length > 0) {
-        return (
-          <div className="entry-header second-menu detail-buttons">
-            <Button eventkey="1" onClick={this.toggleFlair} bsSize="xsmall">
-              <i className="fa fa-eye-slash" aria-hidden="true" /> Toggle Flair
-            </Button>
-            <Button eventkey="2" onClick={this.reparseFlair} bsSize="xsmall">
-              <i className="fa fa-refresh" aria-hidden="true" /> Reparse Flair
-            </Button>
-            {this.props.guideID == null ? null : this.props.guideID.length !==
-              0 ? (
-              <Button eventkey="3" onClick={this.guideToggle} bsSize="xsmall">
-                <img src="/images/guide.png" alt="" /> Guide
-              </Button>
-            ) : (
-              <Button eventkey="3" onClick={this.createGuide} bsSize="xsmall">
-                <img src="/images/guide.png" alt="" /> Create Guide
-              </Button>
-            )}
-            {this.props.headerData == null ? null : (
-              <Button eventkey="4" onClick={this.sourceToggle} bsSize="xsmall">
-                <img src="/images/code.png" alt="" /> View Source
-              </Button>
-            )}
-            <Button
-              eventkey="5"
-              onClick={this.props.entitiesToggle}
-              bsSize="xsmall"
-            >
-              <span className="entity">__</span> View Entities
-            </Button>
-            {type === "alertgroup" || type === "event" || type === "intel" ? (
+      return (
+        <div>
+          {this.props.alertsSelected.length > 0 ? (
+            <div className="entry-header second-menu detail-buttons">
               <Button
-                eventkey="6"
-                onClick={this.props.viewedByHistoryToggle}
+                eventkey="8"
+                onClick={() => this.alertOpenOrCloseSelected("open")}
+                bsSize="xsmall"
+                bsStyle="danger"
+              >
+                <img src="/images/open.png" alt="" /> Open Selected
+              </Button>
+              <Button
+                eventkey="9"
+                onClick={() => this.alertOpenOrCloseSelected("closed")}
+                bsSize="xsmall"
+                bsStyle="success"
+              >
+                <i className="fa fa-flag-checkered" aria-hidden="true" /> Close
+                Selected
+              </Button>
+              <Button
+                eventkey="10"
+                onClick={this.alertPromoteSelected}
+                bsSize="xsmall"
+                bsStyle="warning"
+              >
+                <img src="/images/megaphone.png" alt="" /> Promote Selected
+              </Button>
+              <Button
+                eventkey="11"
+                onClick={this.alertSelectExisting}
                 bsSize="xsmall"
               >
-                <img src="/images/clock.png" alt="" /> Viewed By History
+                <img src="/images/megaphone_plus.png" alt="" /> Add Selected to{" "}
+                <b>Existing Event</b>
               </Button>
-            ) : null}
-
-            <Button
-              eventkey="7"
-              onClick={this.props.changeHistoryToggle}
-              bsSize="xsmall"
-            >
-              <img src="/images/clock.png" alt="" /> {subjectType} History
-            </Button>
-            <TrafficLightProtocol
-              type={type}
-              id={id}
-              tlp={this.props.headerData.tlp}
-            />
-            <Button
-              eventkey="8"
-              onClick={() => this.alertOpenOrCloseSelected("open")}
-              bsSize="xsmall"
-              bsStyle="danger"
-            >
-              <img src="/images/open.png" alt="" /> Open Selected
-            </Button>
-            <Button
-              eventkey="9"
-              onClick={() => this.alertOpenOrCloseSelected("closed")}
-              bsSize="xsmall"
-              bsStyle="success"
-            >
-              <i className="fa fa-flag-checkered" aria-hidden="true" /> Close
-              Selected
-            </Button>
-            <Button
-              eventkey="10"
-              onClick={this.alertPromoteSelected}
-              bsSize="xsmall"
-              bsStyle="warning"
-            >
-              <img src="/images/megaphone.png" alt="" /> Promote Selected
-            </Button>
-            <Button
-              eventkey="11"
-              onClick={this.alertSelectExisting}
-              bsSize="xsmall"
-            >
-              <img src="/images/megaphone_plus.png" alt="" /> Add Selected to{" "}
-              <b>Existing Event</b>
-            </Button>
-            <CSVLink
-              data={this.state.dataToDownload}
-              filename="data.csv"
-              className="hidden"
-              ref={r => (this.csvLink = r)}
-              target="_blank"
-            />
-            <Button eventkey="14" onClick={this.alertExportCSV} bsSize="xsmall">
-              <img src="/images/csv_text.png" alt="" /> Export to CSV
-            </Button>
-            <Button onClick={this.props.linksModalToggle} bsSize="xsmall">
-              <i className="fa fa-link" aria-hidden="true" /> Links
-            </Button>
-            <Marker
-              type={type}
-              id={id}
-              string={string}
-              isAlert={true}
-              getSelectedAlerts={this.getSelectedAlerts}
-              alertsSelected={this.props.alertsSelected}
-            />
-            <Button bsSize="xsmall" onClick={this.createLinkSignature}>
-              <i className="fa fa-pencil" aria-hidden="true" /> Create & Link
-              Signature
-            </Button>
-            <Button onClick={this.PrintPrepare} bsSize="xsmall" bsStyle="info">
-              <i className="fa fa-print" aria-hidden="true" /> Print
-            </Button>
-            <Button
-              onClick={this.Print}
-              style={{ display: "none" }}
-              id="print-button"
-            />
-            <Button
-              eventkey="15"
-              onClick={() => this.props.deleteToggle("alert")}
-              bsSize="xsmall"
-              bsStyle="danger"
-            >
-              <i className="fa fa-trash" aria-hidden="true" /> Delete Selected
-            </Button>
-            <Button
-              bsStyle="danger"
-              eventkey="17"
-              onClick={() => this.props.deleteToggle(type)}
-              bsSize="xsmall"
-            >
-              <i className="fa fa-trash" aria-hidden="true" /> Delete{" "}
-              {subjectType}
-            </Button>
-            <ButtonGroup style={{ float: "right" }}>
-              <Marker type={type} id={id} string={string} />
-              <Button onClick={this.props.markModalToggle} bsSize="xsmall">
-                Marked Actions
+              <CSVLink
+                data={this.state.dataToDownload}
+                filename="data.csv"
+                className="hidden"
+                ref={r => (this.csvLink = r)}
+                target="_blank"
+              />
+              <Button
+                eventkey="14"
+                onClick={this.alertExportCSV}
+                bsSize="xsmall"
+              >
+                <img src="/images/csv_text.png" alt="" /> Export to CSV
+              </Button>
+              <Button onClick={this.props.linksModalToggle} bsSize="xsmall">
+                <i className="fa fa-link" aria-hidden="true" /> Links
+              </Button>
+              <Marker
+                type={type}
+                id={id}
+                string={string}
+                isAlert={true}
+                getSelectedAlerts={this.getSelectedAlerts}
+                alertsSelected={this.props.alertsSelected}
+              />
+              <Button bsSize="xsmall" onClick={this.createLinkSignature}>
+                <i className="fa fa-pencil" aria-hidden="true" /> Create & Link
+                Signature
               </Button>
               <Button
+                onClick={this.PrintPrepare}
+                bsSize="xsmall"
                 bsStyle="info"
-                eventkey="16"
-                onClick={this.manualUpdate}
-                bsSize="xsmall"
-                style={{ float: "right" }}
               >
-                <i className="fa fa-refresh" aria-hidden="true" />
+                <i className="fa fa-print" aria-hidden="true" /> Print
               </Button>
-            </ButtonGroup>
-          </div>
-        );
-      } else {
-        return (
+              <Button
+                onClick={this.Print}
+                style={{ display: "none" }}
+                id="print-button"
+              />
+              <Button
+                eventkey="15"
+                onClick={() => this.props.deleteToggle("alert")}
+                bsSize="xsmall"
+                bsStyle="danger"
+              >
+                <i className="fa fa-trash" aria-hidden="true" /> Delete Selected
+              </Button>
+            </div>
+          ) : null}
+          <ButtonGroup style={{ float: "right" }}>
+            <Marker type={type} id={id} string={string} />
+            <Button onClick={this.props.markModalToggle} bsSize="xsmall">
+              Marked Actions
+            </Button>
+            <Button
+              bsStyle="info"
+              eventkey="16"
+              onClick={this.manualUpdate}
+              bsSize="xsmall"
+              style={{ float: "right" }}
+            >
+              <i className="fa fa-refresh" aria-hidden="true" />
+            </Button>
+          </ButtonGroup>
           <div className="entry-header detail-buttons">
             <Button eventkey="1" onClick={this.toggleFlair} bsSize="xsmall">
               <i className="fa fa-eye-slash" aria-hidden="true" /> Toggle Flair
@@ -668,27 +611,17 @@ export default class SelectedHeaderOptions extends React.Component {
             <Button eventkey="2" onClick={this.reparseFlair} bsSize="xsmall">
               <i className="fa fa-refresh" aria-hidden="true" /> Reparse Flair
             </Button>
-            {this.props.guideID == null ? null : (
-              <span>
-                {this.props.guideID !== 0 ? (
-                  <Button
-                    eventkey="3"
-                    onClick={this.guideToggle}
-                    bsSize="xsmall"
-                  >
-                    <img src="/images/guide.png" alt="" /> Guide
-                  </Button>
-                ) : (
-                  <Button
-                    eventkey="3"
-                    onClick={this.createGuide}
-                    bsSize="xsmall"
-                  >
-                    <img src="/images/guide.png" alt="" /> Create Guide
-                  </Button>
-                )}
-              </span>
-            )}
+            <span>
+              {this.props.guideID !== null ? (
+                <Button eventkey="3" onClick={this.guideToggle} bsSize="xsmall">
+                  <img src="/images/guide.png" alt="" /> Guide
+                </Button>
+              ) : (
+                <Button eventkey="3" onClick={this.createGuide} bsSize="xsmall">
+                  <img src="/images/guide.png" alt="" /> Create Guide
+                </Button>
+              )}
+            </span>
             {this.props.headerData == null ? null : (
               <Button eventkey="4" onClick={this.sourceToggle} bsSize="xsmall">
                 <img src="/images/code.png" alt="" /> View Source
@@ -729,9 +662,7 @@ export default class SelectedHeaderOptions extends React.Component {
               <i className="fa fa-pencil" aria-hidden="true" /> Create & Link
               Signature
             </Button>
-            <Button onClick={this.PrintPrepare} bsSize="xsmall" bsStyle="info">
-              <i className="fa fa-print" aria-hidden="true" /> Print
-            </Button>
+
             <Button
               onClick={this.Print}
               style={{ display: "none" }}
@@ -746,24 +677,9 @@ export default class SelectedHeaderOptions extends React.Component {
               <i className="fa fa-trash" aria-hidden="true" /> Delete{" "}
               {subjectType}
             </Button>
-            <ButtonGroup style={{ float: "right" }}>
-              <Marker type={type} id={id} string={string} />
-              <Button onClick={this.props.markModalToggle} bsSize="xsmall">
-                Marked Actions
-              </Button>
-              <Button
-                bsStyle="info"
-                eventkey="9"
-                onClick={this.manualUpdate}
-                bsSize="xsmall"
-                style={{ float: "right" }}
-              >
-                <i className="fa fa-refresh" aria-hidden="true" />
-              </Button>
-            </ButtonGroup>
           </div>
-        );
-      }
+        </div>
+      );
     }
   };
 }

@@ -3,7 +3,6 @@ import Modal from "react-modal";
 import { Button } from "react-bootstrap";
 import PropTypes from "prop-types";
 import $ from "jquery";
-import axios from "axios";
 import { withSnackbar } from "notistack";
 import { delete_data } from "../utils/XHR";
 
@@ -53,9 +52,9 @@ class DeleteThing extends React.Component {
     const { deleteType } = this.props;
     let iterator = [];
     if (deleteType !== "alert") {
-      iterator = [this.props.id];
+      iterator = [parseInt(this.props.id, 10)];
     } else {
-      iterator = this.props.alertsSelected;
+      iterator = this.props.alertsSelected.map(alert => alert.id);
     }
     iterator.forEach(
       function(id, index) {
@@ -63,6 +62,7 @@ class DeleteThing extends React.Component {
         let url = `/scot/api/v2/${deleteType}/${id}`;
 
         const response = delete_data(url);
+        this.props.removeCallback(parseInt(this.props.id, 10));
         response
           .then(
             function() {
@@ -71,23 +71,24 @@ class DeleteThing extends React.Component {
               }
               if (deleteType !== "alert") {
                 this.props.history.push("/" + deleteType);
-                this.props.removeCallback(this.props.id);
+                enqueueSnackbar(`Successfully deleted ${this.props.id}.`, {
+                  variant: "success"
+                });
+              } else if (deleteType === "alert") {
+                enqueueSnackbar(`Successfully deleted ${id}.`, {
+                  variant: "success"
+                });
               }
-              enqueueSnackbar(`Successfully deleted ${id}.`, {
-                variant: "success"
-              });
             }.bind(this)
           )
-          .catch(
-            function(error) {
-              enqueueSnackbar("Failed deleting exception.", {
-                variant: "error"
-              });
-            }.bind(this)
-          );
+          .catch(function(error) {
+            enqueueSnackbar("Failed deleting exception.", {
+              variant: "error"
+            });
+          });
       }.bind(this)
     );
-    this.props.deleteToggle();
+    this.props.deleteToggle(deleteType);
   };
 
   render() {
