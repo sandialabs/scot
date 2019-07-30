@@ -1,5 +1,5 @@
 import * as SessionStorage from "../utils/session_storage";
-import $ from 'jquery'
+import $ from "jquery";
 
 export class Amq {
   constructor() {
@@ -50,24 +50,24 @@ export class Amq {
         clientId: this.client,
         destination: "topic://scot"
       },
-      success: function (data) {
+      success: function(data) {
         console.log("Registered client as " + this.client);
         if (!restart) {
           //only start the update if this is not a restart. Restart will just use the new clientid once it is live.
           setTimeout(
-            function () {
+            function() {
               this.get_data();
             }.bind(this),
             1000
           );
         }
       }.bind(this),
-      error: function (data) {
+      error: function(data) {
         console.log("Error: failed to register client, retry in 1 sec");
-        setTimeout(function () {
+        setTimeout(function() {
           this.register_client();
         }, 1000);
-      }.bind(this)
+      }
     });
   };
 
@@ -85,10 +85,10 @@ export class Amq {
         json: "true",
         username: this.whoami
       },
-      success: function (data) {
+      success: function(data) {
         console.log("Received Message");
         setTimeout(
-          function () {
+          function() {
             this.get_data();
           }.bind(this),
           40
@@ -96,19 +96,21 @@ export class Amq {
         let messages = $(data)
           .text()
           .split("\n");
-        messages.forEach(function (message, key) {
-          if (message !== "") {
-            let json = JSON.parse(message);
-            console.log(json);
-            this.process_message(json);
-            this.handle_update(json);
-            return true;
-          }
-        }.bind(this));
+        messages.forEach(
+          function(message, key) {
+            if (message !== "") {
+              let json = JSON.parse(message);
+              console.log(json);
+              this.process_message(json);
+              this.handle_update(json);
+              return true;
+            }
+          }.bind(this)
+        );
       }.bind(this),
-      error: function () {
+      error: function() {
         setTimeout(
-          function () {
+          function() {
             this.getData(this.client);
           }.bind(this),
           1000
@@ -121,7 +123,7 @@ export class Amq {
   checkNumber(number) {
     let parsed = parseInt(number, 10);
     if (isNaN(parsed)) {
-      return false
+      return false;
     } else {
       return true;
     }
@@ -130,29 +132,22 @@ export class Amq {
   create_callback_object = (key, callback) => {
     let intkey = key;
     if (this.checkNumber(intkey)) {
-      intkey = parseInt(intkey, 10)
+      intkey = parseInt(intkey, 10);
     }
     if (this.cb_map.has(intkey)) {
       this.cb_map.get(intkey).add(callback);
     } else {
       let newset = new Set();
-      newset.add(callback)
-      this.cb_map.set(intkey, newset)
+      newset.add(callback);
+      this.cb_map.set(intkey, newset);
     }
   };
 
-  remove_callback_object = (key, callback) => {
-    let callbacks = this.cb_map.get(key)
-    callbacks.forEach(function (element) {
-      if (callback == element) {
-        callbacks.delete(callback);
-      }
-    }.bind(this));
+  remove_callback_object = key => {
+    this.cb_map.delete(key);
   };
 
-
   process_message = payload => {
-
     if (payload.action === "wall") {
       this.activemqwho = payload.data.who;
       this.activemqmessage = payload.data.message;
@@ -167,39 +162,38 @@ export class Amq {
       this.activemqhostname = payload.hostname;
       this.activemqpid = payload.pid;
     }
-  }
+  };
 
   execute_callback_function = searchstring => {
     try {
       let f = this.cb_map.get(searchstring);
       if (f !== undefined) {
-        f.forEach(function (item) {
+        f.forEach(function(item) {
           item();
         });
       }
-      let noti = this.cb_map.get('notification');
+      let noti = this.cb_map.get("notification");
       if (noti !== undefined) {
-        noti.forEach(function (item) {
+        noti.forEach(function(item) {
           item();
-        })
+        });
       }
     } catch (e) {
       throw e;
     }
-  }
-
+  };
 
   handle_update = message => {
     let searchstring = "";
-    if (message.action === 'wall') {
-      searchstring = 'wall'
-    } else if (message.action === 'created') {
-      searchstring = `${message.data.type}:listview`
-    } else if (message.action === 'updated') {
-      searchstring = message.data.id
-    } else if (message.action === 'deleted') {
-      searchstring = message.data.id
+    if (message.action === "wall") {
+      searchstring = "wall";
+    } else if (message.action === "created") {
+      searchstring = `${message.data.type}:listview`;
+    } else if (message.action === "updated") {
+      searchstring = message.data.id;
+    } else if (message.action === "deleted") {
+      searchstring = message.data.id;
     }
     this.execute_callback_function(searchstring);
-  }
+  };
 }

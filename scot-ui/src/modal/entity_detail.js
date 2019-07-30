@@ -109,110 +109,59 @@ export default class EntityDetail extends React.Component {
     this.setState({ isMounted: true });
     let currentTabArray = this.state.tabs;
     let valueClicked = this.props.entityvalue;
-    if (
-      this.props.entitytype !== "source" &&
-      this.props.entitytype !== "entry"
-    ) {
+    if (this.props.entitytype !== "source") {
       if (this.state.entityid === undefined || isNaN(this.state.entityid)) {
-        let endpoint = `scot/api/v2/${this.props.entitytype}"/byname`;
-        let params = { name: valueClicked };
-        let data_response = get_data(endpoint, params);
-        data_response.then(
-          function(response) {
-            let entityid = response.id;
-            this.setState({ entityid: entityid });
-            let entity_endpoint = `scot/api/v2/${
-              this.props.entitytype
-            }/${entityid}`;
-            let entity_response = get_data(entity_endpoint, params);
-            entity_response.then(
-              function(result) {
-                let newTab = {
-                  data: result,
-                  entityid: entityid,
-                  entitytype: this.props.entitytype,
-                  valueClicked: result.value
-                };
-
-                currentTabArray.push(newTab);
-                if (this.state.isMounted) {
-                  let entityidsarray = [];
-                  entityidsarray.push(entityid);
-                  this.setState({
-                    tabs: currentTabArray,
-                    currentKey: entityid,
-                    initialLoad: true,
-                    processedIds: entityidsarray
-                  });
-                  this.props.createCallback(this.props.entityid, this.updated);
-                }
-              }
-                .bind(this)
-                .catch(function(error) {
+        $.ajax({
+          type: "GET",
+          url: "scot/api/v2/" + this.props.entitytype + "/byname",
+          data: { name: valueClicked },
+          success: function(result) {
+            let entityid = result.id;
+            if (this.state.isMounted) {
+              this.setState({ entityid: entityid });
+              $.ajax({
+                type: "GET",
+                url: "scot/api/v2/" + this.props.entitytype + "/" + entityid,
+                success: function(result) {
+                  //this.setState({entityData:result})
+                  let newTab = {
+                    data: result,
+                    entityid: entityid,
+                    entitytype: this.props.entitytype,
+                    valueClicked: result.value
+                  };
+                  currentTabArray.push(newTab);
+                  if (this.state.isMounted) {
+                    let entityidsarray = [];
+                    entityidsarray.push(entityid);
+                    this.setState({
+                      tabs: currentTabArray,
+                      currentKey: entityid,
+                      initialLoad: true,
+                      processedIds: entityidsarray
+                    });
+                    this.props.createCallback(
+                      this.props.entityid,
+                      this.updated
+                    );
+                  }
+                }.bind(this),
+                error: function(data) {
                   this.props.errorToggle(
                     "failed to get entity detail information",
-                    error
+                    data
                   );
-                })
+                }.bind(this)
+              });
+            }
+          }.bind(this),
+          error: function(data) {
+            this.props.errorToggle(
+              "failed to get entity detail id information ",
+              data
             );
-          }
-            .bind(this)
-            .catch(function(error) {
-              this.props.errorToggle(
-                "failed to get entity detail id information ",
-                error
-              );
-            })
-        );
-
-        // $.ajax({
-        //   type: "GET",
-        //   url: "scot/api/v2/" + this.props.entitytype + "/byname",
-        //   data: { name: valueClicked },
-        //   success: function (result) {
-        //     let entityid = result.id;
-        //     if (this.state.isMounted) {
-        //       this.setState({ entityid: entityid });
-        //       $.ajax({
-        //         type: "GET",
-        //         url: "scot/api/v2/" + this.props.entitytype + "/" + entityid,
-        //         success: function (result) {
-        //           //this.setState({entityData:result})
-        //           let newTab = {
-        //             data: result,
-        //             entityid: entityid,
-        //             entitytype: this.props.entitytype,
-        //             valueClicked: result.value
-        //           };
-        //           currentTabArray.push(newTab);
-        //           if (this.state.isMounted) {
-        //             let entityidsarray = [];
-        //             entityidsarray.push(entityid);
-        //             this.setState({
-        //               tabs: currentTabArray,
-        //               currentKey: entityid,
-        //               initialLoad: true,
-        //               processedIds: entityidsarray
-        //             });
-        //             this.props.createCallback(this.props.entityid, this.updated);
-        //           }
-        //         }.bind(this),
-        //         error: function (data) {
-        //           this.props.errorToggle(
-        //             "failed to get entity detail information",
-        //             data
-        //           );
-        //         }.bind(this)
-        //       });
-        //     }
-        //   }.bind(this),
-        //   error: function (data) {
-        //     this.props.errorToggle(
-        //       "failed to get entity detail id information ",
-        //       data
-        //     );
-        //   }.bind(this)
-        // });
+          }.bind(this)
+        });
       } else {
         let id = this.state.entityid;
         if (!Array.isArray(id)) {
@@ -310,7 +259,163 @@ export default class EntityDetail extends React.Component {
         }
       });
     });
-    // this.props.watcher();
+
+    // this.setState({ isMounted: true });
+    // let currentTabArray = this.state.tabs;
+    // let valueClicked = this.props.entityvalue;
+    // if (
+    //   this.props.entitytype !== "source" &&
+    //   this.props.entitytype !== "entry"
+    // ) {
+    //   if (this.state.entityid === undefined || isNaN(this.state.entityid)) {
+    //     let endpoint = `scot/api/v2/${this.props.entitytype}"/byname`;
+    //     let params = { name: valueClicked };
+    //     let data_response = get_data(endpoint, params);
+    //     data_response.then(
+    //       function(response) {
+    //         let entityid = response.id;
+    //         this.setState({ entityid: entityid });
+    //         let entity_endpoint = `scot/api/v2/${
+    //           this.props.entitytype
+    //         }/${entityid}`;
+    //         let entity_response = get_data(entity_endpoint, params);
+    //         entity_response.then(
+    //           function(result) {
+    //             let newTab = {
+    //               data: result,
+    //               entityid: entityid,
+    //               entitytype: this.props.entitytype,
+    //               valueClicked: result.value
+    //             };
+
+    //             currentTabArray.push(newTab);
+    //             if (this.state.isMounted) {
+    //               let entityidsarray = [];
+    //               entityidsarray.push(entityid);
+    //               this.setState({
+    //                 tabs: currentTabArray,
+    //                 currentKey: entityid,
+    //                 initialLoad: true,
+    //                 processedIds: entityidsarray
+    //               });
+    //               this.props.createCallback(this.props.entityid, this.updated);
+    //             }
+    //           }
+    //             .bind(this)
+    //             .catch(function(error) {
+    //               this.props.errorToggle(
+    //                 "failed to get entity detail information",
+    //                 error
+    //               );
+    //             })
+    //         );
+    //       }
+    //         .bind(this)
+    //         .catch(function(error) {
+    //           this.props.errorToggle(
+    //             "failed to get entity detail id information ",
+    //             error
+    //           );
+    //         })
+    //     );
+    //   } else {
+    //     let id = this.state.entityid;
+    //     if (!Array.isArray(id)) {
+    //       id = [parseInt(id, 10)];
+    //     }
+
+    //     for (let i = 0; i < id.length; i++) {
+    //       $.ajax({
+    //         type: "GET",
+    //         url: "scot/api/v2/" + this.props.entitytype + "/" + id[i],
+    //         success: function(result) {
+    //           //this.setState({entityData:result})
+    //           let newTab = {
+    //             data: result,
+    //             entityid: result.id,
+    //             entitytype: this.props.entitytype,
+    //             valueClicked: result.value
+    //           };
+    //           currentTabArray.push(newTab);
+    //           if (this.state.isMounted) {
+    //             let entityidsarray = [];
+    //             entityidsarray.push(result.id);
+    //             this.setState({
+    //               tabs: currentTabArray,
+    //               currentKey: result.id,
+    //               initialLoad: true,
+    //               processedIds: entityidsarray
+    //             });
+    //             this.props.createCallback(this.props.entityid, this.updated);
+    //           }
+    //         }.bind(this),
+    //         error: function(data) {
+    //           this.props.errorToggle(
+    //             "failed to get entity detail information",
+    //             data
+    //           );
+    //         }.bind(this)
+    //       });
+    //     }
+    //   }
+    // } else {
+    //   let newTab = {
+    //     data: this.props.data,
+    //     entityid: this.props.entityid,
+    //     entitytype: this.props.entitytype,
+    //     valueClicked: this.props.entitytype
+    //   };
+    //   currentTabArray.push(newTab);
+    //   // if (this.state.isMounted) {
+    //   let entityidsarray = [];
+    //   entityidsarray.push(this.props.entityid);
+    //   this.setState({
+    //     tabs: currentTabArray,
+    //     currentKey: parseInt(this.props.entityid, 10),
+    //     initialLoad: true,
+    //     processedIds: entityidsarray
+    //   });
+    //   this.props.createCallback(this.props.entityid, this.updated);
+    // }
+    // //Esc key closes popup
+    // function escHandler(event) {
+    //   //prevent from working when in input
+    //   if ($("input").is(":focus")) {
+    //     return;
+    //   }
+    //   if ($("#main-search-results")[0] !== undefined) {
+    //     return;
+    //   } //close search results before closing entity div
+    //   //check for esc with keyCode
+    //   if (event.keyCode === 27) {
+    //     this.props.flairToolbarOff();
+    //     event.preventDefault();
+    //   }
+    // }
+
+    // $(document).keydown(escHandler.bind(this));
+    // this.containerHeightAdjust();
+    // window.addEventListener("resize", this.containerHeightAdjust);
+    // this.onLoad();
+
+    // $("iframe").each(function(index, ifr) {
+    //   //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
+    //   ifr.contentWindow.requestAnimationFrame(function() {
+    //     if (ifr.contentDocument != null) {
+    //       let ifrContents = $(ifr).contents();
+    //       //This makes all href point to blank so they don't reload the iframe
+    //       $(ifr.contentDocument.body)
+    //         .find("a")
+    //         .attr("target", "_blank");
+    //       //Copies href to a new attribute, url, before we make href an anchor (so it doesn't go anywhere when clicked)
+    //       ifrContents.find("a").each(function(index, a) {
+    //         let url = $(a).attr("href");
+    //         $(a).attr("url", url);
+    //       });
+    //     }
+    //   });
+    // });
+    // // this.props.watcher();
   };
 
   componentWillUnmount = () => {
