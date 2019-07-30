@@ -374,7 +374,13 @@ sub post_list_process {
             else {
                 $tobj    = $self->env->mongo->collection(ucfirst($target->{type}))->find_iid($target->{id});
             }
-            my $subject = $tobj->subject // '';
+            my $subject;
+            if ( defined $tobj ) {
+                $subject = $tobj->subject // '';
+            }
+            else {
+                $subject = $target->{type}.":".$target->{id};
+            }
             $href->{subject} = $subject;
             push @records, $href;
         }
