@@ -395,6 +395,7 @@ export default class SelectedEntry extends React.Component {
         ) : null}
         {showEntryData ? (
           <EntryIterator
+            updated={this.props.updated}
             removeCallback={this.props.removeCallback}
             createCallback={this.props.createCallback}
             data={data}
@@ -552,6 +553,7 @@ class EntryIterator extends React.Component {
               removeCallback={this.props.removeCallback}
               addFlair={this.props.addFlair}
               setAlertColumns={this.props.setAlertColumns}
+              updated={this.props.updated}
             />
           </div>
         );
@@ -701,6 +703,7 @@ class NewAlertTable extends React.Component {
                 removeCallback={this.props.removeCallback}
                 entityData={this.props.entityData}
                 addFlair={this.props.addFlair}
+                updated={this.props.updated}
               />
             );
           }}
@@ -821,9 +824,9 @@ class EntryParent extends React.Component {
     };
   }
 
-  componentWillUnmount() {
-    this.props.removeCallback(this.props.items.id);
-  }
+  // componentWillUnmount() {
+  //   this.props.removeCallback(this.props.items.id);
+  // }
 
   componentDidMount = () => {
     this.props.createCallback(this.props.items.id, this.refreshButton);

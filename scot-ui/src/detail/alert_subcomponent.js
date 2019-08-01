@@ -8,6 +8,7 @@ function AddEntryToAlert({ ...props }) {
 
   function toggleVisibility() {
     setVisibility(!visible);
+    props.updated();
   }
 
   return (
