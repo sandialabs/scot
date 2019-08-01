@@ -147,6 +147,11 @@ export default class SelectedHeader extends React.Component {
           success: function(result) {
             if (this.state.isMounted) {
               let entryResult = result.records;
+              entryResult.forEach(
+                function(item) {
+                  this.props.createCallback(item.id, this.updated);
+                }.bind(this)
+              );
               this.setState({
                 showEntryData: true,
                 entryData: entryResult,
@@ -269,6 +274,11 @@ export default class SelectedHeader extends React.Component {
   componentWillUnmount = () => {
     this.setState({ isMounted: false });
     clearTimeout(InitialAjaxLoad);
+    this.state.entryData.forEach(
+      function(entry) {
+        this.props.removeCallback(entry.id);
+      }.bind(this)
+    );
     this.props.removeCallback(parseInt(this.props.id, 10), this.updated);
   };
 
@@ -496,8 +506,6 @@ export default class SelectedHeader extends React.Component {
   };
 
   entryToggle = () => {
-    let entityoffset = { top: 0, left: 0 }; //set to 0 so it appears in a default location.
-    this.flairToolbarToggle(this.props.id, null, "entry", entityoffset, null);
     if (this.state.entryToolbar === false) {
       this.setState({ entryToolbar: true });
     } else {
