@@ -71,8 +71,7 @@ export default class SelectedHeader extends React.Component {
       flairing: false,
       isMounted: false,
       alertsSelected: [],
-      alertsColumns: [],
-      dataToDownload: []
+      isDeleted: false
     };
   }
 
@@ -85,7 +84,7 @@ export default class SelectedHeader extends React.Component {
     let delayFunction = {
       delay: function() {
         let entryType = "entry";
-        if (this.props.type == "alertgroup") {
+        if (this.props.type === "alertgroup") {
           entryType = "alert";
         }
         //Main Type Load
@@ -103,14 +102,14 @@ export default class SelectedHeader extends React.Component {
                 sourceData: eventResult.source
               });
               if (
-                this.state.showEventData == true &&
-                this.state.showEntryData == true &&
-                this.state.showEntityData == true
+                this.state.showEventData === true &&
+                this.state.showEntryData === true &&
+                this.state.showEntityData === true
               ) {
                 this.setState({ loading: false });
               }
               if (
-                this.props.type == "alertgroup" &&
+                this.props.type === "alertgroup" &&
                 eventResult.parsed === -1
               ) {
                 this.setState({ flairing: true });
@@ -122,9 +121,9 @@ export default class SelectedHeader extends React.Component {
           error: function(result) {
             this.setState({ showEventData: true, isNotFound: true });
             if (
-              this.state.showEventData == true &&
-              this.state.showEntryData == true &&
-              this.state.showEntityData == true
+              this.state.showEventData === true &&
+              this.state.showEntryData === true &&
+              this.state.showEntityData === true
             ) {
               this.setState({ loading: false });
             }
@@ -148,6 +147,11 @@ export default class SelectedHeader extends React.Component {
           success: function(result) {
             if (this.state.isMounted) {
               let entryResult = result.records;
+              entryResult.forEach(
+                function(item) {
+                  this.props.createCallback(item.id, this.updated);
+                }.bind(this)
+              );
               this.setState({
                 showEntryData: true,
                 entryData: entryResult,
@@ -155,9 +159,9 @@ export default class SelectedHeader extends React.Component {
               });
               this.Watcher();
               if (
-                this.state.showEventData == true &&
-                this.state.showEntryData == true &&
-                this.state.showEntityData == true
+                this.state.showEventData === true &&
+                this.state.showEntryData === true &&
+                this.state.showEntityData === true
               ) {
                 this.setState({ loading: false });
               }
@@ -245,6 +249,9 @@ export default class SelectedHeader extends React.Component {
                 for (let i = 0; i < result.records.length; i++) {
                   arr.push(result.records[i].id);
                 }
+                if (arr.length === 0) {
+                  arr = null;
+                }
                 this.setState({ guideID: arr });
               }
             }.bind(this),
@@ -267,6 +274,11 @@ export default class SelectedHeader extends React.Component {
   componentWillUnmount = () => {
     this.setState({ isMounted: false });
     clearTimeout(InitialAjaxLoad);
+    this.state.entryData.forEach(
+      function(entry) {
+        this.props.removeCallback(entry.id);
+      }.bind(this)
+    );
     this.props.removeCallback(parseInt(this.props.id, 10), this.updated);
   };
 
@@ -494,8 +506,6 @@ export default class SelectedHeader extends React.Component {
   };
 
   entryToggle = () => {
-    let entityoffset = { top: 0, left: 0 }; //set to 0 so it appears in a default location.
-    this.flairToolbarToggle(this.props.id, null, "entry", entityoffset, null);
     if (this.state.entryToolbar === false) {
       this.setState({ entryToolbar: true });
     } else {
@@ -503,11 +513,14 @@ export default class SelectedHeader extends React.Component {
     }
   };
 
-  deleteToggle = type => {
+  deleteToggle = (type, isDeleted) => {
     if (this.state.deleteToolbar === false) {
       this.setState({ deleteToolbar: true, deleteType: type });
     } else {
       this.setState({ deleteToolbar: false, deleteType: type });
+    }
+    if (isDeleted) {
+      this.setState({ isDeleted: true });
     }
   };
 
@@ -805,8 +818,8 @@ export default class SelectedHeader extends React.Component {
       /** item already selected, lets filter out item (uncheck and reset state
       with new array returned from filter**/
       this.setState({
-        alertsSelected: this.state.alertsSelected.filter(function(id) {
-          return id["id"] !== row.id;
+        alertsSelected: this.state.alertsSelected.filter(function(alert) {
+          return alert["id"] !== row.id;
         })
       });
     }
@@ -1107,8 +1120,7 @@ export default class SelectedHeader extends React.Component {
                   errorToggle={this.props.errorToggle}
                   toggleFlair={this.toggleFlair}
                   alertsSelected={this.state.alertsSelected}
-                  dataToDownload={this.state.dataToDownload}
-                  alertColumns={this.state.alertColumns}
+                  guideID={this.state.guideID}
                 />
               ) : null}
               {this.state.permissionsToolbar ? (
