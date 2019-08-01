@@ -411,31 +411,27 @@ export default class SelectedEntry extends React.Component {
         )}
         {this.props.entryToolbar ? (
           <div>
-            {this.props.isAlertSelected === false ? (
-              <AddEntry
-                entryAction={"Add"}
-                type={this.props.type}
-                targetid={this.props.id}
-                id={null}
-                addedentry={this.props.entryToggle}
-                updated={this.updatedCB}
-                errorToggle={this.props.errorToggle}
-              />
-            ) : null}
+            <AddEntry
+              entryAction={"Add"}
+              type={this.props.type}
+              targetid={this.props.id}
+              id={null}
+              addedentry={this.props.entryToggle}
+              updated={this.updatedCB}
+              errorToggle={this.props.errorToggle}
+            />
           </div>
         ) : null}
         {this.props.fileUploadToolbar ? (
           <div>
-            {this.props.isAlertSelected === false ? (
-              <FileUpload
-                type={this.props.type}
-                targetid={this.props.id}
-                id={"file_upload"}
-                fileUploadToggle={this.props.fileUploadToggle}
-                updated={this.updatedCB}
-                errorToggle={this.props.errorToggle}
-              />
-            ) : null}
+            <FileUpload
+              type={this.props.type}
+              targetid={this.props.id}
+              id={"file_upload"}
+              fileUploadToggle={this.props.fileUploadToggle}
+              updated={this.updatedCB}
+              errorToggle={this.props.errorToggle}
+            />
           </div>
         ) : null}
         {this.state.flairToolbar ? (
