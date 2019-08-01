@@ -1,7 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { Button, MenuItem, OverlayTrigger, Tooltip } from "react-bootstrap";
-import $ from "jquery";
 import * as SessionStorage from "../utils/session_storage";
 
 export default class Marker extends React.Component {
@@ -122,7 +121,7 @@ export default class Marker extends React.Component {
   }
 
   getSelectedAlerts() {
-    return this.props.alertsSelected;
+    return this.props.alertsSelected.map(alert => alert.id);
   }
 }
 
