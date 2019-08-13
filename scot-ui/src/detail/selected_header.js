@@ -147,11 +147,11 @@ export default class SelectedHeader extends React.Component {
           success: function(result) {
             if (this.state.isMounted) {
               let entryResult = result.records;
-              entryResult.forEach(
-                function(item) {
-                  this.props.createCallback(item.id, this.updated);
-                }.bind(this)
-              );
+              // entryResult.forEach(
+              //   function(item) {
+              //     this.props.createCallback(item.id, this.updated);
+              //   }.bind(this)
+              // );
               this.setState({
                 showEntryData: true,
                 entryData: entryResult,
@@ -1093,6 +1093,7 @@ export default class SelectedHeader extends React.Component {
                   type={type}
                   subjectType={subjectType}
                   id={id}
+                  entryData={this.state.entryData}
                   headerData={this.state.headerData}
                   status={this.state.headerData.status}
                   promoteToggle={this.promoteToggle}

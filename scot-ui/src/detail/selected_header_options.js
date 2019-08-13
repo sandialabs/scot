@@ -49,7 +49,13 @@ export default class SelectedHeaderOptions extends React.Component {
   };
 
   alertOpenOrCloseSelected = flag => {
-    let array = this.props.alertsSelected.map(function(alert) {
+    let iterarray = [];
+    if (this.props.alertsSelected.length > 0) {
+      iterarray = this.props.alertsSelected;
+    } else if (this.props.entryData.length > 0) {
+      iterarray = this.props.entryData;
+    }
+    let array = iterarray.map(function(alert) {
       let object = { id: alert.id, status: flag };
       if (flag === "closed") {
         object["closed"] = Math.round(new Date().getTime() / 1000);
