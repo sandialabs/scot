@@ -227,7 +227,7 @@ sub flair_record {
                     push @entity, $eref;
                     $seen{$eref->{value}}++;
                 }
-                $flair{$column} = $flair{$column} . "<br>" . $flair;
+                $flair{$column} = $self->append_flair($flair{$column}, $flair);
                 $log->debug("Flair for $column is now ".$flair{$column});
                 next VALUE;
             }
@@ -238,7 +238,7 @@ sub flair_record {
                     push @entity, $eref;
                     $seen{$eref->{value}}++;
                 }
-                $flair{$column} = $flair{$column} . "<br>" . $flair;
+                $flair{$column} = $self->append_flair($flair{$column}, $flair);
                 $log->debug("Flair for $column is now ".$flair{$column});
                 next VALUE;
             }
@@ -261,7 +261,7 @@ sub flair_record {
                     push @entity, $eref;
                     $seen{$eref->{value}}++;
                 }
-                $flair{$column} = $flair{$column} . "<br>" . $flair;
+                $flair{$column} = $self->append_flair($flair{$column}, $flair);
                 $log->debug("Flair for $column is now ".$flair{$column});
                 next VALUE;
             }
@@ -298,7 +298,7 @@ sub flair_record {
 
             $log->debug("todds dumb code extracted: ",{filter=>\&Dumper, value=>$extraction});
 
-            $flair{$column} = $flair{$column} . "<br>". $extraction->{flair};
+            $flair{$column} = $self->append_flair($flair{$column}, $extraction->{flair});
             $log->debug("Flair for $column is now ".$flair{$column});
 
             foreach my $entity_href (@{$extraction->{entities}}) {
@@ -317,6 +317,16 @@ sub flair_record {
         entities        => \@entity,
         parsed          => 1,
     };
+}
+
+sub append_flair {
+    my $self            = shift;
+    my $existing_flair  = shift;
+    my $new_flair       = shift;
+
+    return $new_flair if (! defined $existing_flair);
+    return $new_flair if ( $existing_flair eq '' );
+    return $existing_flair . "<br>" . $new_flair;
 }
 
 sub process_cell {
