@@ -271,16 +271,17 @@ export default class SelectedHeader extends React.Component {
     InitialAjaxLoad = setTimeout(delayFunction.delay, 400);
   };
 
-  componentWillUnmount = () => {
+  componentWillUnmount() {
     this.setState({ isMounted: false });
     clearTimeout(InitialAjaxLoad);
-    this.state.entryData.forEach(
-      function(entry) {
-        this.props.removeCallback(entry.id);
-      }.bind(this)
-    );
-    this.props.removeCallback(parseInt(this.props.id, 10), this.updated);
-  };
+    if (this.state.entryData.forEach === "function") {
+      this.state.entryData.forEach(
+        function(entry) {
+          this.props.removeCallback(entry.id);
+        }.bind(this)
+      );
+    }
+  }
 
   componentDidUpdate = () => {
     //This runs the watcher which handles the entity popup and link warning.

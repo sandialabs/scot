@@ -1,9 +1,7 @@
 import React from "react";
 import ReactTable from "react-table";
-import { get_data, put_data, post_data } from "../utils/XHR";
 import AlertSubComponent from "./alert_subcomponent";
 import { buildTypeColumns } from "../list/tableConfig";
-import Button2 from "@material-ui/core/Button";
 import $ from "jquery";
 
 export default class NewAlertTable extends React.Component {

@@ -746,11 +746,13 @@ class NewAlertTable extends React.Component {
                   )
                     ? "#a7c6a5"
                     : "",
-                  borderBottom: "1px solid black"
+                  borderBottom: "1px solid black",
+                  maxHeight: 200,
+                  overflowY: "auto"
                 }
               };
             } else {
-              return { style: {} };
+              return { style: { maxHeight: 200, overflowY: "auto" } };
             }
           }}
         />
