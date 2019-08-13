@@ -395,7 +395,7 @@ export default class SelectedEntry extends React.Component {
         ) : null}
         {showEntryData ? (
           <EntryIterator
-            updated={this.props.updated}
+            updated={this.updatedCB}
             removeCallback={this.props.removeCallback}
             createCallback={this.props.createCallback}
             data={data}
@@ -1207,10 +1207,14 @@ class EntryParent extends React.Component {
     let content;
     let iframe = document.getElementById("iframe_" + this.props.items.id);
     if (iframe) {
-      content = iframe.contentWindow.getSelection().toString();
-      if (this.state.highlightedText !== content) {
-        console.log(iframe + " has highlighted text: " + content);
-        this.setState({ highlightedText: content });
+      if (iframe.contentWindow.getSelection() !== null) {
+        content = iframe.contentWindow.getSelection().toString();
+        if (this.state.highlightedText !== content) {
+          console.log(iframe + " has highlighted text: " + content);
+          this.setState({ highlightedText: content });
+        } else {
+          return;
+        }
       } else {
         return;
       }
