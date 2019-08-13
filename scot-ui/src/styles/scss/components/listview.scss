@@ -1,123 +1,128 @@
 // Styles for List View Component
 
+#list-view:focus,
+#list-view_content:focus {
+  outline: none;
+}
+
 .list-header-column-container {
-    display:flex;
-    flex-flow: column;
+  display: flex;
+  flex-flow: column;
 }
 
 .list-header-column {
-    display: flex;
-    flex-flow: row;
+  display: flex;
+  flex-flow: row;
 }
 
 .list-data-pane {
-    overflow-y:auto;
+  overflow-y: auto;
 }
 
 .list-view-data-row {
-    display:flex;
-    flex-flow: row;
-    width:100%;
+  display: flex;
+  flex-flow: row;
+  width: 100%;
 }
 
 .wrapper {
-    display:flex;
-    flex-flow:row;
+  display: flex;
+  flex-flow: row;
 }
 
 .id-list-header-column {
-    flex-grow: 0;
-    min-width:100px;
+  flex-grow: 0;
+  min-width: 100px;
 }
 
 .status-list-header-column {
-    flex-grow: 0;
-    min-width:100px;
+  flex-grow: 0;
+  min-width: 100px;
 }
 
 .body_plain-list-header-column {
-    flex-grow: 1;
-    min-width:200px;
+  flex-grow: 1;
+  min-width: 200px;
 }
 
 .subject-list-header-column {
-    flex-grow: 1;
-    min-width:200px;
+  flex-grow: 1;
+  min-width: 200px;
 }
 
 .created-list-header-column {
-    flex-grow: 1;
-    min-width:100px;
+  flex-grow: 1;
+  min-width: 100px;
 }
 
 .updated-list-header-column {
-    flex-grow: 1;
-    min-width:100px;
+  flex-grow: 1;
+  min-width: 100px;
 }
 
 .source-list-header-column {
-    flex-grow: 1;
-    min-width:100px;
+  flex-grow: 1;
+  min-width: 100px;
 }
 
 .tag-list-header-column {
-    flex-grow: 1;
-    min-width:100px;
+  flex-grow: 1;
+  min-width: 100px;
 }
 
 .views-list-header-column {
-    flex-grow: 1;
-    min-width:100px;
+  flex-grow: 1;
+  min-width: 100px;
 }
 
 .has-tasks-list-header-column {
-    flex-grow: 1;
-    min-width:100px;
+  flex-grow: 1;
+  min-width: 100px;
 }
 
 .owner-list-header-column {
-    flex-grow: 1;
-    min-width:100px;
+  flex-grow: 1;
+  min-width: 100px;
 }
 
 .entry_count-list-header-column {
-    flex-grow: 1;
-    min-width:100px;
+  flex-grow: 1;
+  min-width: 100px;
 }
 
 .doe_report_id-list-header-column {
-    flex-grow: 0;
-    min-width: 100px;
+  flex-grow: 0;
+  min-width: 100px;
 }
 
 .type-list-header-column {
-    flex-grow: 1;
-    min-width:100px;
+  flex-grow: 1;
+  min-width: 100px;
 }
 
 .target\.type-list-header-column {
-    flex-grow: 0;
-    min-width: 100px;
+  flex-grow: 0;
+  min-width: 100px;
 }
 
 .target\.id-list-header-column {
-    flex-grow: 0;
-    min-width: 100px;
+  flex-grow: 0;
+  min-width: 100px;
 }
 
 .task\.status-list-header-column {
-    flex-grow: 0;
-    min-width: 100px;
+  flex-grow: 0;
+  min-width: 100px;
 }
 
 .applies_to-list-header-column {
-    flex-grow: 1;
-    min-width:100px;
+  flex-grow: 1;
+  min-width: 100px;
 }
 
 .occurred-list-header-column {
-    flex-grow: 1;
-    min-width:100px;
+  flex-grow: 1;
+  min-width: 100px;
 }
 
 .table-row {
@@ -127,19 +132,19 @@
 }
 
 .list-view-table-header {
-  background-color: #ECECEC;
+  background-color: #ececec;
   font-weight: bold;
   padding-top: 2px;
   padding-bottom: 2px;
-  display:block;
+  display: block;
 }
 
-.list-view-rowodd{
-    background: #E6E6E6;
+.list-view-rowodd {
+  background: #e6e6e6;
 }
 
 .list-view-overflow {
-    overflow-x:hidden;
-    overflow-y:auto;
-    opacity:1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  opacity: 1;
 }

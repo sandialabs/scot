@@ -12,6 +12,7 @@ import LoadingContainer from "./LoadingContainer";
 import TagInput from "../components/TagInput";
 import Button2 from "@material-ui/core/Button";
 import { get_data } from "../utils/XHR";
+import Add from "@material-ui/icons/Add";
 
 const navigateTo = id => {
   window.open("#/event/" + id);
@@ -481,15 +482,18 @@ const columnDefinitions = {
           ) : (
             <div>
               {rest.original.entry_count == 0 ? (
-                <Button2
-                  variant="contained"
-                  style={{ backgroundColor: "#5cb85c", color: "white" }}
-                >
-                  Add entry
-                </Button2>
+                <Add />
               ) : (
+                // <Button2
+                //   variant="contained"
+                //   size="small"
+                //   style={{ backgroundColor: "#5cb85c", color: "white" }}
+                // >
+                //   +
+                // </Button2>
                 <Button2
                   variant="contained"
+                  size="small"
                   style={{ backgroundColor: "#5bc0de", color: "white" }}
                 >
                   {rest.original.entry_count} entries
@@ -722,29 +726,29 @@ export const getColumnWidth = (data, accessor, headerText) => {
   }
   const maxWidth = 500;
   let magicLength = 0;
+  let re = new RegExp("^<svg\\b[^>]*>(.*?)<\\/svg>$");
   const cellLength = Math.max(
     ...data.map(function(row) {
       let newtext = row[headerText];
       var canvas = document.createElement("canvas");
       var ctx = canvas.getContext("2d");
-      let re = new RegExp("^<svg\\b[^>]*>(.*?)<\\/svg>$");
       if (newtext !== undefined) {
         if (re.test(newtext)) {
-          return 300;
+          return 210;
         } else {
           if (newtext.includes("entity")) {
-            magicLength = 85;
-            newtext = newtext.replace(/<\/?("[^"]*"|'[^']*'|[^>])*(>|$)/g, "");
+            magicLength = 30;
+            newtext = newtext.replace(/<[^>]*>?/g, "");
           }
-          var width = ctx.measureText(newtext).width;
-          return width;
+          //return ctx.measureText(newtext).width;
+          return newtext.length + 100;
+          //return ctx.measureText(newtext).width;
         }
       }
     }),
-    headerText.length
+    headerText.length + 100
   );
 
-  let re = new RegExp("^<svg\\b[^>]*>(.*?)<\\/svg>$");
   if (headerText === "Entries") {
     return 70;
   } else {
@@ -786,9 +790,9 @@ class PromotionButton extends React.Component {
 
   render() {
     if (this.props.row.value === "closed") {
-      return <p style={{ color: "red" }}>{this.props.row.value}</p>;
-    } else if (this.props.row.value === "open") {
       return <p style={{ color: "green" }}>{this.props.row.value}</p>;
+    } else if (this.props.row.value === "open") {
+      return <p style={{ color: "red" }}>{this.props.row.value}</p>;
     } else if (this.props.row.value === "promoted") {
       if (this.state.element) {
         return (
