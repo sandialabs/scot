@@ -50,7 +50,11 @@ sub parse_message {
         # keeps it from blowing up.
         $log->warn("Splunk message was not in HTML.");
         $log->warn("wrapping in html, but parsing will not work!");
-        $body   = "<html>".$body."</html>"; 
+        my $warning = qq{
+            <body>
+            <h3>Splunk E-mail was not in HTML Format.  Parsing incomplete.  Please set Splunk alert to HTML output in Splunk.</h3><br>
+        };
+        $body   = "<html>".$warning.$body."</body></html>"; 
     }
     else {
         $log->debug("detected html");
