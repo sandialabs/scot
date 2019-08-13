@@ -320,9 +320,9 @@
     width: 99.5%;
   }
 
-  .alertTableHorizontal > div:first-child {
+  /* .alertTableHorizontal > div:first-child {
     font-weight: bold;
-  }
+  } */
 
   .alertTableHorizontal tr:nth-child(odd) {
     background-color: #eee;
