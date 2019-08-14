@@ -2315,6 +2315,7 @@ class SourceBody extends React.Component {
             title="Rendered"
           >
             <Frame
+              style={{ width: "100%" }}
               head={
                 <link
                   rel="stylesheet"
@@ -2344,6 +2345,7 @@ class SourceBody extends React.Component {
                   href="/css/sandbox.css"
                 />
               }
+              style={{ width: "100%" }}
               frameBorder={"0"}
               id={"iframe_" + this.props.entityid}
               sandbox={"allow-same-origin"}

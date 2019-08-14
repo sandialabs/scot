@@ -647,10 +647,14 @@ const typeColumns = {
   ]
 };
 
-export const buildTypeColumns = (type, rowData, propData) => {
+export const buildTypeColumns = (type, rowData, propData, flag) => {
   if (!typeColumns.hasOwnProperty(type)) {
     // throw new Error( 'No columns defined for type: '+ type );
     type = "default";
+  }
+
+  if (flag === false && type === "alert") {
+    type = "alertgroup";
   }
 
   let columns = [];
@@ -673,30 +677,36 @@ export const buildTypeColumns = (type, rowData, propData) => {
   }
 
   if (type === "alert") {
-    if (propData[0].data.columns) {
-      propData[0].data.columns.forEach(
-        function(element, index) {
-          let columnobj = {
-            accessor: element,
-            Header: element,
-            filter: true,
-            Cell: customCellRenderers.flairCell,
-            width: getColumnWidth(rowData, element, element)
+    if (propData.length > 0) {
+      if (propData[0].data.columns) {
+        propData[0].data.columns.forEach(
+          function(element, index) {
+            if (element !== "status") {
+              //dont want duplicate status column
+              let columnobj = {
+                accessor: element,
+                Header: element,
+                filter: true,
+                Cell: customCellRenderers.flairCell,
+                width: getColumnWidth(rowData, element, element)
+              };
+              columns.push(columnobj);
+            }
+          }.bind(this)
+        );
+      }
+      columns.forEach(function(column, index) {
+        column["getProps"] = function(state, rowInfo) {
+          return {
+            style: {
+              backgroundColor: index % 2 === 0 ? "#bababa45" : ""
+            }
           };
-          columns.push(columnobj);
-        }.bind(this)
-      );
-    }
-    columns.forEach(function(column, index) {
-      column["getProps"] = function(state, rowInfo) {
-        return {
-          style: {
-            backgroundColor: index % 2 === 0 ? "#bababa45" : ""
-          }
         };
-      };
-    });
+      });
+    }
   }
+
   return columns;
 };
 

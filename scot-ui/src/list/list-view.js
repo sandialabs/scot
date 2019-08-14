@@ -398,7 +398,7 @@ export default class ListView extends React.Component {
       showClearFilter = true;
     }
 
-    let columns = buildTypeColumns(this.props.type, {}, {});
+    let columns = buildTypeColumns(this.props.type, {}, {}, false);
 
     return (
       <div>
