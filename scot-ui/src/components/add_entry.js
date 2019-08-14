@@ -473,6 +473,11 @@ export default class AddEntryModal extends React.Component {
               }
               onEditorChange={this.handleEditorChange}
               init={{
+                table_default_attributes: {
+                  border: "5",
+                  borderStyle: "solid",
+                  borderColor: "blue"
+                },
                 auto_focus: this.state.tinyID,
                 selector: "textarea",
                 browser_spellcheck: true,
@@ -488,6 +493,13 @@ export default class AddEntryModal extends React.Component {
                     return string.replace(/<(\/)?a([^>]*)>/g, "<$1span$2>");
                   }
                   args.content = replaceA(args.content) + " ";
+                },
+                paste_postprocess: (plugin, args) => {
+                  args.node.querySelectorAll("table").forEach(tableNode => {
+                    tableNode.setAttribute("border", "1");
+                    tableNode.setAttribute("cellpadding", "1");
+                    tableNode.setAttribute("cellspacing", "0");
+                  });
                 },
                 relative_urls: false,
                 remove_script_host: false,
