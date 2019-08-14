@@ -199,7 +199,7 @@ const columnDefinitions = {
   Id: {
     Header: "ID",
     accessor: "id",
-    maxWidth: 100,
+    maxWidth: 80,
     Filter: customFilters.numberFilter
   },
 
@@ -457,12 +457,12 @@ const columnDefinitions = {
   Status: {
     accessor: "status",
     Header: "Status",
-    maxWidth: 100,
+    maxWidth: 70,
     Cell: customCellRenderers.alertStatusAlerts
   },
 
   EntryCountColumn: {
-    width: 102,
+    width: 95,
     resizable: true,
     expander: true,
     filter: false,
@@ -747,7 +747,10 @@ export const getColumnWidth = (data, accessor, headerText) => {
           return 210;
         } else {
           if (newtext.includes("entity")) {
-            magicLength = 30;
+            //lets count the number of occurences of entity
+            let entitycount = (newtext.match(new RegExp("entity", "g")) || [])
+              .length;
+            magicLength = 10 * entitycount;
             newtext = newtext.replace(/<[^>]*>?/g, "");
           }
           //return ctx.measureText(newtext).width;
