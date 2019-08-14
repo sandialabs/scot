@@ -581,7 +581,7 @@ class NewAlertTable extends React.Component {
   componentDidMount() {
     if (this.props.items.length > 0) {
       const data = this.createData();
-      const columns = buildTypeColumns("alert", data, this.props.items);
+      const columns = buildTypeColumns("alert", data, this.props.items, true);
       this.setState({ data, columns });
     }
     if (this.props.type) {
