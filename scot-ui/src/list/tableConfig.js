@@ -457,7 +457,7 @@ const columnDefinitions = {
   Status: {
     accessor: "status",
     Header: "Status",
-    maxWidth: 70,
+    maxWidth: 100,
     Cell: customCellRenderers.alertStatusAlerts
   },
 
