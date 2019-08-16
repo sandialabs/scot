@@ -462,7 +462,7 @@ const columnDefinitions = {
   },
 
   EntryCountColumn: {
-    width: 95,
+    width: 50,
     resizable: true,
     expander: true,
     filter: false,
@@ -484,13 +484,6 @@ const columnDefinitions = {
               {rest.original.entry_count == 0 ? (
                 <Add />
               ) : (
-                // <Button2
-                //   variant="contained"
-                //   size="small"
-                //   style={{ backgroundColor: "#5cb85c", color: "white" }}
-                // >
-                //   +
-                // </Button2>
                 <Button2
                   variant="contained"
                   size="small"
@@ -736,38 +729,38 @@ export const getColumnWidth = (data, accessor, headerText) => {
   }
   const maxWidth = 500;
   let magicLength = 0;
-  let re = new RegExp("^<svg\\b[^>]*>(.*?)<\\/svg>$");
   const cellLength = Math.max(
     ...data.map(function(row) {
       let newtext = row[headerText];
       var canvas = document.createElement("canvas");
       var ctx = canvas.getContext("2d");
+      ctx.font = "12px Arial"
+      let re = new RegExp("^<svg\\b[^>]*>(.*?)<\\/svg>$");
       if (newtext !== undefined) {
         if (re.test(newtext)) {
-          return 210;
+          return 300;
+
         } else {
+          let doc = new DOMParser().parseFromString(newtext, "text/html");
+          let width = width = ctx.measureText(doc).width;
           if (newtext.includes("entity")) {
-            //lets count the number of occurences of entity
-            let entitycount = (newtext.match(new RegExp("entity", "g")) || [])
-              .length;
-            magicLength = 10 * entitycount;
-            newtext = newtext.replace(/<[^>]*>?/g, "");
+            magicLength = 150;
           }
-          //return ctx.measureText(newtext).width;
-          return newtext.length + 100;
-          //return ctx.measureText(newtext).width;
+          return width;
         }
       }
     }),
-    headerText.length + 100
+    headerText.length
   );
 
+  let re = new RegExp("^<svg\\b[^>]*>(.*?)<\\/svg>$");
   if (headerText === "Entries") {
     return 70;
   } else {
     return Math.min(maxWidth, cellLength + magicLength);
   }
 };
+
 
 class PromotionButton extends React.Component {
   constructor(props) {
