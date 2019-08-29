@@ -1182,6 +1182,7 @@ export default class SelectedHeader extends React.Component {
                 linkWarningToggle={this.linkWarningToggle}
                 createCallback={this.props.createCallback}
                 removeCallback={this.props.removeCallback}
+                addFlair={AddFlair.entityUpdate}
               />
             ) : null}
             {this.state.flairToolbar ? (
@@ -1203,6 +1204,7 @@ export default class SelectedHeader extends React.Component {
                 entityobj={this.state.entityobj}
                 createCallback={this.props.createCallback}
                 removeCallback={this.props.removeCallback}
+                addFlair={AddFlair.entityUpdate}
               />
             ) : null}
           </div>
