@@ -122,6 +122,7 @@ export default class SelectedEntry extends React.Component {
       type === "alert" ||
       type === "entity" ||
       type === "incident" ||
+      type === "alertgroup" ||
       this.props.isPopUp === 1
     ) {
       const entity_url = `scot/api/v2/${type}/${id}/entity`;
@@ -581,7 +582,13 @@ class NewAlertTable extends React.Component {
   componentDidMount() {
     if (this.props.items.length > 0) {
       const data = this.createData();
-      const columns = buildTypeColumns("alert", data, this.props.items, true);
+      const columns = buildTypeColumns(
+        "alert",
+        data,
+        this.props.items,
+        true,
+        this.state.entityData
+      );
       this.setState({ data, columns });
     }
     if (this.props.type) {
@@ -619,7 +626,16 @@ class NewAlertTable extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.entityData !== this.props.entityData) {
-      this.setState({ entityData: this.props.entityData });
+      this.setState({
+        entityData: this.props.entityData,
+        columns: buildTypeColumns(
+          "alert",
+          this.state.data,
+          this.props.items,
+          true,
+          this.props.entityData
+        )
+      });
     }
     if (prevState.flairOff !== this.state.flairOff) {
       let data = this.createData();
@@ -652,11 +668,12 @@ class NewAlertTable extends React.Component {
     this.props.items.forEach(
       function(element) {
         let dataitem = {};
-        if (!this.state.flairOff) {
-          dataitem = element.data_with_flair;
-        } else {
-          dataitem = element.data;
-        }
+        dataitem = element.data;
+        // if (!this.state.flairOff) {
+        //   dataitem = element.data_with_flair;
+        // } else {
+        //   dataitem = element.data;
+        // }
         dataitem["id"] = element.id;
         dataitem["status"] = element.status;
         dataitem["entry_count"] = element.entry_count;

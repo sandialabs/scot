@@ -182,8 +182,12 @@ export const customCellRenderers = {
       </div>
     );
   },
-  flairCell: row => {
-    return <FlairObject value={row.value} />;
+  flairCell: (row, entityData) => {
+    if (row !== undefined) {
+      return <FlairObject value={row.value} entityData={entityData} />;
+    } else {
+      return null;
+    }
   }
 };
 
@@ -640,7 +644,11 @@ const typeColumns = {
   ]
 };
 
-export const buildTypeColumns = (type, rowData, propData, flag) => {
+export const buildTypeColumns = (type, rowData, propData, flag, entityData) => {
+  if (entityData) {
+    console.log("###############");
+    console.log(entityData);
+  }
   if (!typeColumns.hasOwnProperty(type)) {
     // throw new Error( 'No columns defined for type: '+ type );
     type = "default";
@@ -680,7 +688,8 @@ export const buildTypeColumns = (type, rowData, propData, flag) => {
                 accessor: element,
                 Header: element,
                 filter: true,
-                Cell: customCellRenderers.flairCell,
+                Cell: (row, entitydata) =>
+                  customCellRenderers.flairCell(row, entityData),
                 width: getColumnWidth(rowData, element, element)
               };
               columns.push(columnobj);
@@ -706,24 +715,72 @@ export const buildTypeColumns = (type, rowData, propData, flag) => {
 class FlairObject extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      entityData: null
+    };
   }
 
-  render() {
-    const { value } = this.props;
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.entityData !== this.props.entityData) {
+      this.setState({ entityData: this.props.entityData });
+    }
+  }
 
-    return (
-      <div
-        style={{
-          wordWrap: "break-word"
-        }}
-        className="alertTableHorizontal"
-        dangerouslySetInnerHTML={{ __html: value }}
-      />
-    );
+  getSpanStuff = () => {
+    const { value } = this.props;
+    const { entityData } = this.state;
+    if (entityData !== null) {
+      return (
+        <div
+          style={{
+            wordWrap: "break-all",
+            whiteSpace: "normal"
+          }}
+          className="alertTableHorizontal"
+        >
+          {entityData.hasOwnProperty(value[0]) ? (
+            <mark>{value}</mark>
+          ) : (
+            <span>{value}</span>
+          )}
+        </div>
+      );
+    } else {
+      return <span>{value}</span>;
+    }
+  };
+
+  render() {
+    let jsx = this.getSpanStuff();
+    return jsx;
   }
 }
 
 export const getColumnWidth = (data, accessor, headerText) => {
+  //return longest array item to calculate best width
+  function longest_string(str_ara) {
+    let max = str_ara[0].length;
+    str_ara.map(v => (max = Math.max(max, v.length)));
+    let result = str_ara.filter(v => v.length == max);
+    return result;
+  }
+
+  //get calc width of html element, we use this to calculate as accurate as possible, widths of headertext, and data in cellss
+  function calc_html_width(element) {
+    var canvas = document.createElement("canvas");
+    var ctx = canvas.getContext("2d");
+    ctx.font = "12px Arial";
+    let longest = "";
+    if (typeof element === "array") {
+      longest = longest_string(element);
+    } else {
+      longest = element;
+    }
+
+    let doc = new DOMParser().parseFromString(longest, "text/html");
+    return ctx.measureText(doc).width;
+  }
+
   if (typeof accessor === "string" || accessor instanceof String) {
     accessor = d => d[accessor]; // eslint-disable-line no-param-reassign
   }
@@ -731,36 +788,21 @@ export const getColumnWidth = (data, accessor, headerText) => {
   let magicLength = 0;
   const cellLength = Math.max(
     ...data.map(function(row) {
-      let newtext = row[headerText];
-      var canvas = document.createElement("canvas");
-      var ctx = canvas.getContext("2d");
-      ctx.font = "12px Arial"
-      let re = new RegExp("^<svg\\b[^>]*>(.*?)<\\/svg>$");
-      if (newtext !== undefined) {
-        if (re.test(newtext)) {
-          return 300;
-
-        } else {
-          let doc = new DOMParser().parseFromString(newtext, "text/html");
-          let width = width = ctx.measureText(doc).width;
-          if (newtext.includes("entity")) {
-            magicLength = 150;
-          }
-          return width;
-        }
+      if (row[headerText] !== undefined) {
+        magicLength = 120;
+        let html_width = calc_html_width(row[headerText]);
+        return html_width;
       }
     }),
-    headerText.length
+    calc_html_width(headerText.length)
   );
 
-  let re = new RegExp("^<svg\\b[^>]*>(.*?)<\\/svg>$");
   if (headerText === "Entries") {
-    return 70;
+    return 85;
   } else {
     return Math.min(maxWidth, cellLength + magicLength);
   }
 };
-
 
 class PromotionButton extends React.Component {
   constructor(props) {
