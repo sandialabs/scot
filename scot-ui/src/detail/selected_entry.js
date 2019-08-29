@@ -451,6 +451,7 @@ export default class SelectedEntry extends React.Component {
             errorToggle={this.props.errorToggle}
             createCallback={this.props.createCallback}
             removeCallback={this.props.removeCallback}
+            addFlair={this.props.addFlair}
           />
         ) : null}
         {this.state.linkWarningToolbar ? (

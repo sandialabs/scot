@@ -259,163 +259,6 @@ export default class EntityDetail extends React.Component {
         }
       });
     });
-
-    // this.setState({ isMounted: true });
-    // let currentTabArray = this.state.tabs;
-    // let valueClicked = this.props.entityvalue;
-    // if (
-    //   this.props.entitytype !== "source" &&
-    //   this.props.entitytype !== "entry"
-    // ) {
-    //   if (this.state.entityid === undefined || isNaN(this.state.entityid)) {
-    //     let endpoint = `scot/api/v2/${this.props.entitytype}"/byname`;
-    //     let params = { name: valueClicked };
-    //     let data_response = get_data(endpoint, params);
-    //     data_response.then(
-    //       function(response) {
-    //         let entityid = response.id;
-    //         this.setState({ entityid: entityid });
-    //         let entity_endpoint = `scot/api/v2/${
-    //           this.props.entitytype
-    //         }/${entityid}`;
-    //         let entity_response = get_data(entity_endpoint, params);
-    //         entity_response.then(
-    //           function(result) {
-    //             let newTab = {
-    //               data: result,
-    //               entityid: entityid,
-    //               entitytype: this.props.entitytype,
-    //               valueClicked: result.value
-    //             };
-
-    //             currentTabArray.push(newTab);
-    //             if (this.state.isMounted) {
-    //               let entityidsarray = [];
-    //               entityidsarray.push(entityid);
-    //               this.setState({
-    //                 tabs: currentTabArray,
-    //                 currentKey: entityid,
-    //                 initialLoad: true,
-    //                 processedIds: entityidsarray
-    //               });
-    //               this.props.createCallback(this.props.entityid, this.updated);
-    //             }
-    //           }
-    //             .bind(this)
-    //             .catch(function(error) {
-    //               this.props.errorToggle(
-    //                 "failed to get entity detail information",
-    //                 error
-    //               );
-    //             })
-    //         );
-    //       }
-    //         .bind(this)
-    //         .catch(function(error) {
-    //           this.props.errorToggle(
-    //             "failed to get entity detail id information ",
-    //             error
-    //           );
-    //         })
-    //     );
-    //   } else {
-    //     let id = this.state.entityid;
-    //     if (!Array.isArray(id)) {
-    //       id = [parseInt(id, 10)];
-    //     }
-
-    //     for (let i = 0; i < id.length; i++) {
-    //       $.ajax({
-    //         type: "GET",
-    //         url: "scot/api/v2/" + this.props.entitytype + "/" + id[i],
-    //         success: function(result) {
-    //           //this.setState({entityData:result})
-    //           let newTab = {
-    //             data: result,
-    //             entityid: result.id,
-    //             entitytype: this.props.entitytype,
-    //             valueClicked: result.value
-    //           };
-    //           currentTabArray.push(newTab);
-    //           if (this.state.isMounted) {
-    //             let entityidsarray = [];
-    //             entityidsarray.push(result.id);
-    //             this.setState({
-    //               tabs: currentTabArray,
-    //               currentKey: result.id,
-    //               initialLoad: true,
-    //               processedIds: entityidsarray
-    //             });
-    //             this.props.createCallback(this.props.entityid, this.updated);
-    //           }
-    //         }.bind(this),
-    //         error: function(data) {
-    //           this.props.errorToggle(
-    //             "failed to get entity detail information",
-    //             data
-    //           );
-    //         }.bind(this)
-    //       });
-    //     }
-    //   }
-    // } else {
-    //   let newTab = {
-    //     data: this.props.data,
-    //     entityid: this.props.entityid,
-    //     entitytype: this.props.entitytype,
-    //     valueClicked: this.props.entitytype
-    //   };
-    //   currentTabArray.push(newTab);
-    //   // if (this.state.isMounted) {
-    //   let entityidsarray = [];
-    //   entityidsarray.push(this.props.entityid);
-    //   this.setState({
-    //     tabs: currentTabArray,
-    //     currentKey: parseInt(this.props.entityid, 10),
-    //     initialLoad: true,
-    //     processedIds: entityidsarray
-    //   });
-    //   this.props.createCallback(this.props.entityid, this.updated);
-    // }
-    // //Esc key closes popup
-    // function escHandler(event) {
-    //   //prevent from working when in input
-    //   if ($("input").is(":focus")) {
-    //     return;
-    //   }
-    //   if ($("#main-search-results")[0] !== undefined) {
-    //     return;
-    //   } //close search results before closing entity div
-    //   //check for esc with keyCode
-    //   if (event.keyCode === 27) {
-    //     this.props.flairToolbarOff();
-    //     event.preventDefault();
-    //   }
-    // }
-
-    // $(document).keydown(escHandler.bind(this));
-    // this.containerHeightAdjust();
-    // window.addEventListener("resize", this.containerHeightAdjust);
-    // this.onLoad();
-
-    // $("iframe").each(function(index, ifr) {
-    //   //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
-    //   ifr.contentWindow.requestAnimationFrame(function() {
-    //     if (ifr.contentDocument != null) {
-    //       let ifrContents = $(ifr).contents();
-    //       //This makes all href point to blank so they don't reload the iframe
-    //       $(ifr.contentDocument.body)
-    //         .find("a")
-    //         .attr("target", "_blank");
-    //       //Copies href to a new attribute, url, before we make href an anchor (so it doesn't go anywhere when clicked)
-    //       ifrContents.find("a").each(function(index, a) {
-    //         let url = $(a).attr("href");
-    //         $(a).attr("url", url);
-    //       });
-    //     }
-    //   });
-    // });
-    // // this.props.watcher();
   };
 
   componentWillUnmount = () => {
@@ -823,6 +666,7 @@ export default class EntityDetail extends React.Component {
           title={title}
         >
           <TabContents
+            addFlair={this.props.addFlair}
             data={this.state.tabs[i].data}
             form={this.props.form}
             type={this.props.type}
@@ -986,6 +830,7 @@ class TabContents extends React.Component {
                   errorToggle={this.props.errorToggle}
                   createCallback={this.props.createCallback}
                   removeCallback={this.props.removeCallback}
+                  addFlair={this.props.addFlair}
                 />
               ) : (
                 <div style={{ display: "inline-flex", position: "relative" }}>
@@ -1014,6 +859,7 @@ class TabContents extends React.Component {
                 linkWarningToggle={this.props.linkWarningToggle}
                 createCallback={this.props.createCallback}
                 removeCallback={this.props.removeCallback}
+                addFlair={this.props.addFlair}
               />
             ) : (
               <div>Loading...</div>
@@ -1036,6 +882,7 @@ class TabContents extends React.Component {
                         errorToggle={this.props.errorToggle}
                         createCallback={this.props.createCallback}
                         removeCallback={this.props.removeCallback}
+                        addFlair={this.props.addFlair}
                       />
                     </span>
                     <div>
@@ -1044,6 +891,7 @@ class TabContents extends React.Component {
                         errorToggle={this.props.errorToggle}
                         createCallback={this.props.createCallback}
                         removeCallback={this.props.removeCallback}
+                        addFlair={this.props.addFlair}
                       />
                     </div>
                   </span>
@@ -1066,6 +914,7 @@ class TabContents extends React.Component {
                 entitytype={this.props.entitytype}
                 createCallback={this.props.createCallback}
                 removeCallback={this.props.removeCallback}
+                addFlair={this.props.addFlair}
               />
             ) : (
               <div>Loading...</div>
@@ -1124,6 +973,7 @@ class TabContents extends React.Component {
                   errorToggle={this.props.errorToggle}
                   createCallback={this.props.createCallback}
                   removeCallback={this.props.removeCallback}
+                  addFlair={this.props.addFlair}
                 />
               </div>
             ) : (
@@ -1342,6 +1192,7 @@ class EntityBody extends React.Component {
             ) : null}
             <SelectedEntry
               type={"entity"}
+              addFlair={this.props.addFlair}
               id={this.props.entityid}
               isPopUp={1}
               errorToggle={this.props.errorToggle}
@@ -2287,6 +2138,7 @@ class GuideBody extends React.Component {
             />
           ) : null}
           <SelectedEntry
+            addFlair={this.props.addFlair}
             type={"guide"}
             form={this.props.form}
             id={this.props.entityid}
