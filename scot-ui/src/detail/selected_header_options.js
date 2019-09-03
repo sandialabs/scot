@@ -273,7 +273,9 @@ export default class SelectedHeaderOptions extends React.Component {
   createGuide = () => {
     let data = JSON.stringify({
       subject: "ENTER A GUIDE NAME",
-      applies_to: [this.props.subjectName]
+      data: {
+        applies_to: [this.props.subjectName]
+      }
     });
     $.ajax({
       type: "POST",

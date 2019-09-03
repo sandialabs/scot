@@ -137,6 +137,8 @@ echo "---- Install completed"
 echo "----"
 echo "----"
 
+date > /opt/scot/last_install
+
 . ./install/status.sh
 
 echo "========= "
