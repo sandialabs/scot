@@ -75,11 +75,11 @@ export default class SelectedHeader extends React.Component {
     };
   }
 
-  componentWillMount = () => {
+  componentWillMount() {
     this.setState({ loading: true });
-  };
+  }
 
-  componentDidMount = () => {
+  componentDidMount() {
     this.setState({ isMounted: true });
     let delayFunction = {
       delay: function() {
@@ -269,7 +269,7 @@ export default class SelectedHeader extends React.Component {
       }.bind(this)
     };
     InitialAjaxLoad = setTimeout(delayFunction.delay, 400);
-  };
+  }
 
   componentWillUnmount() {
     this.setState({ isMounted: false });
@@ -283,17 +283,12 @@ export default class SelectedHeader extends React.Component {
     }
   }
 
-  componentDidUpdate = () => {
+  componentDidUpdate() {
     //This runs the watcher which handles the entity popup and link warning.
     if (this.state.runWatcher === true) {
       this.Watcher();
     }
-  };
-
-  componentWillReceiveProps = () => {
-    //resets the watcher flag to false. This will only get set to true if a call for entries is made.
-    this.setState({ runWatcher: false });
-  };
+  }
 
   updated = (_type, _message) => {
     this.setState({
