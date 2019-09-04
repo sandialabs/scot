@@ -93,7 +93,8 @@ function process_commandline {
                 SCOT_ENV_OVERWRITE="yes"
                 ;;
             D) 
-                DELDIR="yes"
+                # disabling this as it is dangerous
+                # DELDIR="yes"
                 ;;
             E)
                 ES_RESET_DB="yes"
