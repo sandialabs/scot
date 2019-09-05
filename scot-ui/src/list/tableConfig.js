@@ -13,6 +13,7 @@ import TagInput from "../components/TagInput";
 import Button2 from "@material-ui/core/Button";
 import { get_data } from "../utils/XHR";
 import Add from "@material-ui/icons/Add";
+import stripHtml from "string-strip-html";
 
 const navigateTo = id => {
   window.open("#/event/" + id);
@@ -182,9 +183,9 @@ export const customCellRenderers = {
       </div>
     );
   },
-  flairCell: (row, entityData) => {
+  flairCell: row => {
     if (row !== undefined) {
-      return <FlairObject value={row.value} entityData={entityData} />;
+      return <FlairObject value={row.value} />;
     } else {
       return null;
     }
@@ -203,7 +204,7 @@ const columnDefinitions = {
   Id: {
     Header: "ID",
     accessor: "id",
-    maxWidth: 80,
+    width: 80,
     Filter: customFilters.numberFilter
   },
 
@@ -213,7 +214,7 @@ const columnDefinitions = {
       d.open_count + " / " + d.closed_count + " / " + d.promoted_count,
     column: ["open_count", "closed_count", "promoted_count"],
     id: "status",
-    maxWidth: 150,
+    width: 150,
     Filter: customFilters.dropdownFilter(),
     Cell: customCellRenderers.alertStatus,
     style: {
@@ -644,11 +645,19 @@ const typeColumns = {
   ]
 };
 
-export const buildTypeColumns = (type, rowData, propData, flag, entityData) => {
-  if (entityData) {
-    console.log("###############");
-    console.log(entityData);
+export const buildTypeColumns = (type, rowData, propData, flag) => {
+  function get_current_combined_columnWidths(columns) {
+    let column_total_width = columns.reduce(function(a, b) {
+      if (b.width !== undefined) {
+        return a + b.width;
+      } else {
+        return 0;
+      }
+    });
+    console.log(column_total_width);
+    return column_total_width;
   }
+
   if (!typeColumns.hasOwnProperty(type)) {
     // throw new Error( 'No columns defined for type: '+ type );
     type = "default";
@@ -688,8 +697,7 @@ export const buildTypeColumns = (type, rowData, propData, flag, entityData) => {
                 accessor: element,
                 Header: element,
                 filter: true,
-                Cell: (row, entitydata) =>
-                  customCellRenderers.flairCell(row, entityData),
+                Cell: row => customCellRenderers.flairCell(row),
                 width: getColumnWidth(rowData, element, element)
               };
               columns.push(columnobj);
@@ -707,6 +715,39 @@ export const buildTypeColumns = (type, rowData, propData, flag, entityData) => {
         };
       });
     }
+
+    let windowsize = window.innerWidth;
+    let column_total_width = get_current_combined_columnWidths(columns);
+
+    if (column_total_width < windowsize) {
+      let residual = windowsize - column_total_width;
+
+      let residual_per_column = residual / (columns.length - 3);
+
+      columns.forEach(
+        function(column) {
+          //column_total_width = get_current_combined_columnWidths(columns);
+          //residual = windowsize - column_total_width;
+          if (
+            column.accessor !== "id" &&
+            column.accessor !== "entry_count" &&
+            column.accessor !== "status"
+            // column.width !== 90 &&
+            // column.accessor.includes("time") !== true
+          ) {
+            if (column.width + residual_per_column < residual) {
+              column.width = column.width + residual_per_column;
+              residual = residual - column.width;
+            } else {
+              column.width = column.width + residual;
+            }
+          } else {
+            if (column.width === 90) {
+            }
+          }
+        }.bind(this)
+      );
+    }
   }
 
   return columns;
@@ -715,49 +756,24 @@ export const buildTypeColumns = (type, rowData, propData, flag, entityData) => {
 class FlairObject extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      entityData: null
-    };
   }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (prevProps.entityData !== this.props.entityData) {
-      this.setState({ entityData: this.props.entityData });
-    }
-  }
-
-  getSpanStuff = () => {
-    const { value } = this.props;
-    const { entityData } = this.state;
-    if (entityData !== null) {
-      return (
-        <div
-          style={{
-            wordWrap: "break-all",
-            whiteSpace: "normal"
-          }}
-          className="alertTableHorizontal"
-        >
-          {entityData.hasOwnProperty(value[0]) ? (
-            <mark>{value}</mark>
-          ) : (
-            <span>{value}</span>
-          )}
-        </div>
-      );
-    } else {
-      return <span>{value}</span>;
-    }
-  };
 
   render() {
-    let jsx = this.getSpanStuff();
-    return jsx;
+    const { value } = this.props;
+
+    return (
+      <div
+        style={{
+          wordBreak: "break-word"
+        }}
+        className="alertTableHorizontal"
+        dangerouslySetInnerHTML={{ __html: value }}
+      />
+    );
   }
 }
 
 export const getColumnWidth = (data, accessor, headerText) => {
-  //return longest array item to calculate best width
   function longest_string(str_ara) {
     let max = str_ara[0].length;
     str_ara.map(v => (max = Math.max(max, v.length)));
@@ -766,41 +782,28 @@ export const getColumnWidth = (data, accessor, headerText) => {
   }
 
   //get calc width of html element, we use this to calculate as accurate as possible, widths of headertext, and data in cellss
-  function calc_html_width(element) {
-    var canvas = document.createElement("canvas");
-    var ctx = canvas.getContext("2d");
-    ctx.font = "12px Arial";
-    let longest = "";
-    if (typeof element === "array") {
-      longest = longest_string(element);
-    } else {
-      longest = element;
-    }
-
-    let doc = new DOMParser().parseFromString(longest, "text/html");
-    return ctx.measureText(doc).width;
+  function calc_width(input) {
+    let strip = stripHtml(input);
+    return strip.length;
   }
 
   if (typeof accessor === "string" || accessor instanceof String) {
     accessor = d => d[accessor]; // eslint-disable-line no-param-reassign
   }
-  const maxWidth = 500;
-  let magicLength = 0;
+  let width_of_columns = 0;
+  const maxWidth = 400;
+  const magicSpacing = 9;
   const cellLength = Math.max(
     ...data.map(function(row) {
-      if (row[headerText] !== undefined) {
-        magicLength = 120;
-        let html_width = calc_html_width(row[headerText]);
-        return html_width;
-      }
+      let newtext = row[headerText];
+      return calc_width(newtext);
     }),
-    calc_html_width(headerText.length)
+    headerText.length
   );
-
-  if (headerText === "Entries") {
-    return 85;
+  if (cellLength < 13 && headerText !== "status") {
+    return 90;
   } else {
-    return Math.min(maxWidth, cellLength + magicLength);
+    return Math.min(maxWidth, cellLength * magicSpacing);
   }
 };
 
