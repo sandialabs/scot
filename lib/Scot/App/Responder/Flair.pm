@@ -326,7 +326,7 @@ sub append_flair {
 
     return $new_flair if (! defined $existing_flair);
     return $new_flair if ( $existing_flair eq '' );
-    return $existing_flair . "<br>" . $new_flair;
+    return $existing_flair . " " . $new_flair;
 }
 
 sub process_cell {
