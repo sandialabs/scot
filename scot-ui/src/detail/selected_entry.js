@@ -582,13 +582,7 @@ class NewAlertTable extends React.Component {
   componentDidMount() {
     if (this.props.items.length > 0) {
       const data = this.createData();
-      const columns = buildTypeColumns(
-        "alert",
-        data,
-        this.props.items,
-        true,
-        this.state.entityData
-      );
+      const columns = buildTypeColumns("alert", data, this.props.items, true);
       this.setState({ data, columns });
     }
     if (this.props.type) {
@@ -668,12 +662,12 @@ class NewAlertTable extends React.Component {
     this.props.items.forEach(
       function(element) {
         let dataitem = {};
-        dataitem = element.data;
-        // if (!this.state.flairOff) {
-        //   dataitem = element.data_with_flair;
-        // } else {
-        //   dataitem = element.data;
-        // }
+        // dataitem = element.data;
+        if (!this.state.flairOff) {
+          dataitem = element.data_with_flair;
+        } else {
+          dataitem = element.data;
+        }
         dataitem["id"] = element.id;
         dataitem["status"] = element.status;
         dataitem["entry_count"] = element.entry_count;
@@ -732,6 +726,13 @@ class NewAlertTable extends React.Component {
           }}
           showPagination={false}
           pageSize={data.length}
+          getTdProps={(state, rowInfo) => {
+            return {
+              style: {
+                maxWidth: "fit-content"
+              }
+            };
+          }}
           getTrProps={(state, rowInfo) => {
             if (
               rowInfo &&
