@@ -462,7 +462,7 @@ const columnDefinitions = {
   Status: {
     accessor: "status",
     Header: "Status",
-    maxWidth: 100,
+    width: 100,
     Cell: customCellRenderers.alertStatusAlerts
   },
 
@@ -648,13 +648,12 @@ const typeColumns = {
 export const buildTypeColumns = (type, rowData, propData, flag) => {
   function get_current_combined_columnWidths(columns) {
     let column_total_width = columns.reduce(function(a, b) {
-      if (b.width !== undefined) {
-        return a + b.width;
+      if (a.width !== undefined) {
+        return a.width + b.width;
       } else {
-        return 0;
+        return a + b.width;
       }
     });
-    console.log(column_total_width);
     return column_total_width;
   }
 
@@ -716,33 +715,45 @@ export const buildTypeColumns = (type, rowData, propData, flag) => {
       });
     }
 
-    let windowsize = window.innerWidth;
+    // this function looks at columns and calculates how many columns were initially set to 90
+    // if it detects a column with width of 90 or time in name, it add an exception, meaning that we should not
+    // increase this column
+    let num_of_exemptions = 3;
+    columns.forEach(function(column) {
+      if (column.width === 90) {
+        num_of_exemptions++;
+      }
+      if (column.accessor.includes("time")) {
+        num_of_exemptions++;
+      }
+    });
+
+    let windowsize = window.innerWidth - 32;
+    //calculate column widths
     let column_total_width = get_current_combined_columnWidths(columns);
 
+    //if below conditional true, then we have empty white space in table and should increase column widths
     if (column_total_width < windowsize) {
       let residual = windowsize - column_total_width;
-
-      let residual_per_column = residual / (columns.length - 3);
-
+      let residual_per_column = residual / (columns.length - num_of_exemptions);
       columns.forEach(
         function(column) {
-          //column_total_width = get_current_combined_columnWidths(columns);
-          //residual = windowsize - column_total_width;
-          if (
-            column.accessor !== "id" &&
-            column.accessor !== "entry_count" &&
-            column.accessor !== "status"
-            // column.width !== 90 &&
-            // column.accessor.includes("time") !== true
-          ) {
-            if (column.width + residual_per_column < residual) {
-              column.width = column.width + residual_per_column;
-              residual = residual - column.width;
-            } else {
-              column.width = column.width + residual;
-            }
-          } else {
-            if (column.width === 90) {
+          //each iteration, we want to calculate the total width of columns
+          column_total_width = get_current_combined_columnWidths(columns);
+          if (column_total_width < windowsize) {
+            if (
+              column.accessor !== "id" &&
+              column.accessor !== "entry_count" &&
+              column.accessor !== "status" &&
+              column.width !== 90 &&
+              column.accessor.includes("time") !== true
+            ) {
+              if (column.width + residual_per_column < residual) {
+                column.width = column.width + residual_per_column;
+                column_total_width = get_current_combined_columnWidths(columns);
+              } else {
+                column.width = column.width + residual;
+              }
             }
           }
         }.bind(this)
@@ -774,13 +785,6 @@ class FlairObject extends React.Component {
 }
 
 export const getColumnWidth = (data, accessor, headerText) => {
-  function longest_string(str_ara) {
-    let max = str_ara[0].length;
-    str_ara.map(v => (max = Math.max(max, v.length)));
-    let result = str_ara.filter(v => v.length == max);
-    return result;
-  }
-
   //get calc width of html element, we use this to calculate as accurate as possible, widths of headertext, and data in cellss
   function calc_width(input) {
     let strip = stripHtml(input);
@@ -790,7 +794,6 @@ export const getColumnWidth = (data, accessor, headerText) => {
   if (typeof accessor === "string" || accessor instanceof String) {
     accessor = d => d[accessor]; // eslint-disable-line no-param-reassign
   }
-  let width_of_columns = 0;
   const maxWidth = 400;
   const magicSpacing = 9;
   const cellLength = Math.max(
@@ -800,6 +803,7 @@ export const getColumnWidth = (data, accessor, headerText) => {
     }),
     headerText.length
   );
+
   if (cellLength < 13 && headerText !== "status") {
     return 90;
   } else {
