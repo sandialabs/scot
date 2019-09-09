@@ -13,6 +13,7 @@ import TagInput from "../components/TagInput";
 import Button2 from "@material-ui/core/Button";
 import { get_data } from "../utils/XHR";
 import Add from "@material-ui/icons/Add";
+import stripHtml from "string-strip-html";
 
 const navigateTo = id => {
   window.open("#/event/" + id);
@@ -183,7 +184,11 @@ export const customCellRenderers = {
     );
   },
   flairCell: row => {
-    return <FlairObject value={row.value} />;
+    if (row !== undefined) {
+      return <FlairObject value={row.value} />;
+    } else {
+      return null;
+    }
   }
 };
 
@@ -199,7 +204,7 @@ const columnDefinitions = {
   Id: {
     Header: "ID",
     accessor: "id",
-    maxWidth: 80,
+    width: 80,
     Filter: customFilters.numberFilter
   },
 
@@ -209,7 +214,7 @@ const columnDefinitions = {
       d.open_count + " / " + d.closed_count + " / " + d.promoted_count,
     column: ["open_count", "closed_count", "promoted_count"],
     id: "status",
-    maxWidth: 150,
+    width: 150,
     Filter: customFilters.dropdownFilter(),
     Cell: customCellRenderers.alertStatus,
     style: {
@@ -457,7 +462,7 @@ const columnDefinitions = {
   Status: {
     accessor: "status",
     Header: "Status",
-    maxWidth: 100,
+    width: 100,
     Cell: customCellRenderers.alertStatusAlerts
   },
 
@@ -641,6 +646,17 @@ const typeColumns = {
 };
 
 export const buildTypeColumns = (type, rowData, propData, flag) => {
+  function get_current_combined_columnWidths(columns) {
+    let column_total_width = columns.reduce(function(a, b) {
+      if (a.width !== undefined) {
+        return a.width + b.width;
+      } else {
+        return a + b.width;
+      }
+    });
+    return column_total_width;
+  }
+
   if (!typeColumns.hasOwnProperty(type)) {
     // throw new Error( 'No columns defined for type: '+ type );
     type = "default";
@@ -680,7 +696,7 @@ export const buildTypeColumns = (type, rowData, propData, flag) => {
                 accessor: element,
                 Header: element,
                 filter: true,
-                Cell: customCellRenderers.flairCell,
+                Cell: row => customCellRenderers.flairCell(row),
                 width: getColumnWidth(rowData, element, element)
               };
               columns.push(columnobj);
@@ -698,6 +714,51 @@ export const buildTypeColumns = (type, rowData, propData, flag) => {
         };
       });
     }
+
+    // this function looks at columns and calculates how many columns were initially set to 90
+    // if it detects a column with width of 90 or time in name, it add an exception, meaning that we should not
+    // increase this column
+    let num_of_exemptions = 3;
+    columns.forEach(function(column) {
+      if (column.width === 90) {
+        num_of_exemptions++;
+      }
+      if (column.accessor.includes("time")) {
+        num_of_exemptions++;
+      }
+    });
+
+    let windowsize = window.innerWidth - 32;
+    //calculate column widths
+    let column_total_width = get_current_combined_columnWidths(columns);
+
+    //if below conditional true, then we have empty white space in table and should increase column widths
+    if (column_total_width < windowsize) {
+      let residual = windowsize - column_total_width;
+      let residual_per_column = residual / (columns.length - num_of_exemptions);
+      columns.forEach(
+        function(column) {
+          //each iteration, we want to calculate the total width of columns
+          column_total_width = get_current_combined_columnWidths(columns);
+          if (column_total_width < windowsize) {
+            if (
+              column.accessor !== "id" &&
+              column.accessor !== "entry_count" &&
+              column.accessor !== "status" &&
+              column.width !== 90 &&
+              column.accessor.includes("time") !== true
+            ) {
+              if (column.width + residual_per_column < residual) {
+                column.width = column.width + residual_per_column;
+                column_total_width = get_current_combined_columnWidths(columns);
+              } else {
+                column.width = column.width + residual;
+              }
+            }
+          }
+        }.bind(this)
+      );
+    }
   }
 
   return columns;
@@ -714,7 +775,7 @@ class FlairObject extends React.Component {
     return (
       <div
         style={{
-          wordWrap: "break-word"
+          wordBreak: "break-word"
         }}
         className="alertTableHorizontal"
         dangerouslySetInnerHTML={{ __html: value }}
@@ -724,43 +785,31 @@ class FlairObject extends React.Component {
 }
 
 export const getColumnWidth = (data, accessor, headerText) => {
+  //get calc width of html element, we use this to calculate as accurate as possible, widths of headertext, and data in cellss
+  function calc_width(input) {
+    let strip = stripHtml(input);
+    return strip.length;
+  }
+
   if (typeof accessor === "string" || accessor instanceof String) {
     accessor = d => d[accessor]; // eslint-disable-line no-param-reassign
   }
-  const maxWidth = 500;
-  let magicLength = 0;
+  const maxWidth = 400;
+  const magicSpacing = 9;
   const cellLength = Math.max(
     ...data.map(function(row) {
       let newtext = row[headerText];
-      var canvas = document.createElement("canvas");
-      var ctx = canvas.getContext("2d");
-      ctx.font = "12px Arial"
-      let re = new RegExp("^<svg\\b[^>]*>(.*?)<\\/svg>$");
-      if (newtext !== undefined) {
-        if (re.test(newtext)) {
-          return 300;
-
-        } else {
-          let doc = new DOMParser().parseFromString(newtext, "text/html");
-          let width = width = ctx.measureText(doc).width;
-          if (newtext.includes("entity")) {
-            magicLength = 150;
-          }
-          return width;
-        }
-      }
+      return calc_width(newtext);
     }),
     headerText.length
   );
 
-  let re = new RegExp("^<svg\\b[^>]*>(.*?)<\\/svg>$");
-  if (headerText === "Entries") {
-    return 70;
+  if (cellLength < 13 && headerText !== "status") {
+    return 90;
   } else {
-    return Math.min(maxWidth, cellLength + magicLength);
+    return Math.min(maxWidth, cellLength * magicSpacing);
   }
 };
-
 
 class PromotionButton extends React.Component {
   constructor(props) {
