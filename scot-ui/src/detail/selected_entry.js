@@ -122,6 +122,7 @@ export default class SelectedEntry extends React.Component {
       type === "alert" ||
       type === "entity" ||
       type === "incident" ||
+      type === "alertgroup" ||
       this.props.isPopUp === 1
     ) {
       const entity_url = `scot/api/v2/${type}/${id}/entity`;
@@ -620,7 +621,16 @@ class NewAlertTable extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.entityData !== this.props.entityData) {
-      this.setState({ entityData: this.props.entityData });
+      this.setState({
+        entityData: this.props.entityData,
+        columns: buildTypeColumns(
+          "alert",
+          this.state.data,
+          this.props.items,
+          true,
+          this.props.entityData
+        )
+      });
     }
     if (prevState.flairOff !== this.state.flairOff) {
       let data = this.createData();
@@ -653,6 +663,7 @@ class NewAlertTable extends React.Component {
     this.props.items.forEach(
       function(element) {
         let dataitem = {};
+        // dataitem = element.data;
         if (!this.state.flairOff) {
           dataitem = element.data_with_flair;
         } else {
@@ -716,6 +727,13 @@ class NewAlertTable extends React.Component {
           }}
           showPagination={false}
           pageSize={data.length}
+          getTdProps={(state, rowInfo) => {
+            return {
+              style: {
+                maxWidth: "fit-content"
+              }
+            };
+          }}
           getTrProps={(state, rowInfo) => {
             if (
               rowInfo &&

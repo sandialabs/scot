@@ -48,6 +48,7 @@
 		"react-tag-autocomplete": "^5.6.0",
 		"react-tag-input": "6.2.0",
 		"react-time": "^4.0.0",
+		"string-strip-html": "^4.2.0",
 		"tablesorter": "^2.31.0",
 		"underscore": "^1.9.1",
 		"url-loader": "^1.1.2"
