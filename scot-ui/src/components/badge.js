@@ -2,6 +2,7 @@ import React from "react";
 import Button from "react-bootstrap/lib/Button";
 import $ from "jquery";
 import { WithContext as ReactTags } from "react-tag-input";
+import { get_data, put_data } from "../utils/XHR";
 
 export default class Badge extends React.Component {
   constructor(props) {
@@ -227,38 +228,36 @@ class NewBadge extends React.Component {
   }
 
   handleAddition = tag => {
-    let newBadgeArr = [];
     let badgeType = this.props.badgeType;
     let data = this.props.data;
-    for (let i = 0; i < data.length; i++) {
-      if (data[i] != undefined) {
-        if (typeof data[i] == "string") {
-          newBadgeArr.push(data[i]);
-        } else {
-          newBadgeArr.push(data[i].value);
-        }
+    let newBadgeArr = data.map(function(item) {
+      if (typeof item === "string") {
+        return item;
+      } else {
+        return item.value;
       }
-    }
+    });
+
     if (!newBadgeArr.includes(tag["text"])) {
       newBadgeArr.push(tag["text"]);
       let newobject = {};
       newobject[badgeType] = newBadgeArr;
-      $.ajax({
-        type: "put",
-        url: "scot/api/v2/" + this.props.type + "/" + this.props.id,
-        data: JSON.stringify(newobject),
-        contentType: "application/json; charset=UTF-8",
-        success: function() {
-          console.log("success: " + this.props.badgeType + " added");
-          this.props.toggleBadgeEntry();
-        }.bind(this),
-        error: function(data) {
-          this.props.errorToggle(
-            "Failed to add " + this.props.badgeType + " data "
-          );
-          this.props.toggleBadgeEntry();
-        }.bind(this)
-      });
+      const endpoint = `scot/api/v2/${this.props.type}/${this.props.id}`;
+      const data_response = put_data(endpoint, newobject);
+      data_response
+        .then(
+          function(response) {
+            this.props.toggleBadgeEntry();
+          }.bind(this)
+        )
+        .catch(
+          function(response) {
+            this.props.errorToggle(
+              "Failed to add " + this.props.badgeType + " data "
+            );
+            this.props.toggleBadgeEntry();
+          }.bind(this)
+        );
     } else {
       this.props.errorToggle(this.props.badgeType + " already exists");
     }
@@ -275,29 +274,27 @@ class NewBadge extends React.Component {
   };
 
   handleInputChange = input => {
-    let arr = [];
-    let endpoint = this.props.badgeType;
-    $.ajax({
-      type: "get",
-      url: "/scot/api/v2/ac/" + endpoint + "/" + input,
-      success: function(result) {
-        for (let i = 0; i < result.records.length; i++) {
-          arr.push(result.records[i]);
-        }
-        this.setState({ suggestions: arr });
-      }.bind(this),
-      error: function(data) {
-        this.props.errorToggle("Failed to get autocomplete data for tag", data);
-      }.bind(this)
-    });
-  };
-
-  handleDelete = () => {
-    //blank since buttons are handled outside of this
-  };
-
-  handleDrag = () => {
-    //blank since buttons are handled outside of this
+    if (input.length > 0) {
+      let arr = [];
+      let type = this.props.badgeType;
+      const endpoint = `/scot/api/v2/ac/${type}/${input}`;
+      const get_response = get_data(endpoint, null);
+      get_response
+        .then(
+          function(response) {
+            arr = response.data.records.map(item => item);
+            this.setState({ suggestions: arr });
+          }.bind(this)
+        )
+        .catch(
+          function(error) {
+            this.props.errorToggle(
+              "Failed to get autocomplete data for tag",
+              error
+            );
+          }.bind(this)
+        );
+    }
   };
 
   render() {
@@ -309,11 +306,8 @@ class NewBadge extends React.Component {
         <ReactTags
           suggestions={suggestions}
           handleAddition={this.handleAddition}
-          handleDelete={this.handleDelete}
-          handleDrag={this.handleDrag}
           handleInputChange={this.handleInputChange}
-          minQueryLength={1}
-          customCSS={1}
+          tags={[]}
         />
       </span>
     );
