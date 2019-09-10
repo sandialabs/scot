@@ -787,8 +787,12 @@ class FlairObject extends React.Component {
 export const getColumnWidth = (data, accessor, headerText) => {
   //get calc width of html element, we use this to calculate as accurate as possible, widths of headertext, and data in cellss
   function calc_width(input) {
-    let strip = stripHtml(input);
-    return strip.length;
+    try {
+      let strip = stripHtml(input);
+      return strip.length;
+    } catch {
+      return input.length;
+    }
   }
 
   if (typeof accessor === "string" || accessor instanceof String) {

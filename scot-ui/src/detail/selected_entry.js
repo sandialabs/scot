@@ -664,7 +664,10 @@ class NewAlertTable extends React.Component {
       function(element) {
         let dataitem = {};
         // dataitem = element.data;
-        if (!this.state.flairOff) {
+        if (
+          !this.state.flairOff &&
+          Object.entries(element.data_with_flair).length !== 0
+        ) {
           dataitem = element.data_with_flair;
         } else {
           dataitem = element.data;
