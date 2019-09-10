@@ -616,6 +616,7 @@ sub get_groups {
     if ( $user eq "scot-testing" ) {
         push @groups, @{$self->env->default_groups->{modify}};
         push @groups, "scot-testfoo";
+        push @groups, "scot-testing";
         return wantarray ? @groups :\@groups;
     }
 
