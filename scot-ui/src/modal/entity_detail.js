@@ -1121,17 +1121,20 @@ class EntityBody extends React.Component {
             );
             enrichmentEventKey++;
           } else if (entityData[prop].type === "link") {
-            entityEnrichmentLinkArr.push(
-              <Button
-                bsSize="xsmall"
-                target="_blank"
-                id={entityData[prop].data.url}
-                onMouseDown={this.linkOnClickIntercept}
-              >
-                {entityData[prop].data.title}
-              </Button>
-            );
-            enrichmentEventKey++;
+            //added this because we dont need two buttons -2019 bryce
+            if (entityData[prop].data.tile !== "Lookup in Likaboss") {
+              entityEnrichmentLinkArr.push(
+                <Button
+                  bsSize="xsmall"
+                  target="_blank"
+                  id={entityData[prop].data.url}
+                  onMouseDown={this.linkOnClickIntercept}
+                >
+                  {entityData[prop].data.title}
+                </Button>
+              );
+              enrichmentEventKey++;
+            }
           }
         }
       }
