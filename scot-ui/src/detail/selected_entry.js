@@ -406,6 +406,7 @@ export default class SelectedEntry extends React.Component {
             entryToggle={this.props.entryToggle}
             subcomponent={this.props.subcomponent}
             setAlertColumns={this.props.setAlertColumns}
+            setEntryEntities={this.props.setEntryEntities}
             {...this.props}
           />
         ) : (
@@ -533,6 +534,7 @@ class EntryIterator extends React.Component {
                 removeCallback={this.props.removeCallback}
                 entityData={entityData}
                 entryToggle={this.props.entryToggle}
+                setEntryEntities={this.props.setEntryEntities}
               />
             );
             key = key + 1;
@@ -917,6 +919,23 @@ class EntryParent extends React.Component {
     }
   };
 
+  getEntryEntityData = id => {
+    const entity_url = `scot/api/v2/entry/${id}/entity`;
+    let entity_response = get_data(entity_url, null);
+    entity_response
+      .then(
+        function(response) {
+          let entityResult = response.data.records;
+          this.props.setEntryEntities(entityResult);
+        }.bind(this)
+      )
+      .catch(
+        function(data) {
+          console.log(`Couldnt get entry entity data: ${data}`);
+        }.bind(this)
+      );
+  };
+
   render = () => {
     let itemarr = [];
     let subitemarr = [];
@@ -974,6 +993,7 @@ class EntryParent extends React.Component {
         editEntryToggle={editEntryToggle}
         isPopUp={isPopUp}
         errorToggle={this.props.errorToggle}
+        setEntryEntities={this.props.setEntryEntities}
       />
     );
     for (let prop in items) {
@@ -995,6 +1015,7 @@ class EntryParent extends React.Component {
                       errorToggle={errorToggle}
                       createCallback={this.props.createCallback}
                       removeCallback={this.props.removeCallback}
+                      setEntryEntities={this.props.setEntryEntities}
                     />
                   )
                 )
@@ -1173,6 +1194,14 @@ class EntryParent extends React.Component {
                     tlp={items.tlp}
                     errorToggle={this.props.errorToggle}
                   />
+                  <MenuItem
+                    onClick={() => {
+                      this.getEntryEntityData(items.id);
+                    }}
+                  >
+                    Get entities for Entry
+                  </MenuItem>
+
                   <MenuItem divider />
                   <MenuItem eventKey="2" onClick={this.deleteToggle}>
                     Delete
