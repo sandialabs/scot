@@ -16,11 +16,11 @@ import Wall from "../debug-components/wall";
 import Login from "../modal/login.js";
 import { Link } from "react-router-dom";
 import { Route } from "react-router-dom";
-import ListView from '../list/list-view';
-import Notification from "react-notification-system"
+import ListView from "../list/list-view";
+import Notification from "react-notification-system";
 import LinkContainer from "react-router-bootstrap/lib/LinkContainer.js";
-import Admin from '../components/admin/'
-import { Amq } from '../utils/activemq'
+import Admin from "../components/admin/";
+import { Amq } from "../utils/activemq";
 
 export default class App extends React.Component {
   constructor(props) {
@@ -88,7 +88,7 @@ export default class App extends React.Component {
     //ee
     if (this.props.match.url === "/") {
       $(document.body).keydown(
-        function (e) {
+        function(e) {
           this.ee(e);
         }.bind(this)
       );
@@ -112,9 +112,9 @@ export default class App extends React.Component {
   };
 
   componentWillMount = () => {
-    let notificationSetting = Cookies.checkCookie('notification');
+    let notificationSetting = Cookies.checkCookie("notification");
     if (notificationSetting == undefined) {
-      notificationSetting = 'on';
+      notificationSetting = "on";
     }
     this.setState({ notificationSetting: notificationSetting });
   };
@@ -164,7 +164,7 @@ export default class App extends React.Component {
       this.AMQ.activemqtype !== "entity" &&
       this.state.notificationSetting === "on"
     ) {
-      let message = `${this.AMQ.activemqwho} ${this.AMQ.activemqaction} ${this.AMQ.activemqtype} : ${this.AMQ.activemqid}`
+      let message = `${this.AMQ.activemqwho} ${this.AMQ.activemqaction} ${this.AMQ.activemqtype} : ${this.AMQ.activemqid}`;
       let type = this.AMQ.activemqtype;
       let state = this.AMQ.activemqstate;
       let activemqid = this.AMQ.activemqid;
@@ -175,22 +175,17 @@ export default class App extends React.Component {
         action:
           state !== "delete"
             ? {
-              label: "View",
-              callback: function () {
-                window.open(
-                  "/#/" +
-                  type +
-                  "/" +
-                  activemqid
-                );
+                label: "View",
+                callback: function() {
+                  window.open("/#/" + type + "/" + activemqid);
+                }
               }
-            }
             : null
       });
     }
   };
 
-  wall = (message) => {
+  wall = message => {
     // Don't show on dashboard
     if (this.props.match.path === "/" && this.props.match.isExact) {
       return;
@@ -259,13 +254,13 @@ export default class App extends React.Component {
     $.ajax({
       type: "get",
       url: "/logout",
-      success: function (data) {
+      success: function(data) {
         this.setState({ login: true });
         console.log("Successfully logged out");
         //Call whoami so we can get a csrf token
         this.WhoAmIQuery();
       }.bind(this),
-      error: function (data) {
+      error: function(data) {
         this.error("Failed to log out", data);
       }.bind(this)
     });
@@ -275,7 +270,7 @@ export default class App extends React.Component {
     $.ajax({
       type: "get",
       url: "scot/api/v2/whoami",
-      success: function (result) {
+      success: function(result) {
         SessionStorage.setSessionStorage("whoami", result.user);
         if (result.data) {
           this.setState({
@@ -284,7 +279,7 @@ export default class App extends React.Component {
           });
         }
       }.bind(this),
-      error: function (data) {
+      error: function(data) {
         this.errorToggle("Failed to get current user", data);
       }.bind(this)
     });
@@ -294,10 +289,10 @@ export default class App extends React.Component {
     $.ajax({
       type: "get",
       url: "/scot/api/v2/handler?current=1",
-      success: function (response) {
+      success: function(response) {
         this.setState({ handler: response.records[0].username });
       }.bind(this),
-      error: function (data) {
+      error: function(data) {
         this.errorToggle("Failed to get current user", data);
       }.bind(this)
     });
@@ -317,7 +312,11 @@ export default class App extends React.Component {
           <Navbar.Header>
             <Navbar.Brand>
               <Link to="/" style={{ margin: "0", padding: "0" }}>
-                <img src="/images/scot-600h.png" alt="" style={{ width: "50px" }} />
+                <img
+                  src="/images/scot-600h.png"
+                  alt=""
+                  style={{ width: "50px" }}
+                />
               </Link>
             </Navbar.Brand>
             <Navbar.Toggle />
@@ -361,7 +360,7 @@ export default class App extends React.Component {
                 </LinkContainer>
                 <MenuItem href="/docs/index.html">Documentation</MenuItem>
                 <MenuItem divider />
-                <MenuItem href="/cyberchef.htm">Cyber Chef</MenuItem>
+                <MenuItem href="/cyberchef/index.html">Cyber Chef</MenuItem>
                 <MenuItem divider />
                 <MenuItem href="/#/" onClick={this.LogOut}>
                   Log Out
@@ -594,10 +593,9 @@ export default class App extends React.Component {
             />
           ) : null}
           {type === "reports" && !this.props.match.params.id && <ReportPage />}
-          {type === "reports" &&
-            this.props.match.params.id && (
-              <SingleReport reportType={this.props.match.params.id} />
-            )}
+          {type === "reports" && this.props.match.params.id && (
+            <SingleReport reportType={this.props.match.params.id} />
+          )}
           {/* {type == "amq" ? (
             <AMQ type="amq" errorToggle={this.errorToggle} />
           ) : null} */}
@@ -607,5 +605,3 @@ export default class App extends React.Component {
     );
   };
 }
-
-
