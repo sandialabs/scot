@@ -1122,7 +1122,7 @@ class EntityBody extends React.Component {
             enrichmentEventKey++;
           } else if (entityData[prop].type === "link") {
             //added this because we dont need two buttons -2019 bryce
-            if (entityData[prop].data.tile !== "Lookup in Likaboss") {
+            if (entityData[prop].data.title !== "Lookup in Likaboss") {
               entityEnrichmentLinkArr.push(
                 <Button
                   bsSize="xsmall"
