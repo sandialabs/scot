@@ -45,6 +45,7 @@ export default class SelectedHeader extends React.Component {
       entryData: "",
       showEntityData: false,
       entityData: [],
+      entryEntityData: null,
       entityid: null,
       entitytype: null,
       entityoffset: null,
@@ -548,7 +549,7 @@ export default class SelectedHeader extends React.Component {
     if (this.state.entitiesToolbar === false) {
       this.setState({ entitiesToolbar: true });
     } else {
-      this.setState({ entitiesToolbar: false });
+      this.setState({ entitiesToolbar: false, entryEntityData: null });
     }
   };
 
@@ -742,6 +743,11 @@ export default class SelectedHeader extends React.Component {
       "alertgroup"
     );
     window.open("#/alertgroup/");
+  };
+
+  setEntryEntities = data => {
+    this.entitiesToggle();
+    this.setState({ entryEntityData: data });
   };
 
   showSignatureOptionsToggle = () => {
@@ -1031,13 +1037,25 @@ export default class SelectedHeader extends React.Component {
                 />
               ) : null}
               {this.state.entitiesToolbar ? (
-                <Entities
-                  entitiesToggle={this.entitiesToggle}
-                  entityData={this.state.entityData}
-                  flairToolbarToggle={this.flairToolbarToggle}
-                  flairToolbarOff={this.flairToolbarOff}
-                />
+                <span>
+                  {this.state.entryEntityData !== null ? (
+                    <Entities
+                      entitiesToggle={this.entitiesToggle}
+                      entityData={this.state.entryEntityData}
+                      flairToolbarToggle={this.flairToolbarToggle}
+                      flairToolbarOff={this.flairToolbarOff}
+                    />
+                  ) : (
+                    <Entities
+                      entitiesToggle={this.entitiesToggle}
+                      entityData={this.state.entityData}
+                      flairToolbarToggle={this.flairToolbarToggle}
+                      flairToolbarOff={this.flairToolbarOff}
+                    />
+                  )}
+                </span>
               ) : null}
+
               {this.state.deleteToolbar ? (
                 <div>
                   {this.state.deleteType !== "alert" ? (
@@ -1163,6 +1181,7 @@ export default class SelectedHeader extends React.Component {
                 handleMultiSelection={this.handleMultiSelection}
                 handleSelectAll={this.handleSelectAll}
                 alertsSelected={this.state.alertsSelected}
+                setEntryEntities={this.setEntryEntities}
               />
             ) : null}
             {this.state.showEventData && type === "entity" ? (
