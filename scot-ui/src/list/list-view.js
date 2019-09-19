@@ -466,7 +466,7 @@ export default class ListView extends React.Component {
                         columns={columns}
                         data={this.state.objectarray}
                         style={{
-                          height: scrollheight
+                          maxHeight: scrollheight
                         }}
                         page={this.state.activepage.page}
                         pages={this.state.totalPages}
@@ -709,32 +709,6 @@ export default class ListView extends React.Component {
     } else {
       this.setState({ listViewContainerDisplay: null, scrollheight: "30vh" });
     }
-  };
-
-  Portrait = () => {
-    document.onmousemove = null;
-    document.onmousedown = null;
-    document.onmouseup = null;
-    $(".container-fluid2").css("width", "650px");
-    $(".splitter").css("width", "5px");
-    $(".mainview").show();
-    let array = [];
-    array = ["dates-small", "status-owner-small", "module-reporter-small"];
-    this.setState({
-      splitter: true,
-      display: "flex",
-      alldetail: true,
-      scrollheight: $(window).height() - 170 + "px",
-      maxheight: $(window).height() - 170 + "px",
-      resize: "horizontal",
-      differentviews: "",
-      maxwidth: "",
-      minwidth: "",
-      scrollwidth: "650px",
-      sizearray: array
-    });
-    this.setState({ listViewOrientation: "portrait-list-view" });
-    Cookies.setCookie("viewMode", "portrait", 1000);
   };
 
   Landscape = () => {
