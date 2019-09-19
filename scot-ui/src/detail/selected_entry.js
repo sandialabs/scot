@@ -329,10 +329,10 @@ export default class SelectedEntry extends React.Component {
         if (ListViewTableHeight !== undefined) {
           if (ListViewTableHeight !== 0) {
             scrollHeight =
-              $(window).height() -
+              window.innerHeight -
               ListViewTableHeight -
               $("#header").height() -
-              78;
+              90;
             scrollHeight = scrollHeight + "px";
           } else {
             scrollHeight = $(window).height() - $("#header").height() - 78;
