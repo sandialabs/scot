@@ -93,7 +93,6 @@ services:
      - "/etc/localtime:/etc/localtime:ro"
      - "/opt/scotfiles:/opt/scotfiles/"
      - "./public/:/opt/scot/public/"
-     - "./lib/:/opt/scot/lib/"
      - "/var/lib/elasticsearch:/var/lib/elasticsearch/"
      - "/var/lib/mongodb:/var/lib/mongodb/"
      - "/opt/scotbackup:/opt/scotbackup/:z"
