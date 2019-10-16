@@ -14,6 +14,7 @@ import Button2 from "@material-ui/core/Button";
 import { get_data } from "../utils/XHR";
 import Add from "@material-ui/icons/Add";
 import stripHtml from "string-strip-html";
+import { Link } from "react-router-dom";
 
 const navigateTo = id => {
   window.open("#/event/" + id);
@@ -700,6 +701,14 @@ export const buildTypeColumns = (type, rowData, propData, flag) => {
                 width: getColumnWidth(rowData, element, element)
               };
               columns.push(columnobj);
+            } else {
+              let columnobj = {
+                accessor: element,
+                Header: element,
+                filter: true,
+                width: 80
+              };
+              columns.push(columnobj);
             }
           }.bind(this)
         );
@@ -875,5 +884,94 @@ class PromotionButton extends React.Component {
     }
   }
 }
+
+export const getEntityPopupColumns = params => {
+  const columns = [
+    {
+      Header: "Status",
+      accessor: "status",
+      width: 79,
+      Cell: row => {
+        let promotedHref = "";
+        if (row.original.status === "closed") {
+          return <span style={{ color: "green" }}>{row.original.status}</span>;
+        } else if (row.original.status === "open") {
+          return <span style={{ color: "red" }}>{row.original.status}</span>;
+        } else if (row.original.status === "promoted") {
+          if (row.original.type === "alert") {
+            promotedHref = `/#/event/${row.original.promotion_id}`;
+          } else if (row.original.type === "event") {
+            promotedHref = `/#/incident/${row.original.promotion_id}`;
+          }
+          return (
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <Button
+                bsSize="xsmall"
+                bsStyle={"warning"}
+                // id={this.props.data.id}
+                href={promotedHref}
+                target="_blank"
+                style={{
+                  lineHeight: "12pt",
+                  fontSize: "10pt",
+                  marginLeft: "auto"
+                }}
+              >
+                {row.original.status}
+              </Button>
+            </div>
+          );
+        }
+      }
+    },
+    {
+      Header: "ID",
+      accessor: "id",
+      width: 85,
+      Cell: row => {
+        if (row.original.id) {
+          return (
+            <Link
+              to={`/${row.original.type}/${row.original.id}`}
+              target="_blank"
+            >
+              {row.original.id}
+            </Link>
+          );
+        }
+      }
+    },
+    {
+      Header: "type",
+      accessor: "type",
+      width: 50
+    },
+    {
+      Header: "Entries",
+      accessor: "entry_count",
+      width: 66
+    },
+    {
+      Header: "subject",
+      accessor: "subject"
+    },
+    {
+      Header: "updated",
+      accessor: "updated",
+      width: 121,
+      Cell: row => {
+        let daysSince = "Unknown";
+        if (row.original.updated !== undefined) {
+          daysSince = Math.floor(
+            (Math.round(new Date().getTime() / 1000) - row.original.updated) /
+              86400
+          );
+        }
+        return <span>{daysSince} days ago</span>;
+      }
+    }
+  ];
+  return columns;
+};
 
 export default defaultTableSettings;
