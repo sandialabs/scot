@@ -12,6 +12,9 @@ import { Link } from "react-router-dom";
 import Marker from "../components/marker";
 import Frame from "react-frame-component";
 import { get_data } from "../utils/XHR";
+import ReactTable from "react-table";
+import Paper from "@material-ui/core/Paper";
+import { getEntityPopupColumns } from "../list/tableConfig";
 
 let startX;
 let startY;
@@ -265,11 +268,6 @@ export default class EntityDetail extends React.Component {
     this.setState({ isMounted: false });
     //removes escHandler bind
     $(document).off("keydown");
-    //This makes the size that was last used hold for future entities
-    /*let height = $('#dragme').height();
-        let width = $('#dragme').width();
-        entityPopUpHeight = height;
-        entityPopUpWidth = width;*/
   };
 
   componentWillReceiveProps = nextProps => {
@@ -628,11 +626,6 @@ export default class EntityDetail extends React.Component {
   };
 
   render = () => {
-    //This makes the size that was last used hold for future entities
-    /*if (entityPopUpHeight && entityPopUpWidth) {
-            entityHeight = entityPopUpHeight;
-            entityWidth = entityPopUpWidth;
-        }*/
     let defaultOffsetY;
     let defaultOffsetX;
     let tabsArr = [];
@@ -925,10 +918,7 @@ class TabContents extends React.Component {
     } else if (this.props.entitytype === "source") {
       return (
         <div className="tab-content">
-          <div style={{ flex: "0 1 auto", marginLeft: "10px" }}>
-            {/*<h4 id="myModalLabel">{this.props.data != null ? <span><span><EntityValue value={this.props.entityid} errorToggle={this.props.errorToggle} /></span><div>*/}
-            {/*<EntityValue value={this.props.data} errorToggle={this.props.errorToggle} /></div></span> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h4>*/}
-          </div>
+          <div style={{ flex: "0 1 auto", marginLeft: "10px" }}></div>
           <div
             id="source-popup"
             style={{ overflow: "auto", flex: "1 1 auto", marginLeft: "10px" }}
@@ -1334,511 +1324,76 @@ class EntityReferences extends React.Component {
       maxRecords = undefined;
     }
     this.state = {
-      entityDataAlertGroup: null,
-      entityDataEvent: null,
-      entityDataIncident: null,
-      entityDataIntel: null,
-      entityDataSignature: null,
+      entityReferencesData: [],
       maxRecords: maxRecords,
-      loadingAlerts: true,
-      loadingEvents: true,
-      loadingIncidents: true,
-      loadingIntel: true,
-      loadingSignature: true,
+      loadingType: {
+        alert: true,
+        event: true,
+        intel: true,
+        incident: true,
+        signature: true,
+        guide: true
+      },
       loading: true,
-      isMounted: false
+      isMounted: false,
+      order: "asc",
+      orderBy: "id"
     };
   }
 
   componentDidMount = () => {
     this.setState({ isMounted: true });
-    this.alertRequest = $.ajax({
-      type: "get",
-      url: "scot/api/v2/entity/" + this.props.entityid + "/alert",
-      data: { sort: JSON.stringify({ id: -1 }) },
-      traditional: true,
-      success: function(result) {
-        result = result.records;
-        let recordNumber = result.length;
-        let arr = [];
-        let arrPromoted = [];
-        let arrClosed = [];
-        let arrOpen = [];
-        if (this.state.maxRecords) {
-          recordNumber = this.state.maxRecords;
-        }
-        for (let i = 0; i < recordNumber; i++) {
-          if (result[i] != null) {
-            if (result[i].status === "promoted") {
-              arrPromoted.push(
-                <ReferencesBody
-                  type={"alert"}
-                  data={result[i]}
-                  index={i}
-                  errorToggle={this.props.errorToggle}
-                />
-              );
-            } else if (result[i].status === "closed") {
-              arrClosed.push(
-                <ReferencesBody
-                  type={"alert"}
-                  data={result[i]}
-                  index={i}
-                  errorToggle={this.props.errorToggle}
-                />
-              );
-            } else {
-              arrOpen.push(
-                <ReferencesBody
-                  type={"alert"}
-                  data={result[i]}
-                  index={i}
-                  errorToggle={this.props.errorToggle}
-                />
-              );
-            }
-          }
-        }
-        arr.push(arrPromoted);
-        arr.push(arrClosed);
-        arr.push(arrOpen);
-        if (this.state.isMounted) {
-          if (result.length >= 100) {
-            this.props.showFullEntityButton();
-          }
-          this.props.updateAppearances(result.length);
-          this.setState({ entityDataAlertGroup: arr, loadingAlerts: false });
-          if (
-            this.state.loadingAlerts === false &&
-            this.state.loadingEvents === false &&
-            this.state.loadingIncidents === false &&
-            this.state.loadingIntel === false &&
-            this.state.loadingSignature === false
-          ) {
-            this.setState({ loading: false });
-          }
-        }
-      }.bind(this),
-      error: function(data) {
-        this.props.errorToggle(
-          "failed to get entity references for alerts",
-          data
+    const types = ["incident", "event", "intel", "guide", "signature", "alert"];
+    types.forEach(
+      function(type) {
+        let open = [];
+        let closed = [];
+        let promoted = [];
+        const request = get_data(
+          `scot/api/v2/entity/${this.props.entityid}/${type}`
         );
-      }.bind(this)
-    });
-
-    this.eventRequest = $.ajax({
-      type: "get",
-      url: "scot/api/v2/entity/" + this.props.entityid + "/event",
-      data: { sort: JSON.stringify({ id: -1 }) },
-      traditional: true,
-      success: function(result) {
-        result = result.records;
-        let recordNumber = result.length;
-        let arr = [];
-        let arrPromoted = [];
-        let arrClosed = [];
-        let arrOpen = [];
-        if (this.state.maxRecords) {
-          recordNumber = this.state.maxRecords;
-        }
-        for (let i = 0; i < recordNumber; i++) {
-          if (result[i] != null) {
-            if (result[i].status === "promoted") {
-              arrPromoted.push(
-                <ReferencesBody
-                  type={"event"}
-                  data={result[i]}
-                  index={i}
-                  errorToggle={this.props.errorToggle}
-                />
-              );
-            } else if (result[i].status === "closed") {
-              arrClosed.push(
-                <ReferencesBody
-                  type={"event"}
-                  data={result[i]}
-                  index={i}
-                  errorToggle={this.props.errorToggle}
-                />
-              );
-            } else {
-              arrOpen.push(
-                <ReferencesBody
-                  type={"event"}
-                  data={result[i]}
-                  index={i}
-                  errorToggle={this.props.errorToggle}
-                />
-              );
-            }
-          }
-        }
-        arr.push(arrPromoted);
-        arr.push(arrClosed);
-        arr.push(arrOpen);
-        if (this.state.isMounted) {
-          if (result.length >= 100) {
-            this.props.showFullEntityButton();
-          }
-          this.props.updateAppearances(result.length);
-          this.setState({ entityDataEvent: arr, loadingEvents: false });
-          if (
-            this.state.loadingAlerts === false &&
-            this.state.loadingEvents === false &&
-            this.state.loadingIncidents === false &&
-            this.state.loadingIntel === false &&
-            this.state.loadingSignature
-          ) {
-            this.setState({ loading: false });
-          }
-        }
-      }.bind(this),
-      error: function(data) {
-        this.props.errorToggle(
-          "failed to get entity reference for events",
-          data
-        );
-      }.bind(this)
-    });
-
-    ///GUIDES
-    this.guidesRequest = $.ajax({
-      type: "get",
-      url: "scot/api/v2/entity/" + this.props.entityid + "/guide",
-      data: { sort: JSON.stringify({ id: -1 }) },
-      traditional: true,
-      success: function(result) {
-        result = result.records;
-        let recordNumber = result.length;
-        let arr = [];
-        let arrPromoted = [];
-        let arrClosed = [];
-        let arrOpen = [];
-        if (this.state.maxRecords) {
-          recordNumber = this.state.maxRecords;
-        }
-        for (let i = 0; i < recordNumber; i++) {
-          if (result[i] != null) {
-            if (result[i].status === "promoted") {
-              arrPromoted.push(
-                <ReferencesBody
-                  type={"guide"}
-                  data={result[i]}
-                  index={i}
-                  errorToggle={this.props.errorToggle}
-                />
-              );
-            } else if (result[i].status === "closed") {
-              arrClosed.push(
-                <ReferencesBody
-                  type={"guide"}
-                  data={result[i]}
-                  index={i}
-                  errorToggle={this.props.errorToggle}
-                />
-              );
-            } else {
-              arrOpen.push(
-                <ReferencesBody
-                  type={"guide"}
-                  data={result[i]}
-                  index={i}
-                  errorToggle={this.props.errorToggle}
-                />
-              );
-            }
-          }
-        }
-        arr.push(arrPromoted);
-        arr.push(arrClosed);
-        arr.push(arrOpen);
-        if (this.state.isMounted) {
-          if (result.length >= 100) {
-            this.props.showFullEntityButton();
-          }
-          this.props.updateAppearances(result.length);
-          this.setState({ entityDataIncident: arr, loadingIncidents: false });
-          if (
-            this.state.loadingAlerts === false &&
-            this.state.loadingEvents === false &&
-            this.state.loadingIncidents === false &&
-            this.state.loadingIntel === false &&
-            this.state.loadingSignature === false
-          ) {
-            this.setState({ loading: false });
-          }
-        }
-      }.bind(this),
-      error: function(data) {
-        this.props.errorToggle(
-          "failed to get entity references for guides",
-          data
-        );
-      }.bind(this)
-    });
-
-    this.incidentRequest = $.ajax({
-      type: "get",
-      url: "scot/api/v2/entity/" + this.props.entityid + "/incident",
-      data: { sort: JSON.stringify({ id: -1 }) },
-      traditional: true,
-      success: function(result) {
-        result = result.records;
-        let recordNumber = result.length;
-        let arr = [];
-        let arrPromoted = [];
-        let arrClosed = [];
-        let arrOpen = [];
-        if (this.state.maxRecords) {
-          recordNumber = this.state.maxRecords;
-        }
-        for (let i = 0; i < recordNumber; i++) {
-          if (result[i] != null) {
-            if (result[i].status === "promoted") {
-              arrPromoted.push(
-                <ReferencesBody
-                  type={"incident"}
-                  data={result[i]}
-                  index={i}
-                  errorToggle={this.props.errorToggle}
-                />
-              );
-            } else if (result[i].status === "closed") {
-              arrClosed.push(
-                <ReferencesBody
-                  type={"incident"}
-                  data={result[i]}
-                  index={i}
-                  errorToggle={this.props.errorToggle}
-                />
-              );
-            } else {
-              arrOpen.push(
-                <ReferencesBody
-                  type={"incident"}
-                  data={result[i]}
-                  index={i}
-                  errorToggle={this.props.errorToggle}
-                />
-              );
-            }
-          }
-        }
-        arr.push(arrPromoted);
-        arr.push(arrClosed);
-        arr.push(arrOpen);
-        if (this.state.isMounted) {
-          if (result.length >= 100) {
-            this.props.showFullEntityButton();
-          }
-          this.props.updateAppearances(result.length);
-          this.setState({ entityDataIncident: arr, loadingIncidents: false });
-          if (
-            this.state.loadingAlerts === false &&
-            this.state.loadingEvents === false &&
-            this.state.loadingIncidents === false &&
-            this.state.loadingIntel === false &&
-            this.state.loadingSignature === false
-          ) {
-            this.setState({ loading: false });
-          }
-        }
-      }.bind(this),
-      error: function(data) {
-        this.props.errorToggle(
-          "failed to get entity references for incidents",
-          data
-        );
-      }.bind(this)
-    });
-
-    this.intelRequest = $.ajax({
-      type: "get",
-      url: "scot/api/v2/entity/" + this.props.entityid + "/intel",
-      data: { sort: JSON.stringify({ id: -1 }) },
-      traditional: true,
-      success: function(result) {
-        result = result.records;
-        let recordNumber = result.length;
-        let arr = [];
-        let arrPromoted = [];
-        let arrClosed = [];
-        let arrOpen = [];
-        if (this.state.maxRecords) {
-          recordNumber = this.state.maxRecords;
-        }
-        for (let i = 0; i < recordNumber; i++) {
-          if (result[i] != null) {
-            if (result[i].status === "promoted") {
-              arrPromoted.push(
-                <ReferencesBody
-                  type={"intel"}
-                  data={result[i]}
-                  index={i}
-                  errorToggle={this.props.errorToggle}
-                />
-              );
-            } else if (result[i].status === "closed") {
-              arrClosed.push(
-                <ReferencesBody
-                  type={"intel"}
-                  data={result[i]}
-                  index={i}
-                  errorToggle={this.props.errorToggle}
-                />
-              );
-            } else {
-              arrOpen.push(
-                <ReferencesBody
-                  type={"intel"}
-                  data={result[i]}
-                  index={i}
-                  errorToggle={this.props.errorToggle}
-                />
-              );
-            }
-          }
-        }
-        arr.push(arrPromoted);
-        arr.push(arrClosed);
-        arr.push(arrOpen);
-        if (this.state.isMounted) {
-          if (result.length >= 100) {
-            this.props.showFullEntityButton();
-          }
-          this.props.updateAppearances(result.length);
-          this.setState({ entityDataIntel: arr, loadingIntel: false });
-          if (
-            this.state.loadingAlerts === false &&
-            this.state.loadingEvents === false &&
-            this.state.loadingIncidents === false &&
-            this.state.loadingIntel === false &&
-            this.state.loadingSignature === false
-          ) {
-            this.setState({ loading: false });
-          }
-        }
-      }.bind(this),
-      error: function(data) {
-        this.props.errorToggle("failed to get entity references for intel");
-      }.bind(this)
-    });
-
-    this.signatureRequest = $.ajax({
-      type: "get",
-      url: "scot/api/v2/entity/" + this.props.entityid + "/signature",
-      data: { sort: JSON.stringify({ id: -1 }) },
-      traditional: true,
-      success: function(result) {
-        result = result.records;
-        let recordNumber = result.length;
-        let arr = [];
-        let arrPromoted = [];
-        let arrClosed = [];
-        let arrOpen = [];
-        if (this.state.maxRecords) {
-          recordNumber = this.state.maxRecords;
-        }
-        for (let i = 0; i < recordNumber; i++) {
-          if (result[i] != null) {
-            if (result[i].status === "promoted") {
-              arrPromoted.push(
-                <ReferencesBody
-                  type={"signature"}
-                  data={result[i]}
-                  index={i}
-                  errorToggle={this.props.errorToggle}
-                />
-              );
-            } else if (result[i].status === "closed") {
-              arrClosed.push(
-                <ReferencesBody
-                  type={"signature"}
-                  data={result[i]}
-                  index={i}
-                  errorToggle={this.props.errorToggle}
-                />
-              );
-            } else {
-              arrOpen.push(
-                <ReferencesBody
-                  type={"signature"}
-                  data={result[i]}
-                  index={i}
-                  errorToggle={this.props.errorToggle}
-                />
-              );
-            }
-          }
-        }
-        arr.push(arrPromoted);
-        arr.push(arrClosed);
-        arr.push(arrOpen);
-        if (this.state.isMounted) {
-          if (result.length >= 100) {
-            this.props.showFullEntityButton();
-          }
-          this.props.updateAppearances(result.length);
-          this.setState({ entityDataSignature: arr, loadingSignature: false });
-          if (
-            this.state.loadingAlerts === false &&
-            this.state.loadingEvents === false &&
-            this.state.loadingIncidents === false &&
-            this.state.loadingIntel === false &&
-            this.state.loadingSignature === false
-          ) {
-            this.setState({ loading: false });
-          }
-        }
-      }.bind(this),
-      error: function(data) {
-        this.props.errorToggle("failed to get entity references for signature");
-      }.bind(this)
-    });
-    /*
-        this.entityRequest = $.ajax({
-            type: 'get',
-            url: 'scot/api/v2/entity/' + this.props.entityid + '/entity',
-            data: {sort:JSON.stringify({'id':-1})},
-            traditional: true,
-            success: function(result) {
-                var result = result.records
-                let arr = [];
-                let arrPromoted = [];
-                let arrClosed = [];
-                let arrOpen = [];
-                let recordNumber = this.state.maxRecords;
-                if (isNaN(this.state.maxRecords) == true) { recordNumber = eval(this.state.maxRecords) }
-                for(let i=0; i < recordNumber; i++) {
-                    if (result[i] != null) {
-                        if (result[i].status == 'promoted'){
-                            arrPromoted.push(<ReferencesBody type={'entity'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
-                        } else if (result[i].status == 'closed') {
-                            arrClosed.push(<ReferencesBody type={'entity'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
-                        } else {
-                            arrOpen.push(<ReferencesBody type={'entity'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
-                        }
-                    }
+        request.then(
+          function(result) {
+            const result_array = result.data.records;
+            //sort into temp arrays
+            result_array.forEach(
+              function(item) {
+                item["type"] = type;
+                if (item.status === "open") {
+                  open.push(item);
+                } else if (item.status === "closed") {
+                  closed.push(item);
+                } else if (item.status === "promoted") {
+                  promoted.push(item);
                 }
-                arr.push(arrPromoted);
-                arr.push(arrClosed);
-                arr.push(arrOpen);
-                if (this.state.isMounted) {
-                    if (result.length >= 100) {
-                        this.props.showFullEntityButton();
-                    }
-                    this.props.updateAppearances(result.length);
-                    this.setState({entityDataIntel:arr, loadingIntel:false})
-                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false) {
-                        this.setState({loading:false});
-                    }
-                }
-            }.bind(this),
-            error: function(data) {
-                this.props.errorToggle('failed to get entity references for entity')
-            }.bind(this)
-        })*/
+              }.bind(this)
+            );
+
+            //sort temp arrays by date
+            open.sort(this.compareUpdatedDate);
+            closed.sort(this.compareUpdatedDate);
+            promoted.sort(this.compareUpdatedDate);
+
+            //set loading types false
+            let loading_type = this.state.loadingType;
+            loading_type[type] = false;
+            this.setState({
+              entityReferencesData: [
+                ...this.state.entityReferencesData,
+                ...promoted,
+                ...open,
+                ...closed
+              ],
+              loadingType: loading_type
+            });
+          }.bind(this)
+        );
+      }.bind(this)
+    );
+
+    if (this.state.entityReferencesData.length > 0) {
+      this.props.showFullEntityButton();
+    }
   };
 
   componentDidUpdate = () => {};
@@ -1847,11 +1402,35 @@ class EntityReferences extends React.Component {
     this.setState({ isMounted: false });
   };
 
+  compareUpdatedDate = (a, b) => {
+    //reverse sort with most recent updated at top
+    if (a.updated > b.updated) {
+      return -1;
+    } else {
+      return 1;
+    }
+  };
+
   render = () => {
+    let loading = this.state.loading;
+    if (
+      !this.state.loadingSignature &&
+      !this.state.loadingEvents &&
+      !this.state.loadingAlerts &&
+      !this.state.loadingIncidents &&
+      !this.state.loadingIncidents
+    ) {
+      loading = false;
+    }
     let id = "sortableentitytable" + this.props.entityid;
+    let maxRows = 5;
+    if (this.state.entityReferencesData.length > 0) {
+      maxRows = this.state.entityReferencesData.length;
+    }
+
     return (
-      <div className="entityTableWrapper">
-        {this.state.loading ? (
+      <div>
+        {loading ? (
           <span>
             Loading: {this.state.loadingAlerts ? <span>Alerts </span> : null}
             {this.state.loadingEvents ? <span>Events </span> : null}
@@ -1860,248 +1439,18 @@ class EntityReferences extends React.Component {
             {this.state.loadingSignature ? <span>Signature </span> : null}
           </span>
         ) : null}
-        <table
-          className="tablesorter entityTableHorizontal"
-          id={id}
-          width="100%"
-        >
-          <thead>
-            <tr>
-              <th>peek</th>
-              <th>status</th>
-              <th>id</th>
-              <th>type</th>
-              <th>entries</th>
-              <th>subject</th>
-              <th>last updated</th>
-            </tr>
-          </thead>
-          <tbody>
-            {this.state.entityDataSignature}
-            {this.state.entityDataIntel}
-            {this.state.entityDataIncident}
-            {this.state.entityDataEvent}
-            {this.state.entityDataAlertGroup}
-          </tbody>
-        </table>
+        <Paper>
+          <ReactTable
+            className="-striped -highlight"
+            data={this.state.entityReferencesData}
+            columns={getEntityPopupColumns()}
+            minRows={0}
+            sortable={true}
+          />
+        </Paper>
       </div>
     );
   };
-}
-
-class ReferencesBody extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      showSummary: false,
-      summaryExists: true
-    };
-  }
-
-  onClick = () => {
-    $.ajax({
-      type: "GET",
-      url:
-        "scot/api/v2/" + this.props.type + "/" + this.props.data.id + "/entry",
-      success: function(result) {
-        let entryResult = result.records;
-        let summary = false;
-        for (let i = 0; i < entryResult.length; i++) {
-          if (entryResult[i].class === "summary") {
-            summary = true;
-            if (this.isMounted) {
-              this.setState({
-                showSummary: true,
-                summaryData: entryResult[i].body_plain
-              });
-              $("#entityTable" + this.props.data.id).qtip({
-                content: { text: entryResult[i].body_plain },
-                style: { classes: "qtip-scot" },
-                hide: "unfocus",
-                position: {
-                  my: "top left",
-                  at: "right",
-                  target: $("#entitySummaryRow" + this.props.data.id)
-                }, //[position.left,position.top] },
-                show: { ready: true, event: "click" }
-              });
-              break;
-            }
-          }
-        }
-        if (summary === false) {
-          $("#entityTable" + this.props.data.id).qtip({
-            content: { text: "No Summary Found" },
-            style: { classes: "qtip-scot" },
-            hide: "unfocus",
-            position: {
-              my: "top left",
-              at: "right",
-              target: $("#entitySummaryRow" + this.props.data.id)
-            },
-            show: { ready: true, event: "click" }
-          });
-        }
-      }.bind(this),
-      error: function(data) {
-        this.props.errorToggle(
-          "Summary Query failed for: " +
-            this.props.type +
-            ":" +
-            this.props.data.id,
-          data
-        );
-      }.bind(this)
-    });
-  };
-
-  render() {
-    let id = this.props.data.id;
-    let trId = "entityTable" + this.props.data.id;
-    let tdId = "entitySummaryRow" + this.props.data.id;
-    let aHref = null;
-    let promotedHref = null;
-    let statusColor = null;
-    let daysSince = null;
-    let subject = this.props.data.subject;
-    let updatedTime = this.props.data.updated;
-    let updatedTimeHumanReadable = "";
-    if (this.props.data.status === "promoted") {
-      statusColor = "orange";
-    } else if (this.props.data.status === "closed") {
-      statusColor = "green";
-    } else if (this.props.data.status === "open") {
-      statusColor = "red";
-    } else {
-      statusColor = "black";
-    }
-    if (this.props.type === "alert") {
-      aHref = "/" + this.props.type + "/" + this.props.data.id;
-      //aHref = '/#/alertgroup/' + this.props.data.alertgroup;
-      promotedHref = "/#/event/" + this.props.data.promotion_id;
-    } else if (this.props.type === "event") {
-      promotedHref = "/#/incident/" + this.props.data.promotion_id;
-      aHref = "/" + this.props.type + "/" + this.props.data.id;
-    } else {
-      aHref = "/" + this.props.type + "/" + this.props.data.id;
-    }
-    if (subject === undefined) {
-      if (this.props.data.data !== undefined) {
-        if (this.props.data.data.alert_name !== undefined) {
-          subject = this.props.data.data.alert_name;
-        } else {
-          subject = "";
-        }
-      } else {
-        subject = "";
-      }
-    }
-    if (updatedTime !== undefined) {
-      daysSince = Math.floor(
-        (Math.round(new Date().getTime() / 1000) - updatedTime) / 86400
-      );
-      updatedTimeHumanReadable = new Date(1000 * updatedTime).toLocaleString();
-    }
-    return (
-      <tr id={trId}>
-        <td
-          style={{
-            textAlign: "center",
-            cursor: "pointer",
-            verticalAlign: "top"
-          }}
-          onClick={this.onClick}
-          id={tdId}
-        >
-          <i className="fa fa-eye fa-1" aria-hidden="true" />
-        </td>
-        {this.props.data.status === "promoted" ? (
-          <td
-            style={{
-              paddingRight: "4px",
-              paddingLeft: "4px",
-              verticalAlign: "top"
-            }}
-          >
-            <Button
-              bsSize="xsmall"
-              bsStyle={"warning"}
-              id={this.props.data.id}
-              href={promotedHref}
-              target="_blank"
-              style={{
-                lineHeight: "12pt",
-                fontSize: "10pt",
-                marginLeft: "auto"
-              }}
-            >
-              {this.props.data.status}
-            </Button>
-          </td>
-        ) : (
-          <td
-            style={{
-              color: statusColor,
-              paddingRight: "4px",
-              paddingLeft: "4px",
-              verticalAlign: "top"
-            }}
-          >
-            {this.props.data.status}
-          </td>
-        )}
-        <td
-          style={{
-            paddingRight: "4px",
-            paddingLeft: "4px",
-            verticalAlign: "top"
-          }}
-        >
-          <Link to={aHref} target="_blank">
-            {this.props.data.id}
-          </Link>
-        </td>
-        <td
-          style={{
-            paddingRight: "4px",
-            paddingLeft: "4px",
-            verticalAlign: "top"
-          }}
-        >
-          {this.props.type}
-        </td>
-        <td
-          style={{
-            paddingRight: "4px",
-            paddingLeft: "4px",
-            textAlign: "center",
-            verticalAlign: "top"
-          }}
-        >
-          {this.props.data.entry_count}
-        </td>
-        <td
-          style={{
-            paddingRight: "4px",
-            paddingLeft: "4px",
-            verticalAlign: "top"
-          }}
-        >
-          {subject}
-        </td>
-        <td
-          style={{
-            paddingRight: "4px",
-            paddingLeft: "4px",
-            verticalAlign: "top"
-          }}
-          title={updatedTimeHumanReadable}
-        >
-          {daysSince} days ago
-        </td>
-      </tr>
-    );
-  }
 }
 
 class GuideBody extends React.Component {
