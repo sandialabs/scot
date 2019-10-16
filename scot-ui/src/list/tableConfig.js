@@ -692,7 +692,6 @@ export const buildTypeColumns = (type, rowData, propData, flag) => {
         propData[0].data.columns.forEach(
           function(element, index) {
             if (element !== "status") {
-              //dont want duplicate status column
               let columnobj = {
                 accessor: element,
                 Header: element,
@@ -702,13 +701,14 @@ export const buildTypeColumns = (type, rowData, propData, flag) => {
               };
               columns.push(columnobj);
             } else {
-              let columnobj = {
-                accessor: element,
-                Header: element,
+              let status_code_obj = {
+                accessor: "status_code",
+                Header: "Status Code",
                 filter: true,
+                Cell: row => customCellRenderers.flairCell(row),
                 width: 80
               };
-              columns.push(columnobj);
+              columns.splice(3, 0, status_code_obj);
             }
           }.bind(this)
         );
