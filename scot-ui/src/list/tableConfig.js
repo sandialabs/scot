@@ -701,14 +701,16 @@ export const buildTypeColumns = (type, rowData, propData, flag) => {
               };
               columns.push(columnobj);
             } else {
+              // Had to add space to account for SCOT status column which is a duplicate column.
+              //React table hates duplicate columns. See SelectedEntry - NewAlertTable for data manipulation
               let status_code_obj = {
-                accessor: "status_code",
-                Header: "Status Code",
+                accessor: "status ",
+                Header: element,
                 filter: true,
                 Cell: row => customCellRenderers.flairCell(row),
                 width: 80
               };
-              columns.splice(3, 0, status_code_obj);
+              columns.push(status_code_obj);
             }
           }.bind(this)
         );
