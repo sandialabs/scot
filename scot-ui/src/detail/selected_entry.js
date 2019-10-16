@@ -665,14 +665,16 @@ class NewAlertTable extends React.Component {
     this.props.items.forEach(
       function(element) {
         let dataitem = {};
-        // dataitem = element.data;
         if (
           !this.state.flairOff &&
           Object.entries(element.data_with_flair).length !== 0
         ) {
           dataitem = element.data_with_flair;
+          //we have to do this in order to not conflict SCOT status column with Splunk http status columns
+          dataitem["status_code"] = element.data_with_flair.status;
         } else {
           dataitem = element.data;
+          dataitem["status_code"] = element.data.status;
         }
         dataitem["id"] = element.id;
         dataitem["status"] = element.status;
@@ -684,7 +686,7 @@ class NewAlertTable extends React.Component {
   };
 
   render() {
-    const { data, columns } = this.state;
+    const { columns, data } = this.state;
     const { addFlair, type, headerData, entityData, updated } = this.props;
 
     return (
