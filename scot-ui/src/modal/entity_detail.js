@@ -1001,6 +1001,18 @@ class EntityValue extends React.Component {
               id={this.props.data.id}
               string={this.props.value}
             />
+            <span>&nbsp;</span>
+            {this.props.data.data ? (
+              this.props.data.data.scanner ? (
+                this.props.data.data.scanner.active == "true" ? (
+                  <img
+                    class="extras"
+                    title="scanner"
+                    src="/images/flair/scanner.png"
+                  />
+                ) : null
+              ) : null
+            ) : null}
           </div>
           <div>
             <span>{this.props.data.type}:</span>
