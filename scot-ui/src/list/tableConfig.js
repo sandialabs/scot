@@ -895,34 +895,40 @@ export const getEntityPopupColumns = params => {
       width: 79,
       Cell: row => {
         let promotedHref = "";
-        if (row.original.status === "closed") {
-          return <span style={{ color: "green" }}>{row.original.status}</span>;
-        } else if (row.original.status === "open") {
-          return <span style={{ color: "red" }}>{row.original.status}</span>;
-        } else if (row.original.status === "promoted") {
-          if (row.original.type === "alert") {
-            promotedHref = `/#/event/${row.original.promotion_id}`;
-          } else if (row.original.type === "event") {
-            promotedHref = `/#/incident/${row.original.promotion_id}`;
+        if (row.original.status !== undefined) {
+          if (row.original.status === "closed") {
+            return (
+              <span style={{ color: "green" }}>{row.original.status}</span>
+            );
+          } else if (row.original.status === "open") {
+            return <span style={{ color: "red" }}>{row.original.status}</span>;
+          } else if (row.original.status === "promoted") {
+            if (row.original.type === "alert") {
+              promotedHref = `/#/event/${row.original.promotion_id}`;
+            } else if (row.original.type === "event") {
+              promotedHref = `/#/incident/${row.original.promotion_id}`;
+            }
+            return (
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <Button
+                  bsSize="xsmall"
+                  bsStyle={"warning"}
+                  // id={this.props.data.id}
+                  href={promotedHref}
+                  target="_blank"
+                  style={{
+                    lineHeight: "12pt",
+                    fontSize: "10pt",
+                    marginLeft: "auto"
+                  }}
+                >
+                  {row.original.status}
+                </Button>
+              </div>
+            );
           }
-          return (
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <Button
-                bsSize="xsmall"
-                bsStyle={"warning"}
-                // id={this.props.data.id}
-                href={promotedHref}
-                target="_blank"
-                style={{
-                  lineHeight: "12pt",
-                  fontSize: "10pt",
-                  marginLeft: "auto"
-                }}
-              >
-                {row.original.status}
-              </Button>
-            </div>
-          );
+        } else {
+          return <div>N/A</div>;
         }
       }
     },
