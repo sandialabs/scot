@@ -1361,12 +1361,14 @@ class EntityReferences extends React.Component {
         let open = [];
         let closed = [];
         let promoted = [];
+        let therest = [];
         const request = get_data(
           `scot/api/v2/entity/${this.props.entityid}/${type}`
         );
         request.then(
           function(result) {
             const result_array = result.data.records;
+            this.props.updateAppearances(result_array.length);
             //sort into temp arrays
             result_array.forEach(
               function(item) {
@@ -1377,6 +1379,8 @@ class EntityReferences extends React.Component {
                   closed.push(item);
                 } else if (item.status === "promoted") {
                   promoted.push(item);
+                } else {
+                  therest.push(item);
                 }
               }.bind(this)
             );
@@ -1385,6 +1389,7 @@ class EntityReferences extends React.Component {
             open.sort(this.compareUpdatedDate);
             closed.sort(this.compareUpdatedDate);
             promoted.sort(this.compareUpdatedDate);
+            therest.sort(this.compareUpdatedDate);
 
             //set loading types false
             let loading_type = this.state.loadingType;
@@ -1394,7 +1399,8 @@ class EntityReferences extends React.Component {
                 ...this.state.entityReferencesData,
                 ...promoted,
                 ...open,
-                ...closed
+                ...closed,
+                ...therest
               ],
               loadingType: loading_type
             });
@@ -1437,6 +1443,8 @@ class EntityReferences extends React.Component {
     let id = "sortableentitytable" + this.props.entityid;
     let maxRows = 5;
     if (this.state.entityReferencesData.length > 0) {
+      console.log("got data");
+      console.log(this.state.entityReferencesData);
       maxRows = this.state.entityReferencesData.length;
     }
 
