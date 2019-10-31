@@ -496,7 +496,7 @@ export default class ListView extends React.Component {
                     className="splitter"
                     style={{
                       display: "block",
-                      height: "5px",
+                      height: "10px",
                       backgroundColor: "black",
                       borderTop: "1px solid #AAA",
                       borderBottom: "1px solid #AAA",
