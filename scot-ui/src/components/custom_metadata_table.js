@@ -693,13 +693,24 @@ class InputMultiComponent extends React.Component {
 
   handleAddition = group => {
     if (this.state.value !== undefined) {
-      let tags = this.state.value;
-      tags.push(group.target.value);
-      let newData = {
-        data: {
-          applies_to: tags
+      let groupArr = [];
+      let data = this.state.value;
+      for (let i = 0; i < data.length; i++) {
+        if (data[i] != undefined) {
+          if (typeof data[i] == "string") {
+            groupArr.push(data[i]);
+          } else {
+            groupArr.push(data[i].value);
+          }
         }
-      };
+      }
+      groupArr.push(group.target.value);
+
+      let newData = {};
+      let data_string = "data." + this.props.id;
+      newData[data_string] = groupArr;
+
+      // newData[this.props.id] = groupArr;
 
       $.ajax({
         type: "put",
