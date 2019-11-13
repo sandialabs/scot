@@ -149,7 +149,7 @@ export default class CustomMetaDataTable extends React.Component {
           case "textarea":
             if (formType[i]["value_type"]["type"] == "static") {
               textAreaArr.push(
-                <InputComponent
+                <TextAreaComponent
                   id={formType[i].key}
                   value={value}
                   onBlur={this.onChange}
