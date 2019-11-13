@@ -190,6 +190,19 @@ export const customCellRenderers = {
     } else {
       return null;
     }
+  },
+
+  appliesTo: row => {
+    if (row !== undefined) {
+      if (Array.isArray(row.original.data.applies_to)) {
+        let output = row.original.data.applies_to.map(item => {
+          return item;
+        });
+        return <span>{output.join(", ")}</span>;
+      } else {
+        return <span>{row.original.data.applies_to}</span>;
+      }
+    }
   }
 };
 
@@ -376,7 +389,9 @@ const columnDefinitions = {
 
   AppliesTo: {
     Header: "Applies To",
-    accessor: "applies_to",
+    id: "data.applies_to",
+    accessor: d => d.data.applies_to,
+    Cell: customCellRenderers.appliesTo,
     // Filter: customFilters.stringFilter,
     Filter: customFilters.tagFilter,
     minWidth: 400,

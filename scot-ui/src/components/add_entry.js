@@ -479,7 +479,7 @@ export default class AddEntryModal extends React.Component {
                   borderColor: "blue"
                 },
                 auto_focus: this.state.tinyID,
-                selector: "textarea",
+                // selector: "textarea",
                 browser_spellcheck: true,
                 contextmenu: false,
                 plugins:
