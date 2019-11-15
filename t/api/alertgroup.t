@@ -62,6 +62,8 @@ $t->post_ok(
     }
 )->status_is(200);
 
+exit 0;
+
 my $alertgroup_id   = $t->tx->res->json->{id};
 my $updated         = $t->tx->res->json->{updated};
 $flairer->process_message(undef, {

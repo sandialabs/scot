@@ -36,9 +36,12 @@ sub startup {
     my $cache   = Mojo::Cache->new(max_keys => 100);
     $self->helper   ('cache'  => sub { $cache } );
 
-    my $log = $env->log;
-    $self->log($log);
-    $self->log_startup($log);
+    # mojo 8 changed the logging.  trying to go around it.
+    my $slog = $env->log;
+    $self->attr     ( slog => sub {$slog} );
+    $self->helper   ( slog => sub { shift->app->env } );
+
+    $slog->debug("MOJO = ".$Mojolicious::VERSION);
 
     $self->secrets( $env->mojo_defaults->{secrets} );
     $self->sessions->default_expiration( 
@@ -79,9 +82,9 @@ sub startup {
         do {
             $Log::Log4perl::caller_depth++;
             no warnings 'uninitialized';
-            $log->warn(@_);
+            $slog->warn(@_);
             unless ( grep { /uninitialized/ } @_ ) {
-                $log->warn(longmess());
+                $slog->warn(longmess());
             }
             $Log::Log4perl::caller_depth--;
         }
@@ -92,7 +95,7 @@ sub startup {
             return;
         }
         $Log::Log4perl::caller_depth++;
-        $log->fatal(@_);
+        $slog->fatal(@_);
         die @_;
     };
 
@@ -182,7 +185,7 @@ relies on the browser BasicAuth popup.
     $r   ->get('/')
             ->to( cb => sub {
                 my $c = shift;
-                $log->debug("Hitting Static /");
+                $slog->debug("Hitting Static /");
                 $c->reply->static('index.html');
             });
 
@@ -707,9 +710,9 @@ other events.
 
 sub log_startup {
     my $self    = shift;
-    my $log     = shift;
+    my $slog     = shift;
 
-    $log->info(
+    $slog->info(
                 "============================================================\n".
         " "x55 ."| SCOT  ". $self->env->version . "\n".
         " "x55 ."| mode: ". $self->env->mode. "\n".
