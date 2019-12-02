@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Developing For SCOT &#8212; SCOT 3.5.1 documentation</title>
+    <title>Developing For SCOT &mdash; SCOT 3.5.1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -23,8 +23,6 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
     <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
     <link rel="next" title="Signatures" href="signatures.html" />
     <link rel="prev" title="Administration Guide" href="adminguide.html" /> 
@@ -42,7 +40,7 @@
         <li class="right" >
           <a href="adminguide.html" title="Administration Guide"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -131,37 +129,37 @@ Ex: bots, import scripts, export scripts, etc.</dd>
 <h3>SCOT get API<a class="headerlink" href="#scot-get-api" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic">
 <li><p class="first">Retrieve one &#8220;thing&#8221; when you know the id:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v2</span><span class="o">/</span><span class="n">event</span><span class="o">/</span><span class="mi">123</span>
+<div class="highlight-python"><div class="highlight"><pre>/scot/api/v2/event/123
 
-<span class="n">output</span><span class="p">:</span>
+output:
 
-<span class="n">JSON</span> <span class="nb">object</span> <span class="n">representing</span> <span class="n">event</span> <span class="mi">123</span>
+JSON object representing event 123
 </pre></div>
 </div>
 </li>
 <li><p class="first">Retrieve list of &#8220;things&#8221;:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v2</span><span class="o">/</span><span class="n">event</span>
+<div class="highlight-python"><div class="highlight"><pre>/scot/api/v2/event
 
-<span class="n">output</span>
+output
 
-<span class="p">{</span>
-    <span class="n">queryRecordCount</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
-    <span class="n">totalRecordCount</span><span class="p">:</span> <span class="mi">10060</span><span class="p">,</span>
-    <span class="n">records</span><span class="p">:</span> <span class="p">[</span>
-        <span class="p">{</span> <span class="n">event</span> <span class="n">json</span> <span class="nb">object</span> <span class="mi">1</span> <span class="p">},</span>
-        <span class="o">...</span>
-    <span class="p">]</span>
-<span class="p">}</span>
+{
+    queryRecordCount: 50,
+    totalRecordCount: 10060,
+    records: [
+        { event json object 1 },
+        ...
+    ]
+}
 </pre></div>
 </div>
 </li>
 <li><p class="first">Retrieve list of &#8220;things&#8221; based on time range:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>/scot/api/v2/event?created=1472244135&amp;created=1472244137
+<div class="highlight-python"><div class="highlight"><pre>/scot/api/v2/event?created=1472244135&amp;created=1472244137
 </pre></div>
 </div>
 </li>
 <li><p class="first">Retrieve list of &#8220;things&#8221; based on string match:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>/scot/api/v2/event?subject=Symnatic
+<div class="highlight-python"><div class="highlight"><pre>/scot/api/v2/event?subject=Symnatic
 </pre></div>
 </div>
 </li>
@@ -171,28 +169,28 @@ Ex: bots, import scripts, export scripts, etc.</dd>
 <blockquote>
 <div><ol class="loweralpha">
 <li><p class="first">matching a single number:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>/scot/api/v2/event?views=2
+<div class="highlight-python"><div class="highlight"><pre>/scot/api/v2/event?views=2
 
 output: events with two views
 </pre></div>
 </div>
 </li>
 <li><p class="first">matching a set of numbers:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>/scot/api/v2/event?entry_count=2&amp;entry_count=4&amp;entry_count=6
+<div class="highlight-python"><div class="highlight"><pre>/scot/api/v2/event?entry_count=2&amp;entry_count=4&amp;entry_count=6
 
 output: events with an entry_count of 2, 4, or 6
 </pre></div>
 </div>
 </li>
 <li><p class="first">matching everything but a number:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>/scot/api/v2/event?views=!1
+<div class="highlight-python"><div class="highlight"><pre>/scot/api/v2/event?views=!1
 
 output: events with views not equal to 1
 </pre></div>
 </div>
 </li>
 <li><p class="first">matching everyting but a set of numbers:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>/scot/api/v2/event?views=!1&amp;views=!2&amp;views=!3
+<div class="highlight-python"><div class="highlight"><pre>/scot/api/v2/event?views=!1&amp;views=!2&amp;views=!3
 
 output: events with views not equal to 1,2, or 3.
 (note:  if ! appears in any element, all are treated as if they are !
@@ -200,7 +198,7 @@ output: events with views not equal to 1,2, or 3.
 </div>
 </li>
 <li><p class="first">matching an expression:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>/scot/api/v2/event?views=4&lt;x&lt;8
+<div class="highlight-python"><div class="highlight"><pre>/scot/api/v2/event?views=4&lt;x&lt;8
 /scot/api/v2/event?views=4&lt;=x&lt;8
 /scot/api/v2/event?views=4&lt;=x&lt;=8
 /scot/api/v2/event?views=4&lt;x&lt;=8
@@ -219,7 +217,7 @@ immediately by some numbe of digits.
 </div></blockquote>
 <ol class="arabic">
 <li><p class="first">Retrieve list of &#8220;things&#8221; based on Set Fields like &#8220;tag&#8221; or &#8220;source&#8221;:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>/scot/api/v2/event?tag=email&amp;tag=malware&amp;tag=!false_positive
+<div class="highlight-python"><div class="highlight"><pre>/scot/api/v2/event?tag=email&amp;tag=malware&amp;tag=!false_positive
 
 output:  list of evens with tags email and malware but not containing
  the tag false_positive
@@ -252,15 +250,46 @@ columns: [ &#8216;column1&#8217;, &#8216;column2&#8217;, &#8216;column3&#8217; ]
 </dd>
 </dl>
 </li>
+<li><p class="first">Create an Event:</p>
+<dl class="docutils">
+<dt>curl -XPOST /scot/api/v2/event -d &#8216;{</dt>
+<dd><blockquote class="first">
+<div><p>“subject”: “Test Event”,
+“source”: [ “Orchestration” ],
+“tag”: [ “tag1”, “tag2” ],
+“status”: “open”,
+“groups”: [</p>
+<blockquote>
+<div><p>read: [ “scot-group” ],
+modify: [ “scot-group ],</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p class="last">}&#8217;</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">Create an Entry attached to a known event:</p>
+<dl class="docutils">
+<dt>curl -XPOST /scot/api/v2/entry -d&#8217;{</dt>
+<dd><blockquote class="first">
+<div><p>&#8220;target_id&#8221;: 123
+&#8220;target_type&#8221;: &#8220;event&#8221;,
+&#8220;body&#8221;: &#8220;any text/html here&#8221;,</p>
+</div></blockquote>
+<p class="last">}&#8217;</p>
+</dd>
+</dl>
+</li>
 </ol>
 </div>
 <div class="section" id="scot-put-api">
 <h3>SCOT put API<a class="headerlink" href="#scot-put-api" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic">
 <li><p class="first">Update and event status:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">XPUT</span> <span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v2</span><span class="o">/</span><span class="n">event</span><span class="o">/</span><span class="mi">123</span> <span class="o">-</span><span class="n">d</span> <span class="s1">&#39;{</span>
-    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;closed&quot;</span>
-<span class="p">}</span><span class="s1">&#39;</span>
+<div class="highlight-python"><div class="highlight"><pre>curl -XPUT /scot/api/v2/event/123 -d &#39;{
+    &quot;status&quot;: &quot;closed&quot;
+}&#39;
 </pre></div>
 </div>
 </li>
@@ -270,7 +299,7 @@ columns: [ &#8216;column1&#8217;, &#8216;column2&#8217;, &#8216;column3&#8217; ]
 <h3>SCOT delete API<a class="headerlink" href="#scot-delete-api" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic">
 <li><p class="first">Delete and entry:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">XDELETE</span> <span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v2</span><span class="o">/</span><span class="n">entry</span><span class="o">/</span><span class="mi">12345</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">curl</span> <span class="o">-</span><span class="n">XDELETE</span> <span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v2</span><span class="o">/</span><span class="n">entry</span><span class="o">/</span><span class="mi">12345</span>
 </pre></div>
 </div>
 </li>
@@ -284,7 +313,7 @@ process to subscribe to be asyncronously updated and to take actions on these
 event.  SCOT uses ActiveMQ, it gets the job done and just about every language under the
 sun has a way to interface with it.</p>
 <p>The message format is:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
     <span class="n">guid</span><span class="p">:</span>   <span class="s2">&quot;unique_guid_string&quot;</span><span class="p">,</span>
     <span class="n">action</span><span class="p">:</span> <span class="s2">&quot;action_string&quot;</span><span class="p">,</span>
     <span class="n">data</span><span class="p">:</span>   <span class="p">{</span>
@@ -413,11 +442,14 @@ if sending a message, this could be the an epoch time.</p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -436,11 +468,11 @@ if sending a message, this could be the an epoch time.</p>
         <li class="right" >
           <a href="adminguide.html" title="Administration Guide"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2011-2016, Sandia National Laboratories.
+        &copy; Copyright 2011-2016, Sandia National Laboratories.
     </div>
   </body>
 </html>

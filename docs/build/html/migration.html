@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Migration &#8212; SCOT 3.5.1 documentation</title>
+    <title>Migration &mdash; SCOT 3.5.1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -23,10 +23,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
     <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
-    <link rel="next" title="Overview" href="overview.html" />
+    <link rel="next" title="SCOT Feeding" href="feeding.html" />
     <link rel="prev" title="POST Install Procedures" href="postinstall.html" /> 
   </head>
   <body role="document">
@@ -37,12 +35,12 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="overview.html" title="Overview"
+          <a href="feeding.html" title="SCOT Feeding"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="postinstall.html" title="POST Install Procedures"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -70,7 +68,7 @@ migrate 250,000 alerts.  Unless you have very large databases, my recommendation
 is to allow a single process to work on each collection because this will
 make it easier to detect and correct any anomalies in the data migration.</p>
 <p>The migration command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ cd /opt/scot/bin
+<div class="highlight-python"><div class="highlight"><pre>$ cd /opt/scot/bin
 $ ./migrate.pl alert 2
 </pre></div>
 </div>
@@ -90,7 +88,7 @@ the actual collection being migrated.  Pro tip: &#8216;grep -i error /var/log/sc
 # user
 # file</p>
 <p>If you wish for totally hands off operation, do the following:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ cd /opt/scot/bin
+<div class="highlight-python"><div class="highlight"><pre>$ cd /opt/scot/bin
 $ ./migrate.pl all
 </pre></div>
 </div>
@@ -102,7 +100,7 @@ SCOT 3.5 on a new system, and want to migrate your database to that server,
 you will need to use the mongodump and mongorestore to move the old database
 to the new server first.</p>
 <p>Example Migration:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ ssh oldscot
+<div class="highlight-python"><div class="highlight"><pre>$ ssh oldscot
 oldscot:/home/scot&gt; mongodump scotng-prod
 ...
 oldscot:/home/scot&gt; tar czvf ./scotng-prod.tgz ./dump
@@ -141,8 +139,8 @@ newscot:/opt/scot/bin&gt; ./migrate.pl all
   <p class="topless"><a href="postinstall.html"
                         title="previous chapter">POST Install Procedures</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="overview.html"
-                        title="next chapter">Overview</a></p>
+  <p class="topless"><a href="feeding.html"
+                        title="next chapter">SCOT Feeding</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -153,11 +151,14 @@ newscot:/opt/scot/bin&gt; ./migrate.pl all
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -171,16 +172,16 @@ newscot:/opt/scot/bin&gt; ./migrate.pl all
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="overview.html" title="Overview"
+          <a href="feeding.html" title="SCOT Feeding"
              >next</a> |</li>
         <li class="right" >
           <a href="postinstall.html" title="POST Install Procedures"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2011-2016, Sandia National Laboratories.
+        &copy; Copyright 2011-2016, Sandia National Laboratories.
     </div>
   </body>
 </html>
