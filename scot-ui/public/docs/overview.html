@@ -1,35 +1,26 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>Overview &#8212; SCOT 3.5.1 documentation</title>
-    
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '3.5.1',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
     <link rel="next" title="User Guide" href="userguide.html" />
     <link rel="prev" title="SCOT Feeding" href="feeding.html" /> 
-  </head>
-  <body role="document">
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -82,9 +73,9 @@
 <blockquote>
 <div><ul class="simple">
 <li>SCOT just works and never slows me down.</li>
-<li>I&#8217;m putting more and more of my investigation notes into SCOT.  It has paid of tremendously for me and helped me discover several non-obvious patterns.</li>
-<li>Aside from my e-mail client, it&#8217;s the one application that is always on my screen.</li>
-<li>Give up SCOT?  I&#8217;d leave incident response first!</li>
+<li>I’m putting more and more of my investigation notes into SCOT.  It has paid of tremendously for me and helped me discover several non-obvious patterns.</li>
+<li>Aside from my e-mail client, it’s the one application that is always on my screen.</li>
+<li>Give up SCOT?  I’d leave incident response first!</li>
 </ul>
 </div></blockquote>
 </div>
@@ -92,7 +83,7 @@
 <h2>Terminology<a class="headerlink" href="#terminology" title="Permalink to this headline">¶</a></h2>
 <p>Having a common vocabulary is very important to improve understanding.  So many terms are
 overloaded with meanings or have different connations to different teams.  The following
-sections define terms that SCOT use and the interpretation of those terms in SCOT&#8217;s context.</p>
+sections define terms that SCOT use and the interpretation of those terms in SCOT’s context.</p>
 <div class="section" id="irt">
 <h3>IRT<a class="headerlink" href="#irt" title="Permalink to this headline">¶</a></h3>
 <p>Incident Response Team, a group of analysts that look for and respond to
@@ -107,35 +98,35 @@ is one commonality among most applications, however, and that is E^mail.</p>
 up an IMAP inbox that these systems can send E^mail to.  SCOT then periodically
 checks that inbox, and ingests any new email messages it finds.  Creation of
 Alertgroups are possible via the REST API as well.</p>
-<p>The E^mail messages may often contain several &#8220;rows&#8221; of data.  For example,
+<p>The E^mail messages may often contain several “rows” of data.  For example,
 several IDS alerts could be bundled up into a single E^mail message.  This
-grouping of alerts is called an &#8220;Alertgroup.&#8221;  In other words, an Alertgroup
-consists of one or more &#8220;Alerts&#8221; that was entered into SCOT at the same time.</p>
+grouping of alerts is called an “Alertgroup.”  In other words, an Alertgroup
+consists of one or more “Alerts” that was entered into SCOT at the same time.</p>
 </div>
 <div class="section" id="alerts">
 <h3>Alerts<a class="headerlink" href="#alerts" title="Permalink to this headline">¶</a></h3>
-<p>An individual &#8220;row&#8221; from an &#8220;Alertgroup.&#8221;  An alert can consist of any number
+<p>An individual “row” from an “Alertgroup.”  An alert can consist of any number
 of key^value pairs.  An example alert could be the output of an IDS system
 that shows a specific rule had triggered and the relevant details of that
 triggering.</p>
-<p>The &#8220;Alert&#8221; is the starting point for the SCOT processing workflow.  Analysts
-triage the incoming alerts and close or promote those alerts into &#8220;Events.&#8221;</p>
+<p>The “Alert” is the starting point for the SCOT processing workflow.  Analysts
+triage the incoming alerts and close or promote those alerts into “Events.”</p>
 </div>
 <div class="section" id="events">
 <h3>Events<a class="headerlink" href="#events" title="Permalink to this headline">¶</a></h3>
 <p>Typically, an experienced analysts should be able to deteremine if there is
 something interesting about an alert in a few minutes time.  If there further
-investigation is merited, the alert should be promoted to an &#8220;Event.&#8221;</p>
-<p>The Event is where the majority of the IRT&#8217;s work will be recorded.  Promotion
-to an &#8220;Event&#8221; is a signal for the IRT that there might me something that needs
-the team&#8217;s attention.</p>
-<p>Each analysts is capable of adding information into &#8220;Entries&#8221; and those notes
+investigation is merited, the alert should be promoted to an “Event.”</p>
+<p>The Event is where the majority of the IRT’s work will be recorded.  Promotion
+to an “Event” is a signal for the IRT that there might me something that needs
+the team’s attention.</p>
+<p>Each analysts is capable of adding information into “Entries” and those notes
 are instantly available to the rest of the team (assuming proper authorization).</p>
 <p>The event lifecycle includes research and collection of data about the event
 from the resources available to the team.  A summary may be created to allow
 others coming late to the party to get up to speed.  Mitigation activities can
 be documented as well.  Some Events are so serious in nature or group of Events
-can be aggregated into an &#8220;Incident.&#8221;  Finally, Events can be closed as a signal
+can be aggregated into an “Incident.”  Finally, Events can be closed as a signal
 that no further activity on that Event is expected.  If that expectation proves
 false, the team can still add entries or even re^open the event.</p>
 </div>
@@ -143,18 +134,18 @@ false, the team can still add entries or even re^open the event.</p>
 <h3>Entry<a class="headerlink" href="#entry" title="Permalink to this headline">¶</a></h3>
 <p>An entry is a chunk of text or graphic data that is stored in SCOT.  Entries are
 associated with Alertgroups/Alerts, Events, Incidents, Intel, and Entities.
-The data entered into a Entry is scanned for &#8220;Entities&#8221; and &#8220;Flair&#8221; is applied
+The data entered into a Entry is scanned for “Entities” and “Flair” is applied
 to entry to aid the analysts.</p>
-<p>Entries are &#8220;owned&#8221; by the creator of the entry, but may be edited by anyone
-in the modify group.  Any entry can be &#8220;promoted&#8221; to Summary status and will
-appear at the top of the detail page.  Entries may also be designated as a &#8220;Task.&#8221;</p>
+<p>Entries are “owned” by the creator of the entry, but may be edited by anyone
+in the modify group.  Any entry can be “promoted” to Summary status and will
+appear at the top of the detail page.  Entries may also be designated as a “Task.”</p>
 </div>
 <div class="section" id="task">
 <h3>Task<a class="headerlink" href="#task" title="Permalink to this headline">¶</a></h3>
-<p>An Entry that has been marked as a task.  Tasks track &#8220;to^do&#8221; items and serve
+<p>An Entry that has been marked as a task.  Tasks track “to^do” items and serve
 as reminders to do things as well as requests for help from your team.  Tasks
-can not be assigned to others, as a user must &#8220;take&#8221; ownership of a task.  This
-prevents people from claiming not to see tasks in their &#8220;queue&#8221; and promotes
+can not be assigned to others, as a user must “take” ownership of a task.  This
+prevents people from claiming not to see tasks in their “queue” and promotes
 a proactive approach to team coordination.</p>
 </div>
 <div class="section" id="entity">
@@ -162,11 +153,11 @@ a proactive approach to team coordination.</p>
 <p>Entities are a growing list of string fragments that SCOT can detect within
 entry data.  Examples include IP addresses, E^mail addresses, Domain names,
 MD5 hashes, SHA1 hashes, SHA256 hashes, E^mail message id strings, and filenames
-with common extensions.  Entities can be thought of as IOC&#8217;s.</p>
+with common extensions.  Entities can be thought of as IOC’s.</p>
 <p>Once detected in Entry data, Entities are cross referenced with the entirety
-of SCOT&#8217;s historical records.  Various data enrichment activities can also
+of SCOT’s historical records.  Various data enrichment activities can also
 take place based on the type of Entity.  Finally, the source Entry data is
-rewritten to &#8220;Flair&#8221; or highlight these strings.</p>
+rewritten to “Flair” or highlight these strings.</p>
 </div>
 <div class="section" id="flair">
 <h3>Flair<a class="headerlink" href="#flair" title="Permalink to this headline">¶</a></h3>
@@ -202,7 +193,7 @@ You can use the REST API to serve these signatures to your detection systems.</p
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
+  <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Overview</a><ul>
 <li><a class="reference internal" href="#philosophy">Philosophy</a></li>
@@ -234,18 +225,18 @@ You can use the REST API to serve these signatures to your detection systems.</p
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/overview.txt"
+      <li><a href="_sources/overview.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>

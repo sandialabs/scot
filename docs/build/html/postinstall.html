@@ -1,33 +1,26 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>POST Install Procedures &mdash; SCOT 3.5.1 documentation</title>
-    
+    <title>POST Install Procedures &#8212; SCOT 3.5.1 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '3.5.1',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Migration" href="migration.html" />
     <link rel="prev" title="Installing SCOT" href="install.html" /> 
-  </head>
-  <body role="document">
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -40,7 +33,7 @@
         <li class="right" >
           <a href="install.html" title="Installing SCOT"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -58,7 +51,7 @@ you will need to follow the migration procedure <span class="xref std std-ref">M
 </div>
 <div class="section" id="ssl-certs">
 <h2>SSL Certs<a class="headerlink" href="#ssl-certs" title="Permalink to this headline">¶</a></h2>
-<p>SCOT will generate a &#8220;snake-oil&#8221; self signed certificate upon install.
+<p>SCOT will generate a “snake-oil” self signed certificate upon install.
 It is highly recommended to replace these certificates with real certs
 as soon as possible.</p>
 </div>
@@ -67,7 +60,7 @@ as soon as possible.</p>
 <p>The following sections details the parameters in the varios configuration files
 available in SCOT.  Use your favorite editor to adjust the values to your site.
 You can test your changes for syntax errors by using the following command:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ perl -wc scot.cfg.pl
+<div class="highlight-default notranslate"><div class="highlight"><pre>$ perl -wc scot.cfg.pl
 </pre></div>
 </div>
 <p>Correct any syntax errors reported before continuing.  Typically you will need
@@ -75,7 +68,7 @@ to resart SCOT for any changes to be recognized.</p>
 <div class="section" id="scot-cfg-pl">
 <h3>scot.cfg.pl<a class="headerlink" href="#scot-cfg-pl" title="Permalink to this headline">¶</a></h3>
 <p>This config controls many aspects of the SCOT application server.</p>
-<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
+<div class="highlight-default notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
   2
   3
   4
@@ -1214,7 +1207,7 @@ EOF
 <div class="section" id="alert-cfg-pl">
 <h3>alert.cfg.pl<a class="headerlink" href="#alert-cfg-pl" title="Permalink to this headline">¶</a></h3>
 <p>This config file controls how alerts are received from an IMAP server.</p>
-<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
+<div class="highlight-default notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
   2
   3
   4
@@ -1487,7 +1480,7 @@ EOF
 <div class="section" id="flair-cfg-pl">
 <h3>flair.cfg.pl<a class="headerlink" href="#flair-cfg-pl" title="Permalink to this headline">¶</a></h3>
 <p>The Flair app automatically detects enties, see <span class="xref std std-ref">Entities</span>.  This config file look like:</p>
-<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
+<div class="highlight-default notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
   2
   3
   4
@@ -1768,7 +1761,7 @@ EOF
 <div class="section" id="game-cfg-pl">
 <h3>game.cfg.pl<a class="headerlink" href="#game-cfg-pl" title="Permalink to this headline">¶</a></h3>
 <p>This controls aspects of the gamification system.</p>
-<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+<div class="highlight-default notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
  4
@@ -1817,7 +1810,7 @@ EOF
 <div class="section" id="stretch-cfg-pl">
 <h3>stretch.cfg.pl<a class="headerlink" href="#stretch-cfg-pl" title="Permalink to this headline">¶</a></h3>
 <p>This controls aspects of the elastic search input system.</p>
-<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+<div class="highlight-default notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
  4
@@ -1921,20 +1914,20 @@ EOF
 <div class="section" id="cron-jobs">
 <h2>CRON Jobs<a class="headerlink" href="#cron-jobs" title="Permalink to this headline">¶</a></h2>
 <p>The /opt/scot/alert.pl program that reads in alerts from the IMAP server needs a crontab
-entry.  It is recommended to run this every 2 to 5 minutes.  Here&#8217;s the crontab entry:</p>
-<div class="highlight-python"><div class="highlight"><pre>*/5 * * * * /opt/scot/bin/alert.pl
+entry.  It is recommended to run this every 2 to 5 minutes.  Here’s the crontab entry:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="o">*/</span><span class="mi">5</span> <span class="o">*</span> <span class="o">*</span> <span class="o">*</span> <span class="o">*</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">alert</span><span class="o">.</span><span class="n">pl</span>
 </pre></div>
 </div>
 <p>Automating SCOT backups are a good idea as well:</p>
-<div class="highlight-python"><div class="highlight"><pre>0 3,12,20 * * * /opt/scot/bin/backup.pl     # backup scot at 3am 12 noon and 8pm
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="mi">0</span> <span class="mi">3</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">20</span> <span class="o">*</span> <span class="o">*</span> <span class="o">*</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">backup</span><span class="o">.</span><span class="n">pl</span>     <span class="c1"># backup scot at 3am 12 noon and 8pm</span>
 </pre></div>
 </div>
 <p>The game.pl job populates the analyst leaderboard:</p>
-<div class="highlight-python"><div class="highlight"><pre>30 4 * * * /opt/scot/bin/game.pl
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="mi">30</span> <span class="mi">4</span> <span class="o">*</span> <span class="o">*</span> <span class="o">*</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">game</span><span class="o">.</span><span class="n">pl</span>
 </pre></div>
 </div>
 <p>The metric.pl job calculates response time metrics:</p>
-<div class="highlight-python"><div class="highlight"><pre>15 2 * * * /opt/scot/bin/metric.pl
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="mi">15</span> <span class="mi">2</span> <span class="o">*</span> <span class="o">*</span> <span class="o">*</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">metric</span><span class="o">.</span><span class="n">pl</span>
 </pre></div>
 </div>
 </div>
@@ -1946,7 +1939,7 @@ entry.  It is recommended to run this every 2 to 5 minutes.  Here&#8217;s the cr
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
+  <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">POST Install Procedures</a><ul>
 <li><a class="reference internal" href="#migration">Migration</a></li>
@@ -1973,21 +1966,18 @@ entry.  It is recommended to run this every 2 to 5 minutes.  Here&#8217;s the cr
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/postinstall.txt"
+      <li><a href="_sources/postinstall.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -2006,11 +1996,11 @@ entry.  It is recommended to run this every 2 to 5 minutes.  Here&#8217;s the cr
         <li class="right" >
           <a href="install.html" title="Installing SCOT"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2011-2016, Sandia National Laboratories.
+        &#169; Copyright 2011-2016, Sandia National Laboratories.
     </div>
   </body>
 </html>
