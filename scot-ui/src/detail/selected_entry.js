@@ -1401,13 +1401,14 @@ class EntryData extends React.Component {
               //Here is new stuff
               key={id}
               contentDidMount={this.setHeight}
-              head={
+              head={[
                 <link
                   rel="stylesheet"
                   type="text/css"
                   href="/css/sandbox.css"
-                />
-              }
+                />,
+                <script src="/libs/prism.js" />
+              ]}
               //end of new stuff
               frameBorder={"0"}
               id={"iframe_" + id}
