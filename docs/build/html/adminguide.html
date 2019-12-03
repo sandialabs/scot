@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Administration Guide &#8212; SCOT 3.5.1 documentation</title>
+    <title>Administration Guide &mdash; SCOT 3.5.1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -23,8 +23,6 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
     <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
     <link rel="next" title="Developing For SCOT" href="devguide.html" />
     <link rel="prev" title="User Guide" href="userguide.html" /> 
@@ -42,7 +40,7 @@
         <li class="right" >
           <a href="userguide.html" title="User Guide"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -56,7 +54,7 @@
 <div class="section" id="backup">
 <h2>Backup<a class="headerlink" href="#backup" title="Permalink to this headline">¶</a></h2>
 <p>SCOT supports on-demand and scheduled backups.  The backup script is:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">backup</span><span class="o">.</span><span class="n">pl</span>
+<div class="highlight-python"><div class="highlight"><pre>/opt/scot/bin/backup.pl
 </pre></div>
 </div>
 <p>and will back up the SCOT&#8217;s mongo database and the ElasticSearch collections.  The
@@ -78,35 +76,35 @@ $ tar czvf /another/dir/scot-prod.tgz ./dump</p>
 <dl class="docutils">
 <dt>##.  if you have never backed up elastic, you will need to create</dt>
 <dd><p class="first">a repo:</p>
-<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="o">|</span> <span class="n">curl</span> <span class="o">-</span><span class="n">XPUT</span> <span class="n">localhost</span><span class="p">:</span><span class="mi">9200</span><span class="o">/</span><span class="n">_snapshot</span><span class="o">/</span><span class="n">scot_backup</span> <span class="o">-</span><span class="n">d</span> <span class="s1">&#39;{</span>
-<span class="o">|</span>    <span class="s2">&quot;scot_backup&quot;</span><span class="p">:</span> <span class="p">{</span>
-<span class="o">|</span>        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;fs&quot;</span><span class="p">,</span>
-<span class="o">|</span>        <span class="s2">&quot;settings: {</span>
-<span class="o">|</span>            <span class="s2">&quot;compress&quot;</span><span class="p">:</span> <span class="s2">&quot;true&quot;</span><span class="p">,</span>
-<span class="o">|</span>            <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/esback&quot;</span>
-<span class="o">|</span>        <span class="p">}</span>
-<span class="o">|</span>    <span class="p">}</span>
-<span class="o">|</span> <span class="p">}</span><span class="s1">&#39;</span>
+<div class="last highlight-python"><div class="highlight"><pre>| curl -XPUT localhost:9200/_snapshot/scot_backup -d &#39;{
+|    &quot;scot_backup&quot;: {
+|        &quot;type&quot;: &quot;fs&quot;,
+|        &quot;settings: {
+|            &quot;compress&quot;: &quot;true&quot;,
+|            &quot;location&quot;: &quot;/opt/esback&quot;
+|        }
+|    }
+| }&#39;
 </pre></div>
 </div>
 </dd>
 <dt>##.  if you have already backup up once before, remove any conflicting</dt>
 <dd><p class="first">snapshot (or use different snapshot name):</p>
-<div class="last highlight-default"><div class="highlight"><pre><span></span>$ curl -XDELETE localhost:9200/_snapshot/scot_backub/snapshot_1
+<div class="last highlight-python"><div class="highlight"><pre>$ curl -XDELETE localhost:9200/_snapshot/scot_backub/snapshot_1
 </pre></div>
 </div>
 </dd>
 </dl>
 <p>##.  Create the Snapshot:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -XPUT localhost:9200/_snapshot/scot_backup/snapshot_1
+<div class="highlight-python"><div class="highlight"><pre>$ curl -XPUT localhost:9200/_snapshot/scot_backup/snapshot_1
 </pre></div>
 </div>
 <p>##.  Check on status:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -XGET localhost:9200/_snapshot/scot_backup/_all
+<div class="highlight-python"><div class="highlight"><pre>$ curl -XGET localhost:9200/_snapshot/scot_backup/_all
 </pre></div>
 </div>
 <p>##.  When complete, use tar to back up /opt/esback:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ tar czvf /home/scot/esback.tgz /opt/esback
+<div class="highlight-python"><div class="highlight"><pre>$ tar czvf /home/scot/esback.tgz /opt/esback
 </pre></div>
 </div>
 <p>##.  store scot-prod.tgz and esback.tgz in a safe place.</p>
@@ -117,11 +115,11 @@ $ tar czvf /another/dir/scot-prod.tgz ./dump</p>
 <div class="section" id="restore">
 <h2>Restore<a class="headerlink" href="#restore" title="Permalink to this headline">¶</a></h2>
 <p>Extract the timestamped SCOT backup tar file:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">tar</span> <span class="n">xzvf</span> <span class="n">scotback</span><span class="o">.</span><span class="mf">201701211832.</span><span class="n">tgz</span>
+<div class="highlight-python"><div class="highlight"><pre>tar xzvf scotback.201701211832.tgz
 </pre></div>
 </div>
 <p>This will create a directory &#8221;./dump/scot-prod&#8221;.  Restore the MongoDB with:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mongorestore</span> <span class="o">--</span><span class="n">dropdatabase</span> <span class="o">--</span><span class="n">db</span> <span class="n">scot</span><span class="o">-</span><span class="n">prod</span> <span class="o">./</span><span class="n">dump</span><span class="o">/</span><span class="n">scot</span><span class="o">-</span><span class="n">prod</span>
+<div class="highlight-python"><div class="highlight"><pre>mongorestore --dropdatabase --db scot-prod ./dump/scot-prod
 </pre></div>
 </div>
 <div class="section" id="manual-restore">
@@ -131,7 +129,7 @@ $ tar czvf /another/dir/scot-prod.tgz ./dump</p>
 </ol>
 <blockquote>
 <div><p>##.  remove existing scot-prod database:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>    $ mongo scot-prod &lt; /opt/scot/etc/database/reset.js
+<div class="highlight-python"><div class="highlight"><pre>    $ mongo scot-prod &lt; /opt/scot/etc/database/reset.js
 
 ##.  extract scot-prod.tgz::
 
@@ -147,28 +145,28 @@ $ tar czvf /another/dir/scot-prod.tgz ./dump</p>
 </li>
 <li><p class="first">Restore ElasticSearch</p>
 <p>##.  Close ElasticSearch indexes that are active.:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ curl -XPOST localhost:9200/scot/_close
+<div class="highlight-python"><div class="highlight"><pre>$ curl -XPOST localhost:9200/scot/_close
 </pre></div>
 </div>
 <p>##.  Remove existing contents of /opt/esback:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ rm -rf /opt/esback/*
+<div class="highlight-python"><div class="highlight"><pre>$ rm -rf /opt/esback/*
 </pre></div>
 </div>
 <p>##.  extract esback.tgz:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ cd /opt/esback
+<div class="highlight-python"><div class="highlight"><pre>$ cd /opt/esback
 $ tar xzvf /tmp/esback.tgz
 </pre></div>
 </div>
 <p>##.  Make sure that /etc/elasticsearch/elasticsearch.yml has the following:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">repo</span><span class="o">.</span><span class="n">path</span><span class="p">:</span> <span class="p">[</span> <span class="s1">&#39;/opt/esback&#39;</span> <span class="p">]</span>
-<span class="p">(</span><span class="n">restart</span> <span class="n">es</span> <span class="k">if</span> <span class="n">you</span> <span class="n">have</span> <span class="n">to</span> <span class="n">make</span> <span class="n">a</span> <span class="n">change</span> <span class="n">to</span> <span class="n">the</span> <span class="n">yml</span> <span class="n">file</span>
+<div class="highlight-python"><div class="highlight"><pre>repo.path: [ &#39;/opt/esback&#39; ]
+(restart es if you have to make a change to the yml file
 </pre></div>
 </div>
 <p>##.  Create the &#8220;scot_backup&#8221; repo if it doesn&#8217;t exist (see above)</p>
 <p>##.  curl -XPOST localhost:9200/_snapshot/scot_backup/snapsot_1/_restore</p>
 </li>
 <li><p class="first">Finally, restart scot.:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># service scot restart</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c1"># service scot restart</span>
 </pre></div>
 </div>
 </li>
@@ -187,7 +185,7 @@ $ tar xzvf /tmp/esback.tgz
 <h2>Upgrading<a class="headerlink" href="#upgrading" title="Permalink to this headline">¶</a></h2>
 <p>Pull or Clone the latest from github (<a class="reference external" href="https://github.com/sandialabs/scot">https://github.com/sandialabs/scot</a>). CD into the
 downloaded directory, run:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">install</span><span class="o">.</span><span class="n">sh</span> <span class="o">-</span><span class="n">s</span>
+<div class="highlight-python"><div class="highlight"><pre>./install.sh -s
 </pre></div>
 </div>
 <p>You probably want to do this when your analysts are not very busy.</p>
@@ -195,11 +193,11 @@ downloaded directory, run:</p>
 <div class="section" id="cron-entries">
 <h2>CRON Entries<a class="headerlink" href="#cron-entries" title="Permalink to this headline">¶</a></h2>
 <p>If you are using /opt/scot/bin/alert.pl to import events you will need a crontab entry like:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">*/</span><span class="mi">5</span> <span class="o">*</span> <span class="o">*</span> <span class="o">*</span> <span class="o">*</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">alert</span><span class="o">.</span><span class="n">pl</span>
+<div class="highlight-python"><div class="highlight"><pre>*/5 * * * * /opt/scot/bin/alert.pl
 </pre></div>
 </div>
 <p>To automate your backups:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">0</span> <span class="mi">3</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">20</span> <span class="o">*</span> <span class="o">*</span> <span class="o">*</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">backup</span><span class="o">.</span><span class="n">pl</span>
+<div class="highlight-python"><div class="highlight"><pre>0 3,12,20 * * * /opt/scot/bin/backup.pl
 </pre></div>
 </div>
 </div>
@@ -221,21 +219,21 @@ downloaded directory, run:</p>
 <h2>Logging<a class="headerlink" href="#logging" title="Permalink to this headline">¶</a></h2>
 <p>SCOT is a prolific logger.  All logs are stored in /var/log/scot.  It is highly recommended to set
 up logrotate to avoid filling you disk.  Create a /etc/logrotate.d/scot like:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">scot</span><span class="o">.*.</span><span class="n">log</span> <span class="p">{</span>
-    <span class="n">daily</span>
-    <span class="n">missingok</span>
-    <span class="n">rotate</span> <span class="mi">5</span>
-    <span class="n">compress</span>
-    <span class="n">notifempty</span>
-    <span class="n">copytruncate</span>
-<span class="p">}</span>
-<span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">error</span><span class="o">.*.</span><span class="n">log</span> <span class="p">{</span>
-    <span class="n">daily</span>
-    <span class="n">missingok</span>
-    <span class="n">rotate</span> <span class="mi">5</span>
-    <span class="n">compress</span>
-    <span class="n">notifempty</span>
-<span class="p">}</span>
+<div class="highlight-python"><div class="highlight"><pre>/var/log/scot.*.log {
+    daily
+    missingok
+    rotate 5
+    compress
+    notifempty
+    copytruncate
+}
+/var/log/error.*.log {
+    daily
+    missingok
+    rotate 5
+    compress
+    notifempty
+}
 </pre></div>
 </div>
 </div>
@@ -305,11 +303,14 @@ Reenter Admin Password   : *</strong>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -328,11 +329,11 @@ Reenter Admin Password   : *</strong>
         <li class="right" >
           <a href="userguide.html" title="User Guide"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2011-2016, Sandia National Laboratories.
+        &copy; Copyright 2011-2016, Sandia National Laboratories.
     </div>
   </body>
 </html>
