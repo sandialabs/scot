@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>REVL Visualization Guide &#8212; SCOT 3.5.1 documentation</title>
+    <title>REVL Visualization Guide &mdash; SCOT 3.5.1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -23,9 +23,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
     <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
+    <link rel="next" title="Docker-SCOT v 0.04" href="scotdocker.html" />
     <link rel="prev" title="Signatures" href="signatures.html" /> 
   </head>
   <body role="document">
@@ -36,9 +35,12 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="scotdocker.html" title="Docker-SCOT v 0.04"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
           <a href="signatures.html" title="Signatures"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -94,7 +96,7 @@ functions, and the entire API behind the command system. The syntax
 is coffeescript, which you can find out more about at
 [[<a class="reference external" href="http://coffeescript.org][CoffeeScript.org">http://coffeescript.org][CoffeeScript.org</a>]].</p>
 <p>Type:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="mf">1.</span><span class="o">.</span><span class="mi">10</span><span class="p">]</span>
+<div class="highlight-python"><div class="highlight"><pre>[1..10]
 </pre></div>
 </div>
 <p>at the prompt and hit Enter. You will see the result
@@ -109,7 +111,7 @@ sequence their id fields using this list, eg [1044..1102]).</p>
 <p>Now hit the up arrow to repeat the last command, then add to the
 back of it until you get this (the thing right after the list is a
 single backslash character):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="mf">1.</span><span class="o">.</span><span class="mi">10</span><span class="p">]</span> \ <span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">n</span><span class="o">*</span><span class="n">n</span>
+<div class="highlight-python"><div class="highlight"><pre>[1..10] \ (n)-&gt;n*n
 </pre></div>
 </div>
 <p>After you hit enter, you&#8217;ll see a list of the squares of the
@@ -129,7 +131,7 @@ significant ambiguity in parsing the commands.</p>
 <h2>Using REVL with SCOT data<a class="headerlink" href="#using-revl-with-scot-data" title="Permalink to this headline">¶</a></h2>
 <p>Now we can do something interesting. Let&#8217;s get all the entities
 with ids from 10000 to 10100:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entity</span> <span class="n">offset</span><span class="p">:</span><span class="mi">10000</span><span class="p">,</span><span class="n">limit</span><span class="p">:</span><span class="mi">101</span>
+<div class="highlight-python"><div class="highlight"><pre>entity offset:10000,limit:101
 </pre></div>
 </div>
 <p>This command will take a few seconds to complete, and when it does
@@ -137,7 +139,7 @@ you&#8217;ll see a list of entities in the text output. However, our plan
 was foiled - our first id is not 10000, it&#8217;s something else. If we
 want to actually get entities with ids 10000 to 10100, we&#8217;ll need
 to specify those ids. Let&#8217;s do that:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="mf">10000.</span><span class="o">.</span><span class="mi">10100</span><span class="p">]</span> \ <span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">API</span><span class="o">.</span><span class="n">entity</span> <span class="nb">id</span><span class="p">:</span><span class="n">n</span>
+<div class="highlight-python"><div class="highlight"><pre>[10000..10100] \ (n)-&gt;API.entity id:n
 </pre></div>
 </div>
 <p>After you press Enter and wait, you&#8217;ll find that you got a list of
@@ -148,7 +150,7 @@ knows to wait when the result is a promise, but when you make calls
 directly to the API and embed them in another data structure, you
 have to be more explicit. Let&#8217;s go ahead and tell it to wait on
 those results:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="mf">10000.</span><span class="o">.</span><span class="mi">10100</span><span class="p">]</span> \ <span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">API</span><span class="o">.</span><span class="n">entity</span> <span class="nb">id</span><span class="p">:</span><span class="n">n</span> \ <span class="n">wait</span>
+<div class="highlight-python"><div class="highlight"><pre>[10000..10100] \ (n)-&gt;API.entity id:n \ wait
 </pre></div>
 </div>
 <p>The <code class="docutils literal"><span class="pre">wait</span></code> command will scan through the data it gets from the
@@ -175,7 +177,7 @@ field, group them by that field, and make a chart that has a bar
 for each type and shows the number of instances of that
 type. First, let&#8217;s get the entities again and stash them so that we
 don&#8217;t have to wait for them to download at each step:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="mf">10000.</span><span class="o">.</span><span class="mi">10100</span><span class="p">]</span> \ <span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">API</span><span class="o">.</span><span class="n">entity</span> <span class="nb">id</span><span class="p">:</span><span class="n">n</span> \ <span class="n">wait</span> \ <span class="n">store</span> <span class="n">ents</span>
+<div class="highlight-python"><div class="highlight"><pre>[10000..10100] \ (n)-&gt;API.entity id:n \ wait \ store ents
 </pre></div>
 </div>
 <p>The <code class="docutils literal"><span class="pre">store</span></code> command takes a variable name and stores the result of
@@ -183,12 +185,12 @@ the preceding command in the scope under that name. Now you can
 access that list of entities using the name <code class="docutils literal"><span class="pre">ents</span></code> from anywhere in
 future commands. First, let&#8217;s strip out all of the data we don&#8217;t
 care about from them:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ents</span> \ <span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">e</span><span class="o">.</span><span class="n">type</span>
+<div class="highlight-python"><div class="highlight"><pre>ents \ (e)-&gt;e.type
 </pre></div>
 </div>
 <p>Now you should see a list of the type fields from each entity. Next
 we&#8217;ll group them according to that field:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ents</span> \ <span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">e</span><span class="o">.</span><span class="n">type</span> \ <span class="n">group</span> <span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">x</span>
+<div class="highlight-python"><div class="highlight"><pre>ents \ (e)-&gt;e.type \ group (x)-&gt;x
 </pre></div>
 </div>
 <p>This command uses the <code class="docutils literal"><span class="pre">group</span></code> command, which takes a function and
@@ -201,7 +203,7 @@ group name, and the list of things in that group for the value. Now
 we&#8217;re going to replace the lists with their lengths, which will
 give us a nice data structure to pass to the <code class="docutils literal"><span class="pre">barchart</span></code>
 visualization primitive:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ents</span> \ <span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">e</span><span class="o">.</span><span class="n">type</span> \ <span class="n">group</span> <span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">x</span> \ <span class="p">(</span><span class="n">ls</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">ls</span><span class="o">.</span><span class="n">length</span>
+<div class="highlight-python"><div class="highlight"><pre>ents \ (e)-&gt;e.type \ group (x)-&gt;x \ (ls)-&gt;ls.length
 </pre></div>
 </div>
 <p>This uses the map command to iterate over the keys of the object
@@ -209,7 +211,7 @@ returned by group and replace each value by its length. You should
 now have an object with a few keys, each with a number as its
 value. This is exactly the format we need for a bar chart, so let&#8217;s
 see what we get:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ents</span> \ <span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">e</span><span class="o">.</span><span class="n">type</span> \ <span class="n">group</span> <span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">x</span> \ <span class="p">(</span><span class="n">ls</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">ls</span><span class="o">.</span><span class="n">length</span> \ <span class="n">barchart</span>
+<div class="highlight-python"><div class="highlight"><pre>ents \ (e)-&gt;e.type \ group (x)-&gt;x \ (ls)-&gt;ls.length \ barchart
 </pre></div>
 </div>
 <p>You should now see a chart showing the relative frequencies of the
@@ -222,26 +224,26 @@ click it again it will go back to where it was.</p>
 <h2>Event Timing<a class="headerlink" href="#event-timing" title="Permalink to this headline">¶</a></h2>
 <p>Next we&#8217;ll use a dot chart to look at the timing of a set of alerts
 coming in within an alert group. First, let&#8217;s get the alerts:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">alertgroup</span><span class="p">:</span> <span class="nb">id</span><span class="p">:</span><span class="mi">1512214</span><span class="p">,</span><span class="n">sub</span><span class="p">:</span><span class="s1">&#39;alert&#39;</span>
+<div class="highlight-python"><div class="highlight"><pre>alertgroup: id:1512214,sub:&#39;alert&#39;
 </pre></div>
 </div>
 <p>After this comes in you should have a list of alerts. There&#8217;s a lot
 of data we don&#8217;t really care about there, so let&#8217;s tell the server
 to only send what&#8217;s important:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">alertgroup</span><span class="p">:</span> <span class="nb">id</span><span class="p">:</span><span class="mi">1512214</span><span class="p">,</span><span class="n">sub</span><span class="p">:</span><span class="s1">&#39;alert&#39;</span><span class="p">,</span><span class="n">columns</span><span class="p">:[</span><span class="s1">&#39;id&#39;</span><span class="p">,</span><span class="s1">&#39;when&#39;</span><span class="p">]</span>
+<div class="highlight-python"><div class="highlight"><pre>alertgroup: id:1512214,sub:&#39;alert&#39;,columns:[&#39;id&#39;,&#39;when&#39;]
 </pre></div>
 </div>
 <p>This filters the data coming in down to just the <code class="docutils literal"><span class="pre">id</span></code> and <code class="docutils literal"><span class="pre">when</span></code>
 columns, which suits our needs for this example. We can store that
 data for future reference:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">alertgroup</span><span class="p">:</span> <span class="nb">id</span><span class="p">:</span><span class="mi">1512214</span><span class="p">,</span><span class="n">sub</span><span class="p">:</span><span class="s1">&#39;alert&#39;</span><span class="p">,</span><span class="n">columns</span><span class="p">:[</span><span class="s1">&#39;id&#39;</span><span class="p">,</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> \ <span class="n">store</span> <span class="n">a151</span>
+<div class="highlight-python"><div class="highlight"><pre>alertgroup: id:1512214,sub:&#39;alert&#39;,columns:[&#39;id&#39;,&#39;data&#39;] \ store a151
 </pre></div>
 </div>
 <p>We&#8217;re going to make a dot chart with time on the horizontal axis
 and item number on the vertical (vertical axis is just here to
 separate things for visibility). We need to pull out the time value
 for each and pair it with its position in the list:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">a151</span> \ <span class="p">(</span><span class="n">alert</span><span class="p">,</span><span class="n">pos</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">[</span><span class="n">pos</span><span class="p">,</span><span class="n">alert</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">_time</span><span class="p">]</span>
+<div class="highlight-python"><div class="highlight"><pre>a151 \ (alert,pos)-&gt;[pos,alert.data._time]
 </pre></div>
 </div>
 <p>The map function implicitly passes the index of the current element
@@ -250,9 +252,9 @@ the object&#8217;s list position to get a vertical coordinate for
 it. Unfortunately, this timestamp is in human-readable format,
 which makes it a pain to use. We can parse it using the Strings
 function though:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">a151</span> \ <span class="p">(</span><span class="n">r</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">r</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">_time</span> \
-    <span class="n">pick</span> <span class="n">Strings</span><span class="o">.</span><span class="n">pat</span><span class="o">.</span><span class="n">hms</span> \
-    <span class="p">(</span><span class="n">ls</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">(</span><span class="nb">map</span> <span class="n">ls</span><span class="p">[</span><span class="mf">1.</span><span class="o">.</span><span class="p">],(</span><span class="n">s</span><span class="p">,</span><span class="n">i</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">(</span><span class="mi">60</span><span class="o">**</span><span class="p">(</span><span class="mi">2</span><span class="o">-</span><span class="n">i</span><span class="p">))</span><span class="o">*</span><span class="p">(</span><span class="n">parseInt</span> <span class="n">s</span><span class="p">))</span><span class="o">.</span><span class="n">reduce</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">a</span><span class="o">+</span><span class="n">b</span>
+<div class="highlight-python"><div class="highlight"><pre>a151 \ (r)-&gt;r.data._time \
+    pick Strings.pat.hms \
+    (ls)-&gt;(map ls[1..],(s,i)-&gt;(60**(2-i))*(parseInt s)).reduce (a,b)-&gt;a+b
 </pre></div>
 </div>
 <p>This takes the alerts and uses the Strings predefined <code class="docutils literal"><span class="pre">hms</span></code>
@@ -264,22 +266,22 @@ into a number of seconds since midnight. Coffeescript has a <code class="docutil
 operator for exponentiation, if you&#8217;re trying to parse out how that
 function works. Now we have a list of timestamps, so let&#8217;s convert
 it to a list of coordinate pairs that <code class="docutils literal"><span class="pre">dotchart</span></code> can use:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">a151</span> \ <span class="p">(</span><span class="n">r</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">r</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">_time</span> \
-    <span class="n">pick</span> <span class="n">Strings</span><span class="o">.</span><span class="n">pat</span><span class="o">.</span><span class="n">hms</span> \
-    <span class="p">(</span><span class="n">ls</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">(</span><span class="nb">map</span> <span class="n">ls</span><span class="p">[</span><span class="mf">1.</span><span class="o">.</span><span class="p">],(</span><span class="n">s</span><span class="p">,</span><span class="n">i</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">(</span><span class="mi">60</span><span class="o">**</span><span class="p">(</span><span class="mi">2</span><span class="o">-</span><span class="n">i</span><span class="p">))</span><span class="o">*</span><span class="p">(</span><span class="n">parseInt</span> <span class="n">s</span><span class="p">))</span><span class="o">.</span><span class="n">reduce</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">a</span><span class="o">+</span><span class="n">b</span> \
-    <span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">i</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">[</span><span class="n">n</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> \
-    <span class="n">dotchart</span>
+<div class="highlight-python"><div class="highlight"><pre>a151 \ (r)-&gt;r.data._time \
+    pick Strings.pat.hms \
+    (ls)-&gt;(map ls[1..],(s,i)-&gt;(60**(2-i))*(parseInt s)).reduce (a,b)-&gt;a+b \
+    (n,i)-&gt;[n,i] \
+    dotchart
 </pre></div>
 </div>
 <p>Whoops, looks like the timing data is all over the map! We need to
 sort our timestamps in ascending order since they didn&#8217;t come that
 way from the server:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">a151</span> \ <span class="p">(</span><span class="n">r</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">r</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">_time</span> \
-    <span class="n">pick</span> <span class="n">Strings</span><span class="o">.</span><span class="n">pat</span><span class="o">.</span><span class="n">hms</span> \
-    <span class="p">(</span><span class="n">ls</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">(</span><span class="nb">map</span> <span class="n">ls</span><span class="p">[</span><span class="mf">1.</span><span class="o">.</span><span class="p">],(</span><span class="n">s</span><span class="p">,</span><span class="n">i</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">(</span><span class="mi">60</span><span class="o">**</span><span class="p">(</span><span class="mi">2</span><span class="o">-</span><span class="n">i</span><span class="p">))</span><span class="o">*</span><span class="p">(</span><span class="n">parseInt</span> <span class="n">s</span><span class="p">))</span><span class="o">.</span><span class="n">reduce</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">a</span><span class="o">+</span><span class="n">b</span> \
-    <span class="n">sort</span> \
-    <span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">i</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">[</span><span class="n">n</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> \
-    <span class="n">dotchart</span>
+<div class="highlight-python"><div class="highlight"><pre>a151 \ (r)-&gt;r.data._time \
+    pick Strings.pat.hms \
+    (ls)-&gt;(map ls[1..],(s,i)-&gt;(60**(2-i))*(parseInt s)).reduce (a,b)-&gt;a+b \
+    sort \
+    (n,i)-&gt;[n,i] \
+    dotchart
 </pre></div>
 </div>
 <p><code class="docutils literal"><span class="pre">sort</span></code> does just what you&#8217;d think. You can optionally pass it a
@@ -305,7 +307,7 @@ works start with the help system.</p>
 <p>Query 1000 entries, pull the entities for each of them, group them by
 type, and create a barchart to show the relative frequency of each
 type of entity:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ [10000...11000] \
+<div class="highlight-python"><div class="highlight"><pre>$ [10000...11000] \
     (n)-&gt;API.entry {id:n,sub:&#39;entity&#39;} \
     wait \
     (r)-&gt;Struct.tolist (Struct.map r,(v)-&gt;v.type) \
@@ -323,7 +325,7 @@ type of entity:</p>
 ascending order, rebase the time to show time delta in minutes from
 start of record, and create a dot chart to show the timing of
 clusters of events and highlight gaps in the record:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ event limit:500 \
+<div class="highlight-python"><div class="highlight"><pre>$ event limit:500 \
     (e)-&gt;e.created \
     sort \
     into (ls)-&gt;map ls,(n)-&gt;(n-ls[0])/60000.0 \
@@ -333,7 +335,7 @@ clusters of events and highlight gaps in the record:</p>
 </div>
 <ul>
 <li><p class="first">Look at sequence of alerts in alertgroup:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ alertgroup id:1512214,limit:100,sub:&#39;alert&#39; \
+<div class="highlight-python"><div class="highlight"><pre>$ alertgroup id:1512214,limit:100,sub:&#39;alert&#39; \
     (r)-&gt;r.data._time \
     pick Strings.pat.hms \
     (ls)-&gt;(map ls[1..],(s,i)-&gt;(60**(2-i))*(parseInt s)).reduce (a,b)-&gt;a+b \
@@ -351,7 +353,7 @@ strings in the data field of each, pick out all of the email
 addresses in the resulting strings, generate pairs from all emails
 that were in the same alert, and make a force-directed graph from
 the resulting structure.:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ alertgroup id:1512214,limit:100,sub:&#39;alert&#39; \
+<div class="highlight-python"><div class="highlight"><pre>$ alertgroup id:1512214,limit:100,sub:&#39;alert&#39; \
     (r)-&gt;(squash (Struct.tolist r.data)).join &#39; &#39; \
     (s)-&gt;Strings.pick Strings.pat.email, s \
     (ls)-&gt;ls.map (m)-&gt;m[0] \
@@ -367,7 +369,7 @@ the resulting structure.:</p>
 to look into ways to optimize this to make it more convenient, but
 the filling out of the table really explodes the size of the data
 set.:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ alertgroup id:1512214,limit:100,sub:&#39;alert&#39; \
+<div class="highlight-python"><div class="highlight"><pre>$ alertgroup id:1512214,limit:100,sub:&#39;alert&#39; \
     (r)-&gt;(squash (Struct.tolist r.data)).join &#39; &#39;\
     (s)-&gt;Strings.pick Strings.pat.email, s \
     (ls)-&gt;ls.map (m)-&gt;m[0] \
@@ -383,7 +385,7 @@ set.:</p>
 </div>
 <ul>
 <li><p class="first">Draw a treemap from an Nspace:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$  [1..100] \
+<div class="highlight-python"><div class="highlight"><pre>$  [1..100] \
     foldl new Nspace (s,pt) -&gt; s.insert pt,[[&#39;x&#39;,Math.random()],[&#39;y&#39;,Math.random()]]; s  \
     into (s)-&gt;s.subdivide() \
     into (sp)-&gt;sp.leaves() \
@@ -404,7 +406,7 @@ all the events associated with those entities. Make links
 accordingly, then display as a force-directed graph. Mousing over
 the network nodes will display the entity name or event id number
 depending on what kind of node it is.:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ event id:10982,sub:&#39;entity&#39; \
+<div class="highlight-python"><div class="highlight"><pre>$ event id:10982,sub:&#39;entity&#39; \
     (e,k)-&gt;[{id:e.id,name:k},10982]  \
     tolist \
     (ls)-&gt;ls[1] \
@@ -421,7 +423,7 @@ depending on what kind of node it is.:</p>
 <p>Fetch the entities associated with an event, then fetch all of the
 events for each entity and make a barchart that shows how many
 events are associated to each entity.:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ event id:10982,sub:&#39;entity&#39; \
+<div class="highlight-python"><div class="highlight"><pre>$ event id:10982,sub:&#39;entity&#39; \
     (ent)-&gt;(API.entity id:ent.id,sub:&#39;event&#39;,columns:[&#39;id&#39;]).map (ls)-&gt;ls.length \
     wait \
     filter (n)-&gt;n&gt;20 \
@@ -456,6 +458,9 @@ events are associated to each entity.:</p>
   <h4>Previous topic</h4>
   <p class="topless"><a href="signatures.html"
                         title="previous chapter">Signatures</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="scotdocker.html"
+                        title="next chapter">Docker-SCOT v 0.04</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -466,11 +471,14 @@ events are associated to each entity.:</p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -484,13 +492,16 @@ events are associated to each entity.:</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
+          <a href="scotdocker.html" title="Docker-SCOT v 0.04"
+             >next</a> |</li>
+        <li class="right" >
           <a href="signatures.html" title="Signatures"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2011-2016, Sandia National Laboratories.
+        &copy; Copyright 2011-2016, Sandia National Laboratories.
     </div>
   </body>
 </html>

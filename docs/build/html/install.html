@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Installing SCOT &#8212; SCOT 3.5.1 documentation</title>
+    <title>Installing SCOT &mdash; SCOT 3.5.1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -23,8 +23,6 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
     <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
     <link rel="next" title="POST Install Procedures" href="postinstall.html" />
     <link rel="prev" title="License" href="license.html" /> 
@@ -42,7 +40,7 @@
         <li class="right" >
           <a href="license.html" title="License"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -53,6 +51,10 @@
             
   <div class="section" id="installing-scot">
 <h1>Installing SCOT<a class="headerlink" href="#installing-scot" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="important-update">
+<h1>Important Update<a class="headerlink" href="#important-update" title="Permalink to this headline">¶</a></h1>
+<p>As of SCOT 3.6, you can now install SCOT via docker. Please see the <a class="reference internal" href="scotdocker.html"><em>scot-docker docs</em></a></p>
 <div class="section" id="minimum-system-requirements">
 <h2>Minimum System Requirements<a class="headerlink" href="#minimum-system-requirements" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
@@ -75,24 +77,24 @@ at least 4 GB of RAM in this case.</p>
 <h3>Ubuntu 16.04 and CENT 7<a class="headerlink" href="#ubuntu-16-04-and-cent-7" title="Permalink to this headline">¶</a></h3>
 <p># Install the OS.  Make sure that git is installed.</p>
 <p># Now you are ready to pull the SCOT source from GitHub:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ git clone https://github.com/sandialabs/scot.git scot
+<div class="highlight-python"><div class="highlight"><pre>$ git clone https://github.com/sandialabs/scot.git scot
 </pre></div>
 </div>
 <p># cd into the SCOT directory:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ cd /home/user/scot
+<div class="highlight-python"><div class="highlight"><pre>$ cd /home/user/scot
 </pre></div>
 </div>
 <p># Are you upgrading from SCOT 3.4?  It is recommended to install on a clean system, however, if that is not possible you should do the following</p>
 <blockquote>
 <div><ul>
 <li><p class="first">Backup you existing SCOT database:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ mongodump scotng-prod
+<div class="highlight-python"><div class="highlight"><pre>$ mongodump scotng-prod
 $ tar czvf scotng-backup.tgz ./dump
 </pre></div>
 </div>
 </li>
 <li><p class="first">delete SCOT init script and crontab entries:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># rm /etc/init.d/scot3</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c1"># rm /etc/init.d/scot3</span>
 <span class="c1"># crontab -e</span>
 </pre></div>
 </div>
@@ -100,17 +102,17 @@ $ tar czvf scotng-backup.tgz ./dump
 </ul>
 </div></blockquote>
 <p># go ahead and become root:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ sudo -E bash
+<div class="highlight-python"><div class="highlight"><pre>$ sudo -E bash
 </pre></div>
 </div>
 <p># Make sure that the http_proxy and https_proxy variables are set if needed:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># echo $http_proxy</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c1"># echo $http_proxy</span>
 <span class="c1"># export http_proxy=http://yourproxy.domain.com:80</span>
 <span class="c1"># export https_proxy=https://yourproxy.domain.com:88</span>
 </pre></div>
 </div>
 <p># You are now ready to begin the install:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ./install.sh 2&gt;&amp;1 | tee ../scot.install.log</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c1"># ./install.sh 2&gt;&amp;1 | tee ../scot.install.log</span>
 </pre></div>
 </div>
 <p>Go get a cup of cofee.  Initial install will download and install all the dependencies for SCOT.  At the end of the install, you will be asked for a password for the admin account.  Then the install script will output the status of the following processes:</p>
@@ -133,7 +135,7 @@ $ tar czvf scotng-backup.tgz ./dump
 <div class="section" id="install-sh-options">
 <h2>install.sh Options<a class="headerlink" href="#install-sh-options" title="Permalink to this headline">¶</a></h2>
 <p>SCOT&#8217;s installer, install.sh,  is designed to automate many of the tasks need to install and upgrade SCOT.  The installer takes the following flags to modify its instalation behavior:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>Usage: $0 [-A mode] [-M path] [-dersu]
+<div class="highlight-python"><div class="highlight"><pre>Usage: $0 [-A mode] [-M path] [-dersu]
 
     -A mode     where mode = (default) &quot;Local&quot;, &quot;Ldap&quot;, or &quot;Remoteuser&quot;
     -M path     where to locate installer for scot private modules
@@ -181,7 +183,8 @@ drwxrwxr-x scotadmin scotadmin 4096 Jan 1 19:19 SCOT
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Installing SCOT</a><ul>
+<li><a class="reference internal" href="#">Installing SCOT</a></li>
+<li><a class="reference internal" href="#important-update">Important Update</a><ul>
 <li><a class="reference internal" href="#minimum-system-requirements">Minimum System Requirements</a></li>
 <li><a class="reference internal" href="#system-preparation">System Preparation</a><ul>
 <li><a class="reference internal" href="#ubuntu-14-04">Ubuntu 14.04</a></li>
@@ -211,11 +214,14 @@ drwxrwxr-x scotadmin scotadmin 4096 Jan 1 19:19 SCOT
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -234,11 +240,11 @@ drwxrwxr-x scotadmin scotadmin 4096 Jan 1 19:19 SCOT
         <li class="right" >
           <a href="license.html" title="License"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2011-2016, Sandia National Laboratories.
+        &copy; Copyright 2011-2016, Sandia National Laboratories.
     </div>
   </body>
 </html>

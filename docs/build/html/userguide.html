@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>User Guide &#8212; SCOT 3.5.1 documentation</title>
+    <title>User Guide &mdash; SCOT 3.5.1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -23,8 +23,6 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
     <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
     <link rel="next" title="Administration Guide" href="adminguide.html" />
     <link rel="prev" title="Overview" href="overview.html" /> 
@@ -42,7 +40,7 @@
         <li class="right" >
           <a href="overview.html" title="Overview"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -333,7 +331,7 @@ type of the entity.  Once you click on create, SCOT will then search through
 all alerts and entries for that string and flair them.  All future appearances
 of that string will also be flaired as an entity of the type you created.</p>
 <p>For example, let&#8217;s pretend you just created an entry that says:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">The</span> <span class="n">fuzzy</span> <span class="n">foobar</span> <span class="n">group</span><span class="s1">&#39;s fingerprints are all over this.</span>
+<div class="highlight-python"><div class="highlight"><pre>The fuzzy foobar group&#39;s fingerprints are all over this.
 </pre></div>
 </div>
 <p>You want to link &#8220;fuzzy foobar&#8221; as a threat actor group and be able to find
@@ -376,11 +374,11 @@ in that CIDR block to this entity as well.</dd>
 Additional regular expression may be added to this module to extract additional entities.</p>
 <p>Another way to add additional Regexes is to add them to your scot.cfg.pl.  Add a key &#8220;entity_regexes&#8221; to the cfg file.  This array of items will be added to the Regex module at server start time.</p>
 <p>The format of the regex item is:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="nb">type</span>    <span class="o">=&gt;</span> <span class="s2">&quot;name_of_the_entity&quot;</span><span class="p">,</span>
-    <span class="n">regex</span>   <span class="o">=&gt;</span> <span class="n">qr</span><span class="p">{</span> <span class="n">regex_here</span> <span class="p">},</span>
-    <span class="n">order</span>   <span class="o">=&gt;</span> <span class="n">number</span><span class="p">,</span>    <span class="c1"># lower numbers get precidence over higher</span>
-<span class="p">}</span>
+<div class="highlight-python"><div class="highlight"><pre>{
+    type    =&gt; &quot;name_of_the_entity&quot;,
+    regex   =&gt; qr{ regex_here },
+    order   =&gt; number,    # lower numbers get precidence over higher
+}
 </pre></div>
 </div>
 </div>
@@ -390,10 +388,10 @@ Additional regular expression may be added to this module to extract additional 
 <p>The SCOT security model is a group based access control.  Top level &#8220;things&#8221;
 like alertgroups, events, incidents, guides and intel have a attribute called
 &#8220;groups.&#8221;  The groups attribute an object of the form:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">group</span><span class="p">:</span> <span class="p">{</span>
-    <span class="n">read</span><span class="p">:</span> <span class="p">[</span> <span class="s1">&#39;group1&#39;</span><span class="p">,</span> <span class="s1">&#39;group2&#39;</span> <span class="p">],</span>
-    <span class="n">modify</span><span class="p">:</span> <span class="p">[</span> <span class="s1">&#39;group1&#39;</span> <span class="p">]</span>
-<span class="p">}</span>
+<div class="highlight-python"><div class="highlight"><pre>group: {
+    read: [ &#39;group1&#39;, &#39;group2&#39; ],
+    modify: [ &#39;group1&#39; ]
+}
 </pre></div>
 </div>
 <p>As you would imagine the read attribute lists the groups that are allowed
@@ -429,7 +427,7 @@ grouplist in such a way that the SCOT group may not be returned.</p>
 <p>To help avoid this, SCOT filters the LDAP query looking for a common string
 in all SCOT groups.  By default this is &#8220;wg-scot&#8221; but can be changed in
 the /opt/scot/etc/ldap.cfg file.  The line:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">filter</span>  <span class="o">=&gt;</span> <span class="s1">&#39;(| (cn=wg-scot*))&#39;</span>
+<div class="highlight-python"><div class="highlight"><pre>filter  =&gt; &#39;(| (cn=wg-scot*))&#39;
 </pre></div>
 </div>
 <p>can be changed to whatever naming convention you decide upon.</p>
@@ -438,20 +436,20 @@ the /opt/scot/etc/ldap.cfg file.  The line:</p>
 <div class="section" id="hotkeys">
 <h2>HotKeys<a class="headerlink" href="#hotkeys" title="Permalink to this headline">¶</a></h2>
 <p>The following hotkeys are supported:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">f</span><span class="p">:</span> <span class="n">Toggle</span> <span class="n">full</span> <span class="n">screen</span> <span class="n">mode</span> <span class="n">when</span> <span class="n">a</span> <span class="n">detail</span> <span class="n">section</span> <span class="ow">is</span> <span class="nb">open</span>
-<span class="n">t</span><span class="p">:</span> <span class="n">Toggle</span> <span class="n">flair</span> <span class="n">on</span><span class="o">/</span><span class="n">off</span>
-<span class="n">o</span><span class="p">:</span> <span class="n">This</span> <span class="n">will</span> <span class="nb">open</span> <span class="nb">all</span> <span class="n">alerts</span> <span class="n">within</span> <span class="n">the</span> <span class="n">alertgroup</span> <span class="n">when</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">alertgroup</span> <span class="nb">list</span> <span class="n">view</span> <span class="k">as</span> <span class="n">your</span> <span class="n">focus</span><span class="o">.</span>
-<span class="n">c</span><span class="p">:</span> <span class="n">This</span> <span class="n">will</span> <span class="n">close</span> <span class="nb">all</span> <span class="n">alerts</span> <span class="n">within</span> <span class="n">the</span> <span class="n">alertgroup</span> <span class="n">when</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">alertgroup</span> <span class="nb">list</span> <span class="n">view</span> <span class="k">as</span> <span class="n">your</span> <span class="n">focus</span><span class="o">.</span>
-<span class="n">j</span><span class="p">:</span> <span class="n">This</span> <span class="n">will</span> <span class="n">select</span> <span class="n">one</span> <span class="n">row</span> <span class="n">down</span> <span class="n">within</span> <span class="n">the</span> <span class="nb">list</span> <span class="n">view</span><span class="o">.</span>
-<span class="n">k</span><span class="p">:</span> <span class="n">This</span> <span class="n">will</span> <span class="n">select</span> <span class="n">one</span> <span class="n">row</span> <span class="n">up</span> <span class="n">within</span> <span class="n">the</span> <span class="nb">list</span> <span class="n">view</span><span class="o">.</span>
-<span class="n">esc</span><span class="p">:</span> <span class="n">This</span> <span class="n">will</span> <span class="n">close</span> <span class="n">the</span> <span class="n">entity</span> <span class="n">pop</span><span class="o">-</span><span class="n">up</span> <span class="n">window</span><span class="o">.</span>
+<div class="highlight-python"><div class="highlight"><pre>f: Toggle full screen mode when a detail section is open
+t: Toggle flair on/off
+o: This will open all alerts within the alertgroup when in the alertgroup list view as your focus.
+c: This will close all alerts within the alertgroup when in the alertgroup list view as your focus.
+j: This will select one row down within the list view.
+k: This will select one row up within the list view.
+esc: This will close the entity pop-up window.
 </pre></div>
 </div>
 </div>
 <div class="section" id="posting-a-global-notificaton">
 <h2>Posting a global notificaton:<a class="headerlink" href="#posting-a-global-notificaton" title="Permalink to this headline">¶</a></h2>
 <p>A global notification can be posted to all users by navigating to:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">https</span><span class="p">:</span><span class="o">//&lt;</span><span class="n">scot</span> <span class="n">instance</span><span class="o">&gt;/</span><span class="c1">#/wall</span>
+<div class="highlight-python"><div class="highlight"><pre>https://&lt;scot instance&gt;/#/wall
 </pre></div>
 </div>
 <p>Note that only raw text will be displayed.</p>
@@ -524,11 +522,14 @@ the /opt/scot/etc/ldap.cfg file.  The line:</p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -547,11 +548,11 @@ the /opt/scot/etc/ldap.cfg file.  The line:</p>
         <li class="right" >
           <a href="overview.html" title="Overview"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2011-2016, Sandia National Laboratories.
+        &copy; Copyright 2011-2016, Sandia National Laboratories.
     </div>
   </body>
 </html>
