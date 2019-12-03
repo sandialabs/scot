@@ -482,8 +482,29 @@ export default class AddEntryModal extends React.Component {
                 // selector: "textarea",
                 browser_spellcheck: true,
                 contextmenu: false,
+                codesample_languages: [
+                  { text: "C", value: "c" },
+                  { text: "C#", value: "csharp" },
+                  { text: "C++", value: "cpp" },
+                  { text: "Docker", value: "docker" },
+                  { text: "HTTP", value: "http" },
+                  { text: "JavaScript", value: "javascript" },
+                  { text: "Java", value: "java" },
+                  { text: "JSON", value: "json" },
+                  { text: "Markdown", value: "md" },
+                  { text: "Perl", value: "perl" },
+                  { text: "PHP", value: "php" },
+                  { text: "Powershell", value: "powershell" },
+                  { text: "Python", value: "python" },
+                  { text: "Ruby", value: "ruby" },
+                  { text: "Bash / Shell", value: "bash" },
+                  { text: "Splunk SPL ", value: "splunk-spl" },
+                  { text: "Visual Basic", value: "visual-basic" },
+                  { text: "HTML/XML", value: "markup" }
+                  //powershell, shell, javascript, http, visual basic, splunk spll, json, perl
+                ],
                 plugins:
-                  "advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textpattern imagetools",
+                  "advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textpattern imagetools codesample",
                 table_clone_elements:
                   "strong em b i font h1 h2 h3 h4 h5 h6 p div",
                 paste_retain_style_properties: "all",
@@ -505,7 +526,7 @@ export default class AddEntryModal extends React.Component {
                 remove_script_host: false,
                 link_assume_external_targets: true,
                 toolbar1:
-                  "full screen  | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime | customBlockquote",
+                  "full screen  | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime | customBlockquote | codesample",
                 content_css: "/css/entryeditor.css",
                 height: 250,
                 verify_html: false,
@@ -518,7 +539,6 @@ export default class AddEntryModal extends React.Component {
                     let html = blockquote();
                     editor.insertContent(html);
                   }
-
                   editor.ui.registry.addMenuButton("customBlockquote", {
                     text: "500px max-height blockquote",
                     //image: 'http://p.yusukekamiyamane.com/icons/search/fugue/icons/calendar-blue.png',
