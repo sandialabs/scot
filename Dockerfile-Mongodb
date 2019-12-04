@@ -1,13 +1,44 @@
 FROM sandialabs/scot_perl
 
-
 # Installation:
 # Import MongoDB public GPG key AND create a MongoDB list file
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
-RUN echo "deb http://repo.mongodb.org/apt/ubuntu $(cat /etc/lsb-release | grep DISTRIB_CODENAME | cut -d= -f2)/mongodb-org/3.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.2.list
+RUN env | grep -i "proxy"
+
+ENV GPG_KEYS 2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5
+RUN set -ex; \
+	export GNUPGHOME="$(mktemp -d)"; \
+	for key in $GPG_KEYS; do \
+		gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
+	done; \
+	gpg --batch --export $GPG_KEYS > /etc/apt/trusted.gpg.d/mongodb.gpg; \
+	command -v gpgconf && gpgconf --kill all || :; \
+	rm -r "$GNUPGHOME"; \
+	apt-key list
+
+ARG MONGO_PACKAGE=mongodb-org
+ARG MONGO_REPO=repo.mongodb.org
+ENV MONGO_PACKAGE=${MONGO_PACKAGE} MONGO_REPO=${MONGO_REPO}
+
+ENV MONGO_MAJOR 3.6
+ENV MONGO_VERSION 3.6.12
+# bashbrew-architectures:amd64 arm64v8
+RUN echo "deb http://$MONGO_REPO/apt/ubuntu xenial/${MONGO_PACKAGE%-unstable}/$MONGO_MAJOR multiverse" | tee "/etc/apt/sources.list.d/${MONGO_PACKAGE%-unstable}.list"
+
 
 # Update apt-get sources AND install MongoDB
-RUN apt-get update && apt-get install -y mongodb-org
+RUN set -x \
+	&& apt-get update \
+	&& apt-get install -y \
+    ${MONGO_PACKAGE}=$MONGO_VERSION \
+	${MONGO_PACKAGE}-server=$MONGO_VERSION \
+	${MONGO_PACKAGE}-shell=$MONGO_VERSION \
+	${MONGO_PACKAGE}-mongos=$MONGO_VERSION \
+	${MONGO_PACKAGE}-tools=$MONGO_VERSION \
+	&& rm -rf /var/lib/apt/lists/* \
+	&& rm -rf /var/lib/mongodb \
+	&& mv /etc/mongod.conf /etc/mongod.conf.orig
+
+
 
 # Create the MongoDB data directory
 RUN mkdir -p /var/lib/mongodb 
