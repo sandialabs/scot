@@ -28,7 +28,7 @@ RUN echo "deb http://$MONGO_REPO/apt/ubuntu xenial/${MONGO_PACKAGE%-unstable}/$M
 # Update apt-get sources AND install MongoDB
 RUN set -x \
 	&& apt-get update \
-	&& apt-get install -y \
+	&& apt-get install -qy --with-new-pkgs \
     ${MONGO_PACKAGE}=$MONGO_VERSION \
 	${MONGO_PACKAGE}-server=$MONGO_VERSION \
 	${MONGO_PACKAGE}-shell=$MONGO_VERSION \
