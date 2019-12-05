@@ -1,35 +1,26 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>Migration &#8212; SCOT 3.5.1 documentation</title>
-    
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '3.5.1',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
-    <link rel="next" title="Overview" href="overview.html" />
+    <link rel="next" title="SCOT Feeding" href="feeding.html" />
     <link rel="prev" title="POST Install Procedures" href="postinstall.html" /> 
-  </head>
-  <body role="document">
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -37,7 +28,7 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="overview.html" title="Overview"
+          <a href="feeding.html" title="SCOT Feeding"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="postinstall.html" title="POST Install Procedures"
@@ -70,7 +61,7 @@ migrate 250,000 alerts.  Unless you have very large databases, my recommendation
 is to allow a single process to work on each collection because this will
 make it easier to detect and correct any anomalies in the data migration.</p>
 <p>The migration command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ cd /opt/scot/bin
+<div class="highlight-default notranslate"><div class="highlight"><pre>$ cd /opt/scot/bin
 $ ./migrate.pl alert 2
 </pre></div>
 </div>
@@ -78,7 +69,7 @@ $ ./migrate.pl alert 2
 <p>Best practice in migration is to open a terminal for each collection, start
 tmux or screen, and then start the migration for a collection.  Extensive
 logging is performed in /var/log/scot/migration.alert.log, where alert is
-the actual collection being migrated.  Pro tip: &#8216;grep -i error /var/log/scot/migration*&#8217;</p>
+the actual collection being migrated.  Pro tip: ‘grep -i error /var/log/scot/migration*’</p>
 <p>The list of collections to migrate:</p>
 <p># alertgroup
 # alert
@@ -90,7 +81,7 @@ the actual collection being migrated.  Pro tip: &#8216;grep -i error /var/log/sc
 # user
 # file</p>
 <p>If you wish for totally hands off operation, do the following:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ cd /opt/scot/bin
+<div class="highlight-default notranslate"><div class="highlight"><pre>$ cd /opt/scot/bin
 $ ./migrate.pl all
 </pre></div>
 </div>
@@ -102,7 +93,7 @@ SCOT 3.5 on a new system, and want to migrate your database to that server,
 you will need to use the mongodump and mongorestore to move the old database
 to the new server first.</p>
 <p>Example Migration:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ ssh oldscot
+<div class="highlight-default notranslate"><div class="highlight"><pre>$ ssh oldscot
 oldscot:/home/scot&gt; mongodump scotng-prod
 ...
 oldscot:/home/scot&gt; tar czvf ./scotng-prod.tgz ./dump
@@ -131,7 +122,7 @@ newscot:/opt/scot/bin&gt; ./migrate.pl all
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
+  <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Migration</a></li>
 <li><a class="reference internal" href="#save-your-old-database">Save Your Old Database</a></li>
@@ -141,23 +132,23 @@ newscot:/opt/scot/bin&gt; ./migrate.pl all
   <p class="topless"><a href="postinstall.html"
                         title="previous chapter">POST Install Procedures</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="overview.html"
-                        title="next chapter">Overview</a></p>
+  <p class="topless"><a href="feeding.html"
+                        title="next chapter">SCOT Feeding</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/migration.txt"
+      <li><a href="_sources/migration.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -171,7 +162,7 @@ newscot:/opt/scot/bin&gt; ./migrate.pl all
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="overview.html" title="Overview"
+          <a href="feeding.html" title="SCOT Feeding"
              >next</a> |</li>
         <li class="right" >
           <a href="postinstall.html" title="POST Install Procedures"

@@ -16,8 +16,7 @@ last 7 days of backups are kept in /opt/scotbackup and files older than 7 days a
 Manual Backup
 ^^^^^^^^^^^^^
 
-I get it, you don't trust some fancy script to back up.  Here's what is going on behind the 
-scenes.
+I get it, you don't trust some fancy script to back up.  Here's what is going on behind the scenes.
 
 #.  Back up the mongo database with the "mongodump" command.
 
@@ -123,14 +122,12 @@ Manual Restore
 SSL Certs
 ---------
 
-The initial install of SCOT will use self-signed SSL Certs.  Please update these certs as 
-soon as possible.  
+The initial install of SCOT will use self-signed SSL Certs.  Please update these certs as soon as possible.  
 
 GeoIP
 -----
 
-SCOT use the MaxMind GEOIP2 libraries and databases for geo location.  Please see the MaxMind
-website for details on how to update the database files.
+SCOT use the MaxMind GEOIP2 libraries and databases for geo location.  Please see the MaxMind website for details on how to update the database files.
 
 Upgrading
 ---------
@@ -140,7 +137,7 @@ downloaded directory, run::
 
     ./install.sh -s
 
-You probably want to do this when your analysts are very busy.
+You probably want to do this when your analysts are not very busy.
 
 CRON Entries
 ------------
@@ -163,9 +160,10 @@ A properly functioning SCOT has the following services running:
 * Apache2
 * Scot
 * scfd   (scot flairing daemon)
+* scrfd  (scot reflairing daemon)
 * scepd  (scot elastic push daemon)
 
-All of these services have /etc/init.d entries with start|stop|restart commands.
+Depending on the Linux version, these will have init style startup scripts or systemd style entries.
 
 Logging
 -------
@@ -201,9 +199,9 @@ Let's say you forgot the admin password, what to do?
     Reenter Admin Password   : ***
     {X-PBKDF2}HMACSHA2+512:AAAnEA:2/oQYlnzjibzWoCs2aPv:KAZIhhNUgPBw4M7ZOVU1/2yT/P07FRe2bhacBw6J6ru4jwFRM9dMpxOARc9IfxrQs7ltxSn1ceW76dgJ4kL0Ng==
 
-2.  Enter mongodb shell and issue the following:
+2.  Enter mongodb shell and issue the following: 
 
-   $ mongo scot-prod
+   $ mongo scot-prod <enter>
    > db.user.update({username:"admin"},{$set:{hash:'{X-PBKDF2}HMACSHA2+512:AAAnEA:2/oQYlnzjibzWoCs2aPv:KAZIhhNUgPBw4M7ZOVU1/2yT/P07FRe2bhacBw6J6ru4jwFRM9dMpxOARc9IfxrQs7ltxSn1ceW76dgJ4kL0Ng=='}});
 
 3.  Now you (admin) will be able to log in via Local Auth using the password you entered.
