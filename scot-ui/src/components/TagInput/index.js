@@ -22,19 +22,9 @@ class TagInput extends Component {
       maxTags: maxTags,
       placeholder: ""
     };
-    this.handleDelete = this.handleDelete.bind(this);
-    this.handleAdd = this.handleAdd.bind(this);
-    this.handleInputChange = this.handleInputChange.bind(this);
-    this.showHideInput = this.showHideInput.bind(this);
   }
 
-  static propTypes = {
-    onChange: PropTypes.func.isRequired,
-    type: PropTypes.oneOf(["source", "tag", "userdef"]).isRequired,
-    value: PropTypes.array.isRequired
-  };
-
-  handleDelete(i) {
+  handleDelete = i => {
     const tags = this.state.tags;
 
     tags.splice(i, 1);
@@ -46,9 +36,9 @@ class TagInput extends Component {
 
     this.props.onChange(tags);
     this.setState({ tags: tags, placeholder: "" });
-  }
+  };
 
-  handleAdd(tag) {
+  handleAdd = tag => {
     const tags = this.state.tags;
 
     if (this.state.maxTags && tags.length >= this.state.maxTags) {
@@ -64,13 +54,13 @@ class TagInput extends Component {
       this.props.onChange(tags);
       this.setState({ tags: tags, placeholder: "" });
     }
-  }
+  };
 
   componentDidUpdate() {
     this.showHideInput();
   }
 
-  handleInputChange(input) {
+  handleInputChange = input => {
     if (input && input.length >= 2) {
       let arr = [];
       $.ajax({
@@ -91,9 +81,9 @@ class TagInput extends Component {
         }
       });
     }
-  }
+  };
 
-  showHideInput() {
+  showHideInput = () => {
     if (
       this.props.type === "userdef" &&
       this.props.maxTags &&
@@ -103,7 +93,7 @@ class TagInput extends Component {
     } else {
       $(".react-tags__search").show();
     }
-  }
+  };
 
   render() {
     return (
