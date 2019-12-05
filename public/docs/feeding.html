@@ -1,35 +1,26 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>SCOT Feeding &#8212; SCOT 3.5.1 documentation</title>
-    
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '3.5.1',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
     <link rel="next" title="Overview" href="overview.html" />
     <link rel="prev" title="Migration" href="migration.html" /> 
-  </head>
-  <body role="document">
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -69,29 +60,29 @@ should provide a template to create your own parsers for the email from your det
 module parses an HTML formated email.</p>
 <div class="section" id="html-email">
 <h3>HTML Email<a class="headerlink" href="#html-email" title="Permalink to this headline">¶</a></h3>
-<p>When creating a Parser module, you must first implement a &#8220;will_parse&#8221; function, that will return true
-if your parser can parse the e-mail message.   Looking at Splunk.pm&#8217;s will_parse function, we see the following:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>if ( $subject =~ /splunk alert/i ) {
+<p>When creating a Parser module, you must first implement a “will_parse” function, that will return true
+if your parser can parse the e-mail message.   Looking at Splunk.pm’s will_parse function, we see the following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre>if ( $subject =~ /splunk alert/i ) {
     return 1;
 }
 </pre></div>
 </div>
-<p>This means that if the subject of the email contains the case insensitve phrase &#8220;splunk alert&#8221;, tell the alert
+<p>This means that if the subject of the email contains the case insensitve phrase “splunk alert”, tell the alert
 ingester that this is the parsing module to use to parse this email.</p>
 <p>Another way to test would be to check the address of the email sender like this:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>my $from = $href-&gt;{from};
+<div class="highlight-default notranslate"><div class="highlight"><pre>my $from = $href-&gt;{from};
 if ( $from =~ /splunk\@yourdomain.com/i ) {
     return 1;
 }
 </pre></div>
 </div>
-<p>Remember, the will_parse should return &#8220;false&#8221; (undef in Perl) if this parser can not parse the email.</p>
-<p>The next function that must be implemented is the &#8220;parse_message&#8221;  function.  It is passed a hash reference
-that contains the email&#8217;s subject, message_id, plain text of email, and html version of email (if it exists).
+<p>Remember, the will_parse should return “false” (undef in Perl) if this parser can not parse the email.</p>
+<p>The next function that must be implemented is the “parse_message”  function.  It is passed a hash reference
+that contains the email’s subject, message_id, plain text of email, and html version of email (if it exists).
 At this point you have to refer to sample parsers provided on ideas how to parse your message.  If you get
 stuck, please feel free to ask for help on our github page.</p>
 <p>The result of the parsing should be a hash that looks like the following:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">json</span> <span class="o">=</span> <span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="o">%</span><span class="n">json</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">data</span>    <span class="o">=&gt;</span> <span class="p">[</span>
         <span class="p">{</span> <span class="n">column1</span> <span class="o">=&gt;</span> <span class="n">dataval11</span><span class="p">,</span> <span class="n">column2</span> <span class="o">=&gt;</span> <span class="n">dataval12</span><span class="p">,</span> <span class="o">...</span> <span class="p">},</span>
         <span class="p">{</span> <span class="n">column1</span> <span class="o">=&gt;</span> <span class="n">dataval21</span><span class="p">,</span> <span class="n">column2</span> <span class="o">=&gt;</span> <span class="n">dataval22</span><span class="p">,</span> <span class="o">...</span> <span class="p">},</span>
@@ -107,12 +98,12 @@ from the email.</p>
 </div>
 <div class="section" id="rest-interface">
 <h2>REST interface<a class="headerlink" href="#rest-interface" title="Permalink to this headline">¶</a></h2>
-<p>OK, you&#8217;ve looked at the parsers, and for whatever reason you decide that creating your own is not the way
+<p>OK, you’ve looked at the parsers, and for whatever reason you decide that creating your own is not the way
 you wish to go.  In that case, the REST API is the way for you to go.  Essentially, you will need a username and
 password, or an apikey from SCOT.  Then you will have to configure your detector to POST to SCOT via the API.
 Alternatively, you could write your own wrapper to do the REST calls.</p>
-<p>Here&#8217;s a sample curl command to insert an alertgroup:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Authorization: apikey $SCOT_KEY&quot;</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Content-Type: application/json&quot;</span> <span class="o">-</span><span class="n">X</span> <span class="n">POST</span> <span class="o">-</span><span class="n">d</span> <span class="s1">&#39;{</span>
+<p>Here’s a sample curl command to insert an alertgroup:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">curl</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Authorization: apikey $SCOT_KEY&quot;</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Content-Type: application/json&quot;</span> <span class="o">-</span><span class="n">X</span> <span class="n">POST</span> <span class="o">-</span><span class="n">d</span> <span class="s1">&#39;{</span>
             <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">[</span> <span class="s2">&quot;email_examinr&quot;</span> <span class="p">],</span>
             <span class="s2">&quot;subject&quot;</span><span class="p">:</span> <span class="s2">&quot;External HREF in Email&quot;</span><span class="p">,</span>
             <span class="s2">&quot;tag&quot;</span><span class="p">:</span> <span class="p">[</span> <span class="s2">&quot;email href&quot;</span> <span class="p">],</span>
@@ -153,7 +144,7 @@ Alternatively, you could write your own wrapper to do the REST calls.</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
+  <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">SCOT Feeding</a><ul>
 <li><a class="reference internal" href="#email-ingest">Email Ingest</a><ul>
@@ -174,18 +165,18 @@ Alternatively, you could write your own wrapper to do the REST calls.</p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/feeding.txt"
+      <li><a href="_sources/feeding.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
