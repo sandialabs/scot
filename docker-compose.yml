@@ -1,10 +1,12 @@
 version: '3.4'
 services:
   apache:
-    volumes: 
+    volumes:
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
-     - "log_data:/var/log/apache2/"
+     - "apache_log_data:/var/log/apache2/"
+     - "/etc/ssl/private/as3016snllx.sandia.gov.key:/etc/apache2/ssl/scot.key:ro"
+     - "/etc/ssl/certs/as3016snllx_sandia_gov_cert.cer:/etc/apache2/ssl/scot.crt:ro"
     ports:
      - "443:443"
      - "80:80"
@@ -20,32 +22,34 @@ services:
 
   activemq:
     volumes:
-     - "/var/log/activemq:/var/log/activemq/log/"
+     - "activemq_log_data:/var/log/activemq/log/"
     networks:
      - scot-docker-net
     container_name: activemq
     image: sandialabs/scot_activemq
   
   mongodb:
- 
+    environment:
+      no_proxy: "scot,elastic,mongodb,activemq,flair,reflair,stretch,game"
+      NO_PROXY: "scot,elastic,mongodb,activemq,flair,reflair,stretch,game"
     volumes:
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
      - "mongodb_data:/var/lib/mongodb/"
      - "scot_backup_data:/opt/scotbackup/mongo/scot-prod/"
-     - "log_data:/var/log/mongodb/"
+     - "mongodb_log_data:/var/log/mongodb/"
     networks:
      - scot-docker-net
     container_name: mongodb
     image: sandialabs/scot_mongodb
 
   elastic:
-   volumes:
-     - "/etc/timezone:/etc/timezone:ro"
-     - "/etc/localtime:/etc/localtime:ro"
-     - "scot_backup:/opt/scotbackup/elastic/"
-     - "elastic_data:/var/lib/elasticsearch/"
-     - "log_data:/var/log/elasticsearch/"
+    volumes:
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "scot_backup_data:/opt/scotbackup/elastic/"
+      - "elastic_data:/var/lib/elasticsearch/"
+      - "elastic_log_data:/var/log/elasticsearch/"
    networks:
     - scot-docker-net
    container_name: elastic
@@ -53,15 +57,16 @@ services:
  
   scot:
    volumes:
-     - "log_data:/var/log/scot/"
+     - "scot_log_data:/var/log/scot/"
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
      - "scot_files_data:/opt/scotfiles/"
-     - "./public/:/opt/scot/public/"
      - "elastic_data:/var/lib/elasticsearch/"
      - "mongodb_data:/var/lib/mongodb/"
      - "scot_backup_data:/opt/scotbackup/"
      - "cached_images_data:/opt/scot/public/cached_images/"
+     - "./public/:/opt/scot/public/"
+
    depends_on:
      - mongodb
      - activemq
@@ -69,13 +74,10 @@ services:
      - scot-docker-net
    container_name: scot
    image: sandialabs/scot_scot
-  
-  perl:
-   image: sandialabs/scot_perl 
-  
+    
   flair: 
    volumes:
-    - "log_data:/var/log/scot/"
+    - "flair_log_data:/var/log/scot/"
     - "/etc/localtime:/etc/localtime:ro"
    depends_on:
     - mongodb
@@ -87,8 +89,8 @@ services:
    image: sandialabs/scot_flair
   
   reflair:
-   volumes:
-    - "log_data:/var/log/scot/"
+    volumes:
+    - "reflair_log_data:/var/log/scot/"
     - "/etc/localtime:/etc/localtime:ro"
    depends_on:
     - mongodb
@@ -102,7 +104,7 @@ services:
   stretch:
    image: scot_stretch
    volumes:
-    - "log_data:/var/log/scot/"
+    - "stretch_log_data:/var/log/scot/"
     - "/etc/localtime:/etc/localtime:ro"
    depends_on:
     - mongodb
@@ -115,7 +117,7 @@ services:
 
   game:
    volumes:
-    - "log_data:/var/log/scot/"
+    - "game_log_data:/var/log/scot/"
     - "/etc/localtime:/etc/localtime:ro"
    depends_on:
     - mongodb
@@ -137,8 +139,17 @@ services:
  #  image: sandialabs/scot-stretch
 
 volumes:
-  elastic_data: 
-  log_data:
+  elastic_data:
+  scot_log_data:
+  elastic_log_data:
+  activemq_log_data:
+  apache_log_data:
+  mongodb_log_data:
+  game_log_data:
+  flair_log_data:
+  reflair_log_data:
+  mail_log_data:
+  stretch_log_data:
   mongodb_data:
   scot_files_data:
   scot_backup_data:
@@ -147,3 +158,6 @@ volumes:
 networks:
   scot-docker-net:
     driver: bridge
+
+
+
