@@ -2,59 +2,10 @@
 
 sudo docker-compose down
 
-mongo_log_dir="/var/log/mongodb/"
-scot_log_dir="/var/log/scot"
-scot_backup="/opt/scotbackup"
-mongodb_dir="/var/lib/mongodb"
-elastic_dir="/var/lib/elasticsearch"
-
-
-#check if scot_log_dir exists
-if [  -d $scot_log_dir ]; then
-    echo "$scot_log_dir exists!"
-else
-    sudo mkdir -p $scot_log_dir
-fi
-
-#check if scot_backup exists
-if [  -d $scot_backup ]; then
-    echo "$scot_backup exists!"
-else
-    sudo mkdir -p $scot_backup
-fi
-#check if mongodb_dir exists
-if [  -d $mongodb_dir ]; then
-    echo "$mongodb_dir exists!"
-else
-    sudo mkdir -p $mongodb_dir
-fi
-#check if elastic_dir exists
-if [ -d $elastic_dir ]; then
-    echo "$elastic_dir exists!"
-else
-    sudo mkdir -p $elastic_dir
-fi
-
-#check if mongo_log_dir exists
-if [ -d $mongo_log_dir ]; then
-    echo "$mongo_log_dir exists!"
-else
-    sudo mkdir -p $mongo_log_dir
-fi
-
-
-#set permissions
-sudo chmod -R 0770 /opt/scotbackup/
-sudo chmod -R 0775 /var/log/scot/
-sudo chmod -R 0775 /var/log/mongodb/
-sudo chmod -R g+rwx /var/lib/elasticsearch/ 
-sudo chgrp 1000 /var/lib/elasticsearch/
 
 echo "Creating SCOT and mongodb groups"
 #create groups
 sudo groupadd -g 2060 scot
-echo "Changing /opt/scotbackup/ permissions"
-sudo chown -R :2060 /opt/scotbackup/
 
 function add_users {
     echo "- checking for existing scot user"
@@ -76,10 +27,6 @@ function add_users {
 
 }
 
-#set ownership 
-sudo chown -R 1061:2060 /var/lib/mongodb/ /var/log/mongodb/
-sudo chown -R 1060:2060 /var/log/scot/ /opt/scot/
-sudo chown -R 1060:2060 /opt/scotfiles/
 
 
 #add users
@@ -96,10 +43,10 @@ echo "This script will walk you through the installation process. First, we have
 echo " "
 echo "SCOT has two installation modes:" 
 echo " "
-echo "1. Quick mode - In this mode, we will pull pre-built images from Dockerhub. Note: Using this mode, any changes you need made to the container will need to be done via additional Dockerfiles. This mode is also slightly more restrictive for customization but over time it will get much better"
-echo "2. Custom mode: In this mode, we will build the Docker containers from the Dockerfiles contained in the cloned source code. You can also make changes to the Dockerfiles, source code, etc. as you see fit"
+echo "1. Default mode (quick) - In this mode, we will pull pre-built images from Dockerhub. Feel free to modify the docker-compose.yml file for any custom volume mappings"
+echo "2. Custom mode (slow): In this mode, we will build the Docker containers from the Dockerfiles contained in the cloned source code. You can also make changes to the Dockerfiles, source code, etc. as you see fit"
 echo " "
-echo -n "Please enter your selection: 1 for demo mode  / 2 for custom mode"
+echo -n "Please enter your installation mode selection: "
 read -n 1 selection
 
 if [ "$selection" == "1" ]; then
