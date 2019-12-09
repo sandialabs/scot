@@ -87,12 +87,18 @@ services:
     build:
       dockerfile: Dockerfile-Scot
       context: ./
+      args:
+       http_proxy: ${http_proxy}
+       https_proxy: ${https_proxy}
+       HTTP_PROXY: ${HTTP_PROXY}
+       HTTPS_PROXY: ${HTTPS_PROXY}
     volumes:
      - "/var/log/scot:/var/log/scot/"
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
      - "/opt/scotfiles:/opt/scotfiles/"
      - "./public/:/opt/scot/public/"
+     - "./lib/:/opt/scot/lib/"
      - "/var/lib/elasticsearch:/var/lib/elasticsearch/"
      - "/var/lib/mongodb:/var/lib/mongodb/"
      - "/opt/scotbackup:/opt/scotbackup/:z"

@@ -2,11 +2,12 @@ FROM mongo:3.4-xenial
 
 # Create the MongoDB data directory
 RUN mkdir -p /var/lib/mongodb 
+RUN mkdir -p /var/log/mongodb
 
 EXPOSE 27017
 
 ADD docker-configs/mongodb/ /
-
+ADD install/src/mongodb /opt/scot/install/src/mongodb
 
 #add entry scripts
 RUN chmod 0755 /run.sh
