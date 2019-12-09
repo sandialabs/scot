@@ -5,8 +5,6 @@ services:
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
      - "apache_log_data:/var/log/apache2/"
-     - "/etc/ssl/private/as3016snllx.sandia.gov.key:/etc/apache2/ssl/scot.key:ro"
-     - "/etc/ssl/certs/as3016snllx_sandia_gov_cert.cer:/etc/apache2/ssl/scot.crt:ro"
     ports:
      - "443:443"
      - "80:80"
