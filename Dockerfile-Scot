@@ -45,6 +45,7 @@ COPY demo/ /opt/scot/demo/
 RUN chown -R scot:scot /opt/scot/
 RUN chown -R scot:scot /home/scot/
 RUN chmod -R 0777 /tmp/
+RUN chown -R scot:scot /var/log/scot/
 
 EXPOSE 3000 
 
