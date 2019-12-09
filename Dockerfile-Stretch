@@ -5,6 +5,7 @@ RUN mkdir -p /opt/scot
 
 COPY install/src/scot/ /opt/scot/etc/
 
+COPY lib/ /opt/scot/lib/
 COPY bin/ /opt/scot/bin/
 COPY install/src/scot /opt/scot/etc/
 COPY docker-configs/stretch/stretch.cfg.pl /opt/scot/etc/

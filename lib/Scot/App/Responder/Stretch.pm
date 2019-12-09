@@ -2,7 +2,7 @@ package Scot::App::Responder::Stretch;
 
 use Try::Tiny;
 use Data::Dumper;
-use Data::Clean::JSON;
+use Data::Clean::FromJSON;
 use Moose;
 extends 'Scot::App::Responder';
 

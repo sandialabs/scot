@@ -14,26 +14,15 @@ ENV no_proxy="elastic,mongodb"
 
 USER root
 
-RUN mkdir -p /opt/scotbackup/elastic
-RUN mkdir -p /opt/scot/elastic/
+RUN mkdir -p /var/lib/elasticsearch/
+RUN mkdir -p /var/lib/elasticsearch/mapping
+RUN chown -R elasticsearch:elasticsearch /var/lib/elasticsearch/
+RUN mkdir -p /var/log/elasticsearch/
 
 ADD docker-configs/elastic/ /opt/scot/elastic
 RUN chown elasticsearch:elasticsearch config/elasticsearch.yml
 RUN chown elasticsearch:elasticsearch /opt/scot/elastic
 RUN chmod -R +x /opt/scot/elastic/*.sh
-RUN chown -R elasticsearch:elasticsearch /opt/scotbackup/elastic
-
-#TODO: Lock these down
-RUN chmod -R 0777 /opt/scotbackup/elastic
-
-#used for running Mapping script
-RUN mkdir -p /var/lib/elasticsearch/mapping
-RUN chown -R elasticsearch:elasticsearch /var/lib/elasticsearch/mapping
-
-#Add user to SCOT group
-RUN groupadd -g 2060 scot && \ 
-    usermod -a -G 2060 elasticsearch
-
 
 USER elasticsearch
 
