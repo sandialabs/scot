@@ -50,10 +50,10 @@ services:
       - "scot_backup_data:/opt/scotbackup/elastic/"
       - "elastic_data:/var/lib/elasticsearch/"
       - "elastic_log_data:/var/log/elasticsearch/"
-   networks:
-    - scot-docker-net
-   container_name: elastic
-   image: sandialabs/scot_elastic
+    networks:
+     - scot-docker-net
+    container_name: elastic
+    image: sandialabs/scot_elastic
  
   scot:
    volumes:
@@ -89,7 +89,7 @@ services:
    image: sandialabs/scot_flair
   
   reflair:
-    volumes:
+   volumes:
     - "reflair_log_data:/var/log/scot/"
     - "/etc/localtime:/etc/localtime:ro"
    depends_on:
