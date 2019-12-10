@@ -2,37 +2,6 @@
 
 sudo docker-compose down
 
-
-echo "Creating SCOT and mongodb groups"
-#create groups
-sudo groupadd -g 2060 scot
-
-function add_users {
-    echo "- checking for existing scot user"
-    if grep --quiet -c scot: /etc/passwd; then
-        echo "- scot user exists"
-    else
-       echo "SCOT user does not exist. Creating user"
-       sudo useradd -c "SCOT User" -u 1060 -g 2060 -M -s /bin/bash scot
-    fi
-    
-    echo "-Checking for existing Mongodb User"
-    if grep --quiet -c mongodb: /etc/passwd; then
-        echo "- mongodb user exists"
-    else
-        
-       echo "mongodb user does not exist. Creating user"
-       sudo useradd -c "mongodb User" -u 1061 -g 2060 -M -s /bin/bash mongodb
-    fi
-
-}
-
-
-
-#add users
-add_users
-
-
 #build open-source scot
 
 echo " "
