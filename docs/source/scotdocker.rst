@@ -1,7 +1,7 @@
-Docker-SCOT v 0.04
+Docker for SCOT
 ******************
 
-v0.04 relase date - 5/16/2018
+Updated - 12/10/2019
 
 =================
 Table of Contents
@@ -17,17 +17,16 @@ Table of Contents
 **Overview** 
 ----------------------
 
-Docker-SCOT is now a supported, multi-container deployment of SCOT. Docker-SCOT allows a new user to get up and running with SCOT much quicker, and easier than with the traditional SCOT install process. 
+SCOT's primary deployment technology is now via docker.  
 
 **IMPORTANT**
 
-Backup your database via the backup.pl in the /opt/scot/bin/ directory before upgrading to the docker version of SCOT. If you are upgrading, you will also need to turn off all services that the older version of SCOT uses such as Apache, Activemq, Mongodb, ElasticSearch and SCOT (i.e. sudo service stop scot). Also as far as upgrading, we have **not** tested upgrading from any version before 3.4. Upgrade from versions prior to 3.4 to 3.5 first before upgrading to Docker-SCOT
-7
+Backup your database via the backup.pl in the /opt/scot/bin/ directory before upgrading to the docker version of SCOT. If you are upgrading, you will also need to turn off all services that the older version of SCOT uses such as Apache, Activemq, Mongodb, ElasticSearch and SCOT (i.e. sudo service stop scot). Also as far as upgrading, we have **not** tested upgrading from any version before 3.4. Upgrade from versions prior to 3.4 to 3.5 first before upgrading to Docker-SCOT. 
 
 
-Docker-SCOT containers
+SCOT containers
 ----------------------
-Docker-SCOT is comprised of the following services: 
+SCOT is comprised of the following services: 
 
 * **SCOT** - SCOT Application and associated API
 * **MongoDB** - Storage for SCOT
@@ -55,13 +54,8 @@ SCOT Installation
 
 There are two methods for getting started with SCOT. Run the SCOT/restart-build-deploy.sh script (will be promopted to enter sudo credentials) and follow the on screen prompts for either. 
 
-
-1. Quick mode - this mode will pull all necessary docker images from from Dockerhub (preconfigured). For demo purposes, this is the preferred method if you do are not concerned with any of the below bullet points. Demo mode should not be ran in production. 
-    * Using self-signed certificates for apache
-    * Adding additional perl libraries to the system
-    * Configuring the mail service to integrate with you a corporate email account
-    * **IMPORTANT** The easy install assumes that you do not already have elasticsearch, mongodb, and scot user accounts on  host. If you do, please remove them PRIOR to running the install. In order to make sure mongo and elasticsearch data is perssited, we have to user accounts on the host and container keep those in sync, otherwise elasticsearch and mongo will die on restarts due to being unable to read / write to their various data stores. 
-2. Custom Mode - If you are concerned with the above, you should use the custom mode which builds the docker containers from source and deploys them.  
+1. Quick mode (fast) - this mode will pull all necessary docker images from from Dockerhub (preconfigured). As for 12/10/2019, this is the preferred method for SCOT installation. If you need to enable LDAP auth, configure TLS certificates, or other changes, these can be done in this mode but with volume mounts and possibly some manipulation of compose files / configs. 
+2. Custom Mode (slow) - This mode should only be chosen if you are wanting to rebuild docker images for further customization. 
 
 
 
@@ -91,16 +85,16 @@ To restart a specific service and build in any particular changes you have made 
 Configuration
 -------------
 
-Docker-SCOT relies on the docker-compose.yml or docker-compose-custom.yml file to define the execution of the services, the DockerFiles that define the dependencies for each container, and two directories (docker-scripts & docker-configs).  
+SCOT's implementation of docker relies on the docker-compose.yml or docker-compose-custom.yml file to define the execution of the services, the DockerFiles that define the dependencies for each container, and two directories (docker-scripts & docker-configs).  
 
 
 **docker-compose.yml**
 
-The docker-compose.yml simply defines the port mappings, data volumes, build contexts, etc. Most of this can be configured as you please but keep in mind some of the data volume mapping and all of the static IPs are currently required unless you modify the configuration files in docker-configs. 
+The docker-compose.yml references the prebuilt images from Dockerhub. 
 
 **docker-compose-custom.yml**
 
-The docker-compose-custom.yml file, instead of building the containers on the host from the provided Dockerfiles will pull down the images from Dockerhub. 
+The docker-compose-custom.yml file will build the SCOT docker images from source. 
 
 **docker-scripts**
 
@@ -108,9 +102,10 @@ The docker-scripts directory contains scripts for backing up the data contained 
 
 The following scripts are currently supported: 
 
-1. /opt/scot/bin/restore.pl
-2. /opt/scot/bin/restore_remote_scotdb.pl
-3. restore.pl
+
+1. /opt/scot/bin/restore_remote_scotdb.pl
+2. opt/scot/bin/backup.pl
+
 
 To execute one of the above scripts, simply connect to the scot container via:: 
 
@@ -126,20 +121,7 @@ and run::
 
 **Restoring a database**
 
-If you are upgrading to the docker version of SCOT and need to restore your database (make sure to backup your database prior to upgrading) or you are already using the docker version of SCOT and want to backup your database simply run:: 
-
-    sudo docker exec -i -t -u scot scot /bin/bash
-
-cd to /opt/scot/bin and run::
-    ./backup.pl
-    
-To restore, once you have finished the backup::
-
-    sudo docker exec -i -t -u scot scot /bin/bash
-
-cd to /opt/scot/bin and run::
-    ./restore.pl
-
+For any questions about backing up and restoring databases, please contact the SCOT development team. 
 
 **docker-configs**
 
@@ -158,7 +140,7 @@ Note: If by chance you ever go to wipe your mongo database and would like to sta
 
 **Persisted Data** 
 
-You can view which data is being persisted by viewing the docker-compose.yml script and referring to the various 'Volumes'. With regard to MongoDB (where SCOT records are persisted), those directories are mapped to your Host's: /var/lib/mongodb directory. 
+You can view which data is being persisted by viewing the docker-compose.yml script and referring to the various 'Volumes'. With regard to MongoDB (where SCOT records are persisted), the data from mongodb is persisted via nmaed volumes to /var/lib/docker/volumes/mongodb_data.. 
 
 **Mail** 
 
@@ -168,7 +150,6 @@ docker-configs/mail/alert.cfg.pl file.
 **LDAP**
 
 By default, LDAP configuration is not enabled in docker-configs/scot/scot.cfg.pl. To enable, simply uncomment the LDAP configuration lines in docker-configs/scot/scot.cfg.pl and edit the necessary information to begin checking LDAP for group membership / auth. 
-
 
 **Custom SSL**
 
@@ -191,9 +172,6 @@ with::
 with the path and name of the eventual location where you will map your certs to via a shared data volume. 
 4. Next, as mentioned above, you need to pump your certs from your host machine into the container via a data volume (you can also copy them into the container at build time via COPY directive). In order to map them in via a data volume, add a new data volume under the apache service in the docker-compose.yml file. Eg.::
     volumes:
-     - "/etc/timezone:/etc/timezone:ro"
-     - "/etc/localtime:/etc/localtime:ro"
-     - "/var/log/apache2:/var/log/apache2/"
      - "/path/to/your/cert:/path/to/file/location/you/defined/in/step/3
      - "/path/to/your/key:/path/to/file/location/you/defined/in/step/3
 
@@ -205,5 +183,8 @@ FAQ / Common Issues
 **Common Issues**
 
 1. Apache frequently will throw an error on run time that the process is already running and will subequently die. In the event this happens, simply re-run the script. 
-2. Issue with binding mounting various volumes using SELinux? See here: https://docs.docker.com/storage/bind-mounts/#configure-the-selinux-label. You most likely will need to edit the docker-compose.yml or docker-compose-custom.yml file. 
 
+TODO
+---------------------
+1. Complete backup and restore scripts in bash
+2. Update docs - better examples
