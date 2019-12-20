@@ -127,6 +127,7 @@ sub process_message {
             body        => $entry,
             target_id   => $obj->id,
             target_type => $thing,
+            groups	=> $self->env->default_groups,
         });
         if ( defined $entry ) {
             # notify scot via activemq
