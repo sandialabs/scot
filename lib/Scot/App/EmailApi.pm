@@ -125,8 +125,10 @@ sub process_message {
     if ( defined $obj ) {
         my $entry   = $mongo->collection('Entry')->create({
             body        => $entry,
-            target_id   => $obj->id,
-            target_type => $thing,
+	    target	=> {
+		    id   => $obj->id,
+		    type => $thing,
+            }
             groups	=> $self->env->default_groups,
         });
         if ( defined $entry ) {
