@@ -416,23 +416,21 @@ export default class App extends React.Component {
             </Route>
           ) : null}
           {type === "alert" ? (
-            <Route exact path="/alert">
-              <ListView
-                id={this.props.match.params.id}
-                id2={this.props.match.params.id2}
-                viewMode={this.state.viewMode}
-                type={type}
-                notificationToggle={this.notificationToggle}
-                notificationSetting={this.state.notificationSetting}
-                listViewFilter={this.state.listViewFilter}
-                listViewSort={this.state.listViewSort}
-                listViewPage={this.state.listViewPage}
-                errorToggle={this.errorToggle}
-                history={this.props.history}
-                createCallback={this.AMQ.create_callback_object}
-                removeCallback={this.AMQ.remove_callback_object}
-              />
-            </Route>
+            <ListView
+              id={this.props.match.params.id}
+              id2={this.props.match.params.id2}
+              viewMode={this.state.viewMode}
+              type={type}
+              notificationToggle={this.notificationToggle}
+              notificationSetting={this.state.notificationSetting}
+              listViewFilter={this.state.listViewFilter}
+              listViewSort={this.state.listViewSort}
+              listViewPage={this.state.listViewPage}
+              errorToggle={this.errorToggle}
+              history={this.props.history}
+              createCallback={this.AMQ.create_callback_object}
+              removeCallback={this.AMQ.remove_callback_object}
+            />
           ) : null}
           {type === "alertgroup" ? (
             <ListView
