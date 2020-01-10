@@ -168,12 +168,25 @@ sub build_table {
     # wrap these items in special spans with flair "hints"  that the 
     # flair engine will recognize.  This will be similar to the approach
     # I'm thinking of using for user defined flair.
+    
+    # note: why we are not just using alert->data_with_flair:
+    # because then the entity links/count do not get updated.
+    # in scot4 we should investigate a smarter way of doing this
+    # perhaps by parsing the flair html and updating things
 
     foreach my $key ( @{$columns} ) {
         next if ($key eq "columns");
         my $value   = $data->{$key};
         if ( $key =~ /^message[_-]id$/i ) {
             $value =~ s{<(.*?)>}{&lt;$1&gt;};
+        }
+        # hack fix to handle sparklines in promoted alert.
+        # in scot4 we should handle this in flair engine
+        # flair engine did this for us in original flairing of alert
+        # and since there are no entities in a sparkline, we can
+        # just reuse the result for this cell
+        if ( $key eq "sparkline" ) {
+            $value = $alert->data_with_flair->{$key};
         }
 
         $html .= qq|<td>|;
