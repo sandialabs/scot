@@ -221,10 +221,10 @@ sub enrich {
                 $update_count++;
             }
             else {
-                $data->{$enricher_name} = {
-                    type    => 'error',
-                    data    => 'no data',
-                };
+                #$data->{$enricher_name} = {
+                #    type    => 'error',
+                #    data    => 'no data',
+                #};
             }
         }
     }
