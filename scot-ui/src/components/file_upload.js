@@ -69,15 +69,22 @@ export default class FileUpload extends React.Component {
           <Dropzone onDrop={this.onDrop}>
             {({ getRootProps, getInputProps }) => (
               <section>
-                <div {...getRootProps()}>
+                <div
+                  style={{
+                    "border-width": "2px",
+                    "border-color": "#000",
+                    "border-radius": "4px",
+                    "border-style": "dashed",
+                    "text-align": "center",
+                    "background-color": "azure"
+                  }}
+                  {...getRootProps()}
+                >
                   <input {...getInputProps()} />
                   <p>Drag 'n' drop some files here, or click to select files</p>
                 </div>
               </section>
             )}
-            {/* <div style={{ fontSize: "16px", color: "black", margin: "5px" }}>
-              Click or Drop files here to upload
-            </div> */}
           </Dropzone>
           {this.state.files ? (
             <div>
