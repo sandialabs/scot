@@ -1,7 +1,5 @@
-*.pl linguist-detectable=true
-*.js linguist-detectable=true
-*.html linguist-detectable=false
-*.htm inguist-detectable=false
-public/libs/* linguist-vendored
-scot-ui/public/libs/ linguist-vendored
-docs/* linguist-documentation
+public/* linguist-generated
+scot-ui/public/* linguist-vendored
+lib/* linguist-language=Perl
+bin/* linguist-language=Perl
+Dockerfile* linguist-language=Dockerfile
