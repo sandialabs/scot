@@ -128,7 +128,7 @@ sub process_message {
 	    target	=> {
 		    id   => $obj->id,
 		    type => $thing,
-            }
+            },
             groups	=> $self->env->default_groups,
         });
         if ( defined $entry ) {
@@ -184,12 +184,21 @@ sub get_value {
     }
     my @cells   = $table->look_down('_tag','td');
     for (my $i = 0; $i < scalar(@cells); $i += 2) {
-        my $key = $cells[$i]->as_text;
-        my $val = $cells[$i+1]->as_text;
-        $log->debug("cell[$i] = $key");
-        $log->debug("cell[$i+1] = $val");
+	my ($key, $val);
+	my $j	= $i+1;
+	
+	if ( defined $cells[$i] && ref($cells[$i]) eq "HTML::Element" ) {
+	    $key = $cells[$i]->as_text;
+            $log->debug("cell[$i] = $key");
+	} 
+	if ( defined $cells[$j] && ref($cells[$j]) eq "HTML::Element" ) {
+            $val = $cells[$j]->as_text;
+            $log->debug("cell[$j] = $val");
+	}
+
+
         if ( $key =~ /$type/i ) {
-            if ( grep { /$type/ } (qw(tag source)) ) {
+            if ( grep { /$type/i } (qw(tags sources)) ) {
                 my @tags = split(/[ ]*,[ ]*/,$val);
                 return wantarray ? @tags : \@tags;
             }
