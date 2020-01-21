@@ -1407,6 +1407,7 @@ class EntryData extends React.Component {
                   type="text/css"
                   href="/css/sandbox.css"
                 />,
+                <link rel="stylesheet" type="text/css" href="/css/prism.css" />,
                 <script src="/libs/prism.js" />
               ]}
               //end of new stuff

@@ -26,7 +26,7 @@ COPY docker-configs/scot/scot.cfg.pl /opt/scot/etc/
 COPY docker-scripts/* /opt/scot/bin/
 COPY docker-configs/scot/backup.cfg.pl /opt/scot/etc/
 COPY docker-configs/scot/restore.cfg.pl /opt/scot/etc/
-
+COPY lib/ /opt/scot/lib/
 
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10 && \
     echo "deb http://repo.mongodb.org/apt/ubuntu $(cat /etc/lsb-release | grep DISTRIB_CODENAME | cut -d= -f2)/mongodb-org/3.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.2.list && \
