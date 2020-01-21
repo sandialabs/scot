@@ -148,10 +148,10 @@ sub enrich {
 
         unless ( $enricher ) {
             $log->error("invalid enricher $enricher_name!");
-            $data->{$enricher_name} = {
-                type    => 'error',
-                data    => 'invalid enricher',
-            };
+            #$data->{$enricher_name} = {
+            #    type    => 'error',
+            #    data    => 'invalid enricher',
+            #};
             next NAME;
         }
 
@@ -221,10 +221,10 @@ sub enrich {
                 $update_count++;
             }
             else {
-                $data->{$enricher_name} = {
-                    type    => 'error',
-                    data    => 'no data',
-                };
+                #$data->{$enricher_name} = {
+                #    type    => 'error',
+                #    data    => 'no data',
+                #};
             }
         }
     }

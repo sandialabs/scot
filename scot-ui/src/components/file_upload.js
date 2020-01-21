@@ -21,7 +21,7 @@ export default class FileUpload extends React.Component {
     };
   }
 
-  componentDidMount = () => {
+  componentDidMount() {
     let whoami = SessionStorage.getSessionStorage("whoami");
     if (whoami) {
       this.setState({ whoami: whoami });
@@ -31,9 +31,9 @@ export default class FileUpload extends React.Component {
       $(".entry-wrapper").scrollTop() +
         $("#not_saved_entry_" + this.props.id).position().top
     );
-  };
+  }
 
-  render = () => {
+  render() {
     let not_saved_entry_id = "not_saved_entry_" + this.props.id;
     return (
       <div id={not_saved_entry_id}>
@@ -66,20 +66,25 @@ export default class FileUpload extends React.Component {
               </span>
             </div>
           </div>
-          <Dropzone
-            onDrop={this.onDrop}
-            style={{
-              "border-width": "2px",
-              "border-color": "#000",
-              "border-radius": "4px",
-              "border-style": "dashed",
-              "text-align": "center",
-              "background-color": "azure"
-            }}
-          >
-            <div style={{ fontSize: "16px", color: "black", margin: "5px" }}>
-              Click or Drop files here to upload
-            </div>
+          <Dropzone onDrop={this.onDrop}>
+            {({ getRootProps, getInputProps }) => (
+              <section>
+                <div
+                  style={{
+                    "border-width": "2px",
+                    "border-color": "#000",
+                    "border-radius": "4px",
+                    "border-style": "dashed",
+                    "text-align": "center",
+                    "background-color": "azure"
+                  }}
+                  {...getRootProps()}
+                >
+                  <input {...getInputProps()} />
+                  <p>Drag 'n' drop some files here, or click to select files</p>
+                </div>
+              </section>
+            )}
           </Dropzone>
           {this.state.files ? (
             <div>
@@ -114,7 +119,7 @@ export default class FileUpload extends React.Component {
         </div>
       </div>
     );
-  };
+  }
 
   onCancel = () => {
     finalfiles = [];
@@ -134,6 +139,7 @@ export default class FileUpload extends React.Component {
     for (let i = 0; i < files.length; i++) {
       finalfiles.push(files[i]);
     }
+    console.log(files);
     this.setState({ files: finalfiles });
   };
 
@@ -153,6 +159,7 @@ export default class FileUpload extends React.Component {
         xhr.addEventListener("error", this.uploadFailed);
         xhr.addEventListener("abord", this.uploadCancelled);
         xhr.open("POST", "/scot/api/v2/file");
+        console.log(data);
         xhr.send(data);
       }
     } else {
@@ -166,13 +173,5 @@ export default class FileUpload extends React.Component {
 
   uploadFailed = () => {
     this.props.errorToggle("An error occured. Upload failed.");
-  };
-
-  uploadProgress = () => {
-    //TODO add progress bar
-  };
-
-  uploadCancelled = () => {
-    //this.props.errorToggle('Upload Cancelled');
   };
 }
