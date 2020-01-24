@@ -128,7 +128,7 @@ sub process_message {
 	    target	=> {
 		    id   => $obj->id,
 		    type => $thing,
-            }
+            },
             groups	=> $self->env->default_groups,
         });
         if ( defined $entry ) {
