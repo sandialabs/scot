@@ -124,10 +124,10 @@ sub process_message {
 
     if ( defined $obj ) {
         my $entry   = $mongo->collection('Entry')->create({
-            body        => $entry,
-	    target	=> {
-		    id   => $obj->id,
-		    type => $thing,
+            body    => $entry,
+            target  => {
+                id   => $obj->id,
+                type => $thing,
             },
             groups	=> $self->env->default_groups,
         });
@@ -149,6 +149,10 @@ sub process_message {
             });
             $log->debug("created event ".$obj->id." and entry ".$entry->id);
 
+            # dont forget to update the target event
+            $obj->update({
+                '$inc'  => { entry_count => 1 }
+            });
             # send an acknowledgement email?
         }
     }
