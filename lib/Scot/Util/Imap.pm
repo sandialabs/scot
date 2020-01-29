@@ -553,4 +553,29 @@ sub get_message_id {
     return $msg_id;
 }
 
+sub extract_images {
+    my $self    = shift;
+    my $msg     = shift;
+    my $log     = $self->log;
+
+    my @parts   = $msg->parts();
+    my @htmls   = ();
+
+    foreach my $part (@parts) {
+        my $mt  = $part->mime_type();
+        my $enc = $part->encoding();
+        $log->debug("part mime: $mt, encoding: $enc");
+        next unless ($enc =~ /base64/i);
+        if ( $mt =~ /image/ ) {
+            my $b64image = $part->encoded_content();
+            my $html    = join('',
+                '<img src="data::image/jpeg;base64,',
+                $b64image,
+                '">');
+            push @htmls, $html;
+        }
+    }
+    return wantarray ? @htmls : \@htmls;
+}
+
 1;
