@@ -222,7 +222,7 @@ sub instantiate_logger {
     }
     $meta->add_attribute( log => ( is => 'rw', isa => 'Log::Log4perl::Logger'));
     $self->log($log);
-    $log->debug("\@INC = ",{filter=>\&Dumper, value => \@INC});
+    # $log->debug("\@INC = ",{filter=>\&Dumper, value => \@INC});
 }
 
 sub BUILD {

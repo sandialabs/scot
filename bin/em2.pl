@@ -6,7 +6,6 @@ use v5.16;
 
 use lib '../../Scot-Internal-Modules/lib';
 use lib '../lib';
-use lib '/opt/scot/lib';
 use Scot::App::EmailApi2;
 use Scot::Env;
 use Data::Dumper;
@@ -25,4 +24,9 @@ my $env = Scot::Env->new(
 my $processor   = Scot::App::EmailApi2->new({
     env => $env,
 });
-$processor->run();
+
+my @uids    = $processor->get_new_uids;
+
+my $message = $processor->get_email(pop @uids);
+
+print Dumper($message);
