@@ -91,21 +91,35 @@ export const AddFlair = {
                                 } else {
                                   country_code = entitydata.geoip.data.isocode;
                                 }
-                                let flag = $(
-                                  '<img title="' +
-                                    country_code.toLowerCase() +
-                                    '">'
-                                ).attr(
-                                  "src",
-                                  "/images/flags/" +
-                                    country_code.toLowerCase() +
-                                    ".png"
-                                );
-                                flag.addClass("extras");
-                                $(entity).append(flag);
+                                if (country_code !== null) {
+                                  let flag = $(
+                                    '<img title="' +
+                                      country_code.toLowerCase() +
+                                      '">'
+                                  ).attr(
+                                    "src",
+                                    "/images/flags/" +
+                                      country_code.toLowerCase() +
+                                      ".png"
+                                  );
+                                  flag.addClass("extras");
+                                  $(entity).append(flag);
+                                }
                               }
                             }
                             if (entitydata.sidd !== undefined) {
+                              if (
+                                Object.keys(entitydata.sidd.data).length !==
+                                  0 &&
+                                entitydata.sidd.data.constructor === Object
+                              ) {
+                                $(entity).append(
+                                  $('<img class="extras" title="sidd">').attr(
+                                    "src",
+                                    "/images/flair/sidd.png"
+                                  )
+                                );
+                              }
                               if (
                                 entitydata.sidd.data.blocklist !== undefined
                               ) {
