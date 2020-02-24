@@ -376,6 +376,8 @@ sub process_email {
 
     $self->inline_images($email, $tree);
 
+
+
     my $event   = $self->env->mongo->collection('Event')->create($event_data);
     if (defined $event ) {
         my $entry_data  = {

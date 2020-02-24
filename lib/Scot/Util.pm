@@ -19,6 +19,7 @@ use warnings;
 
 use Scot::Util::LoggerFactory;
 use Data::Dumper;
+use Try::Tiny;
 
 use Moose;
 
@@ -40,15 +41,22 @@ sub get_config_value {
     my $default = shift;
     my $envname = shift;
 
-    if ( defined $envname ) {
-        if ( defined $ENV{$envname} ) {
-            return $ENV{$envname};
+    my $value = try {
+        if ( defined $envname ) {
+            if ( defined $ENV{$envname} ) {
+                return $ENV{$envname};
+            }
         }
+        if ( defined $self->config->{$attr} ) {
+            return $self->config->{$attr};
+        }
+        return $default;
     }
-    if ( defined $self->config->{$attr} ) {
-        return $self->config->{$attr};
-    }
-    return $default;
+    catch {
+        die "Error getting attr $attr: $_";
+    };
+    return $value;
+
 }
 
 has log => (
