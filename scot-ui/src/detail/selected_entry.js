@@ -25,7 +25,7 @@ import AlertSubComponent from "./alert_subcomponent";
 import {
   buildTypeColumns,
   customCellRenderers,
-  getColumnWidth
+  getColumnWidth,
 } from "../list/tableConfig";
 import Button2 from "@material-ui/core/Button";
 
@@ -37,7 +37,8 @@ export default class SelectedEntry extends React.Component {
       showEntryData: this.props.showEntryData,
       showEntityData: this.props.showEntityData,
       entryData: this.props.entryData,
-      entityData: this.props.entityData,
+      entityData:
+        this.props.entityData === undefined ? null : this.props.entityData,
       entityid: null,
       entitytype: null,
       entityoffset: null,
@@ -48,19 +49,22 @@ export default class SelectedEntry extends React.Component {
       notificationMessage: "",
       height: null,
       entityDetailKey: entityDetailKey,
-      isMounted: false
+      isMounted: false,
     };
   }
 
   componentDidMount() {
+    const { type, id } = this.props;
     this.getEntryData();
-    this.getEntityData();
+    if (this.state.entityData !== null) {
+      addFlair(entityResult, null, type, null, id);
+    }
     this.props.createCallback(this.props.id, this.updatedCB);
     this.containerHeightAdjust();
 
     window.addEventListener("resize", this.containerHeightAdjust);
     let table = document.querySelector(".ReactTable");
-    table.onresize = function() {
+    table.onresize = function () {
       this.containerHeightAdjust();
     }.bind(this);
   }
@@ -87,14 +91,14 @@ export default class SelectedEntry extends React.Component {
       let entry_response = get_data(entry_url, null);
       entry_response
         .then(
-          function(response) {
+          function (response) {
             if (this.state.isMounted) {
               this.setState({
                 showEntryData: true,
-                entryData: response.data.records
+                entryData: response.data.records,
               });
               response.data.records.forEach(
-                function(element, i) {
+                function (element, i) {
                   this.props.createCallback(
                     response.data.records[i].id,
                     this.updatedCB
@@ -106,7 +110,7 @@ export default class SelectedEntry extends React.Component {
           }.bind(this)
         )
         .catch(
-          function(error) {
+          function (error) {
             if (this.state.isMounted) {
               this.setState({ showEntryData: true });
               this.props.errorToggle("Failed to load entry data.", error);
@@ -129,29 +133,29 @@ export default class SelectedEntry extends React.Component {
       let entity_response = get_data(entity_url, null);
       entity_response
         .then(
-          function(response) {
+          function (response) {
             let entityResult = response.data.records;
             if (this.state.isMounted) {
               this.setState({ showEntityData: true, entityData: entityResult });
               let waitForEntry = {
-                waitEntry: function() {
+                waitEntry: function () {
                   if (this.state.showEntryData === false) {
                     setTimeout(waitForEntry.waitEntry, 50);
                   } else {
                     setTimeout(
-                      function() {
+                      function () {
                         addFlair(entityResult, null, type, null, id);
                       }.bind(this)
                     );
                   }
-                }.bind(this)
+                }.bind(this),
               };
               waitForEntry.waitEntry();
             }
           }.bind(this)
         )
         .catch(
-          function(data) {
+          function (data) {
             if (this.state.isMounted) {
               this.setState({ showEntityData: true });
               this.props.errorToggle("Failed to load entity data.", data);
@@ -174,7 +178,7 @@ export default class SelectedEntry extends React.Component {
         entityvalue: value,
         entitytype: type,
         entityoffset: entityoffset,
-        entityobj: entityobj
+        entityobj: entityobj,
       });
     }
   };
@@ -184,12 +188,12 @@ export default class SelectedEntry extends React.Component {
       let newEntityDetailKey = this.state.entityDetailKey + 1;
       this.setState({
         flairToolbar: false,
-        entityDetailKey: newEntityDetailKey
+        entityDetailKey: newEntityDetailKey,
       });
     }
   };
 
-  linkWarningToggle = href => {
+  linkWarningToggle = (href) => {
     if (this.state.isMounted) {
       if (this.state.linkWarningToolbar === false) {
         this.setState({ linkWarningToolbar: true, link: href });
@@ -205,18 +209,18 @@ export default class SelectedEntry extends React.Component {
       let selector = `iframe`;
       let iframes = document.querySelectorAll(selector);
       iframes.forEach(
-        function(ifr, index) {
+        function (ifr, index) {
           ifr.contentWindow.requestAnimationFrame(
-            function() {
+            function () {
               if (ifr.contentDocument != null) {
                 let arr = [];
                 arr.push(this.checkFlairHover);
-                ifr.addEventListener("mouseenter", function(v, type) {
+                ifr.addEventListener("mouseenter", function (v, type) {
                   let intervalID = setInterval(this[0], 50, ifr); // this.flairToolbarToggle, type, this.props.linkWarningToggle, this.props.id);
                   console.log("Now watching iframe " + intervalID);
                 });
 
-                ifr.addEventListener("mouseleave", function() {
+                ifr.addEventListener("mouseleave", function () {
                   let intervalID = $(ifr).data("intervalID");
                   window.clearInterval(intervalID);
                   console.log("No longer watching iframe " + intervalID);
@@ -231,11 +235,11 @@ export default class SelectedEntry extends React.Component {
         .find("a, .entity")
         .not(".not_selectable")
         .each(
-          function(index, tr) {
+          function (index, tr) {
             $(tr).off("mousedown");
             $(tr).on(
               "mousedown",
-              function(index) {
+              function (index) {
                 let thing = index.target;
                 if ($(thing)[0].className == "extras") {
                   thing = $(thing)[0].parentNode;
@@ -265,7 +269,7 @@ export default class SelectedEntry extends React.Component {
     }
   };
 
-  checkFlairHover = ifr => {
+  checkFlairHover = (ifr) => {
     function returnifr() {
       return ifr;
     }
@@ -275,7 +279,7 @@ export default class SelectedEntry extends React.Component {
           .contents()
           .find(".entity")
           .each(
-            function(index, entity) {
+            function (index, entity) {
               if ($(entity).css("background-color") == "rgb(255, 0, 0)") {
                 $(entity).data("state", "down");
               } else if ($(entity).data("state") == "down") {
@@ -286,7 +290,7 @@ export default class SelectedEntry extends React.Component {
                 let ifr = returnifr();
                 let entityoffset = {
                   top: $(entity).offset().top + $(ifr).offset().top,
-                  left: $(entity).offset().left + $(ifr).offset().left
+                  left: $(entity).offset().left + $(ifr).offset().left,
                 };
                 this.flairToolbarToggle(
                   entityid,
@@ -304,7 +308,7 @@ export default class SelectedEntry extends React.Component {
           .contents()
           .find("a")
           .each(
-            function(index, a) {
+            function (index, a) {
               if ($(a).css("color") == "rgb(255, 0, 0)") {
                 $(a).data("state", "down");
               } else if ($(a).data("state") == "down") {
@@ -321,7 +325,7 @@ export default class SelectedEntry extends React.Component {
   containerHeightAdjust = () => {
     //Using setTimeout so full screen toggle animation has time to finish before resizing detail section
     setTimeout(
-      function() {
+      function () {
         let scrollHeight;
         let ListViewTableHeight = document.getElementsByClassName(
           "ReactTable"
@@ -520,7 +524,7 @@ class EntryIterator extends React.Component {
       if (type !== "alertgroup") {
         let key = 0;
         data.forEach(
-          function(data) {
+          function (data) {
             rows.push(
               <EntryParent
                 subcomponent={this.props.subcomponent}
@@ -578,7 +582,7 @@ class NewAlertTable extends React.Component {
       promotionId: null,
       selected: [],
       flairOff: false,
-      expanded: {}
+      expanded: {},
     };
   }
 
@@ -591,7 +595,7 @@ class NewAlertTable extends React.Component {
     if (this.props.type) {
       this.setState({
         type: this.props.type,
-        entityData: this.props.entityData
+        entityData: this.props.entityData,
       });
     }
     if (this.props.addFlair) {
@@ -604,7 +608,7 @@ class NewAlertTable extends React.Component {
     }
 
     $("#main-detail-container").keydown(
-      function(event) {
+      function (event) {
         //prevent from working when in input
         if ($("input").is(":focus")) {
           return;
@@ -631,7 +635,7 @@ class NewAlertTable extends React.Component {
           this.props.items,
           true,
           this.props.entityData
-        )
+        ),
       });
     }
     if (prevState.flairOff !== this.state.flairOff) {
@@ -663,7 +667,7 @@ class NewAlertTable extends React.Component {
   createData = () => {
     const dataarray = [];
     this.props.items.forEach(
-      function(element) {
+      function (element) {
         let dataitem = {};
         if (
           !this.state.flairOff &&
@@ -694,7 +698,7 @@ class NewAlertTable extends React.Component {
       <div>
         <ReactTable
           styleName="styles.ReactTable"
-          ref={r => (this.reactTable = r)}
+          ref={(r) => (this.reactTable = r)}
           key={2}
           data={data}
           columns={columns}
@@ -738,8 +742,8 @@ class NewAlertTable extends React.Component {
           getTdProps={(state, rowInfo) => {
             return {
               style: {
-                maxWidth: "fit-content"
-              }
+                maxWidth: "fit-content",
+              },
             };
           }}
           getTrProps={(state, rowInfo) => {
@@ -749,7 +753,7 @@ class NewAlertTable extends React.Component {
               this.props.alertsSelected !== undefined
             ) {
               return {
-                onClick: e => {
+                onClick: (e) => {
                   if (e.ctrlKey || (e.metaKey && e.keyCode === 83)) {
                     this.props.handleSelectAll(state.sortedData);
                   }
@@ -769,14 +773,14 @@ class NewAlertTable extends React.Component {
                 },
                 style: {
                   background: this.state.selected.some(
-                    item => rowInfo.original.id === item.id
+                    (item) => rowInfo.original.id === item.id
                   )
                     ? "#a7c6a5"
                     : "",
                   borderBottom: "1px solid black",
                   maxHeight: 200,
-                  overflowY: "auto"
-                }
+                  overflowY: "auto",
+                },
               };
             } else {
               return { style: { maxHeight: 200, overflowY: "auto" } };
@@ -826,7 +830,7 @@ class AlertTableSearchDiv extends React.Component {
               outline: "1px solid black",
               borderRadius: 5,
               padding: 3,
-              margin: "10px 0 15px"
+              margin: "10px 0 15px",
             }}
           >
             {linkToSearch}
@@ -849,7 +853,7 @@ class EntryParent extends React.Component {
       fileUploadToolbar: false,
       showEntityCreateModal: false,
       highlightedText: null,
-      items: {}
+      items: {},
     };
   }
 
@@ -904,11 +908,11 @@ class EntryParent extends React.Component {
     let reparse_flair_endpoint = `/scot/api/v2/entry/${this.props.items.id}`;
     let put_response = put_data(reparse_flair_endpoint);
     put_response
-      .then(function(data) {
+      .then(function (data) {
         console.log("reparsing started");
       })
       .catch(
-        function(data) {
+        function (data) {
           this.props.errorToggle("failed to start reparsing of data", data);
         }.bind(this)
       );
@@ -922,18 +926,18 @@ class EntryParent extends React.Component {
     }
   };
 
-  getEntryEntityData = id => {
+  getEntryEntityData = (id) => {
     const entity_url = `scot/api/v2/entry/${id}/entity`;
     let entity_response = get_data(entity_url, null);
     entity_response
       .then(
-        function(response) {
+        function (response) {
           let entityResult = response.data.records;
           this.props.setEntryEntities(entityResult);
         }.bind(this)
       )
       .catch(
-        function(data) {
+        function (data) {
           console.log(`Couldnt get entry entity data: ${data}`);
         }.bind(this)
       );
@@ -1000,11 +1004,11 @@ class EntryParent extends React.Component {
       />
     );
     for (let prop in items) {
-      let childfunc = prop => {
+      let childfunc = (prop) => {
         if (prop === "children") {
           let childobj = items[prop];
           items[prop].forEach(
-            function(childobj) {
+            function (childobj) {
               subitemarr.push(
                 new Array(
                   (
@@ -1086,7 +1090,7 @@ class EntryParent extends React.Component {
             marginLeft: "auto",
             marginRight: "auto",
             width: "99.3%",
-            border: tlpBorder
+            border: tlpBorder,
           }}
         >
           <span
@@ -1287,7 +1291,7 @@ class EntryAction extends React.Component {
     super(props);
     this.state = {
       [this.props.id]: false,
-      disabled: false
+      disabled: false,
     };
   }
 
@@ -1298,12 +1302,12 @@ class EntryAction extends React.Component {
     let post_response = post_data(url, null);
     post_response
       .then(
-        function(data) {
+        function (data) {
           this.setState({ [id]: true, disabled: false });
         }.bind(this)
       )
       .catch(
-        function(data) {
+        function (data) {
           this.props.errorToggle("failed to submit the entry action", data);
           this.setState({ disabled: false });
         }.bind(this)
@@ -1333,7 +1337,7 @@ class EntryData extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      height: "1px"
+      height: "1px",
     };
   }
 
@@ -1346,12 +1350,12 @@ class EntryData extends React.Component {
   }
   setHeight = () => {
     setTimeout(
-      function() {
+      function () {
         if (document.getElementById("iframe_" + this.props.id) != undefined) {
           document
             .getElementById("iframe_" + this.props.id)
             .contentWindow.requestAnimationFrame(
-              function() {
+              function () {
                 let newheight;
                 newheight = document.getElementById("iframe_" + this.props.id)
                   .contentWindow.document.body.scrollHeight;
@@ -1408,7 +1412,7 @@ class EntryData extends React.Component {
                   href="/css/sandbox.css"
                 />,
                 <link rel="stylesheet" type="text/css" href="/css/prism.css" />,
-                <script src="/libs/prism.js" />
+                <script src="/libs/prism.js" />,
               ]}
               //end of new stuff
               frameBorder={"0"}
