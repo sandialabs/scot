@@ -433,6 +433,11 @@ relies on the browser BasicAuth popup.
             ->to    ('controller-api#get_cidr_matches')
             ->name  ('get_cidr_matches');
 
+    $scot   ->route ('/api/v2/recfuture/:id')
+            ->via   ('get')
+            ->to    ('controller-api#recfuture')
+            ->name  ('get_recfuture_data');
+
 =pod
 
 @api {post} /scot/api/v2/:thing Create thing
