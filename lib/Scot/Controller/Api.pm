@@ -2229,5 +2229,50 @@ sub build_entry_export {
 
 }
 
+sub recfuture {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+    my $user    = $self->session('user');
+
+    $log->debug("Recorded Future");
+    
+    ## recieve an id for an entity, when a button is pressed in entity 
+    ## create an entry, then create a amq message that will then be 
+    ## picked up by the recfuture proxy
+
+    try {
+        my $req_href    = $self->get_request_params;
+        my $id          = $req_href->{id} + 0;
+
+        my $entry_col   = $mongo->collection('Entry');
+        my $entry       = $entry_col->create({
+            body    => "Requesting Information from Recorded Future...",
+            target  => {
+                type    => "entity",
+                id      => $id,
+            },
+            parent  => 0,
+            class   => "entry",
+        });
+        my $entity  = $mongo->collection('Entity')->find_iid($id);
+
+        $self->env->mq->send("/queue/recfuture",{
+            action  => "lookup",
+            data    => {
+                type    => "entity",
+                id      => $id,
+                value   => $entity->value,
+                entry_id    => $entry->id,
+            },
+        });
+    }
+    catch {
+        $log->error("In API recfuture, Error: $_");
+        $log->error(longmess);
+        $self->render_error(400, { error_msg => $_ } );
+    };
+}
 
 1;
