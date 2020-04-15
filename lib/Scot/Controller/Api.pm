@@ -2258,14 +2258,28 @@ sub recfuture {
         });
         my $entity  = $mongo->collection('Entity')->find_iid($id);
 
+        $self->env->mq->send("/topic/scot",{
+            action  => "created",
+            data    => {
+                who => $req_href->{user},
+                type=> "entry",
+                id  => $entry->id,
+                target  => $entry->target,
+            },
+        });
+
         $self->env->mq->send("/queue/recfuture",{
             action  => "lookup",
             data    => {
-                type    => "entity",
+                type    => $entity->type,
                 id      => $id,
                 value   => $entity->value,
                 entry_id    => $entry->id,
             },
+        });
+        $self->do_render({
+            action  => 'recfutureproxy',
+            status  => 'ok',
         });
     }
     catch {

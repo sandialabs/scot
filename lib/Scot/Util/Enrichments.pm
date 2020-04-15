@@ -161,12 +161,15 @@ sub enrich {
 
             if ( $enricher->{type} =~ /link/i ) {
 
+                my $field   = $enricher->{field};
+                my $value   = $entity->{$field};
+
                 if ( defined $entity->{data}->{$enricher_name} ) {
                     if ( $force ) {
                         $data->{$enricher_name} = {
                             type    => 'link',
                             data    => {
-                                url => sprintf($enricher->{url}, $entity->{value}),
+                                url => sprintf($enricher->{url}, $value),
                                 title   => $enricher->{title},
                             },
                         };
@@ -177,7 +180,7 @@ sub enrich {
                     $data->{$enricher_name} = {
                         type    => 'link',
                         data    => {
-                            url => sprintf($enricher->{url}, $entity->{value}),
+                            url => sprintf($enricher->{url}, $value),
                             title   => $enricher->{title},
                         },
                     };

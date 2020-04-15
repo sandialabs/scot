@@ -7,7 +7,7 @@ use lib '../../lib';
 use lib '../../Scot-Internal-Modules/lib';
 use lib '/opt/scot/lib';
 use v5.16;
-use Scot::App::Responder::Reflair;
+use Scot::App::Responder::RecFutureProxy;
 use Data::Dumper;
 
 my $config_file = $ENV{'scot_app_rfproxy_config_file'} //
@@ -22,7 +22,7 @@ END {
     our @reason;
     if (@reason) {
         say "RecFuture Proxy died because: @reason";
-        $env->log->error("RecFuture ProxyReFlair died because: ",{filter=>\&Dumper, value=>\@reason});
+        $env->log->error("RecFutureProxy died because: ",{filter=>\&Dumper, value=>\@reason});
     }
 }
 
