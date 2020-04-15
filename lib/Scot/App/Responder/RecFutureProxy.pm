@@ -22,6 +22,7 @@ package Scot::App::Responder::RecFutureProxy;
 use Data::Dumper;
 use Scot::Env;
 use Mojo::UserAgent;
+use Mojo::UserAgent::Proxy;
 use HTML::Make;
 use namespace::autoclean;
 
@@ -69,7 +70,7 @@ has servername  => (
 sub _build_servername {
     my $self    = shift;
     my $attr    = "servername";
-    my $default = "api.recordedfuture.com/v2";
+    my $default = "api.recordedfuture.com/v2/";
     my $envname = "scot_util_recfuture_servername";
     return $self->get_config_value($attr, $default, $envname);
 }
@@ -104,9 +105,22 @@ sub _build_useragent {
     my $env     = $self->env;
     my $log     = $env->log;
     my $ua      = Mojo::UserAgent->new();
+
+    if ( $env->proxy ne '' ) {
+        $ua->proxy->detect->http($env->proxy)->https($env->proxy);
+    }
+    else {
+        $ua->proxy->detect;
+    }
      
     # TODO: look up building the UA so that it sends the API header
     # with every request
+    $ua->on(start => sub {
+        my ($ua, $tx) = @_;
+        $tx->req->headers->header('X-RFToken' => $self->api_key);
+        #$log->debug("Request: ".$tx->req->url->clone->to_abs);
+        #$log->debug("Headers: ", {filter => \&Dumper, value => $tx->req->headers});
+    });
     return $ua;
 }
 
@@ -120,13 +134,18 @@ sub do_request {
     my $ua      = $self->ua;
     my $prefix  = "https://".$self->servername;
 
+    my $proxy   = Mojo::UserAgent::Proxy->new;
+    $proxy->detect;
+
+    $log->debug("Proxy settings: ".$proxy->https);
+
+
+    $url    = $prefix . "/". $url;
+    $url    .= $params if $params;
 
     $log->debug("[api_key] ".$self->api_key);
-    $log->debug("[url]     ".$url);
     $log->debug("[params]  ".$params);
-
-    $url    = $prefix . $url;
-    $url    .= $params if $params;
+    $log->debug("[url]     ".$url);
 
     $log->trace("[MojoUA] $verb $url");
 
@@ -151,6 +170,11 @@ sub process_lookup {
     # 1.  Request data from Recorded Future.
     my $rf_data = $self->get_rf_data($value, $type);
 
+    if ( ! defined $rf_data ) {
+        $self->env->log->error("RF Data undefined!");
+        $rf_data    = {};
+    }
+
     # 2.  Store data in SCOT
     $self->store_rf_data($rf_data, $href);
 }
@@ -159,6 +183,10 @@ sub get_rf_data {
     my $self    = shift;
     my $value   = shift;
     my $type    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    $log->debug("get_rf_data: $value, $type");
 
     my $rf_type = $self->convert_type($type);
     # RF sample code had a '.' after value, not sure if that is a bug
@@ -191,6 +219,7 @@ sub convert_type {
         cve     => 'vulnerability',
         domain  => 'domain',
     );
+    $self->env->log->debug("scot type $type = $map{$type}");
     return $map{$type};
 }
 

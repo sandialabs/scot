@@ -136,7 +136,7 @@ sub run {
 
     my $name    = $self->name;
 
-    $log->debug("Starting Responder $name daemon");
+    $log->debug("Starting Responder $name daemon ".$self->destination);
 
     $pm->on_start(sub {
         my $pm      = shift;
