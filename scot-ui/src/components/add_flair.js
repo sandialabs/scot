@@ -129,7 +129,7 @@ export const AddFlair = {
                                 ) {
                                   if (
                                     entitydata.sidd.data.blocklist.action
-                                      .firewall !== false
+                                      .firewall !== 0
                                   ) {
                                     $(entity).append(
                                       $(
@@ -142,7 +142,7 @@ export const AddFlair = {
                                   }
                                   if (
                                     entitydata.sidd.data.blocklist.action
-                                      .watch !== false
+                                      .watch !== 0
                                   ) {
                                     $(entity).append(
                                       $(
@@ -152,7 +152,7 @@ export const AddFlair = {
                                   }
                                   if (
                                     entitydata.sidd.data.blocklist.action
-                                      .whitelist !== false
+                                      .whitelist !== 0 
                                   ) {
                                     $(entity).append(
                                       $(
@@ -165,7 +165,7 @@ export const AddFlair = {
                                   }
                                   if (
                                     entitydata.sidd.data.blocklist.action
-                                      .blackhole !== false
+                                      .blackhole !== 0 
                                   ) {
                                     $(entity).append(
                                       $(
@@ -178,7 +178,7 @@ export const AddFlair = {
                                   }
                                   if (
                                     entitydata.sidd.data.blocklist.action
-                                      .proxy_block !== false
+                                      .proxy_block !== 0 
                                   ) {
                                     $(entity).append(
                                       $(
