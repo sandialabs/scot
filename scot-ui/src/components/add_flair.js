@@ -1,6 +1,6 @@
 import $ from "jquery";
 export const AddFlair = {
-  entityUpdate: function(
+  entityUpdate: function (
     entityData,
     flairToolbarToggle,
     type,
@@ -9,7 +9,7 @@ export const AddFlair = {
     scrollTo
   ) {
     setTimeout(
-      function() {
+      function () {
         let entityResult = {};
         for (let key in entityData) {
           entityResult[$("<span />", { html: key }).html()] = entityData[key];
@@ -17,9 +17,9 @@ export const AddFlair = {
 
         if (type !== "alertgroup") {
           $("iframe").each(
-            function(index, ifr) {
+            function (index, ifr) {
               //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
-              ifr.contentWindow.requestAnimationFrame(function() {
+              ifr.contentWindow.requestAnimationFrame(function () {
                 if (ifr.contentDocument != null) {
                   let ifrContents = $(ifr).contents();
                   //This makes all href point to blank so they don't reload the iframe
@@ -27,17 +27,17 @@ export const AddFlair = {
                     .find("a")
                     .attr("target", "_blank");
                   //Copies href to a new attribute, url, before we make href an anchor (so it doesn't go anywhere when clicked)
-                  ifrContents.find("a").each(function(index, a) {
+                  ifrContents.find("a").each(function (index, a) {
                     let url = $(a).attr("href");
                     $(a).attr("url", url);
                   });
                   //Make href an anchor so it doesn't go anywhere when clicked and instead opens up the modal in linkWarningPopup
                   //$(ifr.contentDocument.body).find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
-                  ifrContents.find(".entity").each(function(index, entity) {
+                  ifrContents.find(".entity").each(function (index, entity) {
                     if ($(entity).find(".extras")[0] == null) {
                       //var currentEntityValue = $(entity).attr('data-entity-value');
                       let currentEntityValue = $("<span />", {
-                        html: $(entity).attr("data-entity-value")
+                        html: $(entity).attr("data-entity-value"),
                       }).html();
                       if (
                         currentEntityValue !== undefined &&
@@ -129,7 +129,7 @@ export const AddFlair = {
                                 ) {
                                   if (
                                     entitydata.sidd.data.blocklist.action
-                                      .firewall !== 0
+                                      .firewall !== 0 
                                   ) {
                                     $(entity).append(
                                       $(
@@ -142,7 +142,7 @@ export const AddFlair = {
                                   }
                                   if (
                                     entitydata.sidd.data.blocklist.action
-                                      .watch !== 0
+                                      .watch !==0 
                                   ) {
                                     $(entity).append(
                                       $(
@@ -218,7 +218,7 @@ export const AddFlair = {
           $(document.body)
             .find(".alertTableHorizontal")
             .find(".entity")
-            .each(function(index, entity) {
+            .each(function (index, entity) {
               if ($(entity).find(".extras")[0] == null) {
                 let subtable = $(document.body).find(".alertTableHorizontal");
                 subtable.find("a").attr("target", "_blank");
@@ -227,13 +227,13 @@ export const AddFlair = {
                   .find(".entity")
                   .wrap("<a href='about:blank' target='targ'></a>");
                 //Copies href to a new attribute, url, before we make href an anchor (so it doesn't go anywhere when clicked)
-                subtable.find("a").each(function(index, a) {
+                subtable.find("a").each(function (index, a) {
                   let url = $(a).attr("href");
                   $(a).attr("url", url);
                 });
                 //var currentEntityValue = $(entity).attr('data-entity-value');
                 let currentEntityValue = $("<span />", {
-                  html: $(entity).attr("data-entity-value")
+                  html: $(entity).attr("data-entity-value"),
                 }).html();
                 if (
                   currentEntityValue !== undefined &&
@@ -293,7 +293,7 @@ export const AddFlair = {
                           ) {
                             if (
                               entitydata.sidd.data.blocklist.action.firewall !==
-                              false
+                              0
                             ) {
                               $(entity).append(
                                 $(
@@ -302,8 +302,7 @@ export const AddFlair = {
                               );
                             }
                             if (
-                              entitydata.sidd.data.blocklist.action.watch !==
-                              false
+                              entitydata.sidd.data.blocklist.action.watch !== 0
                             ) {
                               $(entity).append(
                                 $(
@@ -313,7 +312,7 @@ export const AddFlair = {
                             }
                             if (
                               entitydata.sidd.data.blocklist.action
-                                .whitelist !== false
+                                .whitelist !== 0
                             ) {
                               $(entity).append(
                                 $(
@@ -323,7 +322,7 @@ export const AddFlair = {
                             }
                             if (
                               entitydata.sidd.data.blocklist.action
-                                .blackhole !== false
+                                .blackhole !== 0
                             ) {
                               $(entity).append(
                                 $(
@@ -333,7 +332,7 @@ export const AddFlair = {
                             }
                             if (
                               entitydata.sidd.data.blocklist.action
-                                .proxy_block !== false
+                                .proxy_block !== 0
                             ) {
                               $(entity).append(
                                 $(
@@ -367,7 +366,7 @@ export const AddFlair = {
       }.bind(this),
       1000
     );
-  }
+  },
 };
 
 function abbreviateNumber(num, fixed) {
