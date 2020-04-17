@@ -54,10 +54,10 @@ export default class SelectedEntry extends React.Component {
   }
 
   componentDidMount() {
-    const { type, id } = this.props;
+    const { type, id, addFlair } = this.props;
     this.getEntryData();
     if (this.state.entityData !== null) {
-      addFlair(entityResult, null, type, null, id);
+      addFlair(this.state.entityData, null, type, null, id);
     }
     this.props.createCallback(this.props.id, this.updatedCB);
     this.containerHeightAdjust();
