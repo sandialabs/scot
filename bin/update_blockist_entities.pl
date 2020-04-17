@@ -30,12 +30,13 @@ $cursor->immortal(1);
 my $bl3 = $env->enrichments->blocklist3;
 
 my $complete      = 0;
+my $remain        = $count;
 
 while (my $entity = $cursor->next ) {
     my $value   = $entity->value;
     my $type    = $entity->type;
 
-    printf "%d of %d : updating entity %d => %s", $complete++, $count, $entity->id, $value;
+    printf "%d of %d (%d remain): updating entity %d => %s", $complete++, $count, $remain--, $entity->id, $value;
 
     my $data    = $bl3->get_data($type, $value);
     
