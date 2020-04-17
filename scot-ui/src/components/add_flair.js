@@ -120,17 +120,9 @@ export const AddFlair = {
                                   )
                                 );
                               }
-                              if (
-                                entitydata.sidd.data.blocklist !== undefined
-                              ) {
-                                if (
-                                  entitydata.sidd.data.blocklist.action !==
-                                  undefined
-                                ) {
-                                  if (
-                                    entitydata.sidd.data.blocklist.action
-                                      .firewall !== 0 
-                                  ) {
+                              // display flair icons based on blocklist
+                              if ( entitydata.data.blocklist3 !== undefined) {
+                                  if ( entitydata.blocklist3.firewall !== 0 ) {
                                     $(entity).append(
                                       $(
                                         '<img class="extras" title="firewall block">'
@@ -140,20 +132,14 @@ export const AddFlair = {
                                       )
                                     );
                                   }
-                                  if (
-                                    entitydata.sidd.data.blocklist.action
-                                      .watch !==0 
-                                  ) {
+                                  if ( entitydata.blocklist3.watch !==0 ) {
                                     $(entity).append(
                                       $(
                                         '<img class="extras" title="watch list">'
                                       ).attr("src", "/images/flair/watch.png")
                                     );
                                   }
-                                  if (
-                                    entitydata.sidd.data.blocklist.action
-                                      .whitelist !== 0 
-                                  ) {
+                                  if ( entitydata.blocklist3.whitelist !== 0 ) {
                                     $(entity).append(
                                       $(
                                         '<img class="extras" title="white list">'
@@ -163,10 +149,7 @@ export const AddFlair = {
                                       )
                                     );
                                   }
-                                  if (
-                                    entitydata.sidd.data.blocklist.action
-                                      .blackhole !== 0 
-                                  ) {
+                                  if ( entitydata.blocklist3.blackhole !== 0 ) {
                                     $(entity).append(
                                       $(
                                         '<img class="extras" title="dns black hole">'
@@ -176,17 +159,13 @@ export const AddFlair = {
                                       )
                                     );
                                   }
-                                  if (
-                                    entitydata.sidd.data.blocklist.action
-                                      .proxy_block !== 0 
-                                  ) {
+                                  if ( entitydata.blocklist3.proxy_block !== 0 ) {
                                     $(entity).append(
                                       $(
                                         '<img class="extras" title="proxy block">'
                                       ).attr("src", "/images/flair/blocked.png")
                                     );
                                   }
-                                }
                               }
                             }
                           }
@@ -286,54 +265,37 @@ export const AddFlair = {
                           $(entity).append(flag);
                         }
                       }
-                      if (entitydata.sidd !== undefined) {
-                        if (entitydata.sidd.data.blocklist !== undefined) {
-                          if (
-                            entitydata.sidd.data.blocklist.action !== undefined
-                          ) {
-                            if (
-                              entitydata.sidd.data.blocklist.action.firewall !==
-                              0
-                            ) {
+                      // now in blocklist3 
+                          if ( entitydata.blocklist3 !== undefined) {
+                            if ( entitydata.blocklist3.firewall !== 0) {
                               $(entity).append(
                                 $(
                                   '<img class="extras" title="firewall block">'
                                 ).attr("src", "/images/flair/firewalled.png")
                               );
                             }
-                            if (
-                              entitydata.sidd.data.blocklist.action.watch !== 0
-                            ) {
+                            if ( entitydata.blocklist3.watch !== 0) {
                               $(entity).append(
                                 $(
                                   '<img class="extras" title="watch list">'
                                 ).attr("src", "/images/flair/watch.png")
                               );
                             }
-                            if (
-                              entitydata.sidd.data.blocklist.action
-                                .whitelist !== 0
-                            ) {
+                            if ( entitydata.blocklist3.whitelist !== 0) {
                               $(entity).append(
                                 $(
                                   '<img class="extras" title="white list">'
                                 ).attr("src", "/images/flair/white_list.jpg")
                               );
                             }
-                            if (
-                              entitydata.sidd.data.blocklist.action
-                                .blackhole !== 0
-                            ) {
+                            if ( entitydata.blocklist3.blackhole !== 0) {
                               $(entity).append(
                                 $(
                                   '<img class="extras" title="dns black hole">'
                                 ).attr("src", "/images/flair/blackholed.png")
                               );
                             }
-                            if (
-                              entitydata.sidd.data.blocklist.action
-                                .proxy_block !== 0
-                            ) {
+                            if ( entitydata.blocklist3.proxy_block !== 0) {
                               $(entity).append(
                                 $(
                                   '<img class="extras" title="proxy block">'
@@ -341,8 +303,6 @@ export const AddFlair = {
                               );
                             }
                           }
-                        }
-                      }
                     }
 
                     if (entityEntryCount !== undefined) {
