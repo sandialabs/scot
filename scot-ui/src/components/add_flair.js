@@ -55,12 +55,15 @@ export const AddFlair = {
                         }
 
                         if (entityMatched !== undefined) {
+                          console.log("entity matched!");
                           let entityid = entityMatched.id;
                           let entityCount = abbreviateNumber(
                             parseInt(entityMatched.count, 10),
                             0
                           );
                           let entitydata = entityMatched.data;
+                          console.log("entitydata for "+ entityMatched.id);
+                          console.log(entitydata);
                           let entityEntryCount = entityMatched.entry;
                           let circle = $('<span class="noselect">');
                           circle.addClass("circleNumber");
@@ -70,8 +73,8 @@ export const AddFlair = {
                           $(entity).attr("data-entity-id", entityid);
                           $(entity).unbind("click");
                           if (entitydata !== undefined) {
-                            if (entitydata.scanner != undefined) {
-                              if (entitydata.scanner.active == "true") {
+                            if (entitydata.scanner !== undefined) {
+                              if (entitydata.scanner.active === "true") {
                                 $(entity).append(
                                   $(
                                     '<img class="extras" title="scanner">'
@@ -107,6 +110,7 @@ export const AddFlair = {
                                 }
                               }
                             }
+
                             if (entitydata.sidd !== undefined) {
                               if (
                                 Object.keys(entitydata.sidd.data).length !==
@@ -120,53 +124,58 @@ export const AddFlair = {
                                   )
                                 );
                               }
-                              // display flair icons based on blocklist
-                              if ( entitydata.data.blocklist3 !== undefined) {
-                                  if ( entitydata.blocklist3.data.firewall !== 0 ) {
-                                    $(entity).append(
-                                      $(
-                                        '<img class="extras" title="firewall block">'
-                                      ).attr(
-                                        "src",
-                                        "/images/flair/firewalled.png"
-                                      )
-                                    );
-                                  }
-                                  if ( entitydata.blocklist3.data.watch !==0 ) {
-                                    $(entity).append(
-                                      $(
-                                        '<img class="extras" title="watch list">'
-                                      ).attr("src", "/images/flair/watch.png")
-                                    );
-                                  }
-                                  if ( entitydata.blocklist3.data.whitelist !== 0 ) {
-                                    $(entity).append(
-                                      $(
-                                        '<img class="extras" title="white list">'
-                                      ).attr(
-                                        "src",
-                                        "/images/flair/white_list.jpg"
-                                      )
-                                    );
-                                  }
-                                  if ( entitydata.blocklist3.data.blackhole !== 0 ) {
-                                    $(entity).append(
-                                      $(
-                                        '<img class="extras" title="dns black hole">'
-                                      ).attr(
-                                        "src",
-                                        "/images/flair/blackholed.png"
-                                      )
-                                    );
-                                  }
-                                  if ( entitydata.blocklist3.data.proxy_block !== 0 ) {
-                                    $(entity).append(
-                                      $(
-                                        '<img class="extras" title="proxy block">'
-                                      ).attr("src", "/images/flair/blocked.png")
-                                    );
-                                  }
-                              }
+                            }
+
+                            // display flair icons based on blocklist
+                            if ( entitydata.blocklist3 !== undefined) {
+                                if ( entitydata.blocklist3.data.firewall !== 0 ) {
+                                $(entity).append(
+                                    $(
+                                    '<img class="extras" title="firewall block">'
+                                    ).attr(
+                                    "src",
+                                    "/images/flair/firewalled.png"
+                                    )
+                                );
+                                }
+                                if ( entitydata.blocklist3.data.watch !==0 ) {
+                                $(entity).append(
+                                    $(
+                                    '<img class="extras" title="watch list">'
+                                    ).attr("src", "/images/flair/watch.png")
+                                );
+                                }
+                                if ( entitydata.blocklist3.data.whitelist !== 0 ) {
+                                $(entity).append(
+                                    $(
+                                    '<img class="extras" title="white list">'
+                                    ).attr(
+                                    "src",
+                                    "/images/flair/white_list.jpg"
+                                    )
+                                );
+                                }
+                                if ( entitydata.blocklist3.data.blackhole !== 0 ) {
+                                $(entity).append(
+                                    $(
+                                    '<img class="extras" title="dns black hole">'
+                                    ).attr(
+                                    "src",
+                                    "/images/flair/blackholed.png"
+                                    )
+                                );
+                                }
+                                if ( entitydata.blocklist3.data.proxy_block !== 0 ) {
+                                console.log("proxy block detected!");
+                                $(entity).append(
+                                    $(
+                                    '<img class="extras" title="proxy block">'
+                                    ).attr("src", "/images/flair/blocked.png")
+                                );
+                                }
+                                else {
+                                console.log("proxy where art thou"+ entitydata.blocklist3.data);
+                                }
                             }
                           }
 
@@ -233,6 +242,8 @@ export const AddFlair = {
                     let entityid = entityMatched.id;
                     let entityCount = abbreviateNumber(entityMatched.count);
                     let entitydata = entityMatched.data;
+                    console.log("entitydata for "+ entityMatched.id);
+                    console.log(entitydata);
                     let entityEntryCount = entityMatched.entry;
                     let circle = $('<span class="noselect">');
                     circle.addClass("circleNumber");
@@ -266,43 +277,47 @@ export const AddFlair = {
                         }
                       }
                       // now in blocklist3 
-                          if ( entitydata.blocklist3 !== undefined) {
-                            if ( entitydata.blocklist3.data.firewall !== 0) {
-                              $(entity).append(
-                                $(
-                                  '<img class="extras" title="firewall block">'
-                                ).attr("src", "/images/flair/firewalled.png")
-                              );
-                            }
-                            if ( entitydata.blocklist3.data.watch !== 0) {
-                              $(entity).append(
-                                $(
-                                  '<img class="extras" title="watch list">'
-                                ).attr("src", "/images/flair/watch.png")
-                              );
-                            }
-                            if ( entitydata.blocklist3.data.whitelist !== 0) {
-                              $(entity).append(
-                                $(
-                                  '<img class="extras" title="white list">'
-                                ).attr("src", "/images/flair/white_list.jpg")
-                              );
-                            }
-                            if ( entitydata.blocklist3.data.blackhole !== 0) {
-                              $(entity).append(
-                                $(
-                                  '<img class="extras" title="dns black hole">'
-                                ).attr("src", "/images/flair/blackholed.png")
-                              );
-                            }
-                            if ( entitydata.blocklist3.data.proxy_block !== 0) {
-                              $(entity).append(
-                                $(
-                                  '<img class="extras" title="proxy block">'
-                                ).attr("src", "/images/flair/blocked.png")
-                              );
-                            }
-                          }
+                      if ( entitydata.blocklist3 !== undefined) {
+                        if ( entitydata.blocklist3.data.firewall !== 0) {
+                            $(entity).append(
+                            $(
+                                '<img class="extras" title="firewall block">'
+                            ).attr("src", "/images/flair/firewalled.png")
+                            );
+                        }
+                        if ( entitydata.blocklist3.data.watch !== 0) {
+                            $(entity).append(
+                            $(
+                                '<img class="extras" title="watch list">'
+                            ).attr("src", "/images/flair/watch.png")
+                            );
+                        }
+                        if ( entitydata.blocklist3.data.whitelist !== 0) {
+                            $(entity).append(
+                            $(
+                                '<img class="extras" title="white list">'
+                            ).attr("src", "/images/flair/white_list.jpg")
+                            );
+                        }
+                        if ( entitydata.blocklist3.data.blackhole !== 0) {
+                            $(entity).append(
+                            $(
+                                '<img class="extras" title="dns black hole">'
+                            ).attr("src", "/images/flair/blackholed.png")
+                            );
+                        }
+                        if ( entitydata.blocklist3.data.proxy_block !== 0) {
+                            console.log("proxy_block detected!");
+                            $(entity).append(
+                            $(
+                                '<img class="extras" title="proxy block">'
+                            ).attr("src", "/images/flair/blocked.png")
+                            );
+                        }
+                        else {
+                            console.log("Why no pblock? "+entitydata.blocklist3.data);
+                        }
+                      }
                     }
 
                     if (entityEntryCount !== undefined) {
