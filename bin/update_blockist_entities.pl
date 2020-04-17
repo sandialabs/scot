@@ -41,13 +41,19 @@ while (my $entity = $cursor->next ) {
     my $data    = $bl3->get_data($type, $value);
     
     if ( defined $data ) {
+
+        print Dumper($data);
+
         my $update  = {
             '$set'  => {
-                "data.blocklist3"   => $data
+                "data.blocklist3.data"   => $data
             }
         };
         $entity->update($update);
         print "\n";
+        if ( $data->{firewall} != 0 ) {
+            die "Entity ".$entity->id;
+        }
 #        my $temp    = $entity->as_hash;
 #        print Dumper($temp);
 #        exit;
