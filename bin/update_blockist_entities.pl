@@ -19,8 +19,12 @@ my $env = Scot::Env->new({
 
 my $mongo       = $env->mongo;
 my $entitycol   = $mongo->collection('Entity');
-my $cursor      = $entitycol->find({type => {'$in'=> ["ipaddr","ipv6", "domain",]}}); # "file","md5","sha1","sha256"]});
-my $count       = $entitycol->count({type => {'$in'=> ["ipaddr","ipv6", "domain",]}}); # "file","md5","sha1","sha256"]});
+my $query       = {
+    type    => { '$in' => [ qw(ipaddr ipv6 domain) ] },
+    "data.blocklist3"   => { '$exists' => 0 }
+};
+my $cursor      = $entitycol->find($query);
+my $count       = $entitycol->count($query);
 $cursor->immortal(1);
 
 my $bl3 = $env->enrichments->blocklist3;
