@@ -51,12 +51,6 @@ while (my $entity = $cursor->next ) {
         };
         $entity->update($update);
         print "\n";
-        if ( $data->{firewall} != 0 ) {
-            die "Entity ".$entity->id;
-        }
-#        my $temp    = $entity->as_hash;
-#        print Dumper($temp);
-#        exit;
     }
     else {
         print "....no data\n";
