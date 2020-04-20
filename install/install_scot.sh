@@ -134,7 +134,7 @@ function configure_startup {
     echo "--"
     echo "-- configuring SCOT startup"
     echo "--"
-    SCOTSERVICES='scot scfd scrfd scepd'
+    SCOTSERVICES='scot scfd scrfd scepd recfpd'
     SRCDIR="$SCOT_CONFIG_SRC/scot"
 
     for service in $SCOTSERVICES; do

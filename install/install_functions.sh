@@ -169,6 +169,7 @@ function start_services {
             systemctl --no-pager restart scfd.service
             systemctl --no-pager restart scrfd.service
             systemctl --no-pager restart scepd.service
+            systemctl --no-pager restart recfpd.service
         elif [[ $OSVERSION == "16" ]]; then
             systemctl daemon-reload
             systemctl restart mongod.service
@@ -178,6 +179,7 @@ function start_services {
             systemctl --no-pager restart scfd.service
             systemctl --no-pager restart scrfd.service
             systemctl --no-pager restart scepd.service
+            systemctl --no-pager restart recfpd.service
         else 
             service mongod restart
             wait_for_mongo
@@ -186,6 +188,7 @@ function start_services {
             service scfd restart
             service scrfd restart
             service scepd restart
+            service restart recfpd.service
         fi
     else
         # it appears that centos 7.3 is systemd 
@@ -197,5 +200,6 @@ function start_services {
         systemctl --no-pager restart scfd.service
         systemctl --no-pager restart scrfd.service
         systemctl --no-pager restart scepd.service
+        systemctl --no-pager restart recfpd.service
     fi
 }
