@@ -912,6 +912,7 @@ sub pre_update_process {
     my $log     = $self->env->log;
 
     $log->debug("PRE UPDATE");
+    $log->debug("req ",{filter=>\&Dumper, value=>$req});
 
     # my $usersgroups = $self->session('groups');
     my $usersgroups  = $self->get_groups;
@@ -979,40 +980,56 @@ sub pre_update_process {
     }
 
     if ( ref($object) eq "Scot::Model::Signature" ) {
-        my $payload = $self->create_valid_signature_update_data($object,$req);
         # overwrite the data attribute with a normalized version
-        $req->{request}->{json}->{data} = $payload;
+        # side effect alert: normalize_sig_data modifies $req
+        $self->normalize_sig_data($object,$req);
     }
 }
 
-sub create_valid_signature_update_data {
+sub normalize_sig_data {
     my $self        = shift;
     my $signature   = shift;
     my $req         = shift;
     my $env     = $self->env;
+    my $log     = $env->log;
 
     # invalid/missing data in the req->request->json->data can cause client
     # to blow up
+    # $log->debug("normalizing: ",{filter=>\&Dumper, value=> $req->{json}});
 
     # find the keys we are supposed to have from the forms->signature array
     my $data_fmt    = $signature->data_fmt_ver;
-    my $formhref    = $env->forms->{$data_fmt};
+    my $formaref    = $env->forms->{$data_fmt};
+    my $json        = $req->{request}->{json};
 
-    my $payload = $req->{request}->{json}->{data};
-    my %newpayload  = ();
+    foreach my $href (@{$formaref}) {
+        my $key     = $href->{key};
+        my $dotkey  = join('.','data',$key);
 
-    foreach my $key (keys %{$formhref}) {
-        # if request has data, use it
-        if ( defined $payload->{$key} ) {
-            $newpayload{$key} = $payload->{$key};
+        if ( defined $json->{data}->{$key} ) {
+            # one way it could be passed in
+            $json->{$dotkey} = delete $json->{data}->{$key};
         }
-        # otherwise fill in the existing data for that key
+        elsif ( defined $json->{$dotkey} ) {
+            # do nothing, a an appropriate data key exists
+        }
         else {
-            $newpayload{$key} = $signature->data->{$key};
+            # need to add an update key for not present value
+            # otherwise, mongo update will blow away the data
+            my $newdata;
+            if ( $key =~ /\./ ) {
+                # target.id and target.type most likely
+                my ($subk1, $subk2) = split(/\./, $key, 2);
+                $newdata = $signature->data->{$subk1}->{$subk2};
+            }
+            else {
+                $newdata = $signature->data->{$key};
+            }
+            $json->{$dotkey} = $newdata;
         }
     }
-    
-    return wantarray ? %newpayload : \%newpayload;
+    # remove pesky remaining reference
+    delete $json->{data};
 }
 
 sub get_promotion_collection {
