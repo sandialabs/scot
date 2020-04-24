@@ -977,6 +977,42 @@ sub pre_update_process {
                    ->adjust_appearances($object,$new_src_set,"source");
         }
     }
+
+    if ( ref($object) eq "Scot::Model::Signature" ) {
+        my $payload = $self->create_valid_signature_update_data($object,$req);
+        # overwrite the data attribute with a normalized version
+        $req->{request}->{json}->{data} = $payload;
+    }
+}
+
+sub create_valid_signature_update_data {
+    my $self        = shift;
+    my $signature   = shift;
+    my $req         = shift;
+    my $env     = $self->env;
+
+    # invalid/missing data in the req->request->json->data can cause client
+    # to blow up
+
+    # find the keys we are supposed to have from the forms->signature array
+    my $data_fmt    = $signature->data_fmt_ver;
+    my $formhref    = $env->forms->{$data_fmt};
+
+    my $payload = $req->{request}->{json}->{data};
+    my %newpayload  = ();
+
+    foreach my $key (keys %{$formhref}) {
+        # if request has data, use it
+        if ( defined $payload->{$key} ) {
+            $newpayload{$key} = $payload->{$key};
+        }
+        # otherwise fill in the existing data for that key
+        else {
+            $newpayload{$key} = $signature->data->{$key};
+        }
+    }
+    
+    return wantarray ? %newpayload : \%newpayload;
 }
 
 sub get_promotion_collection {
