@@ -119,7 +119,7 @@ export class Api extends React.Component {
             <span>Key is {keyActiveStatus}</span>
             <span className='pull-right pointer'><i id={this.state.keys[i].id} className="fa fa-trash" aria-hidden="true" onClick={this.DeleteKey}></i></span>
             <div>
-              <GroupModal id={this.state.keys[i].id} currentGroups={this.state.keys[i].groups} allGroups={this.state.availableGroups} GroupChange={this.GroupChange} ToggleActiveStatus={this.ToggleActiveStatus} keyActiveStatus={keyActiveStatus} keyActiveStatusCss={keyActiveStatusCss} />
+              <GroupModal id={this.state.keys[i].id} currentGroups={this.state.keys[i].groups} allGroups={this.state.availableGroups} GroupChange={this.GroupChange} ToggleActiveStatus={this.ToggleActiveStatus} keyActiveStatus={this.state.keys[i].active} keyActiveStatusCss={keyActiveStatusCss} />
             </div>
           </div>
           <hr />
@@ -187,7 +187,7 @@ class GroupModal extends React.Component {
   */
   ToggleActiveStatus() {
     let newStatus;
-    if (this.props.keyActiveStatus == 'active') {
+    if (this.props.keyActiveStatus == 1) {
       newStatus = 0;
     } else {
       newStatus = 1;
@@ -213,6 +213,7 @@ class GroupModal extends React.Component {
         currentGroupArray.push(<span className='tagButton'>{k}</span>);
       }
     }
+    let keyStatus = this.props.keyActiveStatus === 1 ? 'active' : 'not active';
     return (
       <div>
         Current Groups: {currentGroupArray}
@@ -234,7 +235,7 @@ class GroupModal extends React.Component {
                         </div> */}
             <hr />
             <div>
-              Key is <span className={this.props.keyActiveStatusCss}>{this.props.keyActiveStatus}</span>
+              Key is <span className={this.props.keyActiveStatusCss}>{keyStatus}</span>
               <Button onClick={this.ToggleActiveStatus} bsSize='xsmall'>Toggle Active Status</Button>
             </div>
           </Modal.Body>
