@@ -255,6 +255,9 @@ sub json_to_html {
     my $self    = shift;
     my ($input) = @_;
     my $element;
+    my $table_attr = {
+        style => 'border:1;'
+    };
 
     if ( ref $input eq 'ARRAY' ) {
         $element = HTML::Make->new('ol');
