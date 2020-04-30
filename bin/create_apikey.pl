@@ -23,6 +23,12 @@ my $groups  = $userobj->groups;
 
 my $ug  = Data::UUID->new();
 my $key = $ug->create_str();
+
+if ( ! defined $groups ) {
+    print "!!!! NO Groups for user $user !!!!\n";
+    print "you will have to set manually via mongodb\n";
+}
+
 my $record  = {
     apikey  => $key,
     groups  => $groups,
@@ -30,6 +36,6 @@ my $record  = {
 };
 
 my $apikeycol   = $mongo->collection('Apikey');
-my $apikey      = $apikeycol->create_from_api($record);
+my $apikey      = $apikeycol->create($record);
 
 
