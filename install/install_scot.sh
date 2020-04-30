@@ -354,22 +354,19 @@ function setup_scot_admin {
 
 function restart_daemons {
 
+    SCOTSERVICES='scot scfd scrfd scepd recfpd'
     if [[ "$SCOT_RESTART_DAEMONS" == "yes" ]] || [[ "$INSTMODE" != "SCOTONLY" ]]; then
+        for service in $SCOTSERVICES; do
             if [[ $OS == "Ubuntu" ]]; then
                 if [[ $OSVERSION == "14" ]]; then
-                    service scfd restart
-                    service scrfd restart
-                    service scepd restart
+                    service $service restart
                 else
-                    systemctl --no-pager restart scfd.service
-                    systemctl --no-pager restart scrfd.service
-                    systemctl --no-pager restart scepd.service
+                    systemctl --no-pager restart "${service}.service"
                 fi
             else
-                systemctl --no-pager restart scfd.service
-                systemctl --no-pager restart scrfd.service
-                systemctl --no-pager restart scepd.service
+                systemctl --no-pager restart "${service}.service"
             fi
+        done
     fi
 }
 
