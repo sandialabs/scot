@@ -193,12 +193,12 @@ export default class SelectedEntry extends React.Component {
     }
   };
 
-  linkWarningToggle = (href) => {
+  linkWarningToggle = (href,nopop=false) => {
     if (this.state.isMounted) {
       if (this.state.linkWarningToolbar === false) {
-        this.setState({ linkWarningToolbar: true, link: href });
+        this.setState({ linkWarningToolbar: true, link: href, nopop: nopop });
       } else {
-        this.setState({ linkWarningToolbar: false });
+        this.setState({ linkWarningToolbar: false, nopop: nopop });
       }
     }
   };
@@ -464,6 +464,7 @@ export default class SelectedEntry extends React.Component {
           <LinkWarning
             linkWarningToggle={this.linkWarningToggle}
             link={this.state.link}
+            nopop={this.state.nopop}
           />
         ) : null}
       </div>

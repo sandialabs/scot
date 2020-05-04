@@ -315,23 +315,13 @@ sub store_entry {
 
     if ( $entryid ) {
         # entry exists, post a reply
-        my $entry       = $entry_col->find_iid($entryid);
-
-        if ( defined $entry ) {
-            $parent = $entry->id;         
-        }
+        my $entry   = $entry_col->find_iid($entryid);
+        $entry->update({
+            '$set'  => {
+                body    => $html,
+            }
+        });
     }
-    # need to create an entry 
-
-    my $entry   = $entry_col->create({
-        body    => $html,
-        target  => {
-            id  => $href->{id},
-            type    => 'entity',
-        },
-        parent  => $parent,
-        class   => 'entry', 
-    });
 
 }
 
