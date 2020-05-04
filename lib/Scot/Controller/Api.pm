@@ -2311,15 +2311,15 @@ sub recfuture {
         });
         my $entity  = $mongo->collection('Entity')->find_iid($id);
 
-        $self->env->mq->send("/topic/scot",{
-            action  => "created",
+        $self->env->mq->send("/topic/scot", {
+            action  => "updated",
             data    => {
-                who => $req_href->{user},
-                type=> "entry",
-                id  => $entry->id,
-                target  => $entry->target,
-            },
+                who     => $self->session('user'),
+                type    => 'entity',
+                id      => $id,
+            }
         });
+
 
         $self->env->mq->send("/queue/recfuture",{
             action  => "lookup",

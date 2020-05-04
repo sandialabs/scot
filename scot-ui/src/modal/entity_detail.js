@@ -1066,8 +1066,9 @@ class EntityBody extends React.Component {
     }
   };
 
-  linkOnClickIntercept = e => {
-    this.props.linkWarningToggle(e.target.id);
+  linkOnClickIntercept = (e) => {
+
+    this.props.linkWarningToggle(e.target.id, e.target.dataset.nopop);
   };
 
   componentDidMount() {
@@ -1125,14 +1126,15 @@ class EntityBody extends React.Component {
           } else if (entityData[prop].type === "link") {
             //added this because we dont need two buttons -2019 bryce
             if (entityData[prop].data.title !== "Lookup in Likaboss") {
+              const nopop  = ( entityData[prop].data.nopopup ) ? true : false;
+              console.log(entityData[prop].data);
               entityEnrichmentLinkArr.push(
                 <Button
                   bsSize="xsmall"
                   id={entityData[prop].data.url}
-                  { prop.nopopup == 1 ? null : 
-                    onMouseDown={this.linkOnClickIntercept}
-                    target="_blank"
-                  }
+                  data-nopop={nopop}
+                  onMouseDown={this.linkOnClickIntercept}
+                  target="_blank"
                 >
                   {entityData[prop].data.title}
                 </Button>

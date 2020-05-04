@@ -19,7 +19,17 @@ export default class LinkWarning extends React.Component {
     this.props.linkWarningToggle();
   };
 
+  apiOnly = () => {
+    this.props.linkWarningToggle();
+    fetch(this.props.link);
+    alert("Request Submitted. Refresh entity display to see results");
+};
+
   componentWillMount = () => {
+    if ( this.props.nopop === "true" ) { 
+        this.apiOnly();
+        return; 
+    }
     let myDomain = window.location.href;
     let reg = new RegExp(
       /((https?|ftp):\/\/[a-zA-Z0-9\-_\.]+\.)?([a-zA-Z0-9\-_\.]+\.([a-zA-Z]{1,63}))/,
