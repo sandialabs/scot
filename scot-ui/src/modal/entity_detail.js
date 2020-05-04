@@ -1128,9 +1128,11 @@ class EntityBody extends React.Component {
               entityEnrichmentLinkArr.push(
                 <Button
                   bsSize="xsmall"
-                  target="_blank"
                   id={entityData[prop].data.url}
-                  onMouseDown={this.linkOnClickIntercept}
+                  { prop.nopopup == 1 ? null : 
+                    onMouseDown={this.linkOnClickIntercept}
+                    target="_blank"
+                  }
                 >
                   {entityData[prop].data.title}
                 </Button>
