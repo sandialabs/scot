@@ -1,4 +1,6 @@
 %environment = (
+    api_key => "your_key_goes_here",
+    proxy => "proxy_url_here",
     location    => "snl",
     site_identifier    => "snl",
     time_zone   => 'America/Denver',
