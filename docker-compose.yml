@@ -99,6 +99,19 @@ services:
    container_name: reflair
    image: sandialabs/scot_reflair
 
+  rfproxy:
+   volumes:
+    - "rfproxy_log_data:/var/log/scot/"
+    - "/etc/localtime:/etc/localtime:ro"
+   depends_on:
+    - mongodb
+    - activemq
+    - scot
+   networks:
+     - scot-docker-net
+   container_name: rfproxy
+   image: sandialabs/scot_rfproxy
+
   stretch:
    image: scot_stretch
    volumes:
