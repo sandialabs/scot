@@ -1316,6 +1316,15 @@ sub post_update_process {
         };
         $env->mq->send("/topic/scot", $mq_msg);
         $self->add_history("updated entry ".$object->id, $object);
+        # need to update target's updated time
+        my $target = $env->mongo->collection(ucfirst($object->target->{type}))
+                    ->find_iid($object->target->{id});
+
+        if ( defined $target ) {
+            if ( $target->meta->does_role("Scot::Role::Times")) {
+                $target->update_set(updated => $env->now);
+            }
+        }
     }
 
     if ( ref($object) eq "Scot::Model::Sigbody" ) {

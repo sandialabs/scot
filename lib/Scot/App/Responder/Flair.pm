@@ -415,6 +415,27 @@ sub process_entry {
     $log->debug("-------- done processing entry $id");
 }
 
+sub merge_entity_data {
+    my $self    = shift;
+    my $old     = shift;
+    my $new     = shift;
+    my $merged  = {};
+
+    # old data inserted first
+
+    foreach my $key (keys %{$old}) {
+        $merged->{$key} = $old->{$key};
+    }
+
+    # new data is added or overwrites old
+
+    foreach my $key (keys %{$new}) {
+        $merged->{$key} = $new->{$key};
+    }
+
+    return $merged;
+}
+
 
 sub update_entry {
     my $self    = shift;
@@ -437,13 +458,18 @@ sub update_entry {
             $log->error("failed to get object with id ".$id);
         }
 
+        my $olddata = $obj->{data};
+
         $self->log->debug("got object with id of ". $obj->id);
-        $self->log->debug("putting entry: ",{filter=>\&Dumper,value=>$newdata});
 
         my $entity_aref = delete $newdata->{entities};
         my $user_aref   = delete $newdata->{userdef};
 
-        if ( $obj->update({ '$set' => $newdata }) ){
+        my $merge_data  = $self->merge_entity_data($olddata, $newdata);
+
+        $self->log->debug("putting entry: ",{filter=>\&Dumper,value=>$merge_data});
+
+        if ( $obj->update({ '$set' => $merge_data }) ){
             $self->log->debug("success updating");
             my $ohash = $obj->as_hash;
             $self->log->debug("hash is now: ",{filter=>\&Dumper, value=>$ohash});

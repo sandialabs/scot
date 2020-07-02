@@ -86,10 +86,32 @@ sub update_entities {
         $self->create_entity_links($entity, $target);
         my ($updated,$data) = $enrichments->enrich($entity);
         if ( $updated > 0 ) {
-            $entity->update_set(data => $data);
+            my $merged = $self->merge_entity_data($entity->data, $data);
+            $entity->update_set(data => $merged);
         }
     }
     return \@created_ids, \@updated_ids;
+}
+
+sub merge_entity_data {
+    my $self    = shift;
+    my $old     = shift;
+    my $new     = shift;
+    my $merged  = {};
+
+    # old data inserted first
+
+    foreach my $key (keys %{$old}) {
+        $merged->{$key} = $old->{$key};
+    }
+
+    # new data is added or overwrites old
+
+    foreach my $key (keys %{$new}) {
+        $merged->{$key} = $new->{$key};
+    }
+
+    return $merged;
 }
 
 sub upsert_link {
