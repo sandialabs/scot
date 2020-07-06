@@ -96,6 +96,8 @@ sub BUILD {
                     isa         => 'HashRef',
                 )
             );
+            $log->debug("creating attribute $name with value ",
+                        { filter => \&Dumper, value => $href} );
             $self->$name($href);
         }
         else {
@@ -137,13 +139,12 @@ sub enrich {
 
         $log->debug("Looking for enrichment: $enricher_name.");
 
-        my $enricher;
-        try { 
-            $enricher    = $self->$enricher_name;
+        my $enricher = try { 
+            $self->$enricher_name;
         }
         catch {
             $log->error("$enricher_name does not have a defined attribute by same name in enrichments");
-            next NAME;
+            return undef;
         };
 
         unless ( $enricher ) {
@@ -155,21 +156,28 @@ sub enrich {
             next NAME;
         }
 
-        # $log->debug("Enricher Hash is ",{filter=>\&Dumper, value=>$enricher});
+        $log->debug("Enricher Hash is ",{filter=>\&Dumper, value=>$enricher});
 
         if ( ref($enricher) eq "HASH" ) {
 
             if ( $enricher->{type} =~ /link/i ) {
+
+                my $field   = $enricher->{field};
+                my $value   = $entity->{$field};
 
                 if ( defined $entity->{data}->{$enricher_name} ) {
                     if ( $force ) {
                         $data->{$enricher_name} = {
                             type    => 'link',
                             data    => {
-                                url => sprintf($enricher->{url}, $entity->{value}),
+                                url => sprintf($enricher->{url}, $value),
                                 title   => $enricher->{title},
                             },
                         };
+                        if ( defined $enricher->{nopopup} ) {
+                            $data->{$enricher_name}->{data}->{nopopup} = $enricher->{nopopup};
+                            $log->debug("enricher now ",{filter=>\&Dumper, value=>$data});
+                        }
                         $update_count++;
                     }
                 }
@@ -177,10 +185,15 @@ sub enrich {
                     $data->{$enricher_name} = {
                         type    => 'link',
                         data    => {
-                            url => sprintf($enricher->{url}, $entity->{value}),
+                            url => sprintf($enricher->{url}, $value),
                             title   => $enricher->{title},
+                            
                         },
                     };
+                    if ( defined $enricher->{nopopup} ) {
+                        $data->{$enricher_name}->{data}->{nopopup} = $enricher->{nopopup};
+                        $log->debug("enricher now ",{filter=>\&Dumper, value=>$data});
+                    }
                     $update_count++;
                 }
             }

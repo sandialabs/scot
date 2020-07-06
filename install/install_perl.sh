@@ -351,6 +351,7 @@ function install_perl_modules {
         File::Temp
         File::Type
         HTML::Entities
+        HTML::Make
         HTML::Scrubber
         HTML::Strip
         HTML::StripTags

@@ -912,6 +912,7 @@ sub pre_update_process {
     my $log     = $self->env->log;
 
     $log->debug("PRE UPDATE");
+    $log->debug("req ",{filter=>\&Dumper, value=>$req});
 
     # my $usersgroups = $self->session('groups');
     my $usersgroups  = $self->get_groups;
@@ -977,6 +978,58 @@ sub pre_update_process {
                    ->adjust_appearances($object,$new_src_set,"source");
         }
     }
+
+    if ( ref($object) eq "Scot::Model::Signature" ) {
+        # overwrite the data attribute with a normalized version
+        # side effect alert: normalize_sig_data modifies $req
+        $self->normalize_sig_data($object,$req);
+    }
+}
+
+sub normalize_sig_data {
+    my $self        = shift;
+    my $signature   = shift;
+    my $req         = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    # invalid/missing data in the req->request->json->data can cause client
+    # to blow up
+    # $log->debug("normalizing: ",{filter=>\&Dumper, value=> $req->{json}});
+
+    # find the keys we are supposed to have from the forms->signature array
+    my $data_fmt    = $signature->data_fmt_ver;
+    my $formaref    = $env->forms->{$data_fmt};
+    my $json        = $req->{request}->{json};
+
+    foreach my $href (@{$formaref}) {
+        my $key     = $href->{key};
+        my $dotkey  = join('.','data',$key);
+
+        if ( defined $json->{data}->{$key} ) {
+            # one way it could be passed in
+            $json->{$dotkey} = delete $json->{data}->{$key};
+        }
+        elsif ( defined $json->{$dotkey} ) {
+            # do nothing, a an appropriate data key exists
+        }
+        else {
+            # need to add an update key for not present value
+            # otherwise, mongo update will blow away the data
+            my $newdata;
+            if ( $key =~ /\./ ) {
+                # target.id and target.type most likely
+                my ($subk1, $subk2) = split(/\./, $key, 2);
+                $newdata = $signature->data->{$subk1}->{$subk2};
+            }
+            else {
+                $newdata = $signature->data->{$key};
+            }
+            $json->{$dotkey} = $newdata;
+        }
+    }
+    # remove pesky remaining reference
+    delete $json->{data};
 }
 
 sub get_promotion_collection {
@@ -1263,6 +1316,15 @@ sub post_update_process {
         };
         $env->mq->send("/topic/scot", $mq_msg);
         $self->add_history("updated entry ".$object->id, $object);
+        # need to update target's updated time
+        my $target = $env->mongo->collection(ucfirst($object->target->{type}))
+                    ->find_iid($object->target->{id});
+
+        if ( defined $target ) {
+            if ( $target->meta->does_role("Scot::Role::Times")) {
+                $target->update_set(updated => $env->now);
+            }
+        }
     }
 
     if ( ref($object) eq "Scot::Model::Sigbody" ) {
@@ -2229,5 +2291,124 @@ sub build_entry_export {
 
 }
 
+sub recfuture {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+    my $user    = $self->session('user');
+
+    $log->debug("Recorded Future");
+    
+    ## recieve an id for an entity, when a button is pressed in entity 
+    ## create an entry, then create a amq message that will then be 
+    ## picked up by the recfuture proxy
+
+    try {
+        my $req_href    = $self->get_request_params;
+        my $id          = $req_href->{id} + 0;
+
+        my $entry_col   = $mongo->collection('Entry');
+        my $entry       = $entry_col->create({
+            body    => "Requesting Information from Recorded Future...",
+            target  => {
+                type    => "entity",
+                id      => $id,
+            },
+            parent  => 0,
+            class   => "entry",
+        });
+        my $entity  = $mongo->collection('Entity')->find_iid($id);
+
+        $self->env->mq->send("/topic/scot", {
+            action  => "updated",
+            data    => {
+                who     => $self->session('user'),
+                type    => 'entity',
+                id      => $id,
+            }
+        });
+
+
+        $self->env->mq->send("/queue/recfuture",{
+            action  => "lookup",
+            data    => {
+                type    => $entity->type,
+                id      => $id,
+                value   => $entity->value,
+                entry_id    => $entry->id,
+            },
+        });
+        $self->do_render({
+            action  => 'recfutureproxy',
+            status  => 'ok',
+        });
+    }
+    catch {
+        $log->error("In API recfuture, Error: $_");
+        $log->error(longmess);
+        $self->render_error(400, { error_msg => $_ } );
+    };
+}
+
+sub lriproxy {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+    my $user    = $self->session('user');
+
+    $log->debug("LRI PRoxy");
+    
+    ## recieve an id for an entity, when a button is pressed in entity 
+    ## create an entry, then create a amq message that will then be 
+    ## picked up by the lri proxy
+
+    try {
+        my $req_href    = $self->get_request_params;
+        my $id          = $req_href->{id} + 0;
+
+        my $entry_col   = $mongo->collection('Entry');
+        my $entry       = $entry_col->create({
+            body    => "Requesting Information from LRI...",
+            target  => {
+                type    => "entity",
+                id      => $id,
+            },
+            parent  => 0,
+            class   => "entry",
+        });
+        my $entity  = $mongo->collection('Entity')->find_iid($id);
+
+        $self->env->mq->send("/topic/scot", {
+            action  => "updated",
+            data    => {
+                who     => $self->session('user'),
+                type    => 'entity',
+                id      => $id,
+            }
+        });
+
+
+        $self->env->mq->send("/queue/lriproxy",{
+            action  => "lookup",
+            data    => {
+                type    => $entity->type,
+                id      => $id,
+                value   => $entity->value,
+                entry_id    => $entry->id,
+            },
+        });
+        $self->do_render({
+            action  => 'lriproxy',
+            status  => 'ok',
+        });
+    }
+    catch {
+        $log->error("In API lriproxy, Error: $_");
+        $log->error(longmess);
+        $self->render_error(400, { error_msg => $_ } );
+    };
+}
 
 1;
