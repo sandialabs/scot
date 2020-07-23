@@ -1450,7 +1450,8 @@ sub apply_tags {
     my $thing   = $object->get_collection_name;
     my $id      = $object->id;
     my $tagcol  = $self->env->mongo->collection('Tag');
-    $tagcol->add_tag_to($thing, $id, $object->tag);
+    my $user    = $self->session('user');
+    $tagcol->add_tag_to($thing, $user, $id, $object->tag);
 }
 
 sub apply_sources {

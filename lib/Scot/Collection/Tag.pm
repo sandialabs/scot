@@ -41,7 +41,7 @@ override api_create => sub {
         $href->{note} = $note if $note;
         $tag_obj    = $self->create($href);
         $env->mongo->collection("History")->add_history_entry({
-            who     => "api",
+            who     => $request->{user},
             what    => "tag created",
             when    => $env->now(),
             targets => { id => $tag_obj->id, type => "tag" },
@@ -73,6 +73,7 @@ sub autocomplete {
 sub add_tag_to {
     my $self    = shift;
     my $thing   = shift;
+    my $user    = shift;
     my $id      = shift;
     $id += 0;
     my $tags    = shift;
@@ -105,6 +106,12 @@ sub add_tag_to {
                 type    => $thing,
                 id      => $id,
             }
+        });
+        $env->mongo->collection("History")->add_history_entry({
+            who     => $user,
+            what    => "tag created",
+            when    => $env->now(),
+            targets => { id => $id, type => $thing },
         });
     }
     return 1;
