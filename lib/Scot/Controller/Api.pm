@@ -2014,7 +2014,13 @@ sub whoami {
         # placed here initially for convenience but not very logical
         # since it has nothing to do with the user
         # and is used to populate the sensitivity cell on the header.
-        $user_href->{sensitivity} = "OUO";
+        my $banner = try {
+            $env->classification_banner;
+        }
+        catch {
+            return "OUO";
+        };
+        $user_href->{sensitivity} = $banner;
         $self->do_render({
             user    => $user,
             data    => $user_href,
