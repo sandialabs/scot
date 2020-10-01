@@ -301,7 +301,7 @@ sub get_next_item {
     }
     catch {
         $log->error("Error fetching next item: $_");
-        say "Error retrieving item: $_, skipping...";
+        print "Error retrieving item: $_, skipping...\n";
         return "skip";
     };
     return $item;
