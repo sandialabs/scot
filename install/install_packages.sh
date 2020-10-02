@@ -152,6 +152,7 @@ function install_cent_packages {
         libmaxminddb-devel.x86_64
         libgmp3-devel
         policycoreutils-python
+	perl-File-LibMagic
     '
 
     for pkg in $YUMPACKAGES; do
