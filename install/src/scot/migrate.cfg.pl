@@ -130,6 +130,13 @@
                 suffixfile  => '/opt/scot/etc/effective_tld_names.dat',
             },
         },
+        {
+            attr    => 'regex',
+            class   => 'Scot::Extractor::Regex',
+            config  => {
+                entity_regexes = [],
+            },
+        },
     ],
 );
 
