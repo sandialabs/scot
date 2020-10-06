@@ -148,8 +148,8 @@ function install_cent_packages {
         krb5-libs
         krb5-devel
         GeoIP
-        libmaxminddb.x86_64
-        libmaxminddb-devel.x86_64
+        libmaxminddb
+        libmaxminddb-devel
         libgmp3-devel
         policycoreutils-python
 	perl-File-LibMagic
