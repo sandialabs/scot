@@ -153,6 +153,7 @@ function install_cent_packages {
         libgmp3-devel
         policycoreutils-python
 	perl-File-LibMagic
+	expat-devel
     '
 
     for pkg in $YUMPACKAGES; do
