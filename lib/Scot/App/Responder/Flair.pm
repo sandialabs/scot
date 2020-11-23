@@ -42,6 +42,13 @@ sub _get_img_munger {
     return $env->img_munger;
 };
 
+has sentinel_logo   => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => '/images/sentinel_logo',
+);
+
 sub process_message {
     my $self    = shift;
     my $pm      = shift;
@@ -265,6 +272,8 @@ sub flair_record {
                 }
                 $flair{$column} = $self->append_flair($flair{$column}, $flair);
                 $log->trace("Flair for $column is now ".$flair{$column});
+                # some alerts have an array of filenames in cell so only jump
+                # to the next value
                 next VALUE;
             }
 
@@ -291,8 +300,16 @@ sub flair_record {
                     $log->trace("creating svg::sparkline");
                     my $svg = SVG::Sparkline->new( Line => { values =>\@sparkvalues, color => 'blue', height =>12 } );
                     $flair{$column} = $svg->to_string();
-                    next COLUMN; # or VALUE?
+                    # we have gobbled up all the @values, move to next column
+                    next COLUMN; 
                 }
+            }
+
+            if ( $column =~ /sentinel_incident_url/i ) {
+                $log->trace("Sentinel Incident URL detected");
+                # only one ever expected
+                $flair{$column} = $self->create_sentinel_link($value);
+                next COLUMN;
             }
 
             my $html        = '<html>'.encode_entities($value).'</html>';
@@ -319,6 +336,24 @@ sub flair_record {
         entities        => \@entity,
         parsed          => 1,
     };
+}
+
+sub create_sentinel_link {
+    my $self            = shift;
+    my $sentinel_url    = shift;
+    my $sentinel_logo   = $self->sentinel_logo;
+    my $image           = HTML::Element->new(
+        'img',
+        'alt'   => 'view in Azure Sentinel',
+        'src'   => $sentinel_logo,
+    );
+    my $anchor  = HTML::Element->new(
+        'a',
+        'href'      => $sentinel_url,
+        'target'    => '_blank',
+    );
+    $anchor->push_content($image);
+    return $anchor->as_HTML;
 }
 
 sub append_flair {
