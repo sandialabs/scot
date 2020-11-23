@@ -46,7 +46,7 @@ has sentinel_logo   => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
-    default     => '/images/sentinel_logo',
+    default     => '/images/azure-sentinel.png',
 );
 
 sub process_message {
