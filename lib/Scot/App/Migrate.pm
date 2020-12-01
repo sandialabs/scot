@@ -163,7 +163,7 @@ sub migrate {
     my $legacy_cursor       = $legacy_collection->find($findjson);
     $legacy_cursor->immortal(1);
 
-    my $remaining_docs  = $legacy_collection->count($findjson);
+    my $remaining_docs  = $legacy_collection->count_documents($findjson);
     my $migrated_docs   = 0;
     my $total_docs      = $remaining_docs;
     my $total_time      = 0;
@@ -459,7 +459,7 @@ sub xform_alertgroup {
 
     my $legacy_alert_cursor = $leg_alert_col->find({alertgroup => $id});
     $legacy_alert_cursor->immortal(1);
-    $href->{alert_count} = $leg_alert_col->count({alertgroup => $id});
+    $href->{alert_count} = $leg_alert_col->count_documents({alertgroup => $id});
 
     my $entities;           # ... keep track of entities found
     my @alert_promotions;   # ... and promoted alerts

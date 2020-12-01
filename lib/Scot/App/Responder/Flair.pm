@@ -42,6 +42,13 @@ sub _get_img_munger {
     return $env->img_munger;
 };
 
+has sentinel_logo   => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => '/images/azure-sentinel.png',
+);
+
 sub process_message {
     my $self    = shift;
     my $pm      = shift;
@@ -49,9 +56,9 @@ sub process_message {
     my $log     = $self->log;
 
     $log->trace("pm : ",{filter=>\&Dumper, value=>$pm});
-    $log->debug("processing message: ",{filter=>\&Dumper, value=>$href});
+    $log->trace("processing message: ",{filter=>\&Dumper, value=>$href});
 
-    $log->debug("refreshing entitytypes");
+    $log->trace("refreshing entitytypes");
     $self->env->regex->load_entitytypes;
 
     my $action  = lc($href->{action});
@@ -61,14 +68,15 @@ sub process_message {
     my $opts    = $href->{data}->{opts};
 
     $log->debug("[Wkr $$] Processing message $action $type $id from $who");
+    my $timer   = $self->env->get_timer("Flair Total Time");
 
     if ( $who eq "scot-flair" ) {
-        $log->debug("I guess I sent this message, skipping...");
+        $log->trace("I guess I sent this message, skipping...");
         return "skipping self message";
     }
 
     if ( $action eq "created" or $action eq "updated" ) {
-        $log->debug("--- $action message ---");
+        $log->trace("--- $action message ---");
         if ( $type eq "alertgroup" ) {
             $self->process_alertgroup($id,$opts);
             $self->put_stat("alertgroup flaired", 1);
@@ -85,6 +93,7 @@ sub process_message {
     } else {
         $log->error("action $action not processed");
     }
+    my $total_elapased = &$timer;
 }
 
 sub get_alertgroup {
@@ -110,11 +119,11 @@ sub process_alertgroup {
         return;
     }
 
-    $log->debug("asking scot for /alertgroup/$id/alert");
+    # $log->debug("asking scot for /alertgroup/$id/alert");
 
     my $alertgroup_href = $self->get_alertgroup($id);
 
-    $log->debug("Alerts in AG:", {filter=>\&Dumper, value=>$alertgroup_href->{alerts}});
+    # $log->debug("Alerts in AG:", {filter=>\&Dumper, value=>$alertgroup_href->{alerts}});
 
     my $alerts_aref     = $alertgroup_href->{alerts};
 
@@ -124,7 +133,7 @@ sub process_alertgroup {
 
     foreach my $record (@$alerts_aref) {
         my $newalert = $self->flair_record($record); 
-        $log->debug("new alert: ",{filter=>\&Dumper, value=> $newalert});
+        # $log->debug("new alert: ",{filter=>\&Dumper, value=> $newalert});
         push @update, $newalert;
     }
 
@@ -137,7 +146,7 @@ sub process_alertgroup {
         parsed  => 1,
         alerts  => \@update,
     };
-    $log->debug("updating with ",{filter=>\&Dumper, value => $putdata});
+    # $log->debug("updating with ",{filter=>\&Dumper, value => $putdata});
 
     my $response = $self->update_alertgroup($putdata);
 
@@ -155,12 +164,12 @@ sub update_alertgroup {
 #        my $response = $self->scot->put($putdata);
     }
     else {
-        $log->debug("doing mongo update");
+        $log->trace("doing mongo update");
         my $agid       = $putdata->{id}; # this get blown away in agcol->
         my $mongo      = $self->env->mongo;
         my $agcol      = $mongo->collection("Alertgroup");
         $agcol->update_alertgroup_with_bundled_alert($putdata);
-        $log->debug("after alertgroup update");
+        $log->trace("after alertgroup update");
         $self->env->mq->send("/topic/scot", {
             action  => "updated",
             data    => {
@@ -195,7 +204,7 @@ sub flair_record {
 
     my $data    = $record->{data};
 
-    $log->debug("    Alert data is ",{filter=>\&Dumper, value=>$data});
+    # $log->debug("    Alert data is ",{filter=>\&Dumper, value=>$data});
     
     COLUMN:
     foreach my $column (keys %{$data} ) {
@@ -212,7 +221,7 @@ sub flair_record {
 
         my @values   = @{ $data->{$column} };
 
-        $log->debug("The cell has ".scalar(@values)." values in it");
+        $log->trace("The cell has ".scalar(@values)." values in it");
 
         VALUE:
         foreach my $value (@values) {
@@ -228,7 +237,7 @@ sub flair_record {
                     $seen{$eref->{value}}++;
                 }
                 $flair{$column} = $self->append_flair($flair{$column}, $flair);
-                $log->debug("Flair for $column is now ".$flair{$column});
+                $log->trace("Flair for $column is now ".$flair{$column});
                 next VALUE;
             }
             if ( $column =~ /^(lb){0,1}scanid$/i ) {
@@ -239,14 +248,14 @@ sub flair_record {
                     $seen{$eref->{value}}++;
                 }
                 $flair{$column} = $self->append_flair($flair{$column}, $flair);
-                $log->debug("Flair for $column is now ".$flair{$column});
+                $log->trace("Flair for $column is now ".$flair{$column});
                 next VALUE;
             }
             if ( $column =~ /^attachment[_-]name$/i  or 
                 $column =~ /^attachments$/ ) {
                 # each link in this field is a <div>filename</div>, 
-                $log->debug("A File attachment Column detected!");
-                $log->debug("value = ",{filter=>\&Dumper, value=>$value});
+                $log->trace("A File attachment Column detected!");
+                $log->trace("value = ",{filter=>\&Dumper, value=>$value});
                 
                 if ( $value eq "" || $value eq " " ) {
                     next VALUE;
@@ -262,18 +271,20 @@ sub flair_record {
                     $seen{$eref->{value}}++;
                 }
                 $flair{$column} = $self->append_flair($flair{$column}, $flair);
-                $log->debug("Flair for $column is now ".$flair{$column});
+                $log->trace("Flair for $column is now ".$flair{$column});
+                # some alerts have an array of filenames in cell so only jump
+                # to the next value
                 next VALUE;
             }
 
             if ( $column =~ /urls\{\}/ ) {
-                $log->debug("URLS column detected!");
+                $log->trace("URLS column detected!");
             }
 
             if ( $column =~ /^columns$/i ) {
                 # no flairing on the "columns" attribute
                 $flair{$column} = $value;
-                $log->debug("Flair for $column is now ".$flair{$column});
+                $log->trace("Flair for $column is now ".$flair{$column});
                 next COLUMN;
             }
 
@@ -282,24 +293,32 @@ sub flair_record {
             ) {
                 $log->debug("sparkline column detected!");
                 my @sparkvalues = @values;
-                $log->debug("sparkvalues: ",{filter=>\&Dumper, value=>\@sparkvalues});
+                $log->trace("sparkvalues: ",{filter=>\&Dumper, value=>\@sparkvalues});
                 my $head = shift @sparkvalues;
-                $log->debug("head is $head");
+                $log->trace("head is $head");
                 if ($head eq "##__SPARKLINE__##" ) {
-                    $log->debug("creating svg::sparkline");
+                    $log->trace("creating svg::sparkline");
                     my $svg = SVG::Sparkline->new( Line => { values =>\@sparkvalues, color => 'blue', height =>12 } );
                     $flair{$column} = $svg->to_string();
-                    next COLUMN; # or VALUE?
+                    # we have gobbled up all the @values, move to next column
+                    next COLUMN; 
                 }
+            }
+
+            if ( $column =~ /sentinel_incident_url/i ) {
+                $log->trace("Sentinel Incident URL detected");
+                # only one ever expected
+                $flair{$column} = $self->create_sentinel_link($value);
+                next COLUMN;
             }
 
             my $html        = '<html>'.encode_entities($value).'</html>';
             my $extraction  = $extract->process_html($html);
 
-            $log->debug("todds dumb code extracted: ",{filter=>\&Dumper, value=>$extraction});
+            $log->trace("todds dumb code extracted: ",{filter=>\&Dumper, value=>$extraction});
 
             $flair{$column} = $self->append_flair($flair{$column}, $extraction->{flair});
-            $log->debug("Flair for $column is now ".$flair{$column});
+            $log->trace("Flair for $column is now ".$flair{$column});
 
             foreach my $entity_href (@{$extraction->{entities}}) {
                 my $value   = $entity_href->{value};
@@ -319,6 +338,24 @@ sub flair_record {
     };
 }
 
+sub create_sentinel_link {
+    my $self            = shift;
+    my $sentinel_url    = shift;
+    my $sentinel_logo   = $self->sentinel_logo;
+    my $image           = HTML::Element->new(
+        'img',
+        'alt'   => 'view in Azure Sentinel',
+        'src'   => $sentinel_logo,
+    );
+    my $anchor  = HTML::Element->new(
+        'a',
+        'href'      => $sentinel_url,
+        'target'    => '_blank',
+    );
+    $anchor->push_content($image);
+    return $anchor->as_HTML;
+}
+
 sub append_flair {
     my $self            = shift;
     my $existing_flair  = shift;
@@ -335,17 +372,17 @@ sub process_cell {
     my $header  = shift;
     my $log     = $self->env->log;
 
-    $log->debug("text   = $text");
+    $log->trace("text   = $text");
     $text = encode_entities($text);
-    $log->debug("encoded text   = $text");
-    $log->debug("header = $header");
+    $log->trace("encoded text   = $text");
+    $log->trace("header = $header");
     my $flair   = $self->genspan($text,$header);
-    $log->debug("text   = $text");
-    $log->debug("header = $header");
-    $log->debug("flair  = $flair");
+    $log->trace("text   = $text");
+    $log->trace("header = $header");
+    $log->trace("flair  = $flair");
 
     my $entity_href = { value => $text, type => $header };
-    $log->debug("entity_href = ",{filter=>\&Dumper, value=>$entity_href});
+    $log->trace("entity_href = ",{filter=>\&Dumper, value=>$entity_href});
 
     return $entity_href, $flair;
 
@@ -384,7 +421,7 @@ sub get_entry {
         my $collection  = $mongo->collection("Entry");
         my $entryobj    = $collection->find_iid($id);
         $href           = $entryobj->as_hash;
-        $self->log->debug("Entry OBJ = ", {filter=>\&Dumper, value=>$href});
+        $self->log->trace("Entry OBJ = ", {filter=>\&Dumper, value=>$href});
     }
     return $href;
 }
@@ -396,7 +433,7 @@ sub process_entry {
     my $update;
     my $log     = $self->log;
 
-    $log->debug("initial grab of entry $id");
+    $log->debug("-------- Processing entry $id");
     my $entry   = $self->get_entry($id);
     $update     = $self->flair_entry($entry, $id);
 
@@ -410,7 +447,7 @@ sub process_entry {
             entities    => $update->{entities},
         },
     };
-    $log->debug("Entry Put Data: ",{filter=>\&Dumper, value=>$putdata});
+    # $log->trace("Entry Put Data: ",{filter=>\&Dumper, value=>$putdata});
     $self->update_entry($putdata);
     $log->debug("-------- done processing entry $id");
 }
@@ -460,19 +497,19 @@ sub update_entry {
 
         my $olddata = $obj->{data};
 
-        $self->log->debug("got object with id of ". $obj->id);
+        $self->log->trace("got object with id of ". $obj->id);
 
         my $entity_aref = delete $newdata->{entities};
         my $user_aref   = delete $newdata->{userdef};
 
         my $merge_data  = $self->merge_entity_data($olddata, $newdata);
 
-        $self->log->debug("putting entry: ",{filter=>\&Dumper,value=>$merge_data});
+        $self->log->trace("putting entry: ",{filter=>\&Dumper,value=>$merge_data});
 
         if ( $obj->update({ '$set' => $merge_data }) ){
-            $self->log->debug("success updating");
+            $self->log->trace("success updating");
             my $ohash = $obj->as_hash;
-            $self->log->debug("hash is now: ",{filter=>\&Dumper, value=>$ohash});
+            $self->log->trace("hash is now: ",{filter=>\&Dumper, value=>$ohash});
         }
         else {
             $self->log->error("failed update, I think");
