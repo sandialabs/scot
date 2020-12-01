@@ -7,6 +7,7 @@ use warnings;
 use DateTime;
 use Time::Duration;
 use Data::Dumper;
+use Statistics::Descriptive::Sparse;
 
 use Moose;
 extends 'Scot::App';
@@ -70,6 +71,45 @@ sub alertgroup_counts {
         $result{$key} += $stat->value;
     }
     return wantarray ? %result : \%result;
+}
+
+sub incident_avg_time_to_close {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+    my $nowdt   = $self->nowdt;
+    my $thendt  = $self->thendt;
+
+    $log->debug("calculating avg time for incident close");
+
+    my $query   = {
+        created => {
+            '$gte'  => $thendt->epoch,
+            '$lte'  => $nowdt->epoch,
+        },
+        status  => 'closed',
+        closed => { '$ne' => 0 },
+    };
+
+    my $cursor = $mongo->collection('Incident')->find($query);
+    my @values;
+
+    while (my $incident = $cursor->next) {
+        push @values, $incident->closed - $incident->created
+    }
+
+    my $util = Statistics::Descriptive::Sparse->new();
+    $util->add_data(@values);
+
+    my $result  = {
+        avg     => $util->mean,
+        min     => $util->min,
+        max     => $util->max,
+        stddev  => $util->standard_deviation,
+        count   => $util->count,
+    };
+    return $result;
 }
 
 sub event_counts {

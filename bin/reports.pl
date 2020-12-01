@@ -4,8 +4,8 @@ use lib '../lib';
 use strict;
 use warnings;
 use v5.16;
-use Mojo::DOM;
 use Scot::Env;
+use Time::Seconds;
 
 =head1 NAME
 
@@ -97,7 +97,7 @@ unless (defined $startdt and defined $enddt ) {
     die "Could not parse datetimes\n";
 }
 
-print "SCOT Stats\n\n";
+print "SCOT Stats $report\n\n";
 print "For period:\n";
 print  "Start                    End\n";
 printf "%17s        %17s\n", $start, $end;
@@ -123,6 +123,9 @@ elsif ( $report eq "compare_days" ) {
 elsif ( $report eq "event_report" ) {
     event_report();
 }
+elsif ( $report eq "incident_close_times" ) {
+    incident_stats(); 
+}
 
 
 $env->log->debug("========= Finished $0 ==========");
@@ -130,11 +133,12 @@ exit 0;
 
 sub list_reports {
     print "
-pyramid             Print totals for Alerts Events and Incidents
-alerts_by_month     Print the total alerts receive by month
-response_times      Print the average response time for alerts by year and month
-compare_days        print totals for the last for days of the week specified by                         the start parameter
-event_report        Print the Event report
+pyramid                 Print totals for Alerts Events and Incidents
+alerts_by_month         Print the total alerts receive by month
+response_times          Print the average response time for alerts by year and month
+compare_days            print totals for the last for days of the week specified by                         the start parameter
+event_report            Print the Event report
+incident_close_times    Print statistics about incident closure
 ";
     exit 1;
 }
@@ -387,4 +391,38 @@ sub event_report {
                     $results{$y}{$m}{score};
         }
     }
+}
+
+sub incident_stats {
+    my $query   = {
+        created => {
+            '$gte'  => $thendt->epoch,
+            '$lte'  => $nowdt->epoch,
+        },
+        status  => 'closed',
+        closed => { '$ne' => 0 },
+    };
+
+    my $cursor = $mongo->collection('Incident')->find($query);
+    my @values;
+
+    while (my $incident = $cursor->next) {
+        push @values, $incident->closed - $incident->created
+    }
+
+    my $util = Statistics::Descriptive::Sparse->new();
+    $util->add_data(@values);
+
+    print "Average Close = ".$get_readable_time($util->mean)."\n";
+    print "Minimum Close = ".$get_readable_time($util->min)."\n";
+    print "Maximum Close = ".$get_readable_time($util->max)."\n";
+    print "Std. of Dev.  = ".$util->statndar_deviation."\n";
+    print "Number of incidents = ".$util->count."\n";
+
+}
+
+sub get_readable_time {
+    my $seconds = shift;
+    my $t = Time::Seconds->new($seconds);
+    return $t->pretty;
 }
