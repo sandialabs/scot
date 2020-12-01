@@ -306,7 +306,7 @@ sub flair_record {
             }
 
             if ( $column =~ /sentinel_incident_url/i ) {
-                $log->trace("Sentinel Incident URL detected");
+                $log->debug("Sentinel Incident URL detected");
                 # only one ever expected
                 $flair{$column} = $self->create_sentinel_link($value);
                 next COLUMN;
@@ -353,6 +353,7 @@ sub create_sentinel_link {
         'target'    => '_blank',
     );
     $anchor->push_content($image);
+    $self->log->debug("Returning Sentinel anchor: ".$anchor->as_HTML);
     return $anchor->as_HTML;
 }
 
