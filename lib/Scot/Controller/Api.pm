@@ -1316,6 +1316,15 @@ sub post_update_process {
         };
         $env->mq->send("/topic/scot", $mq_msg);
         $self->add_history("updated entry ".$object->id, $object);
+        # need to update target's updated time
+        my $target = $env->mongo->collection(ucfirst($object->target->{type}))
+                    ->find_iid($object->target->{id});
+
+        if ( defined $target ) {
+            if ( $target->meta->does_role("Scot::Role::Times")) {
+                $target->update_set(updated => $env->now);
+            }
+        }
     }
 
     if ( ref($object) eq "Scot::Model::Sigbody" ) {
@@ -1441,7 +1450,8 @@ sub apply_tags {
     my $thing   = $object->get_collection_name;
     my $id      = $object->id;
     my $tagcol  = $self->env->mongo->collection('Tag');
-    $tagcol->add_tag_to($thing, $id, $object->tag);
+    my $user    = $self->session('user');
+    $tagcol->add_tag_to($thing, $user, $id, $object->tag);
 }
 
 sub apply_sources {
@@ -2004,7 +2014,13 @@ sub whoami {
         # placed here initially for convenience but not very logical
         # since it has nothing to do with the user
         # and is used to populate the sensitivity cell on the header.
-        $user_href->{sensitivity} = "OUO";
+        my $banner = try {
+            $env->classification_banner;
+        }
+        catch {
+            return "OUO";
+        };
+        $user_href->{sensitivity} = $banner;
         $self->do_render({
             user    => $user,
             data    => $user_href,
@@ -2337,6 +2353,66 @@ sub recfuture {
     }
     catch {
         $log->error("In API recfuture, Error: $_");
+        $log->error(longmess);
+        $self->render_error(400, { error_msg => $_ } );
+    };
+}
+
+sub lriproxy {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+    my $user    = $self->session('user');
+
+    $log->debug("LRI PRoxy");
+    
+    ## recieve an id for an entity, when a button is pressed in entity 
+    ## create an entry, then create a amq message that will then be 
+    ## picked up by the lri proxy
+
+    try {
+        my $req_href    = $self->get_request_params;
+        my $id          = $req_href->{id} + 0;
+
+        my $entry_col   = $mongo->collection('Entry');
+        my $entry       = $entry_col->create({
+            body    => "Requesting Information from LRI...",
+            target  => {
+                type    => "entity",
+                id      => $id,
+            },
+            parent  => 0,
+            class   => "entry",
+        });
+        my $entity  = $mongo->collection('Entity')->find_iid($id);
+
+        $self->env->mq->send("/topic/scot", {
+            action  => "updated",
+            data    => {
+                who     => $self->session('user'),
+                type    => 'entity',
+                id      => $id,
+            }
+        });
+
+
+        $self->env->mq->send("/queue/lriproxy",{
+            action  => "lookup",
+            data    => {
+                type    => $entity->type,
+                id      => $id,
+                value   => $entity->value,
+                entry_id    => $entry->id,
+            },
+        });
+        $self->do_render({
+            action  => 'lriproxy',
+            status  => 'ok',
+        });
+    }
+    catch {
+        $log->error("In API lriproxy, Error: $_");
         $log->error(longmess);
         $self->render_error(400, { error_msg => $_ } );
     };

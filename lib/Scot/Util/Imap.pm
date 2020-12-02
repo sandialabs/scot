@@ -271,6 +271,40 @@ sub get_mail_since {
     return wantarray ? @uids : \@uids;
 }
 
+sub get_mail_before {
+    my $self    = shift;
+    my $epoch   = shift;
+    my $log     = $self->log;
+    $self->reconnect_if_forked;
+    my $client  = $self->client;
+    my $before_epoch = $epoch;
+
+    retry {
+        $client->select($self->mailbox);
+    }
+    on_retry {
+        $self->clear_client_connection;
+    }
+    catch {
+        $log->error("Failed to reconnect to IMAP server to perform select");
+        $log->error($_);
+        die "Failed to reconnect to IMAP server for select operation\n";
+    };
+    $client->Peek(1);   # do not mark messages as read
+
+    my @uids;
+    $self->log->debug("Lookin for messages before $before_epoch");
+
+    foreach my $message_id ($client->before($before_epoch)) {
+        print "message_id = $message_id\n";
+        next unless (defined $message_id);
+        if ( $message_id =~ $MSG_ID_FMT ) {
+            push @uids, $message_id;
+        }
+    }
+    return wantarray ? @uids : \@uids;
+}
+
 sub get_unseen_mail {
     my $self    = shift;
     my $log     = $self->log;
@@ -351,6 +385,16 @@ sub get_since_cursor {
     $self->log->debug("Lookin for messages since $since_epoch");
 
     my @uids    = $self->get_mail_since($since_epoch);
+    my $cursor  = Scot::Util::Imap::Cursor->new({uids => \@uids});
+    return $cursor;
+}
+
+sub get_before_cursor {
+    my $self    = shift;
+    my $before_epoch = shift;
+
+    $self->log->debug("Looking for messages before $before_epoch");
+    my @uids    = $self->get_mail_before($before_epoch);
     my $cursor  = Scot::Util::Imap::Cursor->new({uids => \@uids});
     return $cursor;
 }

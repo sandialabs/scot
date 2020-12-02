@@ -148,12 +148,10 @@ function install_cent_packages {
         krb5-libs
         krb5-devel
         GeoIP
-        libmaxminddb
-        libmaxminddb-devel
+        libmaxminddb.x86_64
+        libmaxminddb-devel.x86_64
         libgmp3-devel
         policycoreutils-python
-	perl-File-LibMagic
-	expat-devel
     '
 
     for pkg in $YUMPACKAGES; do

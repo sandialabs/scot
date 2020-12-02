@@ -22,3 +22,4 @@ scot-debug.js
 scot-ui/build/static/js/
 scot-ui/build/
 .vscode/
+emailapi.cfg.pl

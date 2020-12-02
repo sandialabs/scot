@@ -438,6 +438,12 @@ relies on the browser BasicAuth popup.
             ->to    ('controller-api#recfuture')
             ->name  ('get_recfuture_data');
 
+    $scot   ->route ('/api/v2/lriproxy/:id')
+            ->via   ('get')
+            ->to    ('controller-api#lriproxy')
+            ->name  ('get_lri_data');
+
+
 =pod
 
 @api {post} /scot/api/v2/:thing Create thing
