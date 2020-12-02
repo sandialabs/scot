@@ -33,6 +33,7 @@ use DateTime;
 use DateTime::Format::Strptime;
 use Log::Log4perl;
 use Getopt::Long qw(GetOptions);
+use Statistics::Descriptive::Sparse;
 
 my $now = DateTime->now;
 my $lastday = DateTime->last_day_of_month(year=> $now->year, month=>$now->month);
@@ -71,7 +72,7 @@ EOF
 
 =cut
 
-my $config_file = $ENV{'scot_reports_config_file'} // '/opt/scot/etc/reports.cfg.pl';
+my $config_file = $ENV{'scot_reports_config_file'} // '/opt/scot/etc/scot.cfg.pl';
 
 my $env  = Scot::Env->new(
     config_file => $config_file,
@@ -396,27 +397,48 @@ sub event_report {
 sub incident_stats {
     my $query   = {
         created => {
-            '$gte'  => $thendt->epoch,
-            '$lte'  => $nowdt->epoch,
+            '$gte'  => $startdt->epoch,
+            '$lte'  => $enddt->epoch,
         },
         status  => 'closed',
-        closed => { '$ne' => 0 },
+        "data.closed" => {'$ne' => 0 },
     };
 
     my $cursor = $mongo->collection('Incident')->find($query);
+    my $count  = $mongo->collection('Incident')->count($query);
+
+    if ( $count eq 0 ) {
+        die "NO Incidents matching ".Dumper($query);
+    }
     my @values;
 
+    print "----------\n";
+    printf "%5s %20s     %20s     %20s    %s\n",
+        "id", "Created", "Closed", "Elapsed","errors";
     while (my $incident = $cursor->next) {
-        push @values, $incident->closed - $incident->created
+        my $id = $incident->id;
+        my $created = $incident->created;
+        my $closed  = $incident->data->{closed};
+        next unless $closed;
+        my $elapsed = $closed - $created;
+        my $errors = '';
+        if ( $elapsed < 0 ) {
+            $errors = 'Negative elapsed time rejected';
+        }
+
+        printf "%5d %20d     %20d     %20d    %s\n", $id, $created,$closed, $elapsed, $errors;
+        if ( $elapsed > 0 ) {
+            push @values, $elapsed;
+        }
     }
 
     my $util = Statistics::Descriptive::Sparse->new();
     $util->add_data(@values);
 
-    print "Average Close = ".$get_readable_time($util->mean)."\n";
-    print "Minimum Close = ".$get_readable_time($util->min)."\n";
-    print "Maximum Close = ".$get_readable_time($util->max)."\n";
-    print "Std. of Dev.  = ".$util->statndar_deviation."\n";
+    print "Average Close = ".get_readable_time($util->mean)."\n";
+    print "Minimum Close = ".get_readable_time($util->min)."\n";
+    print "Maximum Close = ".get_readable_time($util->max)."\n";
+    print "Std. of Dev.  = ".$util->standard_deviation."\n";
     print "Number of incidents = ".$util->count."\n";
 
 }
