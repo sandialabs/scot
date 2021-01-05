@@ -1794,7 +1794,9 @@ sub get_request_params  {
         $request{collection} = "entry";
         $request{task_search} = 1;
     }
-    $log->debug("Request is ",{ filter => \&Dumper, value => \%request } );
+    # be careful if you re-enable.  form login will cause password to be
+    # written to log!
+    # $log->debug("Request is ",{ filter => \&Dumper, value => \%request } );
     return wantarray ? %request : \%request;
 }
 
