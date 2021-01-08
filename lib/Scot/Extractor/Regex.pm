@@ -805,6 +805,29 @@ sub _build_angle_bracket_message_id {
     };
 }
 
+has regex_jarm_hash => (
+    is          => 'ro',
+    isa      => 'HashRef',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_jarm_hash',
+);
+
+sub _build_jarm_hash {
+    my $self    = shift;
+    my $regex   = qr{
+        \b                      # word boundary
+        (?!.*\@\b)([0-9a-fA-F]{62})
+        \b                      # word boundary
+    }xims;
+    return {
+        regex   => $regex,
+        type    => "jarm_hash",
+        order   => 200,
+        options => { multiword => "no" },
+    };
+}
+
 sub find_all_matches {
     my $self    = shift;
     my $word    = shift;
