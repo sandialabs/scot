@@ -422,37 +422,49 @@ sub _build_IPV6 {
     my $self    = shift;
     my $re      = qr{
     \b
-	(?:
-    # Mixed
-	(?:
-	# Non-compressed
-	(?:[A-F0-9]{1,4}:){6}
-	# Compressed with at most 6 colons
-	|(?=(?:[A-F0-9]{0,4}:){0,6}
-		(?:[0-9]{1,3}\.){3}[0-9]{1,3}  # and 4 bytes
-        (?![:.\w])
+    # first look for a suricata/snort format (ip:port)
+    (?:
+        # look for aaaa:bbbb:cccc:dddd:eeee:ffff:gggg:hhhh
+        (?:
+            (?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}
+        )
+        # look for but dont capture a trailing :\d+
+        (?=:[0-9]+)
     )
-	# and at most 1 double colon
-	(([0-9A-F]{1,4}:){0,5}|:)((:[0-9A-F]{1,4}){1,5}:|:)
-	# Compressed with 7 colons and 5 numbers
-	|::(?:[A-F0-9]{1,4}:){5}
-	)
-	# 255.255.255.
-	(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}
-	# 255
-	(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])
-	|# Standard
-	(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}
-	|# Compressed with at most 7 colons
-	(?=(?:[A-F0-9]{0,4}:){0,7}[A-F0-9]{0,4}
-        (?![:.\w])
+    # next try the rest of the crazy that is ipv6
+    # thanks to autors of
+    # https://learning.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch08s17.html
+	|(?:
+        # Mixed
+        (?:
+            # Non-compressed
+            (?:[A-F0-9]{1,4}:){6}
+            # Compressed with at most 6 colons
+            |(?=(?:[A-F0-9]{0,4}:){0,6}
+                (?:[0-9]{1,3}\.){3}[0-9]{1,3}  # and 4 bytes
+                (?![:.\w])
+            )
+            # and at most 1 double colon
+            (([0-9A-F]{1,4}:){0,5}|:)((:[0-9A-F]{1,4}){1,5}:|:)
+            # Compressed with 7 colons and 5 numbers
+            |::(?:[A-F0-9]{1,4}:){5}
+	    )
+        # 255.255.255.
+        (?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}
+        # 255
+        (?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])
+
+        |# Standard
+        (?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}
+        |# Compressed with at most 7 colons
+        (?=(?:[A-F0-9]{0,4}:){0,7}[A-F0-9]{0,4}
+            (?![:.\w])
         )  # and anchored
-	# and at most 1 double colon
-	(([0-9A-F]{1,4}:){1,7}|:)((:[0-9A-F]{1,4}){1,7}|:)
-	# Compressed with 8 colons
-	|(?:[A-F0-9]{1,4}:){7}:|:(:[A-F0-9]{1,4}){7}
-	)
-    (?![:.\w]) # neg lookahead to "anchor"
+        # and at most 1 double colon
+        (([0-9A-F]{1,4}:){1,7}|:)((:[0-9A-F]{1,4}){1,7}|:)
+        # Compressed with 8 colons
+        |(?:[A-F0-9]{1,4}:){7}:|:(:[A-F0-9]{1,4}){7}
+	) (?![:.\w]) # neg lookahead to "anchor"
     }xmis;
     return {
         regex => $re,
@@ -475,7 +487,7 @@ sub _build_IPV6_suricata {
     \b
 	(?:
 	(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}
-    )\:\d+
+    )(?=:[0-9]+)
     \b
     };
     return {

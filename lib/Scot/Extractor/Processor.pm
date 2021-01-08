@@ -244,21 +244,34 @@ sub do_multiword_matches {
 
         if ( $text =~ m/$regex/ ) {
 
-            $log->debug(" $type matches!");
+            $log->debug(" $type matches!!");
 
             my $pre     = substr($text, 0, $-[0]);
             my $match   = substr($text, $-[0], $+[0] - $-[0]);
             my $post    = substr($text, $+[0]);
+                
+            my $span;
+            if ( $type eq "cidr" ) {
+                $log->debug("LOOKING 4 Weird CIDR");
+                $span   = $self->cidr_action($match, $dbhref);
+                if ( ! defined $span ) {
+                    $log->warn("problem with cidr match!");
+                    next REGEX;
+                }
+            }
+            else {
+                $span = $self->span($match, $type);
+                # add found match to the entity list
+                push @{$dbhref->{entities}}, {
+                    type    => $type,
+                    value   => lc($match),
+                };
+            }
 
             push @new, $self->parse($pre, $dbhref); #look for matches in pre
-            push @new, $self->span ($match, $type); # span what we found
+            push @new, $span;
             push @new, $self->parse($post, $dbhref); #look in post
 
-            # add found match to the entity list
-            push @{$dbhref->{entities}}, {
-                type    => $type,
-                value   => lc($match),
-            };
             last REGEX;
         }
     }
@@ -289,8 +302,9 @@ sub do_singleword_matches {
 
             my $regex   = $href->{regex};
             my $type    = $href->{type};
+            my $order   = $href->{order};
 
-            $log->trace("Looking for $type match");
+            $log->trace("Looking for $type match (order = $order)");
 
             if ( $word =~ m/$regex/ ) {
 
@@ -403,6 +417,9 @@ sub cidr_action {
     my $self    = shift;
     my $match   = shift;
     my $dbhref  = shift;
+    my $log     = $self->env->log;
+
+    $log->debug("CIDR ACTION! $match");
 
     $match      = $self->deobsfucate_ipdomain($match);
 
@@ -427,9 +444,15 @@ and analysts complain about the "visual noise".  Also, we don't want
 sub deobsfucate_ipdomain {
     my $self    = shift;
     my $text    = shift;
+    my $log     = $self->env->log;
+
+    $log->debug("deobsfucating ip/cidr");
+
     my @parts   = split(/[\[\(\{]*\.[\]\)\}]*/, $text);
-    # $self->env->log->debug("$text parts = ",{filter=>\&Dumper,value=>\@parts});
-    return join('.',@parts);
+    # $log->debug("$text parts = ",{filter=>\&Dumper,value=>\@parts});
+    my $deobs = join('.', @parts);
+    $log->debug("deobsfucated = $deobs");
+    return $deobs;
 }
 
 =item B<domain_action>

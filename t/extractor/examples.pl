@@ -1354,30 +1354,30 @@ EOF
             },
         ],
     },
-    {
-        testname    => 'newish domain name',
-        testgroup   => 'domain',
-        testnumber  => 2,
-        source  => <<EOF,
-<html>
-    <div>
-        <p>gov.eg</p>
-    </div>
-</html>
-EOF
-        plain   => <<EOF,
-   gov.eg
-EOF
-        flair   => <<EOF,
-<div><div><p><span class="entity domain" data-entity-type="domain" data-entity-value="gov.eg">gov.eg</span></div></div>
-EOF
-        entities    => [
-            {
-                type    => "domain",
-                value   => "gov.eg",
-            },
-        ],
-    },
+#    {
+#        testname    => 'newish domain name',
+#        testgroup   => 'domain',
+#        testnumber  => 2,
+#        source  => <<EOF,
+#<html>
+#    <div>
+#        <p>gov.eg</p>
+#    </div>
+#</html>
+#EOF
+#        plain   => <<EOF,
+#   gov.eg
+#EOF
+#        flair   => <<EOF,
+#<div><div><p><span class="entity domain" data-entity-type="domain" data-entity-value="gov.eg">gov.eg</span></div></div>
+#EOF
+#        entities    => [
+#            {
+#                type    => "domain",
+#                value   => "gov.eg",
+#            },
+#        ],
+#    },
     {
         testname    => 'semi obsfucted ip addr',
         testgroup   => 'ipaddr',
@@ -1423,6 +1423,35 @@ EOF
             {
                 type    => "cidr",
                 value   => "10.126.188.212/2",
+            },
+        ],
+    },
+    {
+        testname    => 'suricata ipv6 with port',
+        testgroup   => 'ipaddr',
+        testnumber  => 2222,
+        source      => <<EOF,
+<html>
+    <div>
+        <p>2001:489a:2202:2000:0000:0000:0000:0009:53 -> 2620:0106:6008:009b:00f0:0000:0000:0021:57239</p>
+    </div>
+</html>
+EOF
+        plain       => <<EOF,
+   2001:489a:2202:2000:0000:0000:0000:0009:53 ->
+   2620:0106:6008:009b:00f0:0000:0000:0021:57239
+EOF
+        flair       => <<EOF,
+<div><div><p><span class="entity ipv6" data-entity-type="ipv6" data-entity-value="2001:489a:2202:2000:0000:0000:0000:0009">2001:489a:2202:2000:0000:0000:0000:0009</span>:53 -&gt; <span class="entity ipv6" data-entity-type="ipv6" data-entity-value="2620:0106:6008:009b:00f0:0000:0000:0021">2620:0106:6008:009b:00f0:0000:0000:0021</span>:57239</div></div>
+EOF
+        entities    => [
+            {
+                type    => 'ipv6',
+                value   => '2001:489a:2202:2000:0000:0000:0000:0009',
+            },
+            {
+                type    => 'ipv6',
+                value   => '2620:0106:6008:009b:00f0:0000:0000:0021',
             },
         ],
     },
