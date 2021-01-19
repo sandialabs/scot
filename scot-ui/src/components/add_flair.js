@@ -253,6 +253,16 @@ export const AddFlair = {
                     $(entity).attr("data-entity-id", entityid);
                     $(entity).unbind("click");
                     if (entitydata !== undefined) {
+                      if (entitydata.scanner !== undefined) {
+                        if (entitydata.scanner.active === "true") {
+                           $(entity).append(
+                             $(
+                               '<img class="extras" title="scanner">'
+                             ).attr("src", "/images/flair/scanner.png")
+                           );
+                        }
+                      }
+
                       if (entitydata.geoip !== undefined) {
                         if (entitydata.geoip.data.isocode !== undefined) {
                           let country_code;
