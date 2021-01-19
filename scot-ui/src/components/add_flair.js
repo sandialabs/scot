@@ -253,6 +253,20 @@ export const AddFlair = {
                     $(entity).attr("data-entity-id", entityid);
                     $(entity).unbind("click");
                     if (entitydata !== undefined) {
+                      if (entitydata.sidd !== undefined) {
+                         if (
+                            Object.keys(entitydata.sidd.data).length !==
+                              0 &&
+                            entitydata.sidd.data.constructor === Object
+                          ) {
+                            $(entity).append(
+                              $('<img class="extras" title="sidd">').attr(
+                                "src",
+                                "/images/flair/sidd.png"
+                              )
+                            );
+                         }
+                      }
                       if (entitydata.geoip !== undefined) {
                         if (entitydata.geoip.data.isocode !== undefined) {
                           let country_code;
