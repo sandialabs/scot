@@ -278,7 +278,7 @@ export const AddFlair = {
                          }
                       }
                       if (entitydata.geoip !== undefined) {
-                        if (entitydata.geoip.data.isocode !== undefined) {
+                        if (entitydata.geoip.data.isocode) {
                           let country_code;
                           if (
                             entitydata.geoip.data.isp ===
