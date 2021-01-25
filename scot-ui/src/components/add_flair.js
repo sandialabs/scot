@@ -84,7 +84,7 @@ export const AddFlair = {
                             }
 
                             if (entitydata.geoip !== undefined) {
-                              if (entitydata.geoip.data.isocode !== undefined) {
+                              if (entitydata.geoip.data.isocode) {
                                 let country_code;
                                 if (
                                   entitydata.geoip.data.isp ===
@@ -253,8 +253,32 @@ export const AddFlair = {
                     $(entity).attr("data-entity-id", entityid);
                     $(entity).unbind("click");
                     if (entitydata !== undefined) {
+                      if (entitydata.scanner !== undefined) {
+                        if (entitydata.scanner.active === "true") {
+                           $(entity).append(
+                             $(
+                               '<img class="extras" title="scanner">'
+                             ).attr("src", "/images/flair/scanner.png")
+                           );
+                        }
+                      }
+
+                      if (entitydata.sidd !== undefined) {
+                         if (
+                            Object.keys(entitydata.sidd.data).length !==
+                              0 &&
+                            entitydata.sidd.data.constructor === Object
+                          ) {
+                            $(entity).append(
+                              $('<img class="extras" title="sidd">').attr(
+                                "src",
+                                "/images/flair/sidd.png"
+                              )
+                            );
+                         }
+                      }
                       if (entitydata.geoip !== undefined) {
-                        if (entitydata.geoip.data.isocode !== undefined) {
+                        if (entitydata.geoip.data.isocode) {
                           let country_code;
                           if (
                             entitydata.geoip.data.isp ===
