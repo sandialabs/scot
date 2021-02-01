@@ -44,7 +44,7 @@ override api_create => sub {
             who     => $request->{user},
             what    => "tag created",
             when    => $env->now(),
-            targets => { id => $tag_obj->id, type => "tag" },
+            target  => { id => $tag_obj->id, type => "tag" },
         });
     }
 
@@ -111,7 +111,7 @@ sub add_tag_to {
             who     => $user,
             what    => "tag created",
             when    => $env->now(),
-            targets => { id => $id, type => $thing },
+            target  => { id => $id, type => $thing },
         });
     }
     return 1;
