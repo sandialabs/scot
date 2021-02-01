@@ -247,6 +247,13 @@ sub api_subthing {
         });
     }
 
+    if ( $subthing eq "history" ) {
+        return $mongo->collection('History')->find({
+            'target.type'   => 'alert',
+            'target.id'     => $id,
+        });
+    }
+
     die "Unsupported alert subthing: $subthing";
 
 }

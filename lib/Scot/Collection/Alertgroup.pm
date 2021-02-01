@@ -400,6 +400,14 @@ sub update_alerts_in_alertgroup {
         }
         else {
             push @{$status->{updated}}, $alertobj->id;
+            $log->debug("Attemtping to write history for ".$alertobj->id);
+            my $hist = {
+                who     => $href->{user},
+                what    => "Alert status changed to ".$alert_href->{status},
+                when    => $env->now(),
+                target  => { id => $alertobj->id, type => "alert" },
+            };
+            $self->env->mongo->collection("History")->add_history_entry($hist);
         }
     }
     return $status;

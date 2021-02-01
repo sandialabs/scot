@@ -320,8 +320,8 @@ sub get_targets {
     my $id      = $params{target_id};
     my $thing   = $params{target_type};
     my $search  = {
-        'targets.type' => $thing,
-        'targets.id'   => $id,
+        'target.type' => $thing,
+        'target.id'   => $id,
     };
     $self->env->log->debug("get targets: ",{ filter =>\&Dumper, value => $search});
     my $cursor  = $self->find($search);

@@ -1197,6 +1197,8 @@ sub update_alerts {
     my $mongo   = $self->env->mongo;
     my $col     = $mongo->collection('Alertgroup');
     my $status  = $col->update_alerts_in_alertgroup($object, $req);
+
+
     if ( scalar(@{$status->{updated}}) > 0 ) {
         foreach my $aid (@{$status->{updated}}) {
             $self->env->mq->send("/topic/scot",{
@@ -1264,6 +1266,7 @@ sub post_update_process {
 
 
     foreach my $uphref (@$updates) {
+        $env->log->debug("--- UPREF --- ",{filter=>\&Dumper, value => $uphref});
         if ( $uphref->{attribute} eq "status" ) {
             my $msg = "$colname status change to ". $uphref->{new_value};
             $env->mongo->collection('Stat')->put_stat($msg,1);

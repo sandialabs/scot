@@ -39,7 +39,7 @@ override api_create => sub {
             who     => "api",
             what    => "source $value created",
             when    => $env->now,
-            targets => { id => $source_obj->id, type => "source" } ,
+            target => { id => $source_obj->id, type => "source" } ,
         });
     }
     return $source_obj;
