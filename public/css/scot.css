@@ -52,7 +52,7 @@
     vertical-align: middle;
   }
 
-  input[type="text"]:not(.form-control),
+  input[type="text"]:not(.form-control, .tox-textfield),
   input[type="number"]:not(.form-control),
   input[role="combobox"]:not(.form-control, .report_input) {
     background-color: #292929;
