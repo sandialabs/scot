@@ -144,4 +144,60 @@ sub autocomplete {
     return wantarray ? @records : \@records;
 }
 
+sub get_promotion_obj {
+    my $self    = shift;
+    my $object  = shift; # a dispatch
+    my $req     = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $request = $req->{request};
+
+    # if given a promo_id, promote into an existing
+    my $promo_id    =  $request->{json}->{promote} // 
+                        $request->{params}->{promote};
+
+    $log->debug("Getting promotion object $promo_id for ".ref($object));
+
+    my $intel;
+
+    if ( $promo_id =~ /\d+/ ) {
+        $intel = $self->find_iid($promo_id);
+        if ( defined $intel and ref($intel) eq "Scot::Model::Intel" ) {
+            return $intel;
+        }
+        die "Intel $promo_id does not exist.  Can not promote to missing Intel.";
+    }
+    if ( $promo_id eq "new" or ! defined $promo_id ) {
+        $intel = $self->create_promotion($object, $req);
+        return $intel;
+    }
+    die "Invalid Promotion";
+}
+
+sub create_promotion {
+    my $self    = shift;
+    my $object  = shift;
+    my $req     = shift;
+    my $user    = $req->{user};
+    my $subject = $self->get_subject($object) // $self->get_value_from_request($req, "subject");
+
+    return $self->create({
+        subject => $subject,
+        status  => 'open',
+        owner   => $user,
+        promoted_from => [ $object->id ],
+    });
+}
+
+sub get_subject {
+    my $self    = shift;
+    my $object  = shift;
+
+    my $subject = $object->subject;
+    if (!defined $subject){
+        $subject = "Promoted Dispatch ".$object->id;
+    }
+    return $subject;
+}
+
 1;

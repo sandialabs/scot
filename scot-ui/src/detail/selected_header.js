@@ -961,12 +961,12 @@ export default class SelectedHeader extends React.Component {
                               </span>
                             </td>
                           ) : null}
-                          {(type === "event" || type === "incident") &&
+                          {(type === "event" || type === "incident" || type === "intel" || type === "product") &&
                           this.state.showEventData &&
                           this.state.headerData.promoted_from.length > 0 ? (
                             <th>Promoted From:</th>
                           ) : null}
-                          {(type === "event" || type === "incident") &&
+                          {(type === "event" || type === "incident" || type === "intel" || type === "product") &&
                           this.state.showEventData &&
                           this.state.headerData.promoted_from.length > 0 ? (
                             <PromotedData

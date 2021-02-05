@@ -125,10 +125,12 @@ export default class DetailDataStatus extends React.Component {
     if (this.props.type === "event") {
       href = "/incident/" + this.props.data.promotion_id;
     } else if (this.props.type === "intel") {
-      href = "/event/" + this.props.data.promotion_id;
-    }
+      href = "/product/" + this.props.data.promotion_id;
+    } else if (this.props.type === "dispatch") {
+      href = "/intel/" + this.props.data.promotion_id;
+    } 
 
-    if (this.props.type === "guide" || this.props.type === "intel") {
+    if (this.props.type === "guide" ) { //|| this.props.type === "intel") {
       return <div />;
     } else if (this.props.type === "alertgroup") {
       return (

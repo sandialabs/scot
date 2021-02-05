@@ -16,6 +16,11 @@ db.audit.ensureIndex(       { "when":       1}  );
 
 db.checklist.ensureIndex(   { "id":         1}, {unique: true, dropDups:true}  );
 
+db.dispatch.ensureIndex (   { "id":         1}, {unique: true, dropDups:true}  );
+db.dispatch.ensureIndex(    { "when":       1}  );
+db.dispatch.ensureIndex(    { "subject":    1}  );
+db.dispatch.ensureIndex(    { "source_uri": 1}  );
+
 db.event.ensureIndex(       { "id":         1}, {unique: true, dropDups:true}  );
 db.event.ensureIndex(       { "when":       1}  );
 db.event.ensureIndex(       { "subject":    1}  );
@@ -51,6 +56,10 @@ db.incident.ensureIndex(    {"subject":     1}  );
 db.intel.ensureIndex(       { "id":         1}, {unique: true, dropDups:true}  );
 db.intel.ensureIndex(       { "when":       1}  );
 db.intel.ensureIndex(       { "subject":    1}  );
+
+db.product.ensureIndex (   { "id":         1}, {unique: true, dropDups:true}  );
+db.product.ensureIndex(    { "when":       1}  );
+db.product.ensureIndex(    { "subject":    1}  );
 
 db.source.ensureIndex(      { "id":         1}, {unique: true, dropDups:true}  );
 db.source.ensureIndex(      { "value":      1}  );

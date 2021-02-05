@@ -243,6 +243,30 @@ const columnDefinitions = {
     Cell: customCellRenderers.textStatus,
     Filter: customFilters.dropdownFilter()
   },
+  
+  DispatchStatus: {
+    Header: "Status",
+    accessor: "status",
+    maxWidth: 100,
+    Cell: customCellRenderers.textStatus,
+    Filter: customFilters.dropdownFilter()
+  },
+
+  IntelStatus: {
+    Header: "Status",
+    accessor: "status",
+    maxWidth: 100,
+    Cell: customCellRenderers.textStatus,
+    Filter: customFilters.dropdownFilter()
+  },
+
+  ProductStatus: {
+    Header: "Status",
+    accessor: "status",
+    maxWidth: 100,
+    Cell: customCellRenderers.textStatus,
+    Filter: customFilters.dropdownFilter()
+  },
 
   IncidentStatus: {
     Header: "Status",
@@ -602,9 +626,11 @@ const typeColumns = {
       options: { minWidth: 100, maxWidth: 150 }
     }
   ],
-  intel: [
+
+  dispatch: [
     "Id",
     "Location",
+    "DispatchStatus",
     "Subject",
     "Created",
     "Updated",
@@ -617,6 +643,43 @@ const typeColumns = {
     "Entries",
     "Views"
   ],
+
+  intel: [
+    "Id",
+    "Location",
+    "IntelStatus",
+    "Subject",
+    "Created",
+    "Updated",
+    "Sources",
+    {
+      title: "Tags",
+      options: { minWidth: 200, maxWidth: 250 }
+    },
+    "Owner",
+    "Entries",
+    "Views",
+    "OpenTasks"
+  ],
+
+  product: [
+    "Id",
+    "Location",
+    "ProductStatus",
+    "Subject",
+    "Created",
+    "Updated",
+    "Sources",
+    {
+      title: "Tags",
+      options: { minWidth: 200, maxWidth: 250 }
+    },
+    "Owner",
+    "Entries",
+    "Views",
+    "OpenTasks"
+  ],
+
   task: [
     "Id",
     "Location",
@@ -922,6 +985,10 @@ export const getEntityPopupColumns = params => {
               promotedHref = `/#/event/${row.original.promotion_id}`;
             } else if (row.original.type === "event") {
               promotedHref = `/#/incident/${row.original.promotion_id}`;
+            } else if ( row.original.type === "dispatch" ) {
+                promotedHref = `/#/intel/${row.original.promotion_id}`;
+            } else if ( row.original.type === "intel" ) {
+                promotedHref = `/#/product/${row.original.promotion_id}`;
             }
             return (
               <div style={{ display: "flex", alignItems: "center" }}>

@@ -25,7 +25,9 @@ with    qw(
     Scot::Role::Hashable
     Scot::Role::Historable
     Scot::Role::Permission
+    Scot::Role::Promotable
     Scot::Role::Sources
+    Scot::Role::Status
     Scot::Role::Subject
     Scot::Role::Tags
     Scot::Role::Times
@@ -40,7 +42,9 @@ with    qw(
     Scot::Role::Hashable
     Scot::Role::Historable
     Scot::Role::Permission
+    Scot::Role::Promotable
     Scot::Role::Sources
+    Scot::Role::Status
     Scot::Role::Subject
     Scot::Role::Tags
     Scot::Role::Times

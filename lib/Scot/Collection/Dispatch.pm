@@ -46,20 +46,20 @@ override api_create => sub {
 
     $self->validate_permissions($json);
 
-    my $intel   = $self->create($json);
+    my $dispatch   = $self->create($json);
 
-    my $id  = $intel->id;
+    my $id  = $dispatch->id;
 
     if ( scalar(@sources) > 0 ) {
         my $col = $env->mongo->collection('Source');
-        $col->add_source_to("intel", $intel->id, \@sources);
+        $col->add_source_to("dispatch", $dispatch->id, \@sources);
     }
     if ( scalar(@tags) > 0 ) {
         my $col = $env->mongo->collection('Tag');
-        $col->add_source_to("intel", $intel->id, \@tags);
+        $col->add_source_to("dispatch", $dispatch->id, \@tags);
     }
 
-    return $intel;
+    return $dispatch;
 };
 
 sub api_subthing {
@@ -73,14 +73,14 @@ sub api_subthing {
     if ( $subthing eq "entry" ) {
         return $mongo->collection('Entry')->get_entries_by_target({
             id      => $id,
-            type    => 'intel',
+            type    => 'dispatch',
         });
     }
 
     if ( $subthing eq "entity" ) {
         return $mongo->collection('Link')
                      ->get_linked_objects_cursor(
-                        { id => $id, type => 'intel' },
+                        { id => $id, type => 'dispatch' },
                         'entity' );
     }
     if ( $subthing eq "link" ) {
@@ -95,7 +95,7 @@ sub api_subthing {
         my @appearances = map { $_->{apid} } 
             $mongo->collection('Appearance')->find({
                 type    => 'tag', 
-                'target.type'   => 'intel',
+                'target.type'   => 'dispatch',
                 'target.id'     => $id,
             })->all;
         return $mongo->collection('Tag')->find({
@@ -107,7 +107,7 @@ sub api_subthing {
         my @appearances = map { $_->{apid} } 
             $mongo->collection('Appearance')->find({
                 type    => 'source', 
-                'target.type'   => 'intel',
+                'target.type'   => 'dispatch',
                 'target.id'     => $id,
             })->all;
         return $mongo->collection('Source')->find({
@@ -118,18 +118,18 @@ sub api_subthing {
     if ( $subthing eq "history" ) {
         my $col = $mongo->collection('History');
         my $cur = $col->find({'target.id'   => $id,
-                              'target.type' => 'intel',});
+                              'target.type' => 'dispatch',});
         return $cur;
     }
     if ( $subthing eq "file" ) {
         my $col = $mongo->collection('File');
         my $cur = $col->find({
-            'entry_target.type' => 'intel',
+            'entry_target.type' => 'dispatch',
             'entry_target.id'   => $id,
         });
         return $cur;
     }
-    die "Unsupported intel subthing $subthing";
+    die "Unsupported dispatch subthing $subthing";
 }
 
 sub autocomplete {
