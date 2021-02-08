@@ -291,6 +291,7 @@ export default class SelectedHeaderOptions extends React.Component {
       }.bind(this)
     });
   };
+
   reparseFlair = () => {
     $.ajax({
       type: "put",
@@ -356,10 +357,13 @@ export default class SelectedHeaderOptions extends React.Component {
           newType = "Event";
         } else if (type === "event") {
           newType = "Incident";
+        } else if ( type === "dispatch" ) {
+            newType = "Intel";
+        } else if ( type === "intel" ) {
+            newType = "Product";
         } else if (
           type === "incident" ||
           type === "guide" ||
-          type === "intel" ||
           type === "signature" ||
           type === "entity"
         ) {

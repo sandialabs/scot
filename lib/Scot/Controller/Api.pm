@@ -1056,19 +1056,27 @@ sub promote {
     my $log     = $env->log;
     my $user    = $self->session('user');
 
-    $log->debug("processing promotion");
+    my %plookup = (
+        "Scot::Model::Alert"    => "Event",
+        "Scot::Model::Event"    => "Incident",
+        "Scot::Model::Dispatch" => "Intel",
+        "Scot::Model::Intel"    => "Product",
+    );
+
+    my $refname = ref($object);
+
+    $log->debug("processing promotion of $refname");
 
     # find or create the promotion target
-    my $promotion_col;
-    if ( ref($object) eq "Scot::Model::Alert" ) {
-        $promotion_col  = $mongo->collection("Event");
-    }
-    elsif ( ref($object) eq "Scot::Model::Event" ) {
-        $promotion_col  = $mongo->collection("Incident");
-    }
-    else {
+    my $tcol = $plookup{$refname};
+
+    $log->debug("$refname promotes to a $tcol");
+
+    if ( ! defined $tcol ) {
         die "Unable to promote a ".ref($object);
     }
+    
+    my $promotion_col = $mongo->collection(ucfirst($tcol));
 
     my $promotion_obj = $promotion_col->get_promotion_obj($object,$req);
     $promotion_obj->update({
@@ -1088,13 +1096,13 @@ sub promote {
             }
         });
 
-##      use this to memorialize the likaboss object
-    if ( $env->meta->has_attribute('lbwebservice') ) {
-        foreach my $rootuid (@{$object->data->{rootUID}}) {
-            $log->debug("memorializing $rootuid");
-            $self->env->lbwebservice->memorialize($rootuid);
+        ##      use this to memorialize the likaboss object
+        if ( $env->meta->has_attribute('lbwebservice') ) {
+            foreach my $rootuid (@{$object->data->{rootUID}}) {
+                $log->debug("memorializing $rootuid");
+                $self->env->lbwebservice->memorialize($rootuid);
+            }
         }
-    }
 
     }
 

@@ -11,7 +11,16 @@ function upgrade_database {
         echo "-- dropping the game collection.  will be recreated upon first run of game.pl"
         mongo scot-prod --quiet --eval 'db.game.remove({});'
     fi
+
+    set='$set'
+    exists='$exists'
+    mongo scot_prod --eval "db.intel.update({status:{$exists:0}},{$set:{status:'open'}})"
+    mongo scot_prod --eval "db.intel.update({promoted_from:{$exists:0}},{$set:{promoted_from:[]}})"
+    mongo scot_prod --eval "db.intel.update({promotion_id:{$exists:0}},{$set:{promotion_id:0}})"
+    mongo scot_prod --eval "db.product.update({status:{$exists:0}},{$set:{status:'open'}})"
+    mongo scot_prod --eval "db.dispatch.update({status:{$exists:0}},{$set:{status:'open'}})"
 }
+
 
 
 function add_scot_user {

@@ -1,4 +1,5 @@
 import React from "react";
+
 import $ from "jquery";
 let Button = require("react-bootstrap/lib/Button.js");
 
@@ -18,6 +19,12 @@ export default class Promote extends React.Component {
         } else if (this.props.type === "event") {
             this.setState({ newType: "Incident" });
             this.setState({ newURL: "incident" });
+        } else if (this.props.type === "dispatch") {
+            this.setState({ newType: "Intel" });
+            this.setState({ newURL: "intel" });
+        } else if (this.props.type === "intel") {
+            this.setState({ newType: "Product" });
+            this.setState({ newURL: "product" });
         }
     };
 

@@ -332,9 +332,17 @@ export default class App extends React.Component {
               <LinkContainer to="/incident" activeClassName="active">
                 <NavItem>Incident</NavItem>
               </LinkContainer>
-              <LinkContainer to="/intel" activeClassName="active">
-                <NavItem>Intel</NavItem>
-              </LinkContainer>
+              <NavDropdown id="nav-dropdown" title={"ThreatIntel"}>
+                <LinkContainer to="/dispatch" activeClassName="active">
+                    <MenuItem>Dispatch</MenuItem>
+                </LinkContainer>
+                <LinkContainer to="/intel" activeClassName="active">
+                    <MenuItem>Intel</MenuItem>
+                </LinkContainer>
+                <LinkContainer to="/product" activeClassName="active">
+                    <MenuItem>Product</MenuItem>
+                </LinkContainer>
+              </NavDropdown>
               <NavDropdown id="nav-dropdown" title={"More"}>
                 <LinkContainer to="/task" activeClassName="active">
                   <MenuItem>Task</MenuItem>
@@ -536,7 +544,41 @@ export default class App extends React.Component {
               removeCallback={this.AMQ.remove_callback_object}
             />
           ) : null}
+          {type === "dispatch" ? (
+            <ListView
+              id={this.props.match.params.id}
+              id2={this.props.match.params.id2}
+              viewMode={this.state.viewMode}
+              type={type}
+              notificationToggle={this.notificationToggle}
+              notificationSetting={this.state.notificationSetting}
+              listViewFilter={this.state.listViewFilter}
+              listViewSort={this.state.listViewSort}
+              listViewPage={this.state.listViewPage}
+              errorToggle={this.errorToggle}
+              history={this.props.history}
+              createCallback={this.AMQ.create_callback_object}
+              removeCallback={this.AMQ.remove_callback_object}
+            />
+          ) : null}
           {type === "intel" ? (
+            <ListView
+              id={this.props.match.params.id}
+              id2={this.props.match.params.id2}
+              viewMode={this.state.viewMode}
+              type={type}
+              notificationToggle={this.notificationToggle}
+              notificationSetting={this.state.notificationSetting}
+              listViewFilter={this.state.listViewFilter}
+              listViewSort={this.state.listViewSort}
+              listViewPage={this.state.listViewPage}
+              errorToggle={this.errorToggle}
+              history={this.props.history}
+              createCallback={this.AMQ.create_callback_object}
+              removeCallback={this.AMQ.remove_callback_object}
+            />
+          ) : null}
+          {type === "product" ? (
             <ListView
               id={this.props.match.params.id}
               id2={this.props.match.params.id2}
