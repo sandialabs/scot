@@ -1345,8 +1345,10 @@ class EntityReferences extends React.Component {
       loadingType: {
         alert: true,
         event: true,
-        intel: true,
         incident: true,
+        dispatch: true,
+        intel: true,
+        product: true,
         signature: true,
         guide: true
       },
@@ -1359,7 +1361,7 @@ class EntityReferences extends React.Component {
 
   componentDidMount = () => {
     this.setState({ isMounted: true });
-    const types = ["incident", "event", "intel", "guide", "signature", "alert"];
+    const types = ["incident", "event", "intel", "guide", "signature", "alert", "dispatch", "product"];
     types.forEach(
       function(type) {
         let open = [];
