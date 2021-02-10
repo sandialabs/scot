@@ -75,6 +75,13 @@ has source_uri => (
     default     => 'unknown',
 );
 
+has data    => (
+    is      => 'ro',
+    isa     => 'HashRef',
+    required    => 1,
+    default => sub{ {} },
+);
+
 
 __PACKAGE__->meta->make_immutable;
 1;

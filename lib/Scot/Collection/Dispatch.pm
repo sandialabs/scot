@@ -39,12 +39,16 @@ override api_create => sub {
     my $json    = $request->{request}->{json};
     my $user    = $request->{user};
 
-    $json->{owner} = $user;
+    $json->{owner} = 'scot-rss';
 
     my @tags    = $env->get_req_array($json, "tags");
     my @sources = $env->get_req_array($json, "sources");
 
     $self->validate_permissions($json);
+
+    my $entry = delete $json->{entry};
+
+    $log->trace("Creating Dispatch with ",{filter=>\&Dumper,value=>$json});
 
     my $dispatch   = $self->create($json);
 
@@ -59,8 +63,36 @@ override api_create => sub {
         $col->add_source_to("dispatch", $dispatch->id, \@tags);
     }
 
+    if ( defined $entry ) {
+        $self->create_dispatch_entry($dispatch, $entry);
+    }
+    else {
+        $log->error("No entry provided in dispatch!");
+    }
+
     return $dispatch;
 };
+
+sub create_dispatch_entry {
+    my $self        = shift;
+    my $dispatch    = shift;
+    my $entry       = shift;
+    my $mongo       = $self->env->mongo;
+    my $col         = $mongo->collection('Entry');
+    my $log         = $self->env->log;
+    my $data        = {
+        target      => {
+            type    => 'dispatch',
+            id      => $dispatch->id,
+        },
+        groups      => $dispatch->groups,
+        summary     => 0,
+        body        => $entry,
+        owner       => $dispatch->owner,
+    };
+    $log->trace("creating dispatch entry with ",{filter=>\&Dumper, value=>$data});
+    my $entry_obj = $col->create($data);
+}
 
 sub api_subthing {
     my $self    = shift;
