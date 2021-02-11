@@ -57,7 +57,8 @@
   input[role="combobox"]:not(.form-control, .report_input) {
     /* background-color: #292929;
     border-color: #292929;
-    border-style: solid; */
+    border-style: solid;
+    */
   }
 
   .list-filtered input[type="text"],
