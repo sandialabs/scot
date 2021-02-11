@@ -6,7 +6,7 @@ use v5.16;
 
 # use lib '../../Scot-Internal-Modules/lib';
 use lib '../lib';
-# use lib '/opt/scot/lib';
+use lib '/opt/scot/lib';
 use Scot::App::Rss;
 use Scot::Env;
 use Data::Dumper;
@@ -18,7 +18,7 @@ $ENV{https_proxy} = 'http://wwwproxy.sandia.gov:80';
 say "--- Starting Rss  ---";
 
 my $config_file = $ENV{'scot_app_rss_config_file'} // 
-                    '../../Scot-Internal-Modules/etc/rss.cfg.pl';
+                    '/opt/scot/etc/rss.cfg.pl';
 
 my $env = Scot::Env->new(
     config_file => $config_file,
