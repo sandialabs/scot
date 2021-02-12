@@ -359,6 +359,9 @@ export default class App extends React.Component {
                 <LinkContainer to="/reports" activeClassName="active">
                   <MenuItem>Reports</MenuItem>
                 </LinkContainer>
+                <LinkContainer to="/feed" activeClassName="active">
+                    <MenuItem>Feeds</MenuItem>
+                </LinkContainer>
                 <MenuItem divider />
                 <LinkContainer to="/admin" activeClassName="active">
                   <MenuItem>Administration</MenuItem>
@@ -579,6 +582,23 @@ export default class App extends React.Component {
             />
           ) : null}
           {type === "product" ? (
+            <ListView
+              id={this.props.match.params.id}
+              id2={this.props.match.params.id2}
+              viewMode={this.state.viewMode}
+              type={type}
+              notificationToggle={this.notificationToggle}
+              notificationSetting={this.state.notificationSetting}
+              listViewFilter={this.state.listViewFilter}
+              listViewSort={this.state.listViewSort}
+              listViewPage={this.state.listViewPage}
+              errorToggle={this.errorToggle}
+              history={this.props.history}
+              createCallback={this.AMQ.create_callback_object}
+              removeCallback={this.AMQ.remove_callback_object}
+            />
+          ) : null}
+          {type === "feed" ? (
             <ListView
               id={this.props.match.params.id}
               id2={this.props.match.params.id2}

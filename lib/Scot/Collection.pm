@@ -39,7 +39,7 @@ override 'create' => sub {
     my $log = $self->env->log;
     my $location    = $self->env->location;
 
-    $log->debug("In overriden create ".ref($self));
+    $log->trace("In overriden create ".ref($self));
 
     my @args    = ( ref $args->[0] eq 'HASH' ? %{$args->[0]} : @$args );
     my $iid     = $self->get_next_id;
@@ -53,6 +53,7 @@ override 'create' => sub {
     my $obj = $self->class->new( @args, _collection => $self );
     $self->_save($obj);
 
+    $log->trace("made a ",{filter=>\&Dumper, value=>$obj});
     return $obj;
 };
 

@@ -167,7 +167,8 @@ export const customCellRenderers = {
     if (
       row.value === "open" ||
       row.value === "disabled" ||
-      row.value === "assigned"
+      row.value === "assigned" ||
+      row.value === "paused"
     ) {
       color = "red";
     } else if (row.value === "promoted") {
@@ -237,6 +238,14 @@ const columnDefinitions = {
   },
 
   EventStatus: {
+    Header: "Status",
+    accessor: "status",
+    maxWidth: 100,
+    Cell: customCellRenderers.textStatus,
+    Filter: customFilters.dropdownFilter()
+  },
+
+  FeedStatus: {
     Header: "Status",
     accessor: "status",
     maxWidth: 100,
@@ -347,6 +356,22 @@ const columnDefinitions = {
     Filter: customFilters.dateRange,
     Cell: customCellRenderers.dateFormater
   },
+  LastAttempt: {
+    Header: "Last Attempt",
+    accessor: "last_attempt",
+    minWidth: 100,
+    maxWidth: 180,
+    Filter: customFilters.dateRange,
+    Cell: customCellRenderers.dateFormater
+  },
+  LastArticle: {
+    Header: "Last Article",
+    accessor: "last_article",
+    minWidth: 100,
+    maxWidth: 180,
+    Filter: customFilters.dateRange,
+    Cell: customCellRenderers.dateFormater
+  },
 
   Sources: {
     Header: "Sources",
@@ -385,6 +410,20 @@ const columnDefinitions = {
   Entries: {
     Header: "Entries",
     accessor: "entry_count",
+    maxWidth: 70,
+    Filter: customFilters.numberFilter
+  },
+
+  Articles: {
+    Header: "Articles",
+    accessor: "article_count",
+    maxWidth: 70,
+    Filter: customFilters.numberFilter
+  },
+
+  Promotions: {
+    Header: "Promotions",
+    accessor: "promotions",
     maxWidth: 70,
     Filter: customFilters.numberFilter
   },
@@ -464,6 +503,14 @@ const columnDefinitions = {
     maxWidth: 150
   },
 
+  FeedType: {
+    Header: "Type",
+    accessor: "type",
+    Filter: customFilters.stringFilter,
+    minWidth: 100,
+    maxWidth: 150
+  },
+
   Description: {
     Header: "Description",
     // accessor: 'description',
@@ -471,6 +518,16 @@ const columnDefinitions = {
     Filter: customFilters.stringFilter,
     minWidth: 400,
     id: "data.description",
+    maxWidth: 5000
+  },
+
+  Uri: {
+    Header: "URI",
+    // accessor: 'description',
+    accessor: d => d.uri,
+    Filter: customFilters.stringFilter,
+    minWidth: 400,
+    id: "uri",
     maxWidth: 5000
   },
 
@@ -627,6 +684,7 @@ const typeColumns = {
     }
   ],
 
+
   dispatch: [
     "Id",
     "Location",
@@ -678,6 +736,18 @@ const typeColumns = {
     "Entries",
     "Views",
     "OpenTasks"
+  ],
+
+  feed: [
+    "Id",
+    "Name",
+    "FeedStatus",
+    "FeedType",
+    "Uri",
+    "LastAttempt",
+    "LastArticle",
+    "Articles",
+    "Promotions"
   ],
 
   task: [

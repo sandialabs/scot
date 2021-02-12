@@ -7,6 +7,7 @@ db.nextid.insert({"for_collection": "dispatch",   "last_id": 0});
 db.nextid.insert({"for_collection": "entity",   "last_id": 0});
 db.nextid.insert({"for_collection": "entry",    "last_id": 0});
 db.nextid.insert({"for_collection": "event",    "last_id": 0});
+db.nextid.insert({"for_collection": "feed",     "last_id": 0});
 db.nextid.insert({"for_collection": "file",     "last_id": 0});
 db.nextid.insert({"for_collection": "guide",    "last_id": 0});
 db.nextid.insert({"for_collection": "history",  "last_id": 0});

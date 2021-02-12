@@ -8,6 +8,7 @@ db.dispatch.drop();
 db.entity.drop();
 db.entry.drop();
 db.event.drop();
+db.feed.drop();
 db.file.drop();
 db.history.drop();
 db.incident.drop();

@@ -365,6 +365,7 @@ export default class SelectedHeaderOptions extends React.Component {
           type === "incident" ||
           type === "guide" ||
           type === "signature" ||
+          type === "feed" ||
           type === "entity"
         ) {
           showPromote = false;
