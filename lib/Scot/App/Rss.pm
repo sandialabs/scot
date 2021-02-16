@@ -490,7 +490,27 @@ sub insert_into_scot {
             my $feed_update = {
                 last_attempt    => time(),
             };
+            my $entry_body = delete $json->{entry};
             my $dobj = $col->api_create($json);
+
+            my $entry_data = {
+                target  => {
+                    type    => 'dispatch',
+                    id      => $dobj->id,
+                },
+                groups  => $dobj->groups,
+                summary => 0,
+                body    => $entry_body,
+                owner   => $dobj->owner,
+            };
+            my $eobj = $mongo->collection('Entry')->create($entry_data);
+            $self->env->mq->send(
+                "/topic/scot",
+                {
+                    action => "created",
+                    data => { type => "entry", id => $eobj->id, who => 'scot-rss' },
+                }
+            );
             if (defined $dobj) {
                 # update feed stats
                 $feed_update->{last_article} = time();

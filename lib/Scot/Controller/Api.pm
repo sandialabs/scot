@@ -1111,6 +1111,16 @@ sub promote {
         if ( defined $feed ) {
             $feed->update_inc('promotions' => 1);
         }
+        my $entry = $mongo->collection('Entry')
+                          ->create_from_promoted_dispatch($object, $promotion_obj);
+        $self->env->mq->send("/topic/scot", {
+            action  => 'created',
+            data    => {
+                who => $req->{user},
+                type => "entry",
+                id  => $entry->id,
+            }
+        });
     }
 
     # update the promotee

@@ -79,6 +79,27 @@ sub create_from_promoted_alert {
     return $entry_obj;
 }
 
+sub create_from_promoted_dispatch {
+    my $self    = shift;
+    my $dispatch = shift;
+    my $intel   = shift;
+    my $entry   = $self->env->mongo->collection('Entry')->find_one({
+        target => { type => 'dispatch', id => $dispatch->id }
+    });
+    my $new_e_data = {
+        target  => {
+            type    => 'intel',
+            id      => $intel->id,
+        },
+        groups  => $entry->groups,
+        summary => 0,
+        body    => $entry->body,
+        owner   => $entry->owner,
+    };  
+    my $newentry = $self->env->mongo->collection('Entry')->create($new_e_data);
+    return $newentry;
+}
+
 sub find_existing_alert_entry {
     my $self    = shift;
     my $type    = shift;
