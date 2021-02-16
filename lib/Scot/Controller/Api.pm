@@ -1103,7 +1103,14 @@ sub promote {
                 $self->env->lbwebservice->memorialize($rootuid);
             }
         }
+    }
 
+    if ( ref($object) eq "Scot::Model::Dispatch" ) {
+        my $source = pop $object->source;
+        my $feed   = $mongo->collection('Feed')->find_one({name => $source});
+        if ( defined $feed ) {
+            $feed->update_inc('promotions' => 1);
+        }
     }
 
     # update the promotee

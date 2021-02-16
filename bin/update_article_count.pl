@@ -7,7 +7,6 @@ use v5.16;
 # use lib '../../Scot-Internal-Modules/lib';
 use lib '../lib';
 use lib '/opt/scot/lib';
-use Scot::App::Rss;
 use Scot::Env;
 use Data::Dumper;
 use DateTime::Format::Strptime;
@@ -24,13 +23,31 @@ my $env = Scot::Env->new(
     config_file => $config_file,
 );
 
-$env->log->debug("Starting RSS.pl");
+my $mongo   = $env->mongo;
+my $dcol    = $mongo->collection('Dispatch');
+my $fcol    = $mongo->collection('Feed');
 
-my $rss_proc   = Scot::App::Rss->new({
-    env => $env,
-});
+my $results = {};
 
-$env->log->debug("Processing...");
+my $cursor  = $dcol->find();
 
-$rss_proc->process_feeds();
+while (my $d = $cursor->next ) {
+    my $name = pop @{$d->source};
+    $results->{$name}++;
+}
+
+foreach my $name (keys %$results) {
+    my $feed = $fcol->find_one({name => $name});
+    my $ac  = $results->{$name};
+    print "updating $name with value $ac\n";
+
+
+
+    $feed->update({
+        '$set'    => {
+            article_count => $ac
+        }
+    });
+}
+
 
