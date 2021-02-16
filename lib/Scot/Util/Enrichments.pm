@@ -96,7 +96,7 @@ sub BUILD {
                     isa         => 'HashRef',
                 )
             );
-            $log->debug("creating attribute $name with value ",
+            $log->trace("creating attribute $name with value ",
                         { filter => \&Dumper, value => $href} );
             $self->$name($href);
         }

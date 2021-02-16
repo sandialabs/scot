@@ -60,14 +60,20 @@ has feeds   => (
     is          => 'ro',
     isa         => 'ArrayRef',
     required    => 1,
+    lazy        => 1,
     builder     => '_build_feeds',
 );
 
 sub _build_feeds {
     my $self    = shift;
-    my $attr    = 'feeds';
-    my $default = [];
-    return $self->get_config_value($attr, $default);
+    my $mongo   = $self->env->mongo;
+    my $col     = $mongo->collection('Feed');
+    my $cursor  = $col->find({status=>'active'});
+    my @feeds   = ();
+    while (my $feed = $cursor->next) {
+        push @feeds, $feed;
+    }
+    return \@feeds;
 }
 
 has day_age_limit => (
@@ -103,21 +109,22 @@ sub build_feed_dispatches {
     my $self    = shift;
     my $feed    = shift;
     my $log     = $self->env->log;
-    my $name    = $feed->{name};
-    my $url     = $feed->{url};
+    my $name    = $feed->name;
+    my $uri     = $feed->uri;
     my @dispatches = ();
-
-    my $xml = $self->retrieve_feed($feed);
+    my $feed_href   = $feed->as_hash;
+    $log->debug("Feed is ", {filter=>\&Dumper, value=>$feed_href});
+    my $xml = $self->retrieve_feed($feed_href);
 
     if (! defined $xml) {
-        $log->error("{$name:$url} NOT RETRIEVED!");
+        $log->error("{$name:$uri} NOT RETRIEVED!");
         return @dispatches;
     }
 
     my @data = $self->parse_xml($feed, $xml);
 
     if (scalar(@data) < 1 ) {
-        $log->error("{$name:$url} FEED PARSE FAILED");
+        $log->error("{$name:$uri} FEED PARSE FAILED");
         return @dispatches;
     }
 
@@ -128,29 +135,29 @@ sub build_feed_dispatches {
 
 sub retrieve_feed {
     my $self    = shift;
-    my $feed    = shift;
-    my $url     = $feed->{url};
+    my $feed    = shift; # expect href version
+    my $uri     = $feed->{uri};
     my $name    = $feed->{name};
     my $log     = $self->env->log;
     my $ua      = $self->ua;
 
-    $log->debug("{$name:$url} Attempting to retrieve feed");
+    $log->debug("{$name:$uri} Attempting to retrieve feed");
 
     my $res;
     try {
-        $res = $ua->get($url)->result;
+        $res = $ua->get($uri)->result;
     }
     catch {
-        $log->error("{$name:$url} ERROR Retrieving: $_");
+        $log->error("{$name:$uri} ERROR Retrieving: $_");
     };
     if (defined $res) {
         my $body = $res->body;
         if ( $body ) {
             return $body;
         }
-        # $log->error("{$name:$url} RES = ",{filter=>\&Dumper, value=>$res});
-        $log->error("{$name:$url} ".$res->code." ".$res->headers->location);
-        $feed->{url} = $res->headers->location;
+        # $log->error("{$name:$uri} RES = ",{filter=>\&Dumper, value=>$res});
+        $log->error("{$name:$uri} ".$res->code." ".$res->headers->location);
+        $feed->{uri} = $res->headers->location;
         $feed->{count}++;
         if ($feed->{count} < 3 ) {
             return $self->retrieve_feed($feed);
@@ -162,21 +169,21 @@ sub retrieve_feed {
 sub retrieve_feed_lwp {
     my $self    = shift;
     my $feed    = shift;
-    my $url     = $feed->{url};
+    my $uri     = $feed->{uri};
     my $name    = $feed->{name};
     my $log     = $self->env->log;
     my $ua      = $self->lwp;
 
-    $log->debug("{$name:$url} Attempting to retrieve feed via lwp");
+    $log->debug("{$name:$uri} Attempting to retrieve feed via lwp");
 
-    my $request = HTTP::Request->new('GET', $url);
+    my $request = HTTP::Request->new('GET', $uri);
     my $response = $ua->request($request);
 
     if ( $response->is_success() ) {
         my $body = $response->content;
         return $body;
     }
-    $log->error("{$name:$url} LWP Error: ".$response->status_line);
+    $log->error("{$name:$uri} LWP Error: ".$response->status_line);
     return undef;
 }
 
@@ -184,20 +191,20 @@ sub parse_xml {
     my $self    = shift;
     my $feed    = shift;
     my $xml     = shift;
-    my $name    = $feed->{name};
-    my $url     = $feed->{url};
+    my $name    = $feed->name;
+    my $uri     = $feed->uri;
     my $log     = $self->env->log;
     my @data    = try {
-        $log->debug("{$name:$url} Attempting to parse xml with XML::RSS");
+        $log->debug("{$name:$uri} Attempting to parse xml with XML::RSS");
         my @d= $self->parse_xml_rss($feed, $xml);
-        $log->debug("{$name:$url} Got ".scalar(@d)." items");
+        $log->debug("{$name:$uri} Got ".scalar(@d)." items");
         if (scalar(@d) > 0) {
             return @d;
         }
         die;
     }
     catch {
-        $log->debug("{$name:$url} Attempting to parse xml with XML::RSS::Parser::Lite");
+        $log->debug("{$name:$uri} Attempting to parse xml with XML::RSS::Parser::Lite");
         try {
             my @d= $self->parse_xml_rss_parser_lite($feed, $xml);
             if (scalar(@d) > 0) {
@@ -206,7 +213,7 @@ sub parse_xml {
             die;
         }
         catch {
-            $log->debug("{$name:$url} Attempting to parse xml with XML::RSSLite");
+            $log->debug("{$name:$uri} Attempting to parse xml with XML::RSSLite");
             try {
                 my @d= $self->parse_xml_rsslite($feed, $xml);
                 if (scalar(@d) > 0) {
@@ -215,7 +222,7 @@ sub parse_xml {
                 die;
             }
             catch {
-                $log->error("{$name:$url} All attempts to parse xml FAILED");
+                $log->error("{$name:$uri} All attempts to parse xml FAILED");
                 $log->error("Problem XML = $xml");
                 return ();
             };
@@ -365,8 +372,8 @@ sub build_dispatches {
     my @dispatches  = ();
     my $log     = $self->env->log;
 
-    my $name    = $feed->{name};
-    my $url     = $feed->{url};
+    my $name    = $feed->name;
+    my $uri     = $feed->uri;
     my $limit   = $self->day_age_limit;
 
     # $log->debug("data = ", {filter=>\&Dumper, value=>\@data});
@@ -374,11 +381,11 @@ sub build_dispatches {
     ITEM:
     foreach my $item (sort { $a->{epoch} <=> $b->{epoch} } @data) {
         if ( $self->item_old($item, $limit) ) {
-            $log->debug("{$name:$url} item $item->{title} too old. $item->{pubDate} skipping");
+            $log->debug("{$name:$uri} item $item->{title} too old. $item->{pubDate} skipping");
             next ITEM;
         }
         if ( $self->item_already_in_scot($item) ) {
-            $log->debug("{$name:$url} item $item->{title} already in scot, skipping");
+            $log->debug("{$name:$uri} item $item->{title} already in scot, skipping");
             next ITEM;
         }
         my $dispatch = {
@@ -393,8 +400,9 @@ sub build_dispatches {
             data    => {
                 guid    => $item->{guid},
             },
+            feed    => $feed,
         };
-        $log->debug("{$name:$url} Creating dispatch $dispatch->{subject}");
+        $log->debug("{$name:$uri} Creating dispatch $dispatch->{subject}");
         push @dispatches, $dispatch;
     }
     return wantarray ? @dispatches : \@dispatches;
@@ -473,16 +481,26 @@ sub insert_into_scot {
     
     foreach my $dispatch (@dispatches) {
         try {
+            my $feed = $dispatch->{feed};
             my $json = {
                 request => {
                     json    => $dispatch
                 }
             };
+            my $feed_update = {
+                last_attempt    => time(),
+            };
             my $dobj = $col->api_create($json);
-            if (! defined $dobj) {
+            if (defined $dobj) {
+                # update feed stats
+                $feed_update->{last_article} = time();
+                $feed->update_inc(article_count => 1);
+            }
+            else {
                 $log->error("FAILED to create Dispatch with ",
                             {filter=>\&Dumper, value => $dispatch});
             }
+            $feed->update({'$set' => $feed_update});
         }
         catch {
             $log->error("FAILED to create Dispatch [[$_]] with ",

@@ -230,6 +230,13 @@ class NewBadge extends React.Component {
   handleAddition = tag => {
     let badgeType = this.props.badgeType;
     let data = this.props.data;
+    if ( Array.isArray(data) && data.length ) {
+        console.log("data is ok");
+    } else {
+        console.log("Null this.props.data!");
+        data = [];
+    }
+
     let newBadgeArr = data.map(function(item) {
       if (typeof item === "string") {
         return item;

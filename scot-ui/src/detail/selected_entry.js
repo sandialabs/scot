@@ -19,6 +19,7 @@ import TrafficLightProtocol from "../components/traffic_light_protocol";
 import Marker from "../components/marker";
 import EntityCreateModal from "../modal/entity_create";
 import CustomMetaDataTable from "../components/custom_metadata_table";
+import FeedDataTable from "../components/feed_table";
 import ReactTable from "react-table";
 import { get_data, put_data, post_data } from "../utils/XHR";
 import AlertSubComponent from "./alert_subcomponent";
@@ -379,8 +380,17 @@ export default class SelectedEntry extends React.Component {
     }
     return (
       <div id={divid} key={id} className={divClass} style={{ height: height }}>
-        {type !== "entity" && type !== "alert" ? (
+        {type !== "entity" && type !== "alert" && type !== "feed" ? (
           <CustomMetaDataTable
+            type={type}
+            id={id}
+            errorToggle={this.props.errorToggle}
+            form={this.props.form}
+            headerData={this.props.headerData}
+          />
+        ) : null}
+        {type === "feed" ? (
+          <FeedDataTable
             type={type}
             id={id}
             errorToggle={this.props.errorToggle}

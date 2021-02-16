@@ -26,6 +26,8 @@ with    qw(
     Scot::Role::Permission
     Scot::Role::Times
     Scot::Role::TLP
+    Scot::Role::Tags
+    Scot::Role::Sources
     Scot::Role::Hashable
 );
 
@@ -37,6 +39,8 @@ with    qw(
     Scot::Role::Permission
     Scot::Role::Times
     Scot::Role::TLP
+    Scot::Role::Tags
+    Scot::Role::Sources
     Scot::Role::Hashable
 
 =head1 Attributes

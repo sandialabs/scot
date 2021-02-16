@@ -55,6 +55,13 @@ export default class DetailDataStatus extends React.Component {
     this.statusAjax("untracked");
   };
 
+  activeAll = () => {
+    this.statusAjax("active");
+  };
+  pauseAll = () => {
+    this.statusAjax("paused");
+  };
+
   closeAll = () => {
     this.statusAjax("closed");
   };
@@ -173,6 +180,24 @@ export default class DetailDataStatus extends React.Component {
           </MenuItem>
           <MenuItem eventKey="2" onClick={this.closeAll}>
             Close Incident
+          </MenuItem>
+        </DropdownButton>
+      );
+    } else if (this.props.type === "feed") {
+      return (
+        <DropdownButton
+          bsSize="xsmall"
+          bsStyle={buttonStyle}
+          id="feed_status"
+          className={classStatus}
+          style={{ fontSize: "14px" }}
+          title={this.props.status}
+        >
+          <MenuItem eventKey="1" onClick={this.activeAll}>
+            Active Feed
+          </MenuItem>
+          <MenuItem eventKey="2" onClick={this.pauseAll}>
+            Pause Feed
           </MenuItem>
         </DropdownButton>
       );

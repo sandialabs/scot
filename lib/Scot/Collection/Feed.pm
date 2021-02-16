@@ -74,6 +74,20 @@ sub api_subthing {
         });
     }
 
+    if ( $subthing eq "entity" ) {
+        return $mongo->collection('Link')
+                    ->get_linked_objects_cursor(
+                        { id => $id, type => 'feed' },
+                        'entity');
+    }
+
+    if ( $subthing eq "link" ) {
+        return $mongo->collection('Link')
+                    ->get_links_by_target({
+                        id  => $id, type => $thing
+                    });
+    }
+
     if ( $subthing eq "tag" ) {
         my @appearances = map { $_->{apid} } 
             $mongo->collection('Appearance')->find({
@@ -83,6 +97,24 @@ sub api_subthing {
             })->all;
         return $mongo->collection('Tag')->find({
             id => {'$in' => \@appearances}
+        });
+    }
+    if ( $subthing eq "source" ) {
+        my @appearances = map { $_->{apid} }
+            $mongo->collection('Appearance')->find({
+                type            => 'source',
+                'target.type'   => 'event',
+                'target.id'     => $id,
+            })->all;
+        return $mongo->collection('Source')->find({
+            id  => { '$in' => \@appearances }
+        });
+    }
+
+    if ( $subthing eq "history" ) {
+        return $mongo->collection('History')->find({
+            'target.id'   => $id,
+            'target.type' => 'event'
         });
     }
 
