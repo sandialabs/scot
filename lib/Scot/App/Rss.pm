@@ -94,43 +94,42 @@ sub process_feeds {
     my $self    = shift;
     my @feeds   = @{$self->feeds};
     my $log     = $self->env->log;
-    my @all_dispatches = ();
-    
+
     foreach my $feed (@feeds) {
-        my @feed_dispatches = $self->build_feed_dispatches($feed);
-        if (scalar(@feed_dispatches) > 0 ) {
-            push @all_dispatches, @feed_dispatches;
-        }
+        $log->debug("Processing feed ".$feed->{name});
+        $self->process_feed($feed);
     }
-    $self->insert_into_scot(@all_dispatches);
 }
 
-sub build_feed_dispatches {
+sub process_feed {
     my $self    = shift;
     my $feed    = shift;
-    my $log     = $self->env->log;
-    my $name    = $feed->name;
-    my $uri     = $feed->uri;
-    my @dispatches = ();
     my $feed_href   = $feed->as_hash;
-    $log->debug("Feed is ", {filter=>\&Dumper, value=>$feed_href});
-    my $xml = $self->retrieve_feed($feed_href);
+    my $xmldata = $self->retrieve_feed($feed_href);
+    my $name = $feed->name;
+    my $uri  = $feed->uri;
 
-    if (! defined $xml) {
-        $log->error("{$name:$uri} NOT RETRIEVED!");
-        return @dispatches;
+    $self->env->log->debug("process_feed $name");
+
+    if ( ! defined $xmldata ) {
+        $self->env->log->error("{$name:$uri} Failed to retrieve feed");
+        return;
     }
 
-    my @data = $self->parse_xml($feed, $xml);
+    my @articles = $self->parse_xml($feed, $xmldata);
 
-    if (scalar(@data) < 1 ) {
-        $log->error("{$name:$uri} FEED PARSE FAILED");
-        return @dispatches;
+    if ( scalar(@articles) < 1 ) {
+        $self->env->log->error("{$name:$uri} No Articles were parsed from xml: $xmldata");
+        return;
     }
 
-    @dispatches = $self->build_dispatches($feed, @data);
-
-    return @dispatches;
+    foreach my $article (@articles) {
+        my ($dispatch, $entry) = $self->insert_article($article, $feed);
+        if (defined $dispatch and defined $entry ) {
+            $self->send_mq_messages($dispatch, $entry);
+            $self->update_feed($feed, $dispatch);
+        }
+    }
 }
 
 sub retrieve_feed {
@@ -241,38 +240,11 @@ sub parse_xml_rss {
 
     my $parser  = XML::RSS->new();
     $data       = $parser->parse($xml);
-    my @normalized_data = $self->normalize_xml_rss($feed, $data);
+    my @normalized_data = $self->normalize_articles($feed, $data, "xml_rss");
     if ( $flag ) {
         $log->debug({filter=>\&Dumper,value=>\@normalized_data});
     }
     return wantarray ? @normalized_data : \@normalized_data;
-}
-
-sub normalize_xml_rss {
-    my $self    = shift;
-    my $feed    = shift;
-    my $data    = shift;
-    return undef if (! defined $data);
-    my @items   = ();
-    my $channel = {
-        title   => $data->{title},
-        link    => $data->{link},
-        description => $data->{description},
-    };
-    foreach my $item (@{$data->{items}}) {
-        my $item    = {
-            title   => $item->{title},
-            link    => $item->{link},
-            description => $item->{description},
-            guid        => $item->{guid},
-            pubDate     => $item->{pubDate},
-            channel     => $channel,
-            feed        => $feed,
-            epoch       => $self->get_epoch($item->{pubDate}),
-        };
-        push @items, $item;
-    }
-    return wantarray ? @items : \@items;
 }
 
 sub parse_xml_rss_parser_lite {
@@ -284,35 +256,8 @@ sub parse_xml_rss_parser_lite {
 
     my $parser  = XML::RSS::Parser::Lite->new();
     $data    = $parser->parse($xml);
-    return $self->normalize_xml_rss_parser_lite($feed, $data);
-}
-
-sub normalize_xml_rss_parser_lite {
-    my $self    = shift;
-    my $feed    = shift;
-    my $data    = shift;
-    return undef if (! defined $data);
-    my @items   = ();
-    my $channel = {
-        title   => $data->get('title'),
-        link    => $data->get('link'),
-        description => $data->get('description'),
-    };
-    for (my $i = 0; $i < $data->count(); $i++ ) {
-        my $it = $data->get($i);
-        my $item    = {
-            title   => $it->get('title'),
-            link    => $it->get('link'),
-            description => $it->get('description'),
-            guid        => $it->get('guid'),
-            pubDate     => $it->get('pubDate'),
-            channel     => $channel,
-            feed        => $feed,
-            epoch       => $self->get_epoch($it->get('pubDate')),
-        };
-        push @items, $item;
-    }
-    return wantarray ? @items : \@items;
+    my @normalized_data = $self->normalize_articles($feed, $data, "rss_parser_lite");
+    return wantarray ? @normalized_data : \@normalized_data;
 }
 
 sub parse_xml_rsslite {
@@ -323,34 +268,67 @@ sub parse_xml_rsslite {
     my $data;
 
     parseRSS($data, $xml);
-    return $self->normalize_xml_rsslite($feed, $data);
+    my @normalized_data = $self->normalize_articles($feed, $data, "xml_rsslite");
+    return wantarray ? @normalized_data : \@normalized_data;
 }
 
-sub normalize_xml_rsslite {
+sub normalize_articles {
     my $self    = shift;
     my $feed    = shift;
     my $data    = shift;
-    return undef if (! defined $data);
-    my @items   = ();
-    my $channel = {
+    my $parser  = shift;
+    my $log     = $self->env->log;
+
+    $log->debug("normalize_articles");
+
+    return undef if ( ! defined $data);
+
+    my @articles    = ();
+    my $channel     = { 
         title   => $data->{title},
         link    => $data->{link},
         description => $data->{description},
     };
-    foreach my $item (@{$data->{item}}) {
-        my $item    = {
-            title   => $item->{title},
-            link    => $item->{link},
-            description => $item->{description},
-            guid        => $item->{guid},
-            pubDate     => $item->{pubDate},
-            channel     => $channel,
-            feed        => $feed,
-            epoch       => $self->get_epoch($item->{pubDate}),
-        };
-        push @items, $item;
+
+    if ($parser eq "rss_parser_lite") {
+        for (my $i = 0; $i < $data->count(); $i++ ) {
+            my $it = $data->get($i);
+            my $guid = $it->get('guid');
+            if ( ! defined $guid ) {
+                $guid = $it->get('title').$it->get('link');
+            }
+            my $article    = {
+                title   => $it->get('title'),
+                link    => $it->get('link'),
+                description => $it->get('description'),
+                guid        => $guid,
+                pubDate     => $it->get('pubDate'),
+                channel     => $channel,
+                feed        => $feed,
+                epoch       => $self->get_epoch($it->get('pubDate')),
+            };
+            push @articles, $article;
+        }
     }
-    return wantarray ? @items : \@items;
+    else {
+        foreach my $item (@{$data->{items}}) {
+            if ( $item->{guid} eq '' ) {
+                $item->{guid} = $item->{title} . $item->{link};
+            }
+            my $article    = {
+                title   => $item->{title},
+                link    => $item->{link},
+                description => $item->{description},
+                guid        => $item->{guid},
+                pubDate     => $item->{pubDate},
+                channel     => $channel,
+                feed        => $feed,
+                epoch       => $self->get_epoch($item->{pubDate}),
+            };
+            push @articles, $article;
+        }
+    }
+    return wantarray ? @articles : \@articles;
 }
 
 sub get_epoch {
@@ -364,59 +342,80 @@ sub get_epoch {
     return $epoch;
 }
 
-
-sub build_dispatches {
+sub insert_article {
     my $self    = shift;
+    my $article = shift;
     my $feed    = shift;
-    my @data    = @_;
-    my @dispatches  = ();
-    my $log     = $self->env->log;
-
     my $name    = $feed->name;
     my $uri     = $feed->uri;
-    my $limit   = $self->day_age_limit;
+    my $guid    = $article->{guid};
+    my $log     = $self->env->log;
 
-    # $log->debug("data = ", {filter=>\&Dumper, value=>\@data});
+    $log->debug("insert_article");
 
-    ITEM:
-    foreach my $item (sort { $a->{epoch} <=> $b->{epoch} } @data) {
-        if ( $self->item_old($item, $limit) ) {
-            $log->debug("{$name:$uri} item $item->{title} too old. $item->{pubDate} skipping");
-            next ITEM;
-        }
-        if ( $self->item_already_in_scot($item) ) {
-            $log->debug("{$name:$uri} item $item->{title} already in scot, skipping");
-            next ITEM;
-        }
-        my $dispatch = {
-            source  => [ $name ],
-            owner   => 'scot-rss',
-            subject => $item->{title},
-            tag     => [ 'rss' ],
-            tlp     => 'unset',
-            source_uri  => $item->{link},
-            entry   => $self->build_entry($item),
-            created => $item->{epoch},
-            data    => {
-                guid    => $item->{guid},
-            },
-            feed    => $feed,
-        };
-        $log->debug("{$name:$uri} Creating dispatch $dispatch->{subject}");
-        push @dispatches, $dispatch;
+    my $dispatch_data = $self->create_dispatch_href($article, $name);
+
+    if ( $self->already_in_scot($dispatch_data) ) {
+        $self->env->log->warn("{$name:$uri} Article $guid already in SCOT");
+        return undef, undef;
     }
-    return wantarray ? @dispatches : \@dispatches;
+
+    if ($self->article_too_old($article) ) {
+        $self->env->log->warn("{$name:$uri} Article $guid too old, skipping");
+        return undef, undef;
+    }
+
+    my $dispatch = $self->create_dispatch($dispatch_data, $feed); 
+
+    if (! defined $dispatch ) {
+        $log->error("{$name:$uri} Failed to create dispatch with ",
+            {filter => \&Dumper, value => $dispatch_data});
+        return undef, undef;
+    }
+
+    my $entry = $self->create_entry($dispatch, $article);
+
+    if (! defined $entry ) {
+        $log->error("{$name:$uri} Failed to create Entry with:",
+         {filter => \&Dumper, value=> $article});
+        # dispatch without an entry is useless, so delete it
+        $log->warn("{$name:$uri} Removing Dispatch ".$dispatch->id);
+        $dispatch->remove();
+        return undef, undef;
+    }
+    return $dispatch, $entry;
+}
+
+sub create_dispatch_href {
+    my $self    = shift;
+    my $article = shift;
+    my $feed_name   = shift;
+    $self->env->log->debug("create_dispatch_href");
+    my $dispatch = {
+        source  => [ $feed_name ],
+        owner   => 'scot-rss',
+        subject => $article->{title},
+        tag     => [ 'rss' ],
+        tlp     => 'unset',
+        source_uri  => $article->{link},
+        created => $article->{epoch},
+        data    => {
+            guid    => $article->{guid},
+        },
+    };
+    return $dispatch;
 }
 
 sub build_entry {
-    my $self    = shift;
-    my $item    = shift;
-    my $pubdate     = $item->{pubDate};
-    my $description = $item->{description};
-    my $title       = $item->{title};
-    my $link        = $item->{link};
+    my $self        = shift;
+    my $article     = shift;
+    my $pubdate     = $article->{pubDate};
+    my $description = $article->{description};
+    my $title       = $article->{title};
+    my $link        = $article->{link};
+    $self->env->log->debug("build_entry");
     my $html    = 
-        qq|<table class="rss_item">|.
+        qq|<table class="rss_article">|.
         qq|  <tr><th align="left">Title</th><td>$title<td></tr>|.
         qq|  <tr><th align="left">Published</th><td>$pubdate<td></tr>|.
         qq|  <tr><th align="left">Link</th><td><a href="$link">$link</a><td></tr>|.
@@ -425,108 +424,137 @@ sub build_entry {
     return $html;
 }
 
-sub item_old {
+sub article_too_old {
     my $self    = shift;
-    my $item    = shift;
-    my $limit   = shift;
+    my $article = shift;
+    my $limit   = $self->day_age_limit;
     my $log     = $self->env->log;
 
-    # $log->debug("itemold: ",{filter=>\&Dumper, value=>$item});
+    $log->debug("Test if Article is too old: $article->{epoch}");
 
-    my $epoch   = $item->{epoch};
+    my $epoch   = $article->{epoch};
     if ( ! defined $epoch ) {
-        $log->error("Undefined Epoch in item!", {filter=>\&Dumper, value=>$item});
+        $log->error("Undefined Epoch in article!", {filter=>\&Dumper, value=>$article});
         return undef; # skip
     }
-    my $item_dt = DateTime->from_epoch(epoch => $epoch);
+    my $article_dt = try {
+        DateTime->from_epoch(epoch => $epoch);
+    } catch {
+        $log->error("Invalid Epoch? $epoch. $_");
+    };
     my $limit_dt = DateTime->now;
 
-    # $log->debug("item_dt ".$item_dt->ymd." ".$item_dt->hms);
-    # $log->debug("limit_dt ".$limit_dt->ymd." ".$limit_dt->hms);
-
     $limit_dt->subtract(days => $limit);
-    my $cmp = DateTime->compare($item_dt, $limit_dt);
+    my $cmp = DateTime->compare($article_dt, $limit_dt);
     if ( $cmp < 0 ) {
         return 1;
     }
     return undef;
 }
 
-sub item_already_in_scot {
+sub already_in_scot {
     my $self    = shift;
-    my $item    = shift;
+    my $article = shift;
     my $log     = $self->env->log;
     my $mongo   = $self->env->mongo;
     my $col     = $mongo->collection('Dispatch');
     my $query   = {
-        "data.guid" => $item->{guid}
+        "data.guid" => $article->{guid}
     };
     my $obj = $col->find_one($query);
     if ( defined $obj ) {
-        $log->debug("Item: $item->{title} with guid $item->{guid} already in scot");
+        $log->debug("Item: $article->{title} with guid $article->{guid} already in scot");
         $log->debug("Existing dispatch is ".$obj->id);
         return 1;
     }
     return undef;
 }
 
-sub insert_into_scot {
+sub create_dispatch {
     my $self    = shift;
-    my @dispatches   = @_;
-    my $mongo   = $self->env->mongo;
-    my $col     = $mongo->collection('Dispatch');
+    my $data    = shift;
+    my $feed    = shift;
+
+    $self->env->log->debug("create_dispatch");
+
+    my $json    = { request => { json => $data } };
+    my $dispatch = try {
+        $self->env->mongo->collection('Dispatch')->api_create($json);
+    }
+    catch {
+        $self->env->log->error("FAILED to Create Dispatch: $_");
+        return undef; # sets $dispatch to undef
+    };
+    return $dispatch;
+}
+
+sub create_entry {
+    my $self    = shift;
+    my $dispatch    = shift;
+    my $article     = shift;
     my $log     = $self->env->log;
 
-    # $log->debug("INSERT: ",{ filter=>\&Dumper, value=>\@dispatches});
+    $log->debug("Creating Entry");
     
-    foreach my $dispatch (@dispatches) {
-        try {
-            my $feed = $dispatch->{feed};
-            my $json = {
-                request => {
-                    json    => $dispatch
-                }
-            };
-            my $feed_update = {
-                last_attempt    => time(),
-            };
-            my $entry_body = delete $json->{entry};
-            my $dobj = $col->api_create($json);
+    my $data    = {
+        target  => { type => 'dispatch', id => $dispatch->id },
+        groups  => $dispatch->groups,
+        summary => 0,
+        body    => $self->build_entry($article),
+        owner   => $dispatch->owner,
+    };
 
-            my $entry_data = {
-                target  => {
-                    type    => 'dispatch',
-                    id      => $dobj->id,
-                },
-                groups  => $dobj->groups,
-                summary => 0,
-                body    => $entry_body,
-                owner   => $dobj->owner,
-            };
-            my $eobj = $mongo->collection('Entry')->create($entry_data);
-            $self->env->mq->send(
-                "/topic/scot",
-                {
-                    action => "created",
-                    data => { type => "entry", id => $eobj->id, who => 'scot-rss' },
-                }
-            );
-            if (defined $dobj) {
-                # update feed stats
-                $feed_update->{last_article} = time();
-                $feed->update_inc(article_count => 1);
-            }
-            else {
-                $log->error("FAILED to create Dispatch with ",
-                            {filter=>\&Dumper, value => $dispatch});
-            }
-            $feed->update({'$set' => $feed_update});
-        }
-        catch {
-            $log->error("FAILED to create Dispatch [[$_]] with ",
-                        {filter=>\&Dumper, value => $dispatch});
-        };
+    my $entry = try {
+        $self->env->mongo->collection('Entry')->create($data);
     }
+    catch {
+        $self->env->log->error("Failed to create Entry: $_");
+        return undef;
+    };
+    # $log->debug("Entry is ",{filter=>\&Dumper, value=>$entry});
+    return $entry;
+}
+
+sub send_mq_messages {
+    my ($self, $dispatch, $entry) = @_;
+    my $mq  = $self->env->mq;
+    $mq->send("/topic/scot",{
+        action  => "created",
+        data    => {
+            type    => "dispatch",
+            id      => $dispatch->id,
+            who     => "scot-rss"
+        },
+    });
+    $mq->send("/topic/scot",{
+        action  => "created",
+        data    => {
+            type    => "entry",
+            id      => $entry->id,
+            who     => 'scot-rss'
+        },
+    });
+}
+
+sub update_feed {
+    my $self        = shift;
+    my $feed        = shift;
+    my $dispatch    = shift;
+    my $now         = time();
+
+    try {
+        $feed->update({
+            '$set'  => {
+                entry_count => 1,
+                last_article    => $now,
+                last_attempt    => $now,
+            }
+        });
+        $feed->update_inc(article_count => 1);
+    }
+    catch {
+        $self->env->log->error("Error updating Feed: $_");
+    };
 }
 
 1;
