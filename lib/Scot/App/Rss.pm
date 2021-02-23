@@ -355,7 +355,7 @@ sub insert_article {
 
     my $dispatch_data = $self->create_dispatch_href($article, $name);
 
-    if ( $self->already_in_scot($dispatch_data) ) {
+    if ( $self->already_in_scot($article) ) {
         $self->env->log->warn("{$name:$uri} Article $guid already in SCOT");
         return undef, undef;
     }
