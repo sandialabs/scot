@@ -397,7 +397,8 @@ export default class SelectedHeaderOptions extends React.Component {
           <Button eventkey="3" onClick={this.toggleFlair} bsSize="xsmall">
             <i className="fa fa-eye-slash" aria-hidden="true" /> Toggle Flair
           </Button>
-          {type === "alertgroup" || type === "event" || type === "intel" ? (
+          {type === "alertgroup" || type === "event" || 
+           type === "dispatch" || type === "intel" ? (
             <Button
               eventkey="4"
               onClick={this.props.viewedByHistoryToggle}
