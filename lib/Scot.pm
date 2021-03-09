@@ -202,6 +202,10 @@ relies on the browser BasicAuth popup.
             ->to    ('controller-search#hitsearch')
             ->name  ('hitsearch');
 
+    $scot   ->route ('/api/v2/entitytypecount')
+            ->to    ('controller-api#entitytypecount')
+            ->name  ('entitytypecount');
+
 =pod
 
 @api {get} /scot/api/v2/game SCOT Gamefication
