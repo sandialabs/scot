@@ -8,9 +8,19 @@ use Test::More;
 use Data::Dumper;
 use Scot::Email::Processor;
 
+my $config = '../../../../../'.
+             'Scot-Internal-Modules/etc/'.
+             'test_email_processing.cfg.pl';
 my $env = Scot::Env->new(
-    config_file => '../../../../../Scot-Internal-Modules/etc/mailtest.cfg.pl'
+    config_file => $config,
 );
+
+ok(defined($env), "Scot::Env was created");
+
+my $log = $env->log;
+
+is(ref($log), "Log::Log4perl::Logger", "Logger created");
+
 
 my $proc = Scot::Email::Processor->new({
     env => $env,
@@ -33,4 +43,4 @@ foreach my $mbox (@mailboxes) {
 
 
 
-
+done_testing();

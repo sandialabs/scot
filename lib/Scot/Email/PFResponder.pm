@@ -54,14 +54,6 @@ has max_workers => (
     builder     => '_build_max_workers',
 );
 
-sub _build_max_workers {
-    my $self    = shift;
-    my $attr    = "max_workers";
-    my $default = 5;
-    my $envname = "scot_util_max_workers";
-    return $self->get_config_value($attr, $default, $envname);
-}
-
 has mode    => (
     is          => 'rw',
     isa         => 'Str',

@@ -268,7 +268,7 @@ sub get_attached_files {
         }
         if ( $part->is_attachment ) {
             my $content     = $part->content;
-            my $filename    = $disp->filename;
+            my $filename    = $part->filename;
             $files{files}{$filename} = $content; # allow responder to create files
         }
     }

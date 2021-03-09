@@ -4,7 +4,7 @@ use lib '../../../../lib';
 use strict;
 use warnings;
 
-use Scot::Email::Responder::AlertEmailPassthrough;
+use Scot::Email::Responder::AlertPassthrough;
 use Scot::Env;
 use Test::More;
 use Test::Deep;
@@ -16,13 +16,14 @@ system("mongo scot-testing < $reset_file 2>&1 > /dev/null");
 my $config_file = '../../../../../Scot-Internal-Modules/etc/test_alert_responder.cfg.pl';
 
 my $env = Scot::Env->new( config_file => $config_file);
-my $responder = Scot::Email::Responder::AlertEmailPassthrough->new(env => $env);
+my $responder = Scot::Email::Responder::AlertPassthrough->new(env => $env);
 
 my $email_body_href = {
     email   => '<html><head></head><body><h1>FOOBAR for the win</h1></body></html>',
 };
+
 my @alert_rows = (
-    { email => $email_body_href }
+    $email_body_href
 );
 
 my $data    = {
@@ -32,7 +33,7 @@ my $data    = {
     body        => '',
     tag         => ['foo', 'bar'],
     source      => [ 'boom', 'baz' ],
-    columns     => [ 'foo_status', 'bar_value', 'boom_index' ],
+    columns     => [ 'email' ],
     data        => [$email_body_href],
 
 };
@@ -52,12 +53,9 @@ $cursor->sort({id => 1});
 my $counter = 0;
 while (my $alert = $cursor->next ) {
     my $expected = $alert_rows[$counter];
-    # print "expected ".Dumper(\@alert_rows)."\n";
     foreach my $column (@{$data->{columns}}) {
         my $adata = $alert->data->{$column};
-        # print "Got adata: ".Dumper($adata);
         my $edata = $expected->{$column};
-        # print "\nGot edata: ".Dumper($edata)."\n";
         cmp_deeply( $adata, $edata, "$column was correct");
     }
     $counter++;

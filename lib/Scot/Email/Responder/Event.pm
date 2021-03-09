@@ -36,6 +36,19 @@ sub _build_parsers {
     return wantarray ? @parsers : \@parsers;
 }
 
+sub _build_max_workers {
+    my $self        = shift;
+    my $package     = __PACKAGE__;
+    my $responder   = $self->get_config_value("responders", undef, undef);
+    my $workers     = 1;
+    if (defined $responder) {
+        if (defined $responder->{workers} ) {
+            $workers     = $responder->{workers};
+        }
+    }
+    return $workers;
+}
+
 has create_method => (
     is          => 'ro',
     isa         => 'Str',

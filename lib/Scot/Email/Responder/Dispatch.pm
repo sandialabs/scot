@@ -1,4 +1,4 @@
-package Scot::Email::Responder::AlertEmailPassthrough;
+package Scot::Email::Responder::Event;
 
 use strict;
 use warnings;
@@ -12,7 +12,7 @@ has name => (
     is      => 'ro',
     isa     => 'Str',
     required=> 1,
-    default => 'AlertEmailPassthrough',
+    default => 'Dispatch',
 );
 
 has parsers => (
@@ -35,6 +35,19 @@ sub _build_parsers {
     return wantarray ? @parsers : \@parsers;
 }
 
+sub _build_max_workers {
+    my $self        = shift;
+    my $package     = __PACKAGE__;
+    my $responder   = $self->get_config_value("responders", undef, undef);
+    my $workers     = 1;
+    if (defined $responder) {
+        if (defined $responder->{workers} ) {
+            $workers     = $responder->{workers};
+        }
+    }
+    return $workers;
+}
+
 has create_method => (
     is          => 'ro',
     isa         => 'Str',
@@ -50,15 +63,15 @@ sub process_message {
     my $data    = $href->{data};
     my $log     = $self->env->log;
 
-    $log->debug("[Wkr $$] Processing Alert $action");
+    $log->debug("[Wkr $$] Processing Dispatch $action");
 
     PARSE:
     foreach my $parser (@{$self->parsers}) {
         if ( $parser->will_parse($data) ) {
-            my $alertgroup = $parser->parse_message($data);
-            my $created_count   = $self->create_alertgroup($alertgroup);
+            my $dispatch        = $parser->parse_message($data);
+            my $created_count   = $self->create_dispatch($dispatch);
             if ( $created_count ) {
-                $log->debug("$created_count alertgroup(s) created");
+                $log->debug("$created_count dispatch(es) created");
             }
             else {
                 $log->error("failed to create alertgroup from ",
@@ -73,7 +86,7 @@ sub process_message {
     $log->debug("[Wkr $$] Finished");
 }
 
-sub create_alertgroup {
+sub create_dispatch {
     my $self    = shift;
     my $data    = shift;
     my $method  = $self->create_method;
@@ -85,14 +98,14 @@ sub create_via_mongo {
     my $self    = shift;
     my $data    = shift;
     my $mongo   = $self->env->mongo;
-    my $col     = $mongo->collection('Alertgroup');
+    my $col     = $mongo->collection('Dispatch');
 
-    my @alertgroups = $col->api_create({
+    my $event   = $col->api_create({
         request => {
-            json => $data
+            json    => $data,
         }
     });
-    return scalar(@alertgroups);
+
 }
 
 sub create_via_api {

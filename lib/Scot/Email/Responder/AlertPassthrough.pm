@@ -1,4 +1,4 @@
-package Scot::Email::Responder::Alert;
+package Scot::Email::Responder::AlertPassthrough;
 
 use strict;
 use warnings;
@@ -12,7 +12,7 @@ has name => (
     is      => 'ro',
     isa     => 'Str',
     required=> 1,
-    default => 'Alert',
+    default => 'AlertEmailPassthrough',
 );
 
 has parsers => (
@@ -25,9 +25,8 @@ has parsers => (
 sub _build_parsers {
     my $self                = shift;
     my @parser_class_names  = (qw(
-        Scot::Email::Parser::Splunk
+        Scot::Email::Parser::PassThrough
     ));    
-#        Scot::Email::Parser::Generic
     my @parsers = ();
     foreach my $cname (@parser_class_names) {
         require_module($cname);

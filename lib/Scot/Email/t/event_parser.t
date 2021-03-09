@@ -21,13 +21,23 @@ EOF
 
 chomp($entry_body);
 
+my $subject = "Foobar at it again";
+
 my $body_html = <<"EOF";
 <html>
+    <head>
+    </head>
     <body>
         <table>
-            <tr><td>subject</td><td>It's foo time</td></tr>
-            <tr><td>sources</td><td>me, myself, i</td></tr>
-            <tr><td>tags</td><td>boom, baz, bar</td></tr>
+            <tr>
+                <td>subject</td><td>$subject</td>
+            </tr>
+            <tr>
+                <td>sources</td><td>me, myself, i</td>
+            </tr>
+            <tr>
+                <td>tags</td><td>boom, baz, bar</td>
+            </tr>
         </table>
         $entry_body
     </body>
@@ -35,7 +45,7 @@ my $body_html = <<"EOF";
 EOF
 
 my $stripped_body = join('', 
- "<html><head></head><body><table></table>",
+ "<html><head></head><body>",
  $entry_body,
  " </body></html>"
 );
@@ -46,7 +56,7 @@ EOF
 
 my $message = {
     from    => 'todd@scot.com',
-    subject => 'FOOBAR is at it again',
+    subject => "different subject",
     message_id  => '<b02629f38b2d4bcba45a10b50d7db312@foobar.scot.com>',
     body_plain  => $body_plain,
     body_html   => $body_html,
@@ -54,7 +64,8 @@ my $message = {
 
 my %result = $parser->parse_message($message);
 
-is($result{event}{subject},    $message->{subject}, "Correct Subject");
+
+is($result{event}{subject},    $subject, "Correct Subject");
 is($result{entry}{body}, $stripped_body, "Entry Body correct");
 cmp_deeply($result{event}{groups}, $env->default_groups, "Event groups correct");
 cmp_deeply($result{entry}{groups}, $env->default_groups, "Entry groups correct");
