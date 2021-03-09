@@ -69,14 +69,14 @@ sub process_message {
     PARSE:
     foreach my $parser (@{$self->parsers}) {
         if ( $parser->will_parse($data) ) {
-            my $alertgroup = $parser->parse_message($data);
-            my $created_count   = $self->create_alertgroup($alertgroup);
+            my $event = $parser->parse_message($data);
+            my $created_count   = $self->create_event_from_message($event);
             if ( $created_count ) {
-                $log->debug("$created_count alertgroup(s) created");
+                $log->debug("$created_count event(s) created");
             }
             else {
-                $log->error("failed to create alertgroup from ",
-                            { filter => \&Dumper, value => $alertgroup });
+                $log->error("failed to create event from ",
+                            { filter => \&Dumper, value => $event });
                 # try the next parser?
                 # next PARSE;
             }
@@ -87,7 +87,7 @@ sub process_message {
     $log->debug("[Wkr $$] Finished");
 }
 
-sub create_alertgroup {
+sub create_event {
     my $self    = shift;
     my $data    = shift;
     my $method  = $self->create_method;
@@ -99,7 +99,7 @@ sub create_via_mongo {
     my $self    = shift;
     my $data    = shift;
     my $mongo   = $self->env->mongo;
-    my $col     = $mongo->collection('Alertgroup');
+    my $col     = $mongo->collection('Event');
 
     my $event   = $col->api_create({
         request => {

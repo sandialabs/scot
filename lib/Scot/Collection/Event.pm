@@ -62,7 +62,7 @@ override api_create => sub {
     }
 
     if ($entry_body) {
-        $self->create_alert_entry($event, $entry_body);
+        $self->create_event_entry($event, $entry_body);
     }
 
     my $id      = $event->id;
@@ -77,6 +77,40 @@ override api_create => sub {
 
     return $event;
 };
+
+sub create_event_from_message {
+    my $self    = shift;
+    my $data    = shift;
+    my $log     = $self->env->log;
+
+    my $event_data  = $data->{event};
+    my $entry_data  = $data->{entry};
+
+    my $event   = $self->create($event_data);
+
+    if ( ! defined $event ) {
+        $log->error("Failed to create Event from ",
+                    {filter=>\&Dumper, value=>$event_data});
+        return 0;
+    }
+    my @tags    = @{$event_data->{tags}};
+    my @sources = @{$event_data->{source}};
+
+    if ( $entry_data ) {
+        $self->create_event_entry($event, $entry_data->{body});
+    }
+    my $id      = $event->id;
+    if ( scalar(@sources) > 0 ) {
+        my $col = $env->mongo->collection('Source');
+        $col->add_source_to("event", $event->id, \@sources);
+    }
+    if ( scalar(@tags) > 0 ) {
+        my $col = $env->mongo->collection('Tag');
+        $col->add_source_to("event", $event->id, \@tags);
+    }
+
+    return $event;
+}
 
 
 sub process_alerts {
@@ -105,7 +139,7 @@ sub process_alerts {
     $bhref->{alerts}   = \@alertids;
 }
 
-sub create_alert_entry {
+sub create_event_entry {
     my $self    = shift;
     my $event   = shift;
     my $body    = shift;
