@@ -2457,7 +2457,10 @@ sub entitytypecount {
         { '$group' => {
             '_id' => '$type',
             'count' => { '$sum' => 1 }
-        }}
+        }},
+        {
+            '$sort' => { count => -1 }
+        }
     ];
     my $cursor  = $mongo->collection('Entity')->get_aggregate_cursor($query);
     while ( my $row = $cursor->next ) {
