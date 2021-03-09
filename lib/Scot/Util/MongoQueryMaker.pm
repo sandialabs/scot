@@ -279,8 +279,13 @@ sub build_match_ref {
             $mquery{$key} = $self->parse_exact_match($value);
         }
         else {
-            # stringfield
-            $mquery{$key} = $self->parse_stringfield_match($value);
+            if ( $value =~ /^\d+$/ ) {
+                $mquery{$key} = $self->parse_numericfield_match($value);
+            }
+            else {
+                # stringfield
+                $mquery{$key} = $self->parse_stringfield_match($value);
+            }
         }
     }
     print "Matching: ". Dumper(\%mquery)."\n";
