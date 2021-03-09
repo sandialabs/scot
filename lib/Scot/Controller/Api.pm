@@ -1106,7 +1106,7 @@ sub promote {
     }
 
     if ( ref($object) eq "Scot::Model::Dispatch" ) {
-        my $source = pop $object->source;
+        my $source = pop @{$object->source};
         my $feed   = $mongo->collection('Feed')->find_one({name => $source});
         if ( defined $feed ) {
             $feed->update_inc('promotions' => 1);
@@ -2446,6 +2446,31 @@ sub lriproxy {
         $log->error(longmess);
         $self->render_error(400, { error_msg => $_ } );
     };
+}
+
+sub entitytypecount {
+    my $self    = shift;
+    my $mongo   = $self->env->mongo;
+    my @records = ();
+
+    my $query   = [
+        { '$group' => {
+            '_id' => '$type',
+            'count' => { '$sum' => 1 }
+        }}
+    ];
+    my $cursor  = $mongo->collection('Entity')->get_aggregate_cursor($query);
+    while ( my $row = $cursor->next ) {
+        push @records, $row;
+    }
+
+    my $json    = {
+        records => \@records,
+        queryRecordCount    => scalar(@records),
+        totalRecordCount    => scalar(@records),
+    };
+
+    $self->do_render($json);
 }
 
 1;
