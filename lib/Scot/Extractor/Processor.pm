@@ -658,6 +658,54 @@ sub has_splunk_ip_pattern {
     return undef;
 }
 
+sub fix_splunk_ipv6 {
+    my $self    = shift;
+    my $child   = shift;
+    my $level   = shift;
+    my $log     = $self->env->log;
+
+    $log->debug(" "x$level."looking for crappy splunk ipv6 addresses");
+
+    my @content = $child->content_list;
+    my $count   = scalar(@content);
+
+    for (my $i = 0; $i < $count - 8; $i++) {
+        if ( $self->has_splunk_ipv6_pattern($i,@content) ) {
+            my $new_ipv6 = join(':', $content[$i]->as_text,
+                                     $content[$i+2]->as_text,
+                                     $content[$i+4]->as_text,
+                                     $content[$i+6]->as_text,
+                                     $content[$i+7]->as_text,
+                                     $content[$i+8]->as_text);
+            $child->splice_content($i, 7, $new_ipv6);
+            $log->debug("Found Weird SPlunk IPv6 addr: spliced to: ".$child->as_HTML);
+        }
+    }
+}
+
+sub has_splunk_ipv6_pattern {
+    my $self    = shift;
+    my $i       = shift;
+    my @c       = @_;
+
+    if ( ref($c[$i]) ) {
+        if (
+            $c[$i]->tag     eq "span" and
+            $c[$i+1]        eq ':' and
+            $c[$i+2]->tag   eq 'span' and
+            $c[$i+3]        eq ':' and
+            $c[$i+4]->tag   eq 'span' and
+            $c[$i+5]        eq ':' and
+            $c[$i+6]->tag   eq 'span' and
+            ($c[$i+7] eq '0:0:0' or $c[$i+7] =~ /([0-9a-f]{1,4}:){3}/i) and
+            $c[$i+8]->tag   eq 'span' 
+        ) {
+            return 1;
+        }
+    }
+    return undef;
+}
+
 =item B<detect_user_defined_entity>
 
 a user using the web ui can highligh a string (including spaces)
