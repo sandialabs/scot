@@ -82,6 +82,7 @@ sub create_event_from_message {
     my $self    = shift;
     my $data    = shift;
     my $log     = $self->env->log;
+    my $env     = $self->env;
 
     my $event_data  = $data->{event};
     my $entry_data  = $data->{entry};
