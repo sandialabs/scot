@@ -282,7 +282,7 @@ relies on the browser BasicAuth popup.
 =cut
 
     $scot   ->route ('/api/v2/graph/:thing/:id/:depth')
-            ->to    ('controller-graph#get_graph')
+            ->to    ('controller-graph2#get_graph')
             ->name  ('get_graph');
 =pod
 

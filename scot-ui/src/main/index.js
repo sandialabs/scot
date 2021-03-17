@@ -21,6 +21,7 @@ import Notification from "react-notification-system";
 import LinkContainer from "react-router-bootstrap/lib/LinkContainer.js";
 import Admin from "../components/admin/";
 import { Amq } from "../utils/activemq";
+import SFGraph from "../components/forcegraph";
 
 export default class App extends React.Component {
   constructor(props) {
@@ -362,6 +363,9 @@ export default class App extends React.Component {
                 <LinkContainer to="/feed" activeClassName="active">
                     <MenuItem>Feeds</MenuItem>
                 </LinkContainer>
+                <LinkContainer to="/sfgraph" activeClassName="active">
+                  <MenuItem>ScotForceGraph</MenuItem>
+                </LinkContainer>
                 <MenuItem divider />
                 <LinkContainer to="/admin" activeClassName="active">
                   <MenuItem>Administration</MenuItem>
@@ -424,6 +428,11 @@ export default class App extends React.Component {
           {type === "admin" ? (
             <Route exact path="/admin">
               <Admin></Admin>
+            </Route>
+          ) : null}
+          {type === "sfgraph" ? (
+            <Route exact path="/sfgraph">
+                <SFGraph></SFGraph>
             </Route>
           ) : null}
           {type === "alert" ? (
