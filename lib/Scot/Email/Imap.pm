@@ -147,7 +147,15 @@ sub reconnect_if_forked {
 
 sub get_unseen_cursor {
     my $self    = shift;
-    my @uids    = $self->get_unseen_mail;
+    my @uids    = ();
+
+    if ( $self->test_mode ) {
+        @uids = $self->get_mail_since();
+    }
+    else {
+        @uids = $self->get_unseen_mail;
+    }
+
     my $cursor  = Scot::Email::Imap::Cursor->new({uids => \@uids});
     return $cursor;
 }
@@ -181,6 +189,37 @@ sub get_unseen_mail {
         $log->trace(scalar(@unseen_uids)." unread messages found.");
     }
     return wantarray ? @unseen_uids : \@unseen_uids;
+}
+
+sub get_mail_since {
+    my $self    = shift;
+    my $epoch   = shift;
+    my $log     = $self->env->log;
+    $self->reconnect_if_forked;
+    my $client  = $self->client;
+    my $since   = $epoch;
+
+    if ( ! defined $since ) {
+        my $seconds_ago = 60 * 60; # past hour
+        $since = time() - $seconds_ago;
+    }
+
+    my @uids;
+    retry {
+        $client->select($self->mailbox);
+        foreach my $message_id ($client->since($since)) {
+            if ( $message_id =~ $MSG_ID_FMT ) {
+                push @uids, $message_id;
+            }
+        }
+    }
+    on_retry {
+        $self->clear_client_connection;
+    }
+    catch {
+        $log->logdie("Failed to set messages since $since: $_");
+    };
+    return wantarray ? @uids :\@uids;
 }
 
 sub get_message {
