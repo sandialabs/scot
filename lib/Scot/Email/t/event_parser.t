@@ -64,6 +64,7 @@ my $message = {
 
 my %result = $parser->parse_message($message);
 
+print Dumper(\%result);
 
 is($result{event}{subject},    $subject, "Correct Subject");
 is($result{entry}{body}, $stripped_body, "Entry Body correct");
