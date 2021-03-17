@@ -221,6 +221,10 @@ relies on the browser BasicAuth popup.
             ->to    ('controller-metric#get_game_data')
             ->name  ('game');
 
+    $scot   ->route ('/api/v2/chef')
+            ->to    ('controller-api#get_chef_uri')
+            ->name  ('chef');
+
 =pod
 
 @api {get} /scot/api/v2/form SCOT Form server

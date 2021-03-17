@@ -2476,4 +2476,10 @@ sub entitytypecount {
     $self->do_render($json);
 }
 
+sub get_chef_uri {
+    my $self    = shift;
+    my $uri     = $self->env->cyber_chef_uri;
+    $self->do_render({ chef_uri => $uri });
+}
+
 1;
