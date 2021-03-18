@@ -8,6 +8,8 @@ import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
 import ScotForceGraph from './ScotForceGraph';
+//import SFG3d from './SFG3d';
+import SFG from './SFG';
 
 function TabContainer(props) {
   return (
@@ -45,8 +47,10 @@ const styles = theme => ({
 });
 
 class GraphView extends React.Component {
+
   state = {
     value: 0,
+    threed: 1,
   };
 
   handleChange = (event, value) => {
@@ -60,7 +64,11 @@ class GraphView extends React.Component {
     return (
       <MuiThemeProvider theme={theme}>
         <div className={classes.root}>
-            <ScotForceGraph/>
+            { this.state.threed === 1 ?
+                <SFG/>
+            :
+                <ScotForceGraph/>
+            }
         </div>
       </MuiThemeProvider>
     );

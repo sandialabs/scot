@@ -328,6 +328,21 @@ sub get_display_count {
     return $count;
 }
 
+sub get_entity_degree {
+    my $self        = shift;
+    my $entity_id   = shift;
+    my $vertex      = { target => "entity", id => $entity_id };
+    my $match   = {
+        '$and'  => [
+            {vertices => { '$elemMatch' => $vertex } },
+            {'vertices.type' => { '$nin' => [ 'alertgroup', 'entry' ] } },
+        ],
+    };
+    my $count  = $self->count($match);
+    return $count;
+}
+
+
 sub get_display_count_agg {
     my $self    = shift;
     my $entity  = shift;

@@ -1,6 +1,12 @@
 import React from 'react';
 import {withStyles } from '@material-ui/core/styles';
 
+const tablestyle = {
+    padding: "5px",
+    width: "100%"
+};
+
+
 class EntityInfo extends React.Component {
     
     constructor(props) {
@@ -11,15 +17,12 @@ class EntityInfo extends React.Component {
         let ei  = this.props.nodeInfo;
         return (
             <div>
-                <h3>Entity Info</h3>
-                <table>
+                <table style={tablestyle}>
                     <tr>
-                        <th>{ei.value}</th>
-                    </tr>
-                    <tr>
-                        <td>{ei.type}</td>
-                    </tr>
-                    <tr>
+                        <th>Entity Info</th>
+                        <td>id: {ei.id}</td>
+                        <td>Entity: {ei.value}</td>
+                        <td>Type: {ei.type}</td>
                         <td>Entries: {ei.entry_count}</td>
                     </tr>
                 </table>

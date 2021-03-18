@@ -1,6 +1,11 @@
 import React from 'react';
 import {withStyles } from '@material-ui/core/styles';
 
+const style = {
+    width: "100%",
+    padding: "5px"
+};
+
 class EntityInfo extends React.Component {
     
     constructor(props) {
@@ -15,22 +20,16 @@ class EntityInfo extends React.Component {
         }
         return (
             <div>
-                <h3>{ti.sourcetype} Info</h3>
-                <table>
+                <table style={style}>
                     <tr>
-                        <th>{ti.subject}</th>
-                    </tr>
-                    <tr>
-                        <td>{ti.status}</td>
-                    </tr>
-                    <tr>
-                        <ol>
+                        <th>{ti.sourcetype}</th> 
+                        <td>id: {ti.id}</td>
+                        <td>subject: {ti.subject}</td>
+                        <td>status: {ti.status}</td>
+                        <td>Tags:
                             {tags.length > 0 && tags.map((tag) => (
-                                <li key={tag}>{tag}</li>
-                            ))}
-                        </ol>
-                    </tr>
-                    <tr>
+                                {tag}
+                            ))}</td>
                         <td>Entries: {ti.entry_count}</td>
                     </tr>
                 </table>

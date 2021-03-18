@@ -24,7 +24,8 @@ sub get_graph {
     };
 
     $self->build_graph($db, $target, $depth);
-    $log->debug("DB ",{filter=>\&Dumper, value=> $db});
+    # $log->debug("DB ",{filter=>\&Dumper, value=> $db});
+    $self->add_degree($db);
     my $code = 200;
     my $href = {
         nodes   => $db->{nodes},
@@ -34,6 +35,16 @@ sub get_graph {
         status  => $code,
         json    => $href,
     );
+}
+
+sub add_degree {
+    my $self    = shift;
+    my $db      = shift;
+    
+    foreach my $node (@{$db->{nodes}}) {
+        my $node_id = $node->{id};
+        $node->{degree} = $db->{degree}->{$node_id};
+    }
 }
 
 sub build_graph {
@@ -74,6 +85,10 @@ sub add_vertices_to_graph {
     my $link    = shift;
     my $db      = shift;
 
+    if ( $self->filter_vertex($db, $link) ) {
+        return;
+    }
+
     my @links   = ();
     for (my $i = 0; $i < scalar(@{$link->vertices}); $i++) {
         my $vertex  = $link->vertices->[$i];
@@ -82,8 +97,41 @@ sub add_vertices_to_graph {
         push @links, $vid;
     }
     push @{$db->{links}}, { source => $links[0], target => $links[1] };
+    $db->{degree}->{$self->build_node_id($link,0)}++;
+    $db->{degree}->{$self->build_node_id($link,1)}++
 }
 
+sub build_node_id {
+    my $self    = shift;
+    my $link    = shift;
+    my $index   = shift;
+
+    my $id = join('_',
+        $link->vertices->[$index]->{type},
+        $link->vertices->[$index]->{id},
+    );
+    return $id;
+}
+
+sub filter_vertex {
+    my $self    = shift;
+    my $db      = shift;
+    my $link    = shift;
+    my $log     = $self->env->log;
+
+    for (my $i = 0; $i < scalar(@{$link->vertices}); $i++) {
+        my $vertex  = $link->vertices->[$i];
+        my $node_id = $self->build_node_id($link, $i);
+        if ( $vertex->{type} eq "entity" ) {
+            if ( $db->{degree}->{$node_id} > 75 ) {
+                $log->debug("High degree entity $vertex->{id} filtered");
+                return 1;
+            }
+        }
+    }
+    return undef;
+}
+    
 sub add_to_db_if_missing {
     my $self        = shift;
     my $db          = shift;
@@ -96,6 +144,7 @@ sub add_to_db_if_missing {
     if ( defined $db->{seen}->{$vertex_id} ) {
         return $vertex_id;
     }
+
 
     push @{$db->{nodes}}, {
         id      => $vertex_id,
