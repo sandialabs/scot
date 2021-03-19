@@ -1,0 +1,12 @@
+[Unit]
+Description=SCot EMail Fetching Daemon
+
+[Service]
+ExecStart=/opt/scot/bin/email_processor.pl 
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target
