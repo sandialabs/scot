@@ -13,7 +13,7 @@ use Module::Runtime qw(require_module);
 use Try::Tiny;
 
 my $config  = "/opt/scot/etc/email_processing.cfg.pl";
-my $env     = Scot::Env->new(config_file => $confg);
+my $env     = Scot::Env->new(config_file => $config);
 
 my $resptype = $ARGV[0];
 
@@ -30,5 +30,8 @@ catch {
     $env->log->logdie("$_.  Failed to load Module $class! Ensure module name patched a responder in /opt/scot/lib/Scot/Email/Responder.");
 };
 
-my $responder = $class->new({env => $env});
+my $queue = $env->responders->{$class}->{queue};
+
+
+my $responder = $class->new({env => $env, queue => $queue});
 $responder->run();

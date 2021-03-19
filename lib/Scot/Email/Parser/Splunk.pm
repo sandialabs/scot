@@ -16,6 +16,13 @@ sub will_parse {
     my $from    = $href->{from};
     my $subject = $href->{subject};
     my $splunk_email    = $self->env->splunk_sender;
+    my $log     = $self->env->log;
+
+    $log->debug("Splunk will it parse? $subject : $from");
+
+    if ( !$from ) {
+        $log->debug("will parse href is ",{filter=>\&Dumper, value=>$href});
+    }
 
     if ( $subject =~ /splunk alert/i ) {
         return 1;

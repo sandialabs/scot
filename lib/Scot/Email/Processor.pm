@@ -115,7 +115,9 @@ sub run {
         # fork and process this mbox
         my $pid = $pm->start and next;
 
-        $log->debug("Fetching $mbox->{description}");
+        my $description = $mbox->{description} // 'no_desc';
+
+        $log->debug("Fetching $description");
         my @messages = $self->fetch_email($mbox);
 
         $log->debug("Retrieved ".scalar(@messages)." email messages");
@@ -146,15 +148,14 @@ sub fetch_email {
         test_mode   => $mbox->{test},
     };
 
-    $log->debug("Imap Config ",{filter=>\&Dumper, value=>$config});
+    $log->trace("Imap Config ",{filter=>\&Dumper, value=>$config});
 
-    my $imap    = Scot::Email::Imap->new($config);
-
+    $log->debug("Attempting to fetch $mbox->{username} $mbox->{mailbox}");
+    my $imap            = Scot::Email::Imap->new($config);
     my $unseen_cursor   = $imap->get_unseen_cursor;
     my $msg_count       = $unseen_cursor->count;
 
     $log->debug("Retrieved $msg_count messages for $mbox->{username} mailbox");
-
     while ( my $uid = $unseen_cursor->next ) {
         my $message = $imap->get_message($uid);
         push @messages, $message;
@@ -166,14 +167,29 @@ sub queue_processing {
     my $self    = shift;
     my $mbox    = shift;
     my @messages    = @_;
-    my $mq      = $self->env->mq;
-    my $queue   = $mbox->{queue};
+    my $mq          = $self->env->mq;
+    my $responder   = $mbox->{responder};
+    my $queue       = $self->get_queue($responder);
+    my $log         = $self->log;
+
+    $log->debug("Sending messages to processing queues");
 
     foreach my $message (@messages) {
+        $log->debug("$queue => to: ".$message->{to}." Subject: ".$message->{subject});
         $mq->send($queue, {
             email => $message
         });
     }
+}
+
+sub get_queue {
+    my $self    = shift;
+    my $resp    = shift;
+    my $env     = $self->env;
+
+    my $resp_data = $env->responders->{$resp};
+    my $queue     = $resp_data->{queue};
+    return $queue;
 }
 
 1;

@@ -55,35 +55,45 @@ has create_method => (
     default     => 'create_via_mongo',
 );
 
+sub is_health_check {
+    my $self    = shift;
+    my $data    = shift;
+    # there are no health checks for this yet
+    return undef;
+}
+
 sub process_message {
     my $self    = shift;
     my $pm      = shift;
     my $href    = shift;
-    my $action  = $href->{action};
-    my $data    = $href->{data};
+    my $data    = $href->{email};
     my $log     = $self->env->log;
 
-    $log->debug("[Wkr $$] Processing Dispatch $action");
+    $log->debug("[Wkr $$] Processing Dispatch");
+
+    if ( $self->is_health_check($data) ) {
+        $log->warn("[Wkr $$] Finished: Skipping health checks");
+        return 1;
+    }
 
     PARSE:
     foreach my $parser (@{$self->parsers}) {
-        if ( $parser->will_parse($data) ) {
-            my $dispatch        = $parser->parse_message($data);
-            my $created_count   = $self->create_dispatch($dispatch);
-            if ( $created_count ) {
-                $log->debug("$created_count dispatch(es) created");
-            }
-            else {
-                $log->error("failed to create alertgroup from ",
-                            { filter => \&Dumper, value => $alertgroup });
-                # try the next parser?
-                # next PARSE;
-            }
-            last PARSE;
+
+        if ( ! $parser->will_parse($data) ) {
+            $log->warn(ref($parser)." will not parse this data");
+            next PARSE;
         }
-        $log->warn(ref($parser)." will not parse this data");
+
+        if ( $self->create_dispatch($parser, $data) ) {
+            $log->debug("[Wkr $$] Finished: Created a dispatch");
+            return 1;
+        }
+
+        $log->error("Failed to create dispatch from ",
+                    {filter => \&Dumper, value => $data});
     }
-    $log->debug("[Wkr $$] Finished");
+    $log->warn("[Wkr $$] Finished but failed");
+    return undef;
 }
 
 sub create_dispatch {
@@ -100,18 +110,68 @@ sub create_via_mongo {
     my $mongo   = $self->env->mongo;
     my $col     = $mongo->collection('Dispatch');
 
-    my $event   = $col->api_create({
+    my $dispatch   = $col->api_create({
         request => {
             json    => $data,
         }
     });
 
+    if (defined $dispatch and ref($dispatch) eq "Scot::Model::Dispatch" ) {
+        $self->scot_housekeeping($dispatch);
+        return 1;
+    }
+    return undef;
 }
 
 sub create_via_api {
     my $self    = shift;
     my $data    = shift;
     # TODO
+}
+
+sub scot_housekeeping {
+    my $self        = shift;
+    my $dispatch    = shift;
+    $self->notify_flair_engine($dispatch);
+    $self->being_history($dispatch);
+    $self->update_stats($dispatch);
+}
+
+sub notify_flair_engine {
+    my $self        = shift;
+    my $dispatch  = shift;
+    my $mq          = $self->env->mq;
+    $mq->send("/topic/scot", {
+        action  => "created",
+        data    => {
+            type    => "dispatch",
+            id      => $dispatch->id,
+            who     => "scot-alerts",
+        }
+    });
+}
+
+sub begin_history {
+    my $self        = shift;
+    my $dispatch  = shift;
+    my $mongo       = $self->env->mongo;
+
+    $mongo->collection('History')->add_history_entry({
+        who     => 'scot-alerts',
+        what    => 'created dispatch',
+        when    => time(),
+        target  => { id => $dispatch->id, type => "dispatch" },
+    });
+}
+
+sub update_stats {
+    my $self        = shift;
+    my $alertgroup  = shift;
+    my $mongo       = $self->env->mongo;
+    my $now         = DateTime->now;
+    my $col         = $mongo->collection('Stat');
+
+    $col->increment($now, "dispatch created", 1);
 }
 
 1;

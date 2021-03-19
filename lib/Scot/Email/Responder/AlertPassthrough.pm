@@ -59,39 +59,53 @@ sub process_message {
     my $self    = shift;
     my $pm      = shift;
     my $href    = shift;
-    my $action  = $href->{action};
-    my $data    = $href->{data};
+    my $data    = $href->{email};
     my $log     = $self->env->log;
 
-    $log->debug("[Wkr $$] Processing Alert $action");
+    $log->debug("[Wkr $$] Processing Alert");
+
+    if ( $self->is_health_check($data) ) {
+        $log->warn("[Wkr $$] Finished: Skipping Health Check Message");
+        return 1;
+    }
 
     PARSE:
     foreach my $parser (@{$self->parsers}) {
-        if ( $parser->will_parse($data) ) {
-            my $alertgroup = $parser->parse_message($data);
-            my $created_count   = $self->create_alertgroup($alertgroup);
-            if ( $created_count ) {
-                $log->debug("$created_count alertgroup(s) created");
-            }
-            else {
-                $log->error("failed to create alertgroup from ",
-                            { filter => \&Dumper, value => $alertgroup });
-                # try the next parser?
-                # next PARSE;
-            }
-            last PARSE;
+
+        if ( ! $parser->will_parse($data) ) {
+            $log->warn(ref($parser)." will not parse this data");
+            next PARSE;
         }
-        $log->warn(ref($parser)." will not parse this data");
+
+        if ( my $count = $self->create_alertgroup($parser, $data) ) {
+            $log->debug("Created $count alertgroup(s)");
+            return 1;
+        }
+
+        $log->error("Failed to create alertgroup from ",
+                    { filter => \&Dumper, value => $data });
     }
-    $log->debug("[Wkr $$] Finished");
+    $log->warn("[Wkr $$] Finished but failed");
+    return undef;
+}
+
+sub is_health_check {
+    my $self    = shift;
+    my $data    = shift;
+    # no health checks yet
+
+    return undef;
 }
 
 sub create_alertgroup {
     my $self    = shift;
+    my $parser  = shift;
     my $data    = shift;
     my $method  = $self->create_method;
 
-    return $self->$method($data);
+    my $agdata  = $parser->parse_message($data);
+    my $created = $self->$method($data);
+    return $created;
 }
 
 sub create_via_mongo {
@@ -105,6 +119,8 @@ sub create_via_mongo {
             json => $data
         }
     });
+
+    $self->scot_housekeeping(@alertgroups);
     return scalar(@alertgroups);
 }
 
@@ -112,6 +128,57 @@ sub create_via_api {
     my $self    = shift;
     my $data    = shift;
     # TODO
+}
+
+sub scot_housekeeping {
+    my $self    = shift;
+    my @ag      = @_;
+    my $env     = $self->env;
+    my $mq      = $env->mq;
+    
+    foreach my $a (@ag) {
+        $self->notify_flair_engine($a);
+        $self->begin_history($a);
+        $self->update_stats($a);
+    }
+}
+
+sub notify_flair_engine {
+    my $self        = shift;
+    my $alertgroup  = shift;
+    my $mq          = $self->env->mq;
+    $mq->send("/topic/scot", {
+        action  => "created",
+        data    => {
+            type    => "alertgroup",
+            id      => $alertgroup->id,
+            who     => "scot-alerts",
+        }
+    });
+}
+
+sub begin_history {
+    my $self        = shift;
+    my $alertgroup  = shift;
+    my $mongo       = $self->env->mongo;
+
+    $mongo->collection('History')->add_history_entry({
+        who     => 'scot-alerts',
+        what    => 'created alertgroup',
+        when    => time(),
+        target  => { id => $alertgroup->id, type => "alertgroup" },
+    });
+}
+
+sub update_stats {
+    my $self        = shift;
+    my $alertgroup  = shift;
+    my $mongo       = $self->env->mongo;
+    my $now         = DateTime->now;
+    my $col         = $mongo->collection('Stat');
+
+    $col->increment($now, "alertgroup created", 1);
+    $col->increment($now, "alerts created", $alertgroup->alert_count);
 }
 
 1;

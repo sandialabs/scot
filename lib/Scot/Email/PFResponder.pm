@@ -97,16 +97,7 @@ has queue   => (
     is      => 'rw',
     isa     => 'Str',
     required    => 1,
-    builder     => '_build_queue',
 );
-
-sub _build_queue {
-    my $self    = shift;
-    my $attr    = "queue";
-    my $default = "/queue/mail";
-    my $envname = "scot_queue";
-    return $self->get_config_value($attr, $default, $envname);
-}
 
 has name    => (
     is      => 'rw',
@@ -146,7 +137,7 @@ sub run {
                 my $frame;
                 try {
                     $frame   = $stomp->receive_frame;
-                    $log->debug("Recv Frame: ",{filter=>\&Dumper, value => $frame});
+                    $log->trace("Recv Frame: ",{filter=>\&Dumper, value => $frame});
                     next unless ( defined $frame );
 
                     my $headers = $frame->headers;

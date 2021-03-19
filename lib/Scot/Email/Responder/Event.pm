@@ -56,36 +56,45 @@ has create_method => (
     default     => 'create_via_mongo',
 );
 
+sub is_health_check {
+    # no health checks yet
+    return undef;
+}
+
 sub process_message {
     my $self    = shift;
     my $pm      = shift;
     my $href    = shift;
-    my $action  = $href->{action};
-    my $data    = $href->{data};
+    my $data    = $href->{email};
     my $log     = $self->env->log;
 
-    $log->debug("[Wkr $$] Processing Alert $action");
+    $log->debug("[Wkr $$] Processing Event");
+
+    if ( $self->is_health_check($data) ) {
+        $log->warn("[Wkr $$] Finished: Skipping Health Check Message");
+        return 1;
+    }
 
     PARSE:
     foreach my $parser (@{$self->parsers}) {
-        if ( $parser->will_parse($data) ) {
-            my $event = $parser->parse_message($data);
-            my $created_count   = $self->create_event_from_message($event);
-            if ( $created_count ) {
-                $log->debug("$created_count event(s) created");
-            }
-            else {
-                $log->error("failed to create event from ",
-                            { filter => \&Dumper, value => $event });
-                # try the next parser?
-                # next PARSE;
-            }
-            last PARSE;
+
+        if ( ! $parser->will_parse($data) ) {
+            $log->warn(ref($parser)." will not parse this data");
+            next PARSE;
         }
-        $log->warn(ref($parser)." will not parse this data");
+
+        if ( $self->create_event($parser, $data) ) {
+            $log->debug("[Wkr $$] Finished: Created event");
+            return 1;
+        }
+
+        $log->error("Failed to create event from ",
+                    { filter => \&Dumper, value => $data });
     }
-    $log->debug("[Wkr $$] Finished");
+    $log->warn("[Wkr $$] Finished but failed");
+    return undef;
 }
+
 
 sub create_event {
     my $self    = shift;
@@ -107,6 +116,11 @@ sub create_via_mongo {
         }
     });
 
+    if (defined $event and ref($event) eq "Scot::Model::Event" ) {
+        $self->scot_housekeeping($event);
+        return 1;
+    }
+    return undef;
 }
 
 sub create_via_api {
@@ -115,4 +129,48 @@ sub create_via_api {
     # TODO
 }
 
+sub scot_housekeeping {
+    my $self        = shift;
+    my $event    = shift;
+    $self->notify_flair_engine($event);
+    $self->being_history($event);
+    $self->update_stats($event);
+}
+
+sub notify_flair_engine {
+    my $self        = shift;
+    my $event  = shift;
+    my $mq          = $self->env->mq;
+    $mq->send("/topic/scot", {
+        action  => "created",
+        data    => {
+            type    => "event",
+            id      => $event->id,
+            who     => "scot-alerts",
+        }
+    });
+}
+
+sub begin_history {
+    my $self        = shift;
+    my $event  = shift;
+    my $mongo       = $self->env->mongo;
+
+    $mongo->collection('History')->add_history_entry({
+        who     => 'scot-alerts',
+        what    => 'created event',
+        when    => time(),
+        target  => { id => $event->id, type => "event" },
+    });
+}
+
+sub update_stats {
+    my $self        = shift;
+    my $alertgroup  = shift;
+    my $mongo       = $self->env->mongo;
+    my $now         = DateTime->now;
+    my $col         = $mongo->collection('Stat');
+
+    $col->increment($now, "event created", 1);
+}
 1;

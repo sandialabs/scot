@@ -124,7 +124,7 @@ sub _build_imap {
         # undef $client;
     };
     $log->debug("Imap connected...");
-    $log->debug("client ",{filter=>\&Dumper, value=> $client});
+    $log->trace("client ",{filter=>\&Dumper, value=> $client});
 
     if ( $self->test_mode ) {
         $log->debug("In test mode, setting Peek to 1");
