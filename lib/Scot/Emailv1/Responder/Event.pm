@@ -1,11 +1,10 @@
-package Scot::Email::Responder::Alert;
+package Scot::Email::Responder::Event;
 
 use strict;
 use warnings;
 use Try::Tiny;
 use Data::Dumper;
 use Module::Runtime qw(require_module compose_module_name);
-use DateTime;
 use Moose;
 extends 'Scot::Email::PFResponder';
 
@@ -13,7 +12,7 @@ has name => (
     is      => 'ro',
     isa     => 'Str',
     required=> 1,
-    default => 'Alert',
+    default => 'Event',
 );
 
 has parsers => (
@@ -26,9 +25,9 @@ has parsers => (
 sub _build_parsers {
     my $self                = shift;
     my @parser_class_names  = (qw(
-        Scot::Email::Parser::Splunk
+        Scot::Email::Parser::EventApi
+        Scot::Email::Parser::PassThrough
     ));    
-#        Scot::Email::Parser::Generic
     my @parsers = ();
     foreach my $cname (@parser_class_names) {
         require_module($cname);
@@ -57,6 +56,10 @@ has create_method => (
     default     => 'create_via_mongo',
 );
 
+sub is_health_check {
+    # no health checks yet
+    return undef;
+}
 
 sub process_message {
     my $self    = shift;
@@ -65,7 +68,7 @@ sub process_message {
     my $data    = $href->{email};
     my $log     = $self->env->log;
 
-    $log->debug("[Wkr $$] Processing Alert");
+    $log->debug("[Wkr $$] Processing Event");
 
     if ( $self->is_health_check($data) ) {
         $log->warn("[Wkr $$] Finished: Skipping Health Check Message");
@@ -80,60 +83,44 @@ sub process_message {
             next PARSE;
         }
 
-        if ( my $count = $self->create_alertgroup($parser, $data) ) {
-            $log->debug("Created $count alertgroup(s)");
+        if ( $self->create_event($parser, $data) ) {
+            $log->debug("[Wkr $$] Finished: Created event");
             return 1;
         }
 
-        $log->error("Failed to create alertgroup from ",
+        $log->error("Failed to create event from ",
                     { filter => \&Dumper, value => $data });
     }
     $log->warn("[Wkr $$] Finished but failed");
     return undef;
 }
 
-sub is_health_check {
+
+sub create_event {
     my $self    = shift;
-    my $data    = shift;
-    my $log     = $self->env->log;
-    my $subject = $data->{subject};
-
-    $log->debug("Is $subject a health check?");
-
-    if ( $subject =~ /SCOT Health Check/i ) {
-        $log->debug("it is!");
-        return 1;
-    }
-    $log->debug("nope");
-    return undef;
-}
-
-
-sub create_alertgroup {
-    my $self    = shift;
-    my $parser  = shift;
     my $data    = shift;
     my $method  = $self->create_method;
 
-    my $agdata  = $parser->parse_message($data);
-    my $created_count   = $self->$method($agdata);
-    return $created_count;
+    return $self->$method($data);
 }
 
 sub create_via_mongo {
     my $self    = shift;
     my $data    = shift;
     my $mongo   = $self->env->mongo;
-    my $col     = $mongo->collection('Alertgroup');
+    my $col     = $mongo->collection('Event');
 
-    my @alertgroups = $col->api_create({
+    my $event   = $col->api_create({
         request => {
-            json => $data
+            json    => $data,
         }
     });
 
-    $self->scot_housekeeping(@alertgroups);
-    return scalar(@alertgroups);
+    if (defined $event and ref($event) eq "Scot::Model::Event" ) {
+        $self->scot_housekeeping($event);
+        return 1;
+    }
+    return undef;
 }
 
 sub create_via_api {
@@ -143,27 +130,22 @@ sub create_via_api {
 }
 
 sub scot_housekeeping {
-    my $self    = shift;
-    my @ag      = @_;
-    my $env     = $self->env;
-    my $mq      = $env->mq;
-    
-    foreach my $a (@ag) {
-        $self->notify_flair_engine($a);
-        $self->begin_history($a);
-        $self->update_stats($a);
-    }
+    my $self        = shift;
+    my $event    = shift;
+    $self->notify_flair_engine($event);
+    $self->being_history($event);
+    $self->update_stats($event);
 }
 
 sub notify_flair_engine {
     my $self        = shift;
-    my $alertgroup  = shift;
+    my $event  = shift;
     my $mq          = $self->env->mq;
     $mq->send("/topic/scot", {
         action  => "created",
         data    => {
-            type    => "alertgroup",
-            id      => $alertgroup->id,
+            type    => "event",
+            id      => $event->id,
             who     => "scot-alerts",
         }
     });
@@ -171,14 +153,14 @@ sub notify_flair_engine {
 
 sub begin_history {
     my $self        = shift;
-    my $alertgroup  = shift;
+    my $event  = shift;
     my $mongo       = $self->env->mongo;
 
     $mongo->collection('History')->add_history_entry({
         who     => 'scot-alerts',
-        what    => 'created alertgroup',
+        what    => 'created event',
         when    => time(),
-        target  => { id => $alertgroup->id, type => "alertgroup" },
+        target  => { id => $event->id, type => "event" },
     });
 }
 
@@ -189,11 +171,6 @@ sub update_stats {
     my $now         = DateTime->now;
     my $col         = $mongo->collection('Stat');
 
-    $col->increment($now, "alertgroup created", 1);
-    $col->increment($now, "alerts created", $alertgroup->alert_count);
+    $col->increment($now, "event created", 1);
 }
-
-
-
-
 1;

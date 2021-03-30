@@ -150,14 +150,15 @@ sub run {
                         $stomp->ack({frame => $frame});
                     }
                     else {
-                        $log->error("Message failed to insert!");
-                        # leave in queue for now, maybe need to move to 
-                        # an error queue?
+                        # must acknowledge of queue forever freezes here.
+                        $log->error("Failed to insert: "); 
+                        $log->trace({filter=>\&Dumper, value=>$frame});
+                        $stomp->ack({frame => $frame});
                     }
                 }
                 catch {
                     $log->error("^^^ Error Caught: $_");
-                    $log->error("^^^ ",{filter=>\&Dumper,value=>$frame});
+                    $log->debug("^^^ ",{filter=>\&Dumper,value=>$frame});
                     $log->debug("NOT acknowledging amq frame");
                     $stomp->nack({frame => $frame});
                     die "ERROR: $_";

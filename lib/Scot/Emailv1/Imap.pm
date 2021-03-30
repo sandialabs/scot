@@ -8,6 +8,7 @@ use Readonly;
 Readonly my $MSG_ID_FMT => qr/\A\d+\z/;
 
 use Data::Dumper;
+use Data::GUID;
 use Courriel;
 use MIME::Parser;
 use Try::Tiny::Retry qw/:all/;
@@ -22,13 +23,6 @@ has env => (
     is      => 'ro',
     isa     => 'Scot::Env',
     required=> 1,
-);
-
-has test => (
-    is      => 'ro',
-    isa     => 'Bool',
-    required    => 1,
-    default => 0,
 );
 
 has mailbox => (
@@ -112,12 +106,6 @@ has permitted_senders => (
     default     => sub {['*']},
 );
 
-has peeking => (
-    is          => 'ro',
-    isa         => 'Bool',
-    required    => 1,
-);
-
 sub _build_imap {
     my $self    = shift;
     my $log     = $self->env->log;
@@ -153,9 +141,6 @@ sub _build_imap {
         $log->debug("In test mode, setting Peek to 1");
         $client->Peek(1);
     }
-    if ( $self->peeking ) {
-        $client->Peek(1);
-    }
     return $client;
 }
 
@@ -171,28 +156,18 @@ sub reconnect_if_forked {
     return;
 }
 
-sub get_mail {
-    my $self    = shift;
-    my $test    = $self->test;
-    my $log     = $self->env->log;
-
-    $log->debug("get_mail: mode = $test");
-
-    if ( $test == 1 ) {
-        return $self->get_since_cursor();
-    }
-
-    return $self->get_unseen_cursor();
-}
-
-
 sub get_unseen_cursor {
     my $self    = shift;
     my @uids    = ();
 
-    @uids = $self->get_unseen_mail;
+    if ( $self->test_mode ) {
+        @uids = $self->get_mail_since();
+    }
+    else {
+        @uids = $self->get_unseen_mail;
+    }
 
-    my $cursor  = Scot::Email::Imap::Cursor->new({imap => $self, uids => \@uids});
+    my $cursor  = Scot::Email::Imap::Cursor->new({uids => \@uids});
     return $cursor;
 }
 
@@ -227,26 +202,16 @@ sub get_unseen_mail {
     return wantarray ? @unseen_uids : \@unseen_uids;
 }
 
-sub get_since_cursor {
-    my $self    = shift;
-    my $since   = shift;
-    my @uids    = ();
-
-    @uids = $self->get_mail_since($since);
-
-    my $cursor  = Scot::Email::Imap::Cursor->new({imap => $self, uids => \@uids});
-    return $cursor;
-}
-
 sub get_mail_since {
     my $self    = shift;
-    my $since   = shift;
+    my $epoch   = shift;
     my $log     = $self->env->log;
     $self->reconnect_if_forked;
     my $client  = $self->client;
+    my $since   = $epoch;
 
     if ( ! defined $since ) {
-        my $seconds_ago = 60 * 60 * 24 * 1; # past day
+        my $seconds_ago = 60 * 60 * 24 * 7; # past week
         $since = time() - $seconds_ago;
     }
 
@@ -268,14 +233,19 @@ sub get_mail_since {
     return wantarray ? @uids :\@uids;
 }
 
-sub get_envelope_from_uid {
+sub get_message {
     my $self    = shift;
     my $uid     = shift;
+    my $peek    = shift;
     my $log     = $self->env->log;
-    my $envelope;
+    $self->reconnect_if_forked;
+    my $client  = $self->client;
 
+    $log->trace("Getting Message uid=$uid");
+
+    my $envelope;
     retry {
-        $envelope    = $self->client->get_envelope($uid);
+        $envelope    = $client->get_envelope($uid);
         $log->trace("Envelope is ",{filter=>\&Dumper,value=>$envelope});
     }
     on_retry {
@@ -286,27 +256,9 @@ sub get_envelope_from_uid {
     };
 
     $log->trace("Envelope is ",{filter=>\&Dumper,value=>$envelope});
-
-    return $envelope;
-}
-
-
-sub get_message {
-    my $self    = shift;
-    my $uid     = shift;
-    my $peek    = shift;
-    my $log     = $self->env->log;
-    $self->reconnect_if_forked;
-    my $client  = $self->client;
-
-    return unless $uid;
-
-    my $mode = $peek ? "Peeking" : "Nonpeeking";
-    $log->trace("Getting Message uid=$uid ($mode)");
     $self->client->Peek($peek);
 
-    my $envelope = $self->get_envelope_from_uid($uid);
-    my $from     = $self->get_from($envelope);
+    my $from    = $self->get_from($envelope);
 
     if ( ! $self->from_permitted_sender($from))  {
         $log->warn("Message from $from that is not in the permitted senders list");
@@ -321,8 +273,13 @@ sub get_message {
         to          => $self->get_to($envelope),
         when        => $self->get_when($uid),
         message_id  => $self->get_message_id($uid),
-        message_str => $self->client->message_string($uid),
     );
+
+    ($message{body_html}, 
+     $message{body_plain},
+     $message{images},
+     $message{attachments},
+     $message{received}) = $self->extract_body($uid,$peek);
 
     return wantarray ? %message : \%message;
 }
@@ -372,6 +329,182 @@ sub explicit_match {
     return $ok eq $from;
 }
 
+sub extract_body {
+    my $self    = shift;
+    my $uid     = shift;
+
+    my $log     = $self->env->log;
+
+    $log->trace("Extracting body from uid = $uid");
+
+
+    my $msgstring   = $self->client->message_string($uid);
+    my $email       = Courriel->parse( text => $msgstring );
+    my $htmlpart    = $email->html_body_part();
+    my $plainpart   = $email->plain_body_part();
+    my $attached    = $self->get_attached_files($email);
+    my $received    = $email->datetime->epoch;
+
+    # $log->logdie({filter=>\&Dumper, value=>$attached}) if (%{$attached});
+
+    my ($html, $plain);
+
+    if ( $htmlpart ) {
+        $html   = $htmlpart->content();
+    }
+    if ( $plainpart ) {
+        $plain  = $plainpart->content();
+    }
+    my $images = $attached->{images};
+    my $files  = $attached->{files};
+    return $html, $plain, $images, $files, $received;
+}
+
+sub mime_tools {
+    my $self        = shift;
+    my $msgstring   = shift;
+
+    my $log = $self->env->log;
+    $log->debug("Using MIME tools to parse and find attachments");
+
+    my $mparser     = MIME::Parser->new();
+    my $entity      = $mparser->parse_data($msgstring);
+}
+
+sub dump_mime_entity {
+    my $self    = shift;
+    my $entity  = shift;
+    my $name    = shift;
+
+    defined($name) || $name = 'anonymous';
+
+    my $IO;
+
+    $self->dump_head($entity, $name);
+    $self->dump_body($entity, $name);
+
+}
+
+sub dump_head {
+    my $self    = shift;
+    my $entity  = shift;
+    my $name    = shift;
+
+    my $log     = $self->env->log;
+    my $msg     =   "\n".
+                    '='x60."\n".
+                    "Message $name: \n".
+                    '='x60."\n".
+                    $entity->head->original_text.
+                    "\n";
+    $log->debug($msg);
+}
+
+sub dump_body {
+    my $self    = shift;
+    my $entity  = shift;
+    my $name    = shift;
+    my $log     = $self->env->log;
+
+    my @parts   = $entity->parts;
+    
+    if ( @parts ) {
+        my $i   = 0;
+        foreach $i (0..scalar(@parts)) {
+            $self->dump_entity($parts[$i], ("$name, part ".(1+$i)));
+        }
+    }
+    else {
+        my ($type, $subtype) = split('/', $entity->head->mime_type);
+        my $body             = $entity->bodyhandle;
+        if ($type =~ /^(text|message)$/) {
+            if ( $IO = $body->open('r')) {
+                my $contents;
+                while (defined($_ = $IO->getline)) {
+                    $contents .= $_;
+                }
+                $IO->close;
+                $log->debug("$type entity part contents:\n".$contents);
+            }
+            else {
+                $log->error("Could not fine $name: $!");
+            }
+        }
+        else {
+            my $path    = $body->path
+            my $size    = ($path ? (-s $path) : '???');
+            $log->debug("Non-text message $size bytes long, stored at ".($path ? "$path" : "core"));
+        }
+    }
+}
+
+sub get_attached_files {
+    my $self        = shift;
+    my $email   = shift;
+    my $log         = $self->env->log;
+    my %files       = ();
+
+    foreach my $part ($email->parts()) {
+        if ( $part->is_multipart ) {
+            $log->warn("Mulitpart Part detected!");
+        }
+        my $mime     = $part->mime_type;
+        my $filename = try {
+            $self->normalize_filename($part->filename);
+        }
+        catch {
+            $log->error("Part->filename failed?");
+            $log->error({filter=>\&Dumper, value => $part});
+        };
+        if ( $mime =~ /image/ ) {
+            my $encoding    = $part->encoding;
+            my $content     = $part->content;
+            $files{images}{$filename} = $self->build_img($mime, $content, $filename);
+        }
+        if ( $part->is_attachment ) {
+            my $content     = $part->content;
+            $files{files}{$filename} = { # allow responder to create files
+                content => $content,
+                mime    => $mime,
+            };
+        }
+    }
+    # $log->debug({filter=>\&Dumper, value=> $files{files}}) if (%files);
+    return \%files;
+}
+
+sub normalize_filename {
+    my $self    = shift;
+    my $name    = shift;
+    my $norm    = '';
+    my $log     = $self->env->log;
+
+
+    if ( defined $name ) {
+        $log->debug("normalizing $name");
+        # remove spaces
+        ($norm = $name) =~ s/[ ,]/_/g;
+    }
+    else {
+        my $guid = Data::GUID->new;
+        $norm = $guid->as_string;
+    }
+    $log->debug("norm name is $norm");
+    return $norm;
+}
+
+sub build_img {
+    my $self    = shift;
+    my $mime    = shift;
+    my $data    = shift;
+    my $name    = shift;
+    my $uri     = URI->new("data:");
+    $uri->media_type($mime);
+    $uri->data($data);
+    # return qq(<img src="$uri" alt="$name">);
+    my $h       = HTML::Element->new('img','src'=>$uri, 'alt'=>$name);
+    return $h;
+}
 
 sub get_subject {
     my $self    = shift;
@@ -393,7 +526,6 @@ sub get_subject {
         $log->error("Failed to get subject");
         $log->error($_);
     };
-
 
     return $subject;
 }
@@ -465,6 +597,31 @@ sub get_message_id {
     };
 
     return $msg_id;
+}
+
+sub extract_images {
+    my $self    = shift;
+    my $msg     = shift;
+    my $log     = $self->env->log;
+
+    my @parts   = $msg->parts();
+    my @htmls   = ();
+
+    foreach my $part (@parts) {
+        my $mt  = $part->mime_type();
+        my $enc = $part->encoding();
+        $log->debug("part mime: $mt, encoding: $enc");
+        next unless ($enc =~ /base64/i);
+        if ( $mt =~ /image/ ) {
+            my $b64image = $part->encoded_content();
+            my $html    = join('',
+                '<img src="data::image/jpeg;base64,',
+                $b64image,
+                '">');
+            push @htmls, $html;
+        }
+    }
+    return wantarray ? @htmls : \@htmls;
 }
 
 1;

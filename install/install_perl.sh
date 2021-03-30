@@ -359,6 +359,7 @@ function install_perl_modules {
         HTML::FromText
         HTML::FormatText
         MIME::Base64
+        MIME::Parser
         IPC::Run
         IO::Prompt
         Log::Log4perl

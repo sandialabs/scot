@@ -1,10 +1,17 @@
-package Scot::Email::Parser::Event;
+package Scot::Email::Parser::EventApi;
 
 use lib '../../../../lib';
 use HTML::TreeBuilder;
 use Data::Dumper;
 use Moose;
 extends 'Scot::Email::Parser';
+
+=head1 Scot::Email::Parser::Event
+
+replacement for the EmailApi2.pm
+requires a "command" html table at top of email
+
+=cut
 
 sub get_sourcename {
     return "coe";
@@ -15,8 +22,18 @@ sub will_parse {
     my $href    = shift;
     my $from    = $href->{from};
     my $subject = $href->{subject};
-    # prevent alert processor from picking this up
-    return undef;
+    my $body    = $href->{body_html};
+    my $tree    = $self->build_html_tree($body);
+
+    if (!$tree) {
+        return undef;
+    }
+
+    my @basics = $self->extract_event_basics($tree);
+    if (scalar(@basics) < 1) {
+        return undef;
+    }
+    return 1;
 }
 
 sub parse_message {
@@ -27,9 +44,7 @@ sub parse_message {
     $log->debug("Parsing SCOT Event email");
 
     my $body    = $self->normalize_body($message);
-    $log->debug("body is ".$body);
     my $tree    = $self->build_html_tree($body);
-    $log->debug("tree is".$tree->as_HTML);
 
     if ( ! defined $tree ) {
         $log->error("Unable to parse message body!",
@@ -77,7 +92,6 @@ sub normalize_body {
     my $log     = $self->env->log;
     my $body    = $message->{body_html};
     # add data norming here if necessary
-    $log->debug("BODY is $body");
     return $body;
 }
 

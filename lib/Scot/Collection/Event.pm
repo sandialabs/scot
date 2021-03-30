@@ -39,7 +39,9 @@ override api_create => sub {
     my $user    = $request->{user};
     my $json    = $request->{request}->{json};
 
-    $json->{owner} = $user;
+    if ( defined $user ) {
+        $json->{owner} = $user;
+    }
 
     my @tags    = $env->get_req_array($json, "tags");
     my @sources = $env->get_req_array($json, "sources");
@@ -151,8 +153,7 @@ sub create_event_entry {
             type => "event",
             id   => $event->id,
         },
-        readgroups  => $self->lc_array($event->readgroups),
-        modifygroups=> $self->lc_array($event->modifygroups),
+        groups  => $event->groups,
         summary     => 0,
         body        => $body,
     };
@@ -450,6 +451,19 @@ sub autocomplete {
         id  => $_->{id}, key => $_->{subject}
     } } $cursor->all;
     return wantarray ? @records : \@records;
+}
+
+sub get_by_msgid {
+    my $self    = shift;
+    my $msgid   = shift;
+    my $log     = $self->env->log;
+    my $query   = {
+        'data.message_id'   => $msgid
+    };
+    $log->debug("get_by_msgid query = ",{filter=>\&Dumper, value=>$query});
+
+    my $event = $self->find_one($query);
+    return $event;
 }
 
 

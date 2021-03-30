@@ -601,6 +601,13 @@ sub get_subject {
     die "Can't find Alertgroup $agid";
 }
 
+sub get_by_msgid {
+    my $self    = shift;
+    my $msgid   = shift;
+    my $ag      = $self->find_one({message_id => $msgid});
+    return $ag;
+}
+
 =back
 
 =cut
