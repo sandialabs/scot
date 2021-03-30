@@ -95,6 +95,13 @@ sub _build_mailboxes {
     return $self->get_config_value($attr, $default, $envname);
 }
 
+has dry_run => (
+    is      => 'ro',
+    isa     => 'Bool',
+    required=> 1,
+    default => 0,
+);
+
 sub run {
     my $self    = shift;
     my $log     = $self->log;
@@ -168,6 +175,7 @@ sub fork_processor {
     my $processor = $processor_class->new({
         env     => $env,
         mbox    => $mbox,
+        dry_run => $self->dry_run,
     });
     $processor->run();
     $pm->finish;

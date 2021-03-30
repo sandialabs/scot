@@ -18,9 +18,9 @@ sub parse {
         $html   = $self->wrap_non_html($html);
     }
 
-    my $tree = $self->build_html_tree($html);
-    my $attachments = $self->handle_attachments($courriel, $msg, $tree)
-    my $entry_data = $self->build_entry($tree, $html, $attachments);
+    my $tree        = $self->build_html_tree($html);
+    my $attachments = $self->handle_attachments($courriel, $msg, $tree);
+    my $entry_data  = $self->build_entry($tree);
 
 
     my %json    = (
@@ -38,6 +38,18 @@ sub parse {
     );
 
     return wantarray ? %json : \%json;
+}
+
+sub build_entry {
+    my $self    = shift;
+    my $tree    = shift;
+    # $tree->dump();
+     
+    # hack
+    no warnings;
+    my $new     = $tree->as_HTML;
+
+    return { body => $new };
 }
 
 sub handle_attachments {
@@ -84,7 +96,7 @@ sub get_non_image_attachments {
     my %attachments = ();
 
     my $index = 0;
-    foreach my $part ($courrel->parts()) {
+    foreach my $part ($courriel->parts()) {
         my $mime        = $part->mime_type;
         next if ($mime =~ /image/); # already handled them
         my $encoding    = $part->encoding;
@@ -95,7 +107,7 @@ sub get_non_image_attachments {
             "Part    : $index",
             "Filename: $filename",
             "Encoding: $encoding",
-            "Size    : ".length($content);
+            "Size    : ".length($content),
             ''
         );
         $log->debug($debugmsg);
@@ -111,8 +123,19 @@ sub get_non_image_attachments {
 
 sub build_img_element {
     my ($self, $mime, $content, $filename) = @_;
+
+    $filename = "image" unless defined $filename;
+    my $log = $self->env->log;
+
+    $log->debug("Building IMG element");
+    $log->debug("File name is $filename");
+    $log->debug("Mime is $mime");
+    $log->debug("Content size: ".length($content));
+
     my $uri = URI->new("data:");
     $uri->media_type($mime);
+    $uri->data($content);
+    
     my $element = HTML::Element->new('img', 'src' => $uri, 'alt' => $filename);
     return $element;
 }
