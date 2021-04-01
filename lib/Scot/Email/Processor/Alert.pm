@@ -5,6 +5,7 @@ use warnings;
 
 use Data::Dumper;
 use Module::Runtime qw(require_module);
+use Try::Tiny;
 use Moose;
 extends 'Scot::Email::Processor';
 
@@ -112,9 +113,18 @@ sub create_alertgroup {
         return;
     }
 
-    my @agroups = $col->api_create({
-        request => { json => $json }
-    });
+
+    my @agroups = ();
+    try {
+        @agroups = $col->api_create({
+            request => { json => $json }
+        });
+    }
+    catch {
+        $log->error("ERROR Creating Alertgroup: $_");
+        $log->error({filter=>\&Dumper, value => $json});
+        $log->logdie("what now?");
+    };
     my $created = scalar(@agroups);
     $log->debug("Created $created Alertgroups");
 

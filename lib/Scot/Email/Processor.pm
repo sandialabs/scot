@@ -8,7 +8,7 @@ use warnings;
 base class for processors
 
 =cut
-
+use lib '../../../lib';
 use Scot::Email::Imap;
 use Moose;
 extends 'Scot::App';
@@ -67,7 +67,6 @@ has dry_run => (
 sub run {
     my $self    = shift;
     my $mbox    = $self->mbox;
-    
     my $imap    = $self->imap;
     my $cursor  = $imap->get_mail($mbox);
     my $count   = $cursor->count;

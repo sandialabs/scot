@@ -9,6 +9,7 @@ use lib '../../../Scot-Internal-Modules/lib';
 use Safe;
 use Time::HiRes qw(gettimeofday tv_interval);
 use Module::Runtime qw(require_module compose_module_name);
+use DateTime;
 use Data::Dumper;
 use namespace::autoclean;
 use Scot::Util::Date;
@@ -486,12 +487,27 @@ sub is_admin {
     my $admin_group = $self->admin_group;
     my $log         = $self->log;
 
-    $log->debug("Checking Admin status of $user");
-    $log->debug("admin_group = $admin_group");
-    $log->debug("users groups are ",{filter=>\&Dumper, value=>$groups});
+    $log->trace("Checking Admin status of $user");
+    $log->trace("admin_group = $admin_group");
+    $log->trace("users groups are ",{filter=>\&Dumper, value=>$groups});
 
-    return undef if (! defined $admin_group);
-    return grep { /$admin_group/ } @$groups;
+    if ( ! defined $admin_group ) {
+        $log->error("Admin group not defined! Fix in config");
+        return undef;
+    }
+    if (grep { /$admin_group/ } @$groups )  {
+        $log->debug("$user is an admin");
+        return 1;
+    }
+    $log->error("$user is NOT an admin");
+    return undef;
+}
+
+sub get_human_time {
+    my $self    = shift;
+    my $epoch   = shift;
+    my $dt      = DateTime->from_epoch(epoch=>$epoch);
+    return join(" ", $dt->ymd, $dt->hms);
 }
 
 

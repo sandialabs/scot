@@ -42,7 +42,7 @@ sub check {
     my $headers = $request->headers;
 
     my $loglevel = $log->level;
-    $log->level(Log::Log4perl::Level::to_priority('INFO'));
+    $log->level(Log::Log4perl::Level::to_priority('DEBUG'));
 
     $log->debug("Authentication Check Begins...");
 
@@ -581,7 +581,7 @@ sub set_group_membership {
     my $groups  = $self->session('groups');
     if ( ref($groups) eq "ARRAY" ) {
         $log->debug("Groups set in Mojo Session");
-        $log->debug("$user Groups are ".join(', ',@$groups));
+        $log->trace("$user Groups are ".join(', ',@$groups));
         if ( scalar(@$groups) > 0 ) {
             return $groups;
         }
@@ -693,7 +693,7 @@ sub update_lastvisit {
 
     if ($url eq "/scot/api/v2/status" 
         or $url eq "/scot/api/v2/who" ) {
-        $log->debug("skipping setting last visit for /status or /who");
+        $log->trace("skipping setting last visit for /status or /who");
         return;
     }
 

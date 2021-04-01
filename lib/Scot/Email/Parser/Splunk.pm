@@ -41,14 +41,34 @@ sub parse {
         ahrefs  => \@splunklinks,
         body    => $html,
         body_plain  => $plain,
+        message_id  => $msg->{message_id},
     );
 
-    if ( length($json{body}) > 1000000 ) {
+    if ( $self->document_too_large(\%json) ) {
+        $log->warn("Alertgroup Document too large! Trimming body");
         $json{body}       = qq|Email body too large, view in email client.|;
         $json{body_plain} = qq|Email body too large, view in email client.|;
+        if ( $self->document_too_large(\%json) ) {
+            $log->error("Trimming document did not reduce sufficiently");
+        }
     }
+
     # $log->debug("json is ",{filter=>\&Dumper, value=>\%json});
     return wantarray ? %json : \%json;
+}
+
+sub document_too_large {
+    my $self    = shift;
+    my $doc     = shift;
+    my $size    = 
+        length($doc->{subject}) + 
+        length($doc->{body}) + 
+        length($doc->{body_plain}) +
+        length($doc->{message_id});
+
+    $self->env->log->debug("approx size is $size");
+
+    return ($size > 1000000);
 }
 
 sub get_splunk_report_info {
@@ -140,7 +160,7 @@ sub get_columns {
     }
 
     # strip '.' from names because it breaks mongo
-    s/\./-/ for @columns;
+    s/\./-/g for @columns;
 
     $self->env->log->debug("Got Columns: ".join(', ',@columns));
 

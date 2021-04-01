@@ -113,8 +113,10 @@ sub run {
     my $pm  = Parallel::ForkManager->new($self->max_processes);
     while (1) {
 
+        $log->debug("-"x20);
         MBOX:
         foreach my $mbox (@{$self->mailboxes}) {
+
             my $boxname = $mbox->{name};
             my $last    = $lastrun{$boxname};
             if ( $self->time_to_run($mbox, $last) ) {

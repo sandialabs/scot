@@ -305,6 +305,7 @@ function install_perl_modules {
         Data::Dumper::Concise
         Data::Clean@0.48
         Data::Clean::FromJSON
+        Devel::Size
         Daemon::Control
         Net::LDAP
         Net::SMTP::TLS

@@ -159,6 +159,20 @@ sub _build_imap {
     return $client;
 }
 
+has seconds_ago => (
+    is      => 'ro',
+    isa     => 'Int',
+    required    => 1,
+    default => sub { 60 * 60 * 24 * 1 },
+);
+
+sub since {
+    my $self    = shift;
+    my $seconds_ago = $self->seconds_ago;
+    my $since = time() - $seconds_ago;
+    return $since;
+}
+
 sub reconnect_if_forked {
     my $self    = shift;
     my $log     = $self->env->log;
@@ -229,8 +243,10 @@ sub get_unseen_mail {
 
 sub get_since_cursor {
     my $self    = shift;
-    my $since   = shift;
+    my $since   = $self->since();
     my @uids    = ();
+
+    $self->env->log->debug("Retrieving mail since ".$self->env->get_human_time($since));
 
     @uids = $self->get_mail_since($since);
 
@@ -246,8 +262,7 @@ sub get_mail_since {
     my $client  = $self->client;
 
     if ( ! defined $since ) {
-        my $seconds_ago = 60 * 60 * 24 * 1; # past day
-        $since = time() - $seconds_ago;
+        $since = $self->since();
     }
 
     my @uids;
