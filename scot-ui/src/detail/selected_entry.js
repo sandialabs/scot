@@ -328,8 +328,9 @@ export default class SelectedEntry extends React.Component {
     setTimeout(
       function () {
         let scrollHeight;
-        let ListViewTableHeight = document.getElementsByClassName(
-          "ReactTable"
+        let ListViewTableHeight;
+        ListViewTableHeight = document.getElementsByClassName(
+            "ReactTable"
         )[0].clientHeight;
         if (ListViewTableHeight !== undefined) {
           if (ListViewTableHeight !== 0) {

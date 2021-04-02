@@ -2,9 +2,10 @@ package Scot::Email::Parser::Event;
 
 use strict;
 use warnings;
-use Moose;
+use Data::Dumper;
 use HTML::Element;
 use URI;
+use Moose;
 
 extends 'Scot::Email::Parser';
 
@@ -124,6 +125,7 @@ sub handle_attachments {
     my $courriel    = shift;
     my $msg         = shift;
     my $tree        = shift;
+    my $log         = $self->env->log;
 
     # imbed images into html
     my %images  = $self->get_images($courriel);
@@ -132,9 +134,24 @@ sub handle_attachments {
     # don't know how to handle yet
     # and not sure we want to support this for event
     # my %remainder   = $self->get_non_image_attachments($courriel);
-    my %remainder = ();
+    my @remainder = ();
 
-    return wantarray ? %remainder : \%remainder;
+    foreach my $part ($courriel->parts()) {
+
+        if ( $part->is_attachment ) {
+            $log->debug("Found an attachment");
+            push @remainder, {
+                filename    => $part->filename,
+                mime_type   => $part->mime_type,
+                multipart   => $part->is_multipart,
+                content     => $part->content,
+            };
+        }
+    }
+
+    $log->trace("Found Attachments: ",{filter=>\&Dumper, value=>\@remainder});
+          
+    return wantarray ? @remainder : \@remainder;
 
 }
 

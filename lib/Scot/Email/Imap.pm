@@ -132,7 +132,7 @@ sub _build_imap {
         Ignoresizeerrors    => $self->ignore_size_errors,
     );
 
-    $log->debug("Initializing IMAP client w/ options: ", 
+    $log->trace("Initializing IMAP client w/ options: ", 
                 {filter =>\&Dumper, value => \@options});
     
     my $client = retry {

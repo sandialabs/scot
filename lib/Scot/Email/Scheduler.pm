@@ -11,12 +11,20 @@ to process various inboxes as defined in config file.
 
 =cut
 
+use lib '../../../lib';
 use Data::Dumper;
 use Scot::Env;
 use Parallel::ForkManager;
 use Module::Runtime qw(require_module);
 use Moose;
 extends 'Scot::App';
+
+has sleep_interval => (
+    is          => 'ro',
+    isa         => 'Int',
+    required    => 1,
+    default     => 30,
+);
 
 has max_processes => (
     is          => 'rw',
@@ -102,33 +110,75 @@ has dry_run => (
     default => 0,
 );
 
+has mode    => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => 'continuous',
+);
+
 sub run {
     my $self    = shift;
     my $log     = $self->log;
-
-    my %lastrun = ();
-    my @mailboxes = @{$self->mailboxes};
-    $log->trace({filter => \&Dumper, value=> \@mailboxes});
-
+    my @mailboxes   = @{$self->mailboxes};
     my $pm  = Parallel::ForkManager->new($self->max_processes);
-    while (1) {
 
-        $log->debug("-"x20);
-        MBOX:
-        foreach my $mbox (@{$self->mailboxes}) {
+    my $mode    = $self->env->mode;
 
-            my $boxname = $mbox->{name};
-            my $last    = $lastrun{$boxname};
-            if ( $self->time_to_run($mbox, $last) ) {
-                $lastrun{$boxname} = time();
-                $self->fork_processor($pm, $mbox);
-            }
-            $log->debug("moving to next mailbox");
-        }
-        $pm->wait_all_children;
-        sleep(5);
+    if ( $mode eq "cron" ) {
+        $self->single($pm, \@mailboxes);
+    }
+    else {
+        $self->continuous($pm, \@mailboxes);
     }
 }
+
+sub single {
+    my $self        = shift;
+    my $pm          = shift;
+    my $mailboxes   = shift;
+    my $log         = $self->log;
+
+    $self->process_mailboxes($pm, $mailboxes);
+
+}
+
+sub continuous {
+    my $self    = shift;
+    my $pm      = shift;
+    my $mailboxes = shift;
+    my $log     = $self->log;
+    my %lastrun = ();
+
+    while (1) {
+        $self->process_mailboxes($pm, $mailboxes, \%lastrun);
+        sleep($self->sleep_interval);
+    }
+}
+
+sub process_mailboxes {
+    my $self        = shift;
+    my $pm          = shift;
+    my $mailboxes   = shift;
+    my $lastrun     = shift;
+    my $log         = $self->env->log;
+
+    $log->debug("-"x60);
+    MBOX:
+    foreach my $mbox (@{$mailboxes}) {
+
+        my $boxname = $mbox->{name};
+        my $last    = $lastrun->{$boxname};
+        if ( $self->time_to_run($mbox, $last) ) {
+            $lastrun->{$boxname} = time();
+            $self->fork_processor($pm, $mbox);
+        }
+        $log->debug("moving to next mailbox");
+    }
+    $log->debug("~"x60);
+    $pm->wait_all_children;
+}
+    
 
 sub time_to_run {
     my $self    = shift;
