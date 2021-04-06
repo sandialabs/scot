@@ -299,6 +299,7 @@ function install_packages {
 function install_perl_modules {
 
     PERLMODULES='
+        Crypt::Curve25519@0.05
         Array::Split
         Data::Dumper
         Data::Dumper::HTML
@@ -368,7 +369,7 @@ function install_perl_modules {
         MongoDB::GridFS@1.8.3
         MongoDB::GridFS::File@1.8.3
         MongoDB::OID@1.8.3
-        Meerkat
+        Meerkat@0.15
         Mojo
         MojoX::Log::Log4perl
         Mojolicious::Plugin::WithCSRFProtection

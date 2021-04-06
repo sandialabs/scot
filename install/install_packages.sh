@@ -134,7 +134,11 @@ function install_cent_packages {
     fi
 
     echo "-- installing development tools"
-    yum groupinstall "Development Tools" -y
+    if [[ "$OSVERSION" == "8" ]]; then
+        dnf group install "Development Tools" -y
+    else 
+        yum groupinstall "Development Tools" -y
+    fi
 
     YUMPACKAGES='
         redhat-lsb
