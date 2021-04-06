@@ -216,6 +216,7 @@ function install_cent_perl_packages {
         perl-Geo-IP
         perl-Net-SSLeay
         perl-File-Slurp
+        perl-File-LibMagic
     '
 
     for pkg in $YUMPACKAGES; do
@@ -369,7 +370,7 @@ function install_perl_modules {
         MongoDB::GridFS@1.8.3
         MongoDB::GridFS::File@1.8.3
         MongoDB::OID@1.8.3
-        Meerkat@0.15
+        Meerkat@0.015
         Mojo
         MojoX::Log::Log4perl
         Mojolicious::Plugin::WithCSRFProtection
