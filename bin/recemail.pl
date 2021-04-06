@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 
 use lib '../lib';
+use lib '/opt/scot/lib';
 use strict;
 use warnings;
 
@@ -10,7 +11,8 @@ use Scot::Email::Scheduler;
 
 my $dry = $ARGV[0];
 
-my $config  = "../../Scot-Internal-Modules/etc/email.cfg.pl";
+# my $config  = "../../Scot-Internal-Modules/etc/email.cfg.pl";
+my $config  = "/opt/scot/etc/email.cfg.pl";
 my $env     = Scot::Env->new(config_file => $config);
 
 my $options = { env => $env };

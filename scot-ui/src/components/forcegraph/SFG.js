@@ -202,7 +202,7 @@ class SFG extends React.Component {
                      nodeAutoColorBy="target_type"
                      nodeThreeObject={
                         node => new THREE.Mesh(
-                                    new THREE.SphereGeometry(node.degree),
+                                    new THREE.SphereGeometry(2, 16, 16),
                                     new THREE.MeshBasicMaterial({ color: node.color })
                                 )
                      }

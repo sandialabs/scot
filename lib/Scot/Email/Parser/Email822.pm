@@ -12,8 +12,13 @@ extends 'Scot::Email::Parser';
 sub parse {
     my $self    = shift;
     my $msg     = shift;
+    my $log     = $self->env->log;
 
     my ($courriel, $html, $plain) = $self->get_body($msg->{message_str});
+
+    $log->debug("Got courriel of ".ref($courriel));
+    $log->debug("HTML IS ".$html);
+    $log->debug("Plain is ".$plain);
 
     if ( $self->body_not_html($html)) {
         $html   = $self->wrap_non_html($html);

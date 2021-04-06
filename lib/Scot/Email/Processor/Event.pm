@@ -172,7 +172,7 @@ sub create_822_entry {
     my $self    = shift;
     my $event   = shift;
     my $data    = shift;
-    my $body    = $href->{content};
+    my $body    = $data->{content};
     my $env     = $self->env;
     # finish this later
     return;

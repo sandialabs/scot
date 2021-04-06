@@ -7,6 +7,7 @@ use Carp qw(cluck longmess shortmess);
 use Mojo::Base 'Mojolicious';
 use Mojo::Cache;
 use Scot::Env;
+use Scot::Util::CSRFProtection;
 use Data::Dumper;
 
 
@@ -49,7 +50,8 @@ sub startup {
     );
     $self->sessions->secure(1);
 
-    $self->plugin('WithCSRFProtection');
+    # $self->plugin('WithCSRFProtection');
+    $self->plugin('Scot::Util::CSRFProtection');
     $self->plugin('TagHelpers');
 
 
