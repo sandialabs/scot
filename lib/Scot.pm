@@ -49,7 +49,7 @@ sub startup {
     );
     $self->sessions->secure(1);
 
-    $self->plugin('WithCSRFProtection');
+    $self->plugin('Scot::Util::CSRFProtection');
     $self->plugin('TagHelpers');
 
 
@@ -140,7 +140,7 @@ get JSON that was submitted with the web request
     # routes
     my $r       = $self->routes;
 
-    $r  ->route ( '/login' )   
+    $r  ->any   ( '/login' )   
         ->to    ( $authclass.'#login' ) 
         ->name  ( 'login' );
 
@@ -161,18 +161,17 @@ relies on the browser BasicAuth popup.
 
 =cut
 
-    $r  ->route ( '/auth' )    
-        ->via   ('post') 
+    $r  ->post  ( '/auth' )    
         ->with_csrf_protection
         ->to    ($authclass.'#auth') 
         ->name  ('auth');
 
     # let apache handle the auth
-    $r  ->route ( '/sso' )    
+    $r  ->any   ( '/sso' )    
         ->to    ($authclass.'#sso') 
         ->name  ('sso');
 
-    $r  ->route ( '/logout' )
+    $r  ->any   ( '/logout' )
         ->to    ($authclass."#logout")
         ->name  ('logout');
     
@@ -192,13 +191,13 @@ relies on the browser BasicAuth popup.
     # prepends /scot to the routes below
     my $scot    = $auth->any('/scot');
 
-    $scot   ->route ('/api/v2/search')
+    $scot   ->any   ('/api/v2/search')
             ->to    ('controller-search#search')
             ->name  ('search');
 
     # /api/v2/hitsearch?match=foo%20bar
 
-    $scot   ->route ('/api/v2/hitsearch')
+    $scot   ->any   ('/api/v2/hitsearch')
             ->to    ('controller-search#hitsearch')
             ->name  ('hitsearch');
 
@@ -213,7 +212,7 @@ relies on the browser BasicAuth popup.
 
 =cut
 
-    $scot   ->route ('/api/v2/game')
+    $scot   ->any   ('/api/v2/game')
             ->to    ('controller-metric#get_game_data')
             ->name  ('game');
 
@@ -228,7 +227,7 @@ relies on the browser BasicAuth popup.
 
 =cut
 
-    $scot   ->route ('/api/v2/form')
+    $scot   ->any   ('/api/v2/form')
             ->to    ('controller-api#get_form')
             ->name  ('form');
 
@@ -243,7 +242,7 @@ relies on the browser BasicAuth popup.
 
 =cut
 
-    $scot   ->route ('/api/v2/metric/:thing')
+    $scot   ->any ('/api/v2/metric/:thing')
             ->to    ('controller-metric#get')
             ->name  ('get');
 
@@ -258,7 +257,7 @@ relies on the browser BasicAuth popup.
 
 =cut
 
-    $scot   ->route ('/api/v2/graph/:thing')
+    $scot   ->any ('/api/v2/graph/:thing')
             ->to    ('controller-stat#get')
             ->name  ('get_report_json');
 
@@ -273,7 +272,7 @@ relies on the browser BasicAuth popup.
 
 =cut
 
-    $scot   ->route ('/api/v2/graph/:thing/:id/:depth')
+    $scot   ->any ('/api/v2/graph/:thing/:id/:depth')
             ->to    ('controller-graph#get_graph')
             ->name  ('get_graph');
 =pod
@@ -288,7 +287,7 @@ relies on the browser BasicAuth popup.
 =cut
 
 
-    $scot   ->route ('/api/v2/status')
+    $scot   ->any ('/api/v2/status')
             ->to    ('controller-metric#get_status')
             ->name  ('get_status');
 
@@ -303,7 +302,7 @@ relies on the browser BasicAuth popup.
 
 =cut
 
-    $scot   ->route ('/api/v2/who')
+    $scot   ->any ('/api/v2/who')
             ->to    ('controller-metric#get_who_online')
             ->name  ('get_who_online');
 
@@ -322,7 +321,7 @@ relies on the browser BasicAuth popup.
 
 =cut
 
-    $scot   ->route ('/api/v2/esearch')
+    $scot   ->any ('/api/v2/esearch')
             ->to    ('controller-search#newsearch')
             ->name  ('esearch');
 
@@ -336,8 +335,7 @@ relies on the browser BasicAuth popup.
 
 =cut
 
-    $scot   ->route ('/api/v2/command/:action')
-            ->via   ('put')
+    $scot   ->put   ('/api/v2/command/:action')
             ->to    ('controller-api#do_command')
             ->name  ('do_command');
 
@@ -352,8 +350,7 @@ relies on the browser BasicAuth popup.
 =cut
 
 
-    $scot   ->route ('/api/v2/wall')
-            ->via   ('post')
+    $scot   ->post ('/api/v2/wall')
             ->to    ('controller-api#wall')
             ->name  ('wall');
 =pod
@@ -367,8 +364,7 @@ relies on the browser BasicAuth popup.
 
 =cut
 
-    $scot   ->route ('/api/v2/file')
-            ->via   ('post')
+    $scot   ->post  ('/api/v2/file')
             ->to    ('controller-file#upload')
             ->name  ('update');
 
@@ -382,8 +378,7 @@ relies on the browser BasicAuth popup.
 
 =cut
 
-    $scot   ->route ('/api/v2/apikey')
-            ->via   ('post')
+    $scot   ->post  ('/api/v2/apikey')
             ->to    ('controller-auth#get_apikey')
             ->name  ('get_apikey');
 
@@ -397,8 +392,7 @@ relies on the browser BasicAuth popup.
 
 =cut
 
-    $scot   ->route ('/api/v2/prepexport/:thing/:id')
-            ->via   ('get')
+    $scot   ->get   ('/api/v2/prepexport/:thing/:id')
             ->to    ('controller-export#prepexport')
             ->name  ('prepexport');
 
@@ -412,8 +406,7 @@ relies on the browser BasicAuth popup.
 
 =cut
 
-    $scot   ->route ('/api/v2/sendexport')
-            ->via   ('post')
+    $scot   ->post  ('/api/v2/sendexport')
             ->to    ('controller-export#sendexport')
             ->name  ('sendexport');
 
@@ -428,18 +421,15 @@ relies on the browser BasicAuth popup.
 
 =cut
 
-    $scot   ->route ('/api/v2/cidr')
-            ->via   ('get')
+    $scot   ->get   ('/api/v2/cidr')
             ->to    ('controller-api#get_cidr_matches')
             ->name  ('get_cidr_matches');
 
-    $scot   ->route ('/api/v2/recfuture/:id')
-            ->via   ('get')
+    $scot   ->get   ('/api/v2/recfuture/:id')
             ->to    ('controller-api#recfuture')
             ->name  ('get_recfuture_data');
 
-    $scot   ->route ('/api/v2/lriproxy/:id')
-            ->via   ('get')
+    $scot   ->get   ('/api/v2/lriproxy/:id')
             ->to    ('controller-api#lriproxy')
             ->name  ('get_lri_data');
 
@@ -455,18 +445,15 @@ relies on the browser BasicAuth popup.
 
 =cut
 
-    $scot   ->route ('/api/v2/:thing')
-            ->via   ('post')
+    $scot   ->post  ('/api/v2/:thing')
             ->to    ('controller-api#create')
             ->name  ('create');
 
-    $scot   ->route ('/api/v2/whoami')
-            ->via   ('get')
+    $scot   ->get   ('/api/v2/whoami')
             ->to    ('controller-api#whoami')
             ->name  ('whoami');
 
-    $scot   ->route ('/api/v2/ac/:thing/:search')
-            ->via   ('get')
+    $scot   ->get   ('/api/v2/ac/:thing/:search')
             ->to    ('controller-api#autocomplete')
             ->name  ('autocomplete');
 
@@ -495,8 +482,7 @@ relies on the browser BasicAuth popup.
 
 =cut
 
-    $scot   ->route ('/api/v2/:thing/#id')
-            ->via   ('get')
+    $scot   ->get   ('/api/v2/:thing/#id')
             ->to    ('controller-api#get_one')
             ->name  ('get_one');
 
@@ -553,8 +539,7 @@ The params passed to this route allow you to filter the list returned to you.
 
 =cut
 
-    $scot   ->route ('/api/v2/:thing')
-            ->via   ('get')
+    $scot   ->get   ('/api/v2/:thing')
             ->to    ('controller-api#list')
             ->name  ('list');
 
@@ -618,8 +603,7 @@ Incident subthings
 
 =cut
 
-    $scot   ->route ('/api/v2/:thing/:id/:subthing')
-            ->via   ('get')
+    $scot   ->get   ('/api/v2/:thing/:id/:subthing')
             ->to    ('controller-api#get_subthing')
             ->name  ('get_subthing');
 
@@ -644,8 +628,7 @@ Incident subthings
 
 =cut
 
-    $scot   ->route ('/api/v2/:thing/:id')
-            ->via   ('put')
+    $scot   ->put   ('/api/v2/:thing/:id')
             ->to    ('controller-api#update')
             ->name  ('update');
 
@@ -678,13 +661,12 @@ other events.
 
 =cut
 
-    $scot   ->route ('/api/v2/:thing/:id/:subthing/:subid')
-            ->via   ('delete')
+    $scot   ->delete('/api/v2/:thing/:id/:subthing/:subid')
             ->to    ('controller-api#breaklink')
             ->name  ('delete');
 
     # delete via params, only supported for links
-    $scot   ->route ('/api/v2/:thing')
+    $scot   ->delete ('/api/v2/:thing')
             ->via   ('delete')
             ->to    ('controller-api#delete')
             ->name  ('delete-link');
@@ -712,8 +694,7 @@ other events.
 
 =cut
 
-    $scot   ->route ('/api/v2/:thing/:id')
-            ->via   ('delete')
+    $scot   ->delete ('/api/v2/:thing/:id')
             ->to    ('controller-api#delete')
             ->name  ('delete');
 
