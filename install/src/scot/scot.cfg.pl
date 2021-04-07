@@ -137,23 +137,24 @@
                 stomp_port  => 61613,
             },
         },
-        {
-            attr    => 'imap',
-            class   => 'Scot::Util::Imap',
-            config  => {
-                mailbox     => 'INBOX',          # mailbox, typically INBOX
-                hostname    => 'mail.domain.tld',# hostname of the imap server
-                port        => 993,              # port of the imap server
-                username    => 'scot-alerts',    # username  of the 
-                                                 # account receiving alert email
-                password    => 'changemenow',    # password  
-                ssl         => [ 
-                    'SSL_verify_mode', 0         # ssl options 
-                ],                               # see perldoc IO::SSL
-                uid         => 1,                # uid   IMAP config item 
-                ignore_size_errors  => 1,        # ignore_size_errors 
-            },
-        },
+        ## uncomment and configure if  you wish to use LDAP
+        #{
+        #    attr    => 'imap',
+        #    class   => 'Scot::Util::Imap',
+        #    config  => {
+        #        mailbox     => 'INBOX',          # mailbox, typically INBOX
+        #        hostname    => 'mail.domain.tld',# hostname of the imap server
+        #        port        => 993,              # port of the imap server
+        #        username    => 'scot-alerts',    # username  of the 
+        #                                         # account receiving alert email
+        #        password    => 'changemenow',    # password  
+        #        ssl         => [ 
+        #            'SSL_verify_mode', 0         # ssl options 
+        #        ],                               # see perldoc IO::SSL
+        #        uid         => 1,                # uid   IMAP config item 
+        #        ignore_size_errors  => 1,        # ignore_size_errors 
+        #    },
+        #},
         {
             attr    => 'enrichments',
             class   => 'Scot::Util::Enrichments',
