@@ -327,7 +327,7 @@ relies on the browser BasicAuth popup.
 
 =pod
 
-@api {put} /scot/api/v2/command/:action Send Queue Command
+@api {put} /scot/api/v2/command/:scotaction Send Queue Command
 @apiName send command to queue
 @apiGroup Queue
 @apiVersion 2.0.0
@@ -335,7 +335,7 @@ relies on the browser BasicAuth popup.
 
 =cut
 
-    $scot   ->put   ('/api/v2/command/:action')
+    $scot   ->put   ('/api/v2/command/:scotaction')
             ->to    ('controller-api#do_command')
             ->name  ('do_command');
 
@@ -667,7 +667,6 @@ other events.
 
     # delete via params, only supported for links
     $scot   ->delete ('/api/v2/:thing')
-            ->via   ('delete')
             ->to    ('controller-api#delete')
             ->name  ('delete-link');
 
