@@ -9,6 +9,8 @@ function install_ubuntu_packages {
         perl-modules
         perlmagick
         perltidy
+        libmagic1
+        libmagic-dev
         libcurses-perl
         libmagic-dev
         libxml-perl
@@ -377,7 +379,6 @@ function install_perl_modules {
         XML::Smart
         Config::Auto
         Data::GUID
-        File::LibMagic
         List::Uniq
         Domain::PublicSuffix
         Mozilla::PublicSuffix
