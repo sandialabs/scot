@@ -136,8 +136,16 @@ function install_cent_packages {
     echo "-- installing development tools"
     if [[ "$OSVERSION" == "8" ]]; then
         dnf group install "Development Tools" -y
+        if [ "$?" -ne "0" ]; then
+            echo "Can not proceed without Development tools installed!"
+            exit 1
+        fi
     else 
         yum groupinstall "Development Tools" -y
+        if [ "$?" -ne "0" ]; then
+            echo "Can not proceed without Development tools installed!"
+            exit 1
+        fi
     fi
 
     YUMPACKAGES='
