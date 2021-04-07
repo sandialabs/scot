@@ -1,0 +1,286 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Docker-SCOT v 0.04 &#8212; SCOT 3.5.1 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="REVL Visualization Guide" href="visualization.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="visualization.html" title="REVL Visualization Guide"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="docker-scot-v-0-04">
+<h1>Docker-SCOT v 0.04<a class="headerlink" href="#docker-scot-v-0-04" title="Permalink to this headline">¶</a></h1>
+<p>v0.04 relase date - 5/16/2018</p>
+<div class="section" id="table-of-contents">
+<h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Overview</li>
+<li>Docker-SCOT containers</li>
+<li>Managing the containers</li>
+<li>Configuration</li>
+<li>FAQ / Common Issues</li>
+</ul>
+<div class="section" id="overview">
+<h3><strong>Overview</strong><a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h3>
+<p>Docker-SCOT is now a supported, multi-container deployment of SCOT. Docker-SCOT allows a new user to get up and running with SCOT much quicker, and easier than with the traditional SCOT install process.</p>
+<p><strong>IMPORTANT</strong></p>
+<p>Backup your database via the backup.pl in the /opt/scot/bin/ directory before upgrading to the docker version of SCOT. If you are upgrading, you will also need to turn off all services that the older version of SCOT uses such as Apache, Activemq, Mongodb, ElasticSearch and SCOT (i.e. sudo service stop scot). Also as far as upgrading, we have <strong>not</strong> tested upgrading from any version before 3.4. Upgrade from versions prior to 3.4 to 3.5 first before upgrading to Docker-SCOT
+7</p>
+</div>
+<div class="section" id="docker-scot-containers">
+<h3>Docker-SCOT containers<a class="headerlink" href="#docker-scot-containers" title="Permalink to this headline">¶</a></h3>
+<p>Docker-SCOT is comprised of the following services:</p>
+<ul class="simple">
+<li><strong>SCOT</strong> - SCOT Application and associated API</li>
+<li><strong>MongoDB</strong> - Storage for SCOT</li>
+<li><strong>ActiveMQ</strong> - Message broker for servies interested in SCOT data</li>
+<li><strong>Apache</strong> - Proxy for traffic between some services</li>
+<li><strong>ElasticSearch</strong> - Search engine</li>
+<li><strong>Flair Engine</strong> - ‘Entities’ found within SCOT are highlighted with a count of the number of times SCOT has ‘seen’ them before</li>
+<li><strong>Game Engine</strong> - Used for homepage statistics</li>
+<li><strong>Stretch</strong> - Used for adding data to ElasticSearch</li>
+<li><strong>Mail</strong> - Used as a reslient mechanism for importing data to SCOT (not enabled by default - See configuration section)</li>
+<li><strong>Reflair</strong> Similar to flair</li>
+</ul>
+</div>
+<div class="section" id="docker-installation">
+<h3>Docker Installation<a class="headerlink" href="#docker-installation" title="Permalink to this headline">¶</a></h3>
+<p>To get started, refer to the Docker Community Edition documentation for installing the Docker engine on your respective OS: <a class="reference external" href="https://docs.docker.com/engine/installation/">https://docs.docker.com/engine/installation/</a></p>
+<p>Next, Docker-SCOT relies on docker-compose to build, run and manage services. Docker-compose does not ship with Docker engine, so you will need to refer to the following documentation for installation of Docker-Compose: <a class="reference external" href="https://docs.docker.com/compose/install/">https://docs.docker.com/compose/install/</a></p>
+</div>
+<div class="section" id="scot-installation">
+<h3>SCOT Installation<a class="headerlink" href="#scot-installation" title="Permalink to this headline">¶</a></h3>
+<p><strong>Note</strong> These steps will most likely change slightly in 2019 as the SCOT team will be working on making the install script more robust, but easier to use so you can begin using (and even developing) with SCOT quickly.</p>
+<p>There are two methods for getting started with SCOT. Run the SCOT/restart-build-deploy.sh script (will be promopted to enter sudo credentials) and follow the on screen prompts for either.</p>
+<ol class="arabic">
+<li><dl class="first docutils">
+<dt>Quick mode - this mode will pull all necessary docker images from from Dockerhub (preconfigured). For demo purposes, this is the preferred method if you do are not concerned with any of the below bullet points. Demo mode should not be ran in production.</dt><dd><ul class="simple">
+<li>Using self-signed certificates for apache</li>
+<li>Adding additional perl libraries to the system</li>
+<li>Configuring the mail service to integrate with you a corporate email account</li>
+<li><strong>IMPORTANT</strong> The easy install assumes that you do not already have elasticsearch, mongodb, and scot user accounts on  host. If you do, please remove them PRIOR to running the install. In order to make sure mongo and elasticsearch data is perssited, we have to user accounts on the host and container keep those in sync, otherwise elasticsearch and mongo will die on restarts due to being unable to read / write to their various data stores.</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">Custom Mode - If you are concerned with the above, you should use the custom mode which builds the docker containers from source and deploys them.</p>
+</li>
+</ol>
+</div>
+<div class="section" id="managing-the-containers">
+<h3>Managing the containers<a class="headerlink" href="#managing-the-containers" title="Permalink to this headline">¶</a></h3>
+<p>The restart-build-deploy.sh script will handle stopping and then restarting containers automaticaly. However if you need more granular control run the following:</p>
+<p>To stop Docker-SCOT:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">sudo</span> <span class="n">docker</span><span class="o">-</span><span class="n">compose</span> <span class="n">stop</span>
+</pre></div>
+</div>
+<p>To start a specific service:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">sudo</span> <span class="n">docker</span><span class="o">-</span><span class="n">compose</span> <span class="n">up</span> <span class="o">--</span><span class="n">build</span> <span class="n">name_of_service</span>
+</pre></div>
+</div>
+<p>To stop a specific service:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">sudo</span> <span class="n">docker</span><span class="o">-</span><span class="n">compose</span> <span class="n">stop</span> <span class="n">name_of_of_service</span>
+</pre></div>
+</div>
+<p>To restart a specific service and build in any particular changes you have made to source:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">sudo</span> <span class="n">docker</span><span class="o">-</span><span class="n">compose</span> <span class="n">up</span> <span class="o">-</span><span class="n">d</span> <span class="o">--</span><span class="n">build</span> <span class="n">name_of_service</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="configuration">
+<h3>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h3>
+<p>Docker-SCOT relies on the docker-compose.yml or docker-compose-custom.yml file to define the execution of the services, the DockerFiles that define the dependencies for each container, and two directories (docker-scripts &amp; docker-configs).</p>
+<p><strong>docker-compose.yml</strong></p>
+<p>The docker-compose.yml simply defines the port mappings, data volumes, build contexts, etc. Most of this can be configured as you please but keep in mind some of the data volume mapping and all of the static IPs are currently required unless you modify the configuration files in docker-configs.</p>
+<p><strong>docker-compose-custom.yml</strong></p>
+<p>The docker-compose-custom.yml file, instead of building the containers on the host from the provided Dockerfiles will pull down the images from Dockerhub.</p>
+<p><strong>docker-scripts</strong></p>
+<p>The docker-scripts directory contains scripts for backing up the data contained in MongoDB container and will eventually house other scripts that are similar.</p>
+<p>The following scripts are currently supported:</p>
+<ol class="arabic simple">
+<li>/opt/scot/bin/restore.pl</li>
+<li>/opt/scot/bin/restore_remote_scotdb.pl</li>
+<li>restore.pl</li>
+</ol>
+<p>To execute one of the above scripts, simply connect to the scot container via:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">sudo</span> <span class="n">docker</span> <span class="n">exec</span> <span class="o">-</span><span class="n">i</span> <span class="o">-</span><span class="n">t</span> <span class="o">-</span><span class="n">u</span> <span class="n">scot</span> <span class="n">scot</span> <span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">bash</span>
+</pre></div>
+</div>
+<p>cd to /opt/scot/bin/</p>
+<p>and run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="o">./</span><span class="n">scriptexample</span><span class="o">.</span><span class="n">pl</span>
+</pre></div>
+</div>
+<p><strong>Restoring a database</strong></p>
+<p>If you are upgrading to the docker version of SCOT and need to restore your database (make sure to backup your database prior to upgrading) or you are already using the docker version of SCOT and want to backup your database simply run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">sudo</span> <span class="n">docker</span> <span class="n">exec</span> <span class="o">-</span><span class="n">i</span> <span class="o">-</span><span class="n">t</span> <span class="o">-</span><span class="n">u</span> <span class="n">scot</span> <span class="n">scot</span> <span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">bash</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>cd to /opt/scot/bin and run::</dt><dd>./backup.pl</dd>
+</dl>
+<p>To restore, once you have finished the backup:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">sudo</span> <span class="n">docker</span> <span class="n">exec</span> <span class="o">-</span><span class="n">i</span> <span class="o">-</span><span class="n">t</span> <span class="o">-</span><span class="n">u</span> <span class="n">scot</span> <span class="n">scot</span> <span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">bash</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>cd to /opt/scot/bin and run::</dt><dd>./restore.pl</dd>
+</dl>
+<p><strong>docker-configs</strong></p>
+<p>The docker-configs directory contains modified config files, perl modules, scripts, etc. that allow SCOT to function properly in a containerized environment. Most changes are references to localhost in the standard SCOT codebase where we modify those addresses to reference the ip addresses on the scot_docker subnet.</p>
+<p><strong>MongoDB Default password</strong></p>
+<p>MongoDB default password (also used for logging in to SCOT if local auth is enabled (by default)), is:</p>
+<ul class="simple">
+<li>Username: admin</li>
+<li>Password: admin</li>
+</ul>
+<p>Note: If by chance you ever go to wipe your mongo database and would like to start fresh, you would need to delete the file /var/lib/mongodb/.mongodb_password_set.</p>
+<p><strong>Persisted Data</strong></p>
+<p>You can view which data is being persisted by viewing the docker-compose.yml script and referring to the various ‘Volumes’. With regard to MongoDB (where SCOT records are persisted), those directories are mapped to your Host’s: /var/lib/mongodb directory.</p>
+<p><strong>Mail</strong></p>
+<p>To begin using mail, you will need to uncomment the ‘mail’ service in the docker-compose.yml file and also add any of your organization’s mail configurations into the
+docker-configs/mail/alert.cfg.pl file.</p>
+<p><strong>LDAP</strong></p>
+<p>By default, LDAP configuration is not enabled in docker-configs/scot/scot.cfg.pl. To enable, simply uncomment the LDAP configuration lines in docker-configs/scot/scot.cfg.pl and edit the necessary information to begin checking LDAP for group membership / auth.</p>
+<p><strong>Custom SSL</strong></p>
+<p>Docker-SCOT’s Apache instance comes configured with a self-signed SSL cert baked into the container. However, if you wish to use your own ceritifcates, do the following:</p>
+<ol class="arabic">
+<li><p class="first">Remove the SSL cert creation lines from the Dockerfile-Apache file.</p>
+</li>
+<li><p class="first">In docker-configs/apache/ directory, there is a scot-revproxy-Ubuntu.conf. Replace the following line:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">ServerName</span> <span class="n">apache</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p>with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">Servername</span> <span class="n">nameofyourhost</span>
+</pre></div>
+</div>
+<ol class="arabic" start="3">
+<li><p class="first">In the same file, replace the following lines:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">SSLCertificateFile</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">apache2</span><span class="o">/</span><span class="n">ssl</span><span class="o">/</span><span class="n">scot</span><span class="o">.</span><span class="n">crt</span>
+<span class="n">SSLCertificateKeyFile</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">apache2</span><span class="o">/</span><span class="n">ssl</span><span class="o">/</span><span class="n">scot</span><span class="o">.</span><span class="n">key</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p>with the path and name of the eventual location where you will map your certs to via a shared data volume.
+4. Next, as mentioned above, you need to pump your certs from your host machine into the container via a data volume (you can also copy them into the container at build time via COPY directive). In order to map them in via a data volume, add a new data volume under the apache service in the docker-compose.yml file. Eg.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">volumes</span><span class="p">:</span>
+ <span class="o">-</span> <span class="s2">&quot;/etc/timezone:/etc/timezone:ro&quot;</span>
+ <span class="o">-</span> <span class="s2">&quot;/etc/localtime:/etc/localtime:ro&quot;</span>
+ <span class="o">-</span> <span class="s2">&quot;/var/log/apache2:/var/log/apache2/&quot;</span>
+ <span class="o">-</span> <span class="s2">&quot;/path/to/your/cert:/path/to/file/location/you/defined/in/step/3</span>
+ <span class="o">-</span> <span class="s2">&quot;/path/to/your/key:/path/to/file/location/you/defined/in/step/3</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="5">
+<li>Re-run the restart-build-deploy.sh script and you should be set!</li>
+</ol>
+</div>
+<div class="section" id="faq-common-issues">
+<h3>FAQ / Common Issues<a class="headerlink" href="#faq-common-issues" title="Permalink to this headline">¶</a></h3>
+<p><strong>Common Issues</strong></p>
+<ol class="arabic simple">
+<li>Apache frequently will throw an error on run time that the process is already running and will subequently die. In the event this happens, simply re-run the script.</li>
+<li>Issue with binding mounting various volumes using SELinux? See here: <a class="reference external" href="https://docs.docker.com/storage/bind-mounts/#configure-the-selinux-label">https://docs.docker.com/storage/bind-mounts/#configure-the-selinux-label</a>. You most likely will need to edit the docker-compose.yml or docker-compose-custom.yml file.</li>
+</ol>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Docker-SCOT v 0.04</a><ul>
+<li><a class="reference internal" href="#table-of-contents">Table of Contents</a><ul>
+<li><a class="reference internal" href="#overview"><strong>Overview</strong></a></li>
+<li><a class="reference internal" href="#docker-scot-containers">Docker-SCOT containers</a></li>
+<li><a class="reference internal" href="#docker-installation">Docker Installation</a></li>
+<li><a class="reference internal" href="#scot-installation">SCOT Installation</a></li>
+<li><a class="reference internal" href="#managing-the-containers">Managing the containers</a></li>
+<li><a class="reference internal" href="#configuration">Configuration</a></li>
+<li><a class="reference internal" href="#faq-common-issues">FAQ / Common Issues</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="visualization.html"
+                        title="previous chapter">REVL Visualization Guide</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/scotdocker.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="visualization.html" title="REVL Visualization Guide"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2011-2016, Sandia National Laboratories.
+    </div>
+  </body>
+</html>

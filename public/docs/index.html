@@ -1,0 +1,282 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>SCOT Documentation &#8212; SCOT 3.5.1 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="License" href="license.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="license.html" title="License"
+             accesskey="N">next</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">SCOT 3.5.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="scot-documentation">
+<h1>SCOT Documentation<a class="headerlink" href="#scot-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Thanks for using SCOT!  Please consider joining the scot-users mailing list:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">scot</span><span class="o">-</span><span class="n">users</span><span class="nd">@sandia</span><span class="o">.</span><span class="n">gov</span>
+</pre></div>
+</div>
+<p>Send “subscribe” in the subject or message body.</p>
+<p>You can also “follow”  us on twitter at ___________________ .</p>
+<p>Regardless, if you are using SCOT, please send us an e-mail at:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">scot</span><span class="o">-</span><span class="n">dev</span><span class="nd">@sandia</span><span class="o">.</span><span class="n">gov</span>
+</pre></div>
+</div>
+<p>and let us know.  It helps us with our management continuing to support SCOT development.</p>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="license.html"> License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installing SCOT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html#important-update">Important Update</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#minimum-system-requirements">Minimum System Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#system-preparation">System Preparation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="install.html#ubuntu-14-04">Ubuntu 14.04</a></li>
+<li class="toctree-l3"><a class="reference internal" href="install.html#ubuntu-16-04-and-cent-7">Ubuntu 16.04 and CENT 7</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#install-sh-options">install.sh Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#using-install-sh-to-upgrade">Using install.sh to upgrade</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#configuration-files">Configuration Files</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="postinstall.html"> Post-Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="postinstall.html#migration">Migration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="postinstall.html#ssl-certs">SSL Certs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="postinstall.html#configuration-files">Configuration Files</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="postinstall.html#scot-cfg-pl">scot.cfg.pl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="postinstall.html#alert-cfg-pl">alert.cfg.pl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="postinstall.html#flair-cfg-pl">flair.cfg.pl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="postinstall.html#game-cfg-pl">game.cfg.pl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="postinstall.html#stretch-cfg-pl">stretch.cfg.pl</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="postinstall.html#cron-jobs">CRON Jobs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="migration.html">Migration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="migration.html#save-your-old-database">Save Your Old Database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="feeding.html"> Getting Alerts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="feeding.html#email-ingest">Email Ingest</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="feeding.html#html-email">HTML Email</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="feeding.html#rest-interface">REST interface</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html"> SCOT Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#philosophy">Philosophy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#why-use-scot">Why Use SCOT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#terminology">Terminology</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#irt">IRT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#alertgroups">Alertgroups</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#alerts">Alerts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#events">Events</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#entry">Entry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#task">Task</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#entity">Entity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#flair">Flair</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#intel">Intel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#guide">Guide</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#signature">Signature</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="userguide.html"> User Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#views">Views</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#list-view">List View</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#detail-view">Detail View</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#alert">Alert</a></li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#alert-details">Alert Details</a></li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#events">Events</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#event-grid-view">Event Grid View</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#event-detail-view">Event Detail View</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#incident">Incident</a></li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#intel">Intel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#guide">Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#task">Task</a></li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#signature">Signature</a></li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#tags">Tags</a></li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#flair">Flair</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#what-the-heck-is-flair">What the heck is Flair?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#the-process">The Process</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#user-defined-entity">User Defined Entity</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#entities">Entities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#entity-types">Entity Types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#building-additional-entity-types">Building Additional Entity Types</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#permissions">Permissions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#default-groups-and-owners">Default Groups and Owners</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#admin-group">Admin Group</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#note-about-group-names">Note about Group Names</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#hotkeys">HotKeys</a></li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#posting-a-global-notificaton">Posting a global notificaton:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="adminguide.html"> Admin Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="adminguide.html#backup">Backup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="adminguide.html#manual-backup">Manual Backup</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="adminguide.html#restore">Restore</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="adminguide.html#manual-restore">Manual Restore</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="adminguide.html#ssl-certs">SSL Certs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adminguide.html#geoip">GeoIP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adminguide.html#upgrading">Upgrading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adminguide.html#cron-entries">CRON Entries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adminguide.html#daemons">Daemons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adminguide.html#logging">Logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adminguide.html#manual-password-reset-for-local-auth">Manual Password Reset for Local Auth</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="devguide.html"> Developer Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="devguide.html#scot-architecture">SCOT Architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="devguide.html#scot-directory-map">SCOT Directory Map</a></li>
+<li class="toctree-l2"><a class="reference internal" href="devguide.html#scot-rest-api">SCOT REST API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="devguide.html#scot-get-api">SCOT get API</a></li>
+<li class="toctree-l3"><a class="reference internal" href="devguide.html#scot-post-api">SCOT post API</a></li>
+<li class="toctree-l3"><a class="reference internal" href="devguide.html#scot-put-api">SCOT put API</a></li>
+<li class="toctree-l3"><a class="reference internal" href="devguide.html#scot-delete-api">SCOT delete API</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="devguide.html#scot-event-queue">SCOT Event Queue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="devguide.html#scot-server">SCOT Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="devguide.html#scot-ui">SCOT UI</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="signatures.html"> Signature Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="signatures.html#signature">Signature</a></li>
+<li class="toctree-l2"><a class="reference internal" href="signatures.html#signature-metadata">Signature Metadata</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="signatures.html#signature-body-options">Signature Body Options</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="visualization.html"> REVL Visualization Framework</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="visualization.html#read-eval-viz-loop">Read-Eval-Viz-Loop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="visualization.html#getting-started">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="visualization.html#interacting-with-revl">Interacting with REVL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="visualization.html#using-revl-with-scot-data">Using REVL with SCOT data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="visualization.html#make-a-bar-chart">Make a bar chart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="visualization.html#event-timing">Event Timing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="visualization.html#other-interesting-command-examples">Other interesting command examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="scotdocker.html"> Docker-Scot</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="scotdocker.html#table-of-contents">Table of Contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="scotdocker.html#overview"><strong>Overview</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="scotdocker.html#docker-scot-containers">Docker-SCOT containers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="scotdocker.html#docker-installation">Docker Installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="scotdocker.html#scot-installation">SCOT Installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="scotdocker.html#managing-the-containers">Managing the containers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="scotdocker.html#configuration">Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="scotdocker.html#faq-common-issues">FAQ / Common Issues</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="indicies-and-tables">
+<h1>Indicies and Tables<a class="headerlink" href="#indicies-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">SCOT Documentation</a></li>
+<li><a class="reference internal" href="#indicies-and-tables">Indicies and Tables</a></li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="license.html"
+                        title="next chapter">License</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="license.html" title="License"
+             >next</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">SCOT 3.5.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2011-2016, Sandia National Laboratories.
+    </div>
+  </body>
+</html>

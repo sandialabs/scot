@@ -1,0 +1,45 @@
+.TagInput {
+  position: relative;
+  width: 100%; }
+  .TagInput .react-tags_header {
+    display: flex;
+    flex-direction: column; }
+  .TagInput .react-tags__selected_header {
+    text-align: left;
+    white-space: normal;
+    order: 1; }
+    .TagInput .react-tags__selected_header .react-tags__selected-tag_header {
+      display: inline-block;
+      background: #f1f1f1;
+      border: 1px solid #d1d1d1;
+      border-radius: 2px;
+      padding: 3px; }
+      .TagInput .react-tags__selected_header .react-tags__selected-tag_header i {
+        margin-left: 3px;
+        cursor: pointer; }
+  .TagInput .react-tags__search_header {
+    display: inline-block;
+    width: 100%; }
+    .TagInput .react-tags__search_header input {
+      width: 100%; }
+  .TagInput .react-tags__suggestions_header {
+    z-index: 1;
+    position: absolute;
+    left: 0;
+    min-width: 100%;
+    background: white;
+    border: 1px solid black; }
+    .TagInput .react-tags__suggestions_header ul {
+      padding: 0;
+      margin: 0;
+      list-style: none;
+      text-align: left; }
+      .TagInput .react-tags__suggestions_header ul li {
+        padding: 7px 5px;
+        border-bottom: 1px solid #ddd; }
+        .TagInput .react-tags__suggestions_header ul li:hover, .TagInput .react-tags__suggestions_header ul li.is-active {
+          cursor: pointer;
+          background: rgba(0, 0, 0, 0.1); }
+        .TagInput .react-tags__suggestions_header ul li mark {
+          background: none;
+          text-decoration: underline; }

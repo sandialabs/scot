@@ -1,0 +1,497 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>REVL Visualization Guide &#8212; SCOT 3.5.1 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Docker-SCOT v 0.04" href="scotdocker.html" />
+    <link rel="prev" title="Signatures" href="signatures.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="scotdocker.html" title="Docker-SCOT v 0.04"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="signatures.html" title="Signatures"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="revl-visualization-guide">
+<h1>REVL Visualization Guide<a class="headerlink" href="#revl-visualization-guide" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="read-eval-viz-loop">
+<h2>Read-Eval-Viz-Loop<a class="headerlink" href="#read-eval-viz-loop" title="Permalink to this headline">¶</a></h2>
+<p>REVL is a tool for quickly reorganizing awkward data formats so that
+you can inspect the data and use a variety of visualizations to find
+interesting relationships and properties that would be hard to spot
+otherwise. It works in a way similar to a powerful command line in
+that you get data on one end, run it through a series of
+transformations to pick out the bits you’re interested in and stick
+them to other bits, finally ending up with just the interesting parts
+in a format that’s easy to comprehend or ship off to a visualization
+tool (of which many are included). Internally, REVL uses a result
+monad to do the value handling, so you’re actually working with a data
+structure instead of raw text. In this case, this makes it quite a bit
+more convenient to use than the standard command line.</p>
+</div>
+<div class="section" id="getting-started">
+<h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<p>When you open SCOT, click the <code class="docutils literal notranslate"><span class="pre">Visualization</span></code> link in the
+navbar. This will open REVL, which will look like a big blank screen
+with a little command prompt at the bottom. You will interact with
+the system by typing strings of commands at the prompt and observing
+the results either in the text output area (just above the prompt)
+or in the visualization area (the bulk of the page, which is blank
+white at this point).</p>
+</div>
+<div class="section" id="interacting-with-revl">
+<h2>Interacting with REVL<a class="headerlink" href="#interacting-with-revl" title="Permalink to this headline">¶</a></h2>
+<p>To Get some help click in the prompt and type <code class="docutils literal notranslate"><span class="pre">help</span></code> (and press Enter).</p>
+<p>Just above the prompt, you will see a text output area. You can drag
+the top of this area to resize it, so drag it up now to see the REVL
+default help message. This message gives a little background and
+lists all currently loaded commands. If you can’t remember the name
+of something, you should be able to jog your memory by looking it up
+here.</p>
+<p>Now type <code class="docutils literal notranslate"><span class="pre">help</span> <span class="pre">map</span></code> at the prompt. This will display the
+command-specific help for the <code class="docutils literal notranslate"><span class="pre">map</span></code> command, which is something you
+will be using a <em>lot</em>.</p>
+<p>REVL tries to be convenient - if it recognizes the first word you
+type in a command segment to be a command, it treats it as one. If
+not, it will evaluate whatever you type in the context of the shell,
+which includes variable definitions, locally defined helper
+functions, and the entire API behind the command system. The syntax
+is coffeescript, which you can find out more about at
+[[<a class="reference external" href="http://coffeescript.org][CoffeeScript.org">http://coffeescript.org][CoffeeScript.org</a>]].</p>
+<p>Type:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="p">[</span><span class="mf">1.</span><span class="o">.</span><span class="mi">10</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>at the prompt and hit Enter. You will see the result
+of evaluating that coffeescript value, which is</p>
+<blockquote>
+<div>[1,2,3,4,5,6,7,8,9,10]</div></blockquote>
+<p>This particular trick (generating a list
+of integers) is surprisingly useful for seeding queries later
+on. Keep it in mind when you want to do something like look at all
+of the events that came in between two other events (you can
+sequence their id fields using this list, eg [1044..1102]).</p>
+<p>Now hit the up arrow to repeat the last command, then add to the
+back of it until you get this (the thing right after the list is a
+single backslash character):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="p">[</span><span class="mf">1.</span><span class="o">.</span><span class="mi">10</span><span class="p">]</span> \ <span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">n</span><span class="o">*</span><span class="n">n</span>
+</pre></div>
+</div>
+<p>After you hit enter, you’ll see a list of the squares of the
+integers from the fist list: <code class="docutils literal notranslate"><span class="pre">[1,4,9,16,25,36,49,64,81,100]</span></code>. You
+just used the <code class="docutils literal notranslate"><span class="pre">map</span></code> command. You could also have explicitly written
+out the <code class="docutils literal notranslate"><span class="pre">map</span></code> name in front of the function definition, but this
+particular command is so common that it’s implied after a backslash
+if no other command is specified.</p>
+<p>Commands are chained together using the backslash (‘’)
+character. Normally the pipe (‘|’) would have been used, but in
+this case it was just much simpler and more reliable to use the
+backslash because the pipe is an important character in
+user-defined coffeescript code, and it would have led to
+significant ambiguity in parsing the commands.</p>
+</div>
+<div class="section" id="using-revl-with-scot-data">
+<h2>Using REVL with SCOT data<a class="headerlink" href="#using-revl-with-scot-data" title="Permalink to this headline">¶</a></h2>
+<p>Now we can do something interesting. Let’s get all the entities
+with ids from 10000 to 10100:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">entity</span> <span class="n">offset</span><span class="p">:</span><span class="mi">10000</span><span class="p">,</span><span class="n">limit</span><span class="p">:</span><span class="mi">101</span>
+</pre></div>
+</div>
+<p>This command will take a few seconds to complete, and when it does
+you’ll see a list of entities in the text output. However, our plan
+was foiled - our first id is not 10000, it’s something else. If we
+want to actually get entities with ids 10000 to 10100, we’ll need
+to specify those ids. Let’s do that:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="p">[</span><span class="mf">10000.</span><span class="o">.</span><span class="mi">10100</span><span class="p">]</span> \ <span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">API</span><span class="o">.</span><span class="n">entity</span> <span class="nb">id</span><span class="p">:</span><span class="n">n</span>
+</pre></div>
+</div>
+<p>After you press Enter and wait, you’ll find that you got a list of
+100 somethings back, but they aren’t entities. REVL uses
+asynchronous calls for the API to make things a little faster. This
+is hidden when you use the top level commands because the shell
+knows to wait when the result is a promise, but when you make calls
+directly to the API and embed them in another data structure, you
+have to be more explicit. Let’s go ahead and tell it to wait on
+those results:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="p">[</span><span class="mf">10000.</span><span class="o">.</span><span class="mi">10100</span><span class="p">]</span> \ <span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">API</span><span class="o">.</span><span class="n">entity</span> <span class="nb">id</span><span class="p">:</span><span class="n">n</span> \ <span class="n">wait</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">wait</span></code> command will scan through the data it gets from the
+pipeline and replace all of the promises with the fulfillments of
+those promises as they come in. It also has an optional timeout
+which will cause the wait to stop if it has been more than that
+long since an update was received. The default timeout is 60
+seconds, and you can change it by simply specifying a different
+number as an argument to the wait command. This argument is a full
+coffeescript value, so you can use variables and functions if you
+need to for some reason.</p>
+<p>As you wait for the entities to come down, notice that there is a
+progress bar on top of the command line to let you know something
+is happening in the background, and the fraction of finished to
+total promises is displayed at the right end of the command line.</p>
+<p>When it’s all said and done, you should have a list of 101 entities
+in your text window.</p>
+</div>
+<div class="section" id="make-a-bar-chart">
+<h2>Make a bar chart<a class="headerlink" href="#make-a-bar-chart" title="Permalink to this headline">¶</a></h2>
+<p>Let’s take those entities and see how they’re distributed by
+type. To do that, we’ll fetch the entities, then pick out the type
+field, group them by that field, and make a chart that has a bar
+for each type and shows the number of instances of that
+type. First, let’s get the entities again and stash them so that we
+don’t have to wait for them to download at each step:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="p">[</span><span class="mf">10000.</span><span class="o">.</span><span class="mi">10100</span><span class="p">]</span> \ <span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">API</span><span class="o">.</span><span class="n">entity</span> <span class="nb">id</span><span class="p">:</span><span class="n">n</span> \ <span class="n">wait</span> \ <span class="n">store</span> <span class="n">ents</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">store</span></code> command takes a variable name and stores the result of
+the preceding command in the scope under that name. Now you can
+access that list of entities using the name <code class="docutils literal notranslate"><span class="pre">ents</span></code> from anywhere in
+future commands. First, let’s strip out all of the data we don’t
+care about from them:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">ents</span> \ <span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">e</span><span class="o">.</span><span class="n">type</span>
+</pre></div>
+</div>
+<p>Now you should see a list of the type fields from each entity. Next
+we’ll group them according to that field:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">ents</span> \ <span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">e</span><span class="o">.</span><span class="n">type</span> \ <span class="n">group</span> <span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">x</span>
+</pre></div>
+</div>
+<p>This command uses the <code class="docutils literal notranslate"><span class="pre">group</span></code> command, which takes a function and
+returns an object. The function should return a name for its input
+that specifies what group it belongs in. In this case, all we have
+are names, so we just tell it to return its input unchanged (that’s
+what the <code class="docutils literal notranslate"><span class="pre">(x)-&gt;x</span></code> means - a coffeescript identity function).</p>
+<p>The output of the group command was an object with a key for each
+group name, and the list of things in that group for the value. Now
+we’re going to replace the lists with their lengths, which will
+give us a nice data structure to pass to the <code class="docutils literal notranslate"><span class="pre">barchart</span></code>
+visualization primitive:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">ents</span> \ <span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">e</span><span class="o">.</span><span class="n">type</span> \ <span class="n">group</span> <span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">x</span> \ <span class="p">(</span><span class="n">ls</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">ls</span><span class="o">.</span><span class="n">length</span>
+</pre></div>
+</div>
+<p>This uses the map command to iterate over the keys of the object
+returned by group and replace each value by its length. You should
+now have an object with a few keys, each with a number as its
+value. This is exactly the format we need for a bar chart, so let’s
+see what we get:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">ents</span> \ <span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">e</span><span class="o">.</span><span class="n">type</span> \ <span class="n">group</span> <span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">x</span> \ <span class="p">(</span><span class="n">ls</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">ls</span><span class="o">.</span><span class="n">length</span> \ <span class="n">barchart</span>
+</pre></div>
+</div>
+<p>You should now see a chart showing the relative frequencies of the
+different entity types in your set. If your text area is covering
+the chart, you can double click the top of it to auto-minimize. It
+will remember the last setting for the height, so if you double
+click it again it will go back to where it was.</p>
+</div>
+<div class="section" id="event-timing">
+<h2>Event Timing<a class="headerlink" href="#event-timing" title="Permalink to this headline">¶</a></h2>
+<p>Next we’ll use a dot chart to look at the timing of a set of alerts
+coming in within an alert group. First, let’s get the alerts:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">alertgroup</span><span class="p">:</span> <span class="nb">id</span><span class="p">:</span><span class="mi">1512214</span><span class="p">,</span><span class="n">sub</span><span class="p">:</span><span class="s1">&#39;alert&#39;</span>
+</pre></div>
+</div>
+<p>After this comes in you should have a list of alerts. There’s a lot
+of data we don’t really care about there, so let’s tell the server
+to only send what’s important:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">alertgroup</span><span class="p">:</span> <span class="nb">id</span><span class="p">:</span><span class="mi">1512214</span><span class="p">,</span><span class="n">sub</span><span class="p">:</span><span class="s1">&#39;alert&#39;</span><span class="p">,</span><span class="n">columns</span><span class="p">:[</span><span class="s1">&#39;id&#39;</span><span class="p">,</span><span class="s1">&#39;when&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>This filters the data coming in down to just the <code class="docutils literal notranslate"><span class="pre">id</span></code> and <code class="docutils literal notranslate"><span class="pre">when</span></code>
+columns, which suits our needs for this example. We can store that
+data for future reference:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">alertgroup</span><span class="p">:</span> <span class="nb">id</span><span class="p">:</span><span class="mi">1512214</span><span class="p">,</span><span class="n">sub</span><span class="p">:</span><span class="s1">&#39;alert&#39;</span><span class="p">,</span><span class="n">columns</span><span class="p">:[</span><span class="s1">&#39;id&#39;</span><span class="p">,</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> \ <span class="n">store</span> <span class="n">a151</span>
+</pre></div>
+</div>
+<p>We’re going to make a dot chart with time on the horizontal axis
+and item number on the vertical (vertical axis is just here to
+separate things for visibility). We need to pull out the time value
+for each and pair it with its position in the list:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">a151</span> \ <span class="p">(</span><span class="n">alert</span><span class="p">,</span><span class="n">pos</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">[</span><span class="n">pos</span><span class="p">,</span><span class="n">alert</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">_time</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The map function implicitly passes the index of the current element
+to the handler function (or the key if it’s an object). We just use
+the object’s list position to get a vertical coordinate for
+it. Unfortunately, this timestamp is in human-readable format,
+which makes it a pain to use. We can parse it using the Strings
+function though:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">a151</span> \ <span class="p">(</span><span class="n">r</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">r</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">_time</span> \
+    <span class="n">pick</span> <span class="n">Strings</span><span class="o">.</span><span class="n">pat</span><span class="o">.</span><span class="n">hms</span> \
+    <span class="p">(</span><span class="n">ls</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">(</span><span class="nb">map</span> <span class="n">ls</span><span class="p">[</span><span class="mf">1.</span><span class="o">.</span><span class="p">],(</span><span class="n">s</span><span class="p">,</span><span class="n">i</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">(</span><span class="mi">60</span><span class="o">**</span><span class="p">(</span><span class="mi">2</span><span class="o">-</span><span class="n">i</span><span class="p">))</span><span class="o">*</span><span class="p">(</span><span class="n">parseInt</span> <span class="n">s</span><span class="p">))</span><span class="o">.</span><span class="n">reduce</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">a</span><span class="o">+</span><span class="n">b</span>
+</pre></div>
+</div>
+<p>This takes the alerts and uses the Strings predefined <code class="docutils literal notranslate"><span class="pre">hms</span></code>
+(hours:minutes:seconds) pattern to parse just the clock time from
+the timestamp. The pattern returns the matched string along with
+its captured substrings, which in this case gives us the hour,
+minute, and second. The function mapped over it just converts this
+into a number of seconds since midnight. Coffeescript has a <code class="docutils literal notranslate"><span class="pre">**</span></code>
+operator for exponentiation, if you’re trying to parse out how that
+function works. Now we have a list of timestamps, so let’s convert
+it to a list of coordinate pairs that <code class="docutils literal notranslate"><span class="pre">dotchart</span></code> can use:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">a151</span> \ <span class="p">(</span><span class="n">r</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">r</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">_time</span> \
+    <span class="n">pick</span> <span class="n">Strings</span><span class="o">.</span><span class="n">pat</span><span class="o">.</span><span class="n">hms</span> \
+    <span class="p">(</span><span class="n">ls</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">(</span><span class="nb">map</span> <span class="n">ls</span><span class="p">[</span><span class="mf">1.</span><span class="o">.</span><span class="p">],(</span><span class="n">s</span><span class="p">,</span><span class="n">i</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">(</span><span class="mi">60</span><span class="o">**</span><span class="p">(</span><span class="mi">2</span><span class="o">-</span><span class="n">i</span><span class="p">))</span><span class="o">*</span><span class="p">(</span><span class="n">parseInt</span> <span class="n">s</span><span class="p">))</span><span class="o">.</span><span class="n">reduce</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">a</span><span class="o">+</span><span class="n">b</span> \
+    <span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">i</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">[</span><span class="n">n</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> \
+    <span class="n">dotchart</span>
+</pre></div>
+</div>
+<p>Whoops, looks like the timing data is all over the map! We need to
+sort our timestamps in ascending order since they didn’t come that
+way from the server:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">a151</span> \ <span class="p">(</span><span class="n">r</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">r</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">_time</span> \
+    <span class="n">pick</span> <span class="n">Strings</span><span class="o">.</span><span class="n">pat</span><span class="o">.</span><span class="n">hms</span> \
+    <span class="p">(</span><span class="n">ls</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">(</span><span class="nb">map</span> <span class="n">ls</span><span class="p">[</span><span class="mf">1.</span><span class="o">.</span><span class="p">],(</span><span class="n">s</span><span class="p">,</span><span class="n">i</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">(</span><span class="mi">60</span><span class="o">**</span><span class="p">(</span><span class="mi">2</span><span class="o">-</span><span class="n">i</span><span class="p">))</span><span class="o">*</span><span class="p">(</span><span class="n">parseInt</span> <span class="n">s</span><span class="p">))</span><span class="o">.</span><span class="n">reduce</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">a</span><span class="o">+</span><span class="n">b</span> \
+    <span class="n">sort</span> \
+    <span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">i</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">[</span><span class="n">n</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> \
+    <span class="n">dotchart</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">sort</span></code> does just what you’d think. You can optionally pass it a
+comparison function, which should return -1, 0, or 1 depending on
+whether the first argument is less, equal, or greater than the
+second. Note that javascript has some very weird ideas about
+ordering, so if you want to get the expected sort order for normal
+data (numbers, strings, etc.) REVL provides a sort function in the
+Utils module called Utils.smartcmp. This basically says numbers go
+in numeric order and strings go in alphabetic order. In javascript
+by default, numbers go in alphabetic order (!). Running this
+command we can now see a nice progression of alerts that ended up
+in this alert group.</p>
+</div>
+<div class="section" id="other-interesting-command-examples">
+<h2>Other interesting command examples<a class="headerlink" href="#other-interesting-command-examples" title="Permalink to this headline">¶</a></h2>
+<p>Here are some other commands you might want to play with to get a
+feel for the system. All of the basic commands have documentation
+with examples, so if you need to look something up to see how it
+works start with the help system.</p>
+<ul>
+<li><p class="first">Entity Frequencies over time</p>
+<p>Query 1000 entries, pull the entities for each of them, group them by
+type, and create a barchart to show the relative frequency of each
+type of entity:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre>$ [10000...11000] \
+    (n)-&gt;API.entry {id:n,sub:&#39;entity&#39;} \
+    wait \
+    (r)-&gt;Struct.tolist (Struct.map r,(v)-&gt;v.type) \
+    flatten \
+    group (ls)-&gt;ls[1] \
+    (ls)-&gt;ls.length \
+    barchart
+</pre></div>
+</div>
+</li>
+<li><p class="first">Examine event timing over long periods</p>
+</li>
+</ul>
+<p>Query 500 events, extract the creation timestamp, sort them in
+ascending order, rebase the time to show time delta in minutes from
+start of record, and create a dot chart to show the timing of
+clusters of events and highlight gaps in the record:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre>$ event limit:500 \
+    (e)-&gt;e.created \
+    sort \
+    into (ls)-&gt;map ls,(n)-&gt;(n-ls[0])/60000.0 \
+    (n,i)-&gt;[n,i] \
+    dotchart
+</pre></div>
+</div>
+<ul>
+<li><p class="first">Look at sequence of alerts in alertgroup:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre>$ alertgroup id:1512214,limit:100,sub:&#39;alert&#39; \
+    (r)-&gt;r.data._time \
+    pick Strings.pat.hms \
+    (ls)-&gt;(map ls[1..],(s,i)-&gt;(60**(2-i))*(parseInt s)).reduce (a,b)-&gt;a+b \
+    sort \
+    (n,i)-&gt;[n,i] \
+    dotchart
+</pre></div>
+</div>
+</li>
+<li><p class="first">Network connections between emails mentioned together in an alert for an alert group</p>
+</li>
+</ul>
+<p>Get the alerts for alertgroup 1512214, concatenate all of the
+strings in the data field of each, pick out all of the email
+addresses in the resulting strings, generate pairs from all emails
+that were in the same alert, and make a force-directed graph from
+the resulting structure.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre>$ alertgroup id:1512214,limit:100,sub:&#39;alert&#39; \
+    (r)-&gt;(squash (Struct.tolist r.data)).join &#39; &#39; \
+    (s)-&gt;Strings.pick Strings.pat.email, s \
+    (ls)-&gt;ls.map (m)-&gt;m[0] \
+    (ls)-&gt;cmb ls,2 \
+    flatten \
+    forcegraph
+</pre></div>
+</div>
+<ul class="simple">
+<li>Association matrix of emails from one alertgroup</li>
+</ul>
+<p>This is a very heavy computation, but it eventually finishes. Need
+to look into ways to optimize this to make it more convenient, but
+the filling out of the table really explodes the size of the data
+set.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre>$ alertgroup id:1512214,limit:100,sub:&#39;alert&#39; \
+    (r)-&gt;(squash (Struct.tolist r.data)).join &#39; &#39;\
+    (s)-&gt;Strings.pick Strings.pat.email, s \
+    (ls)-&gt;ls.map (m)-&gt;m[0] \
+    (ls)-&gt;cmb ls,2 \
+    flatten \
+    nest (n)-&gt;n \
+    (row)-&gt;Struct.map row,(col)-&gt;col.$.length \
+    tabulate {} \
+    grid \
+    eachpoly (p)-&gt;if p.input == {} then p.color=&#39;#000&#39; else p.color=Utils.heatColor p.input,10 \
+    draw
+</pre></div>
+</div>
+<ul>
+<li><p class="first">Draw a treemap from an Nspace:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre>$  [1..100] \
+    foldl new Nspace (s,pt) -&gt; s.insert pt,[[&#39;x&#39;,Math.random()],[&#39;y&#39;,Math.random()]]; s  \
+    into (s)-&gt;s.subdivide() \
+    into (sp)-&gt;sp.leaves() \
+    (l)-&gt;l.bounds \
+    (bnd)-&gt; zip bnd \
+    (pts)-&gt;[[pts[0][0],pts[0][1]],[pts[0][0],pts[1][1]],[pts[1][0],pts[1][1]],[pts[1][0],pts[0][1]]] \
+    (pts)-&gt;(polygon pts).scale 200 \
+    into (polys)-&gt;{polygons: polys} \
+    draw
+</pre></div>
+</div>
+</li>
+<li><p class="first">Network showing relationship between events and entities</p>
+</li>
+</ul>
+<p>Query an event, find all the entities associated with it, then find
+all the events associated with those entities. Make links
+accordingly, then display as a force-directed graph. Mousing over
+the network nodes will display the entity name or event id number
+depending on what kind of node it is.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre>$ event id:10982,sub:&#39;entity&#39; \
+    (e,k)-&gt;[{id:e.id,name:k},10982]  \
+    tolist \
+    (ls)-&gt;ls[1] \
+    filter (ls)-&gt;ls[0].id not in [4802,97248,19,533065,97249] \
+    (ls)-&gt; [[[ls[0].name,ls[1]]],(API.entity sub:&#39;event&#39;,id:ls[0].id).map (e)-&gt;([ev.id,ls[0].name]) for ev in e] \
+    wait \
+    flatten \
+    flatten \
+    forcegraph
+</pre></div>
+</div>
+<ul>
+<li><p class="first">Barchart of event count for each entity</p>
+<p>Fetch the entities associated with an event, then fetch all of the
+events for each entity and make a barchart that shows how many
+events are associated to each entity.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre>$ event id:10982,sub:&#39;entity&#39; \
+    (ent)-&gt;(API.entity id:ent.id,sub:&#39;event&#39;,columns:[&#39;id&#39;]).map (ls)-&gt;ls.length \
+    wait \
+    filter (n)-&gt;n&gt;20 \
+    barchart
+</pre></div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">REVL Visualization Guide</a><ul>
+<li><a class="reference internal" href="#read-eval-viz-loop">Read-Eval-Viz-Loop</a></li>
+<li><a class="reference internal" href="#getting-started">Getting Started</a></li>
+<li><a class="reference internal" href="#interacting-with-revl">Interacting with REVL</a></li>
+<li><a class="reference internal" href="#using-revl-with-scot-data">Using REVL with SCOT data</a></li>
+<li><a class="reference internal" href="#make-a-bar-chart">Make a bar chart</a></li>
+<li><a class="reference internal" href="#event-timing">Event Timing</a></li>
+<li><a class="reference internal" href="#other-interesting-command-examples">Other interesting command examples</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="signatures.html"
+                        title="previous chapter">Signatures</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="scotdocker.html"
+                        title="next chapter">Docker-SCOT v 0.04</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/visualization.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="scotdocker.html" title="Docker-SCOT v 0.04"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="signatures.html" title="Signatures"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2011-2016, Sandia National Laboratories.
+    </div>
+  </body>
+</html>
