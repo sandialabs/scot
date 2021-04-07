@@ -1070,7 +1070,17 @@
     width: 20px;
   }
 
-  #list-view-container {
-    display: none;
+  .GraphDisplay {
+    width: 100%;
+  }
+
+  .NodeInfo {
+    width: 100%;
+    background-color: black;
+    color: white;
+  }
+  .GraphForm {
+    background-color: black;
+    color: white;
   }
 }

@@ -106,7 +106,7 @@ override api_create => sub {
     my @requests        = $self->split_alertgroups($href);
     my @alertgroups     = ();
 
-    $log->debug("REQUEST BE LIKE: ",{filter=>\&Dumper, value =>\@requests});
+    $log->trace("REQUEST BE LIKE: ",{filter=>\&Dumper, value =>\@requests});
 
     REQUEST:
     foreach my $request (@requests) {
@@ -599,6 +599,13 @@ sub get_subject {
         return $agobj->subject;
     }
     die "Can't find Alertgroup $agid";
+}
+
+sub get_by_msgid {
+    my $self    = shift;
+    my $msgid   = shift;
+    my $ag      = $self->find_one({message_id => $msgid});
+    return $ag;
 }
 
 =back

@@ -1,0 +1,12 @@
+[Unit]
+Description=SCot EMail Alert Processing Daemon
+
+[Service]
+ExecStart=/opt/scot/bin/email_responder.pl Alert
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target

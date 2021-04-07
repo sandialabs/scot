@@ -648,6 +648,11 @@ sub refresh_entity_enrichments {
 sub download_file {
     my $self    = shift;
     my $object  = shift;
+    my $log     = $self->env->log;
+
+    $log->debug("Downloading ".$object->filename);
+    $log->debug("from ".$object->directory);
+
     $self->res->content->headers->header(
         'Content-Type','application/x-download; name="'.$object->filename.'"');
     $self->res->content->headers->header(
@@ -655,6 +660,7 @@ sub download_file {
     my $static = Mojolicious::Static->new(paths => [ $object->directory ]);
     $static->serve($self, $object->filename);
     $self->rendered;
+    $log->debug("download rendered");
     return;
 }
 
@@ -2030,13 +2036,15 @@ sub whoami {
     my $mongo   = $env->mongo;
     my $log     = $env->log;
 
+    $log->debug("Who ami request for $user");
+
     my $userobj = $mongo->collection('User')->find_one({username => $user});
 
     if ( defined ( $userobj )  ) {
         $userobj->update_set(lastvisit => $env->now);
         my $user_href   = $userobj->as_hash;
         my $group_aref  = $self->get_groups;
-        $log->debug("groups aref: ",{filter=>\&Dumper,value=>$group_aref});
+        $log->trace("groups aref: ",{filter=>\&Dumper,value=>$group_aref});
         if ( $env->is_admin($user_href->{username}, $group_aref)){
             $user_href->{is_admin} = 1;
         }

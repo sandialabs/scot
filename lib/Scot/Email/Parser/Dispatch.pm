@@ -1,11 +1,10 @@
-package Scot::Email::Parser::Event;
+package Scot::Email::Parser::Dispatch;
 
 use strict;
 use warnings;
-use Data::Dumper;
+use Moose;
 use HTML::Element;
 use URI;
-use Moose;
 
 extends 'Scot::Email::Parser';
 
@@ -20,27 +19,15 @@ sub parse {
     }
 
     my $tree        = $self->build_html_tree($html);
-
-    my $subject     = $msg->{subject};
-    my $tags        = [];
-    my $sources     = [ 'email', $msg->{from} ];
-
-    if ( $self->is_event_api($tree) ) {
-        ($subject,
-         $tags,
-         $sources) = $self->get_api_basics($tree);
-    }
-
-
     my $attachments = $self->handle_attachments($courriel, $msg, $tree);
     my $entry_data  = $self->build_entry($tree);
 
 
     my %json    = (
-        event    => {
-            subject     => $subject,
-            source      => $sources,
-            tag         => $tags,
+        dispatch    => {
+            subject     => $msg->{subject},
+            source      => [ 'email', $msg->{from} ],
+            tag         => [ '' ],
             status      => 'open',
             data        => {
                 message_id  => $msg->{message_id},
@@ -49,63 +36,8 @@ sub parse {
         entry       => $entry_data,
         attachments => $attachments,
     );
+
     return wantarray ? %json : \%json;
-}
-
-sub is_event_api {
-    my $self    = shift;
-    my $tree    = shift;
-
-    # scot email api relies on the first table in email having
-    # a certain format
-
-    my $table   = ($tree->look_down('_tag','table'))[0];
-    return undef if ( ! defined $table );
-        
-    my @cells   = $table->look_down('_tag','td');
-    my @needed_elements = qw(subject sources tags);
-    my %found   = ();
-
-    foreach my $cell (@cells) {
-        my $text = $cell->as_text;
-        if ( grep {/$text/i} @needed_elements ) {
-            $found{$text}++;
-        }
-    }
-    return ( $found{subject} && $found{sources} && $found{tags} );
-}
-
-sub get_api_basics {
-    my $self    = shift;
-    my $tree    = shift;
-    my $table   = ($tree->look_down('_tag','table'))[0]->detach_content;
-    my @cells   = $table->look_down('_tag','td');
-    my ($subject, $tags, $sources);
-
-    for (my $i=0; $i < scalar(@cells); $i+=2) {
-        my ($key,$val);
-        my $j   = $i + 1;
-
-        my $key_cell = $cells[$i];
-        my $val_cell = $cells[$j];
-
-        if ( defined $key_cell and ref($key_cell) eq "HTML::Element" ) {
-            $key = lc($key_cell->as_text);
-        }
-        if ( defined $val_cell and ref($val_cell) eq "HTML::Element" ) {
-            $val = lc($val_cell->as_text);
-        }
-        if ( $key eq "subject" ) {
-            $subject = $val;
-        }
-        if ( $key eq "sources" ) {
-            $sources = [ split(/[ ]*,[ ]*/, $val) ];
-        }
-        if ( $key eq "tags" ) {
-            $tags    = [ split(/[ ]*,[ ]*/, $val) ];
-        }
-    }
-    return $subject, $tags, $sources;
 }
 
 sub build_entry {
@@ -125,33 +57,17 @@ sub handle_attachments {
     my $courriel    = shift;
     my $msg         = shift;
     my $tree        = shift;
-    my $log         = $self->env->log;
 
     # imbed images into html
     my %images  = $self->get_images($courriel);
     $self->inline_images($tree, \%images);
 
     # don't know how to handle yet
-    # and not sure we want to support this for event
+    # and not sure we want to support this for dispatches
     # my %remainder   = $self->get_non_image_attachments($courriel);
-    my @remainder = ();
+    my %remainder = ();
 
-    foreach my $part ($courriel->parts()) {
-
-        if ( $part->is_attachment ) {
-            $log->debug("Found an attachment");
-            push @remainder, {
-                filename    => $part->filename,
-                mime_type   => $part->mime_type,
-                multipart   => $part->is_multipart,
-                content     => $part->content,
-            };
-        }
-    }
-
-    $log->trace("Found Attachments: ",{filter=>\&Dumper, value=>\@remainder});
-          
-    return wantarray ? @remainder : \@remainder;
+    return wantarray ? %remainder : \%remainder;
 
 }
 
@@ -240,12 +156,6 @@ sub inline_images {
         my $new = $imgdb->{$name};
         $image->replace_with($new);
     }
-}
-
-sub wrap_non_html {
-    my $self    = shift;
-    my $html    = shift;
-    return qq{<html><body><pre>$html</pre></body></html>};
 }
 
 1;

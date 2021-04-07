@@ -305,6 +305,7 @@ function install_perl_modules {
         Data::Dumper::Concise
         Data::Clean@0.48
         Data::Clean::FromJSON
+        Devel::Size
         Daemon::Control
         Net::LDAP
         Net::SMTP::TLS
@@ -359,6 +360,7 @@ function install_perl_modules {
         HTML::FromText
         HTML::FormatText
         MIME::Base64
+        MIME::Parser
         IPC::Run
         IO::Prompt
         Log::Log4perl

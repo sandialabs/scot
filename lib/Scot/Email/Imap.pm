@@ -9,9 +9,12 @@ Readonly my $MSG_ID_FMT => qr/\A\d+\z/;
 
 use Data::Dumper;
 use Courriel;
+use MIME::Parser;
 use Try::Tiny::Retry qw/:all/;
 use Mail::IMAPClient;
 use Scot::Email::Imap::Cursor;
+use HTML::Element;
+use URI;
 
 use Moose;
 
@@ -19,6 +22,13 @@ has env => (
     is      => 'ro',
     isa     => 'Scot::Env',
     required=> 1,
+);
+
+has test => (
+    is      => 'ro',
+    isa     => 'Bool',
+    required    => 1,
+    default => 0,
 );
 
 has mailbox => (
@@ -95,6 +105,19 @@ has client_pid  => (
     default     => sub { $$ },
 );
 
+has permitted_senders => (
+    is          => 'ro',
+    isa         => 'ArrayRef',
+    required    => 1,
+    default     => sub {['*']},
+);
+
+has peeking => (
+    is          => 'ro',
+    isa         => 'Bool',
+    required    => 1,
+);
+
 sub _build_imap {
     my $self    = shift;
     my $log     = $self->env->log;
@@ -109,7 +132,7 @@ sub _build_imap {
         Ignoresizeerrors    => $self->ignore_size_errors,
     );
 
-    $log->debug("Initializing IMAP client w/ options: ", 
+    $log->trace("Initializing IMAP client w/ options: ", 
                 {filter =>\&Dumper, value => \@options});
     
     my $client = retry {
@@ -124,13 +147,30 @@ sub _build_imap {
         # undef $client;
     };
     $log->debug("Imap connected...");
-    $log->debug("client ",{filter=>\&Dumper, value=> $client});
+    $log->trace("client ",{filter=>\&Dumper, value=> $client});
 
     if ( $self->test_mode ) {
         $log->debug("In test mode, setting Peek to 1");
         $client->Peek(1);
     }
+    if ( $self->peeking ) {
+        $client->Peek(1);
+    }
     return $client;
+}
+
+has seconds_ago => (
+    is      => 'ro',
+    isa     => 'Int',
+    required    => 1,
+    default => sub { 60 * 60 * 24 * 1 },
+);
+
+sub since {
+    my $self    = shift;
+    my $seconds_ago = $self->seconds_ago;
+    my $since = time() - $seconds_ago;
+    return $since;
 }
 
 sub reconnect_if_forked {
@@ -145,18 +185,28 @@ sub reconnect_if_forked {
     return;
 }
 
+sub get_mail {
+    my $self    = shift;
+    my $test    = $self->test;
+    my $log     = $self->env->log;
+
+    $log->debug("get_mail: mode = $test");
+
+    if ( $test == 1 ) {
+        return $self->get_since_cursor();
+    }
+
+    return $self->get_unseen_cursor();
+}
+
+
 sub get_unseen_cursor {
     my $self    = shift;
     my @uids    = ();
 
-    if ( $self->test_mode ) {
-        @uids = $self->get_mail_since();
-    }
-    else {
-        @uids = $self->get_unseen_mail;
-    }
+    @uids = $self->get_unseen_mail;
 
-    my $cursor  = Scot::Email::Imap::Cursor->new({uids => \@uids});
+    my $cursor  = Scot::Email::Imap::Cursor->new({imap => $self, uids => \@uids});
     return $cursor;
 }
 
@@ -191,17 +241,28 @@ sub get_unseen_mail {
     return wantarray ? @unseen_uids : \@unseen_uids;
 }
 
+sub get_since_cursor {
+    my $self    = shift;
+    my $since   = $self->since();
+    my @uids    = ();
+
+    $self->env->log->debug("Retrieving mail since ".$self->env->get_human_time($since));
+
+    @uids = $self->get_mail_since($since);
+
+    my $cursor  = Scot::Email::Imap::Cursor->new({imap => $self, uids => \@uids});
+    return $cursor;
+}
+
 sub get_mail_since {
     my $self    = shift;
-    my $epoch   = shift;
+    my $since   = shift;
     my $log     = $self->env->log;
     $self->reconnect_if_forked;
     my $client  = $self->client;
-    my $since   = $epoch;
 
     if ( ! defined $since ) {
-        my $seconds_ago = 60 * 60; # past hour
-        $since = time() - $seconds_ago;
+        $since = $self->since();
     }
 
     my @uids;
@@ -222,19 +283,14 @@ sub get_mail_since {
     return wantarray ? @uids :\@uids;
 }
 
-sub get_message {
+sub get_envelope_from_uid {
     my $self    = shift;
     my $uid     = shift;
-    my $peek    = shift;
     my $log     = $self->env->log;
-    $self->reconnect_if_forked;
-    my $client  = $self->client;
-
-    $log->trace("Getting Message uid=$uid");
-
     my $envelope;
+
     retry {
-        $envelope    = $client->get_envelope($uid);
+        $envelope    = $self->client->get_envelope($uid);
         $log->trace("Envelope is ",{filter=>\&Dumper,value=>$envelope});
     }
     on_retry {
@@ -245,87 +301,92 @@ sub get_message {
     };
 
     $log->trace("Envelope is ",{filter=>\&Dumper,value=>$envelope});
+
+    return $envelope;
+}
+
+
+sub get_message {
+    my $self    = shift;
+    my $uid     = shift;
+    my $peek    = shift;
+    my $log     = $self->env->log;
+    $self->reconnect_if_forked;
+    my $client  = $self->client;
+
+    return unless $uid;
+
+    my $mode = $peek ? "Peeking" : "Nonpeeking";
+    $log->trace("Getting Message uid=$uid ($mode)");
     $self->client->Peek($peek);
+
+    my $envelope = $self->get_envelope_from_uid($uid);
+    my $from     = $self->get_from($envelope);
+
+    if ( ! $self->from_permitted_sender($from))  {
+        $log->warn("Message from $from that is not in the permitted senders list");
+        return undef;
+    }
 
     my %message = (
         imap_uid    => $uid,
-        envelope    => $envelope,
+        # envelope    => $envelope, # this is an obj and doesn't go on queue
         subject     => $self->get_subject($uid),
-        from        => $self->get_from($envelope),
+        from        => $from,
         to          => $self->get_to($envelope),
         when        => $self->get_when($uid),
         message_id  => $self->get_message_id($uid),
+        message_str => $self->client->message_string($uid),
     );
-
-    ($message{body_html}, 
-     $message{body_plain},
-     $message{images},
-     $message{attachments}) = $self->extract_body($uid,$peek);
 
     return wantarray ? %message : \%message;
 }
 
-sub extract_body {
+sub from_permitted_sender {
     my $self    = shift;
-    my $uid     = shift;
-
+    my $from    = shift;
+    my @oksenders   = @{$self->permitted_senders};
     my $log     = $self->env->log;
 
-    $log->trace("Extracting body from uid = $uid");
+    # each permitted sender can be a regex, 
+    # a '*' match all wildcard, or and explicit
+    # string match
 
+    foreach my $oksender (@oksenders) {
 
-    my $msgstring   = $self->client->message_string($uid);
-    my $email       = Courriel->parse( text => $msgstring );
-    my $htmlpart    = $email->html_body_part();
-    my $plainpart   = $email->plain_body_part();
-    my $attached    = $self->get_attached_files($email);
-
-    my ($html, $plain);
-
-    if ( $htmlpart ) {
-        $html   = $htmlpart->content();
-    }
-    if ( $plainpart ) {
-        $plain  = $plainpart->content();
-    }
-    return $html, $plain, $attached->{images}, $attached->{files};
-}
-
-sub get_attached_files {
-    my $self    = shift;
-    my $email   = shift;
-
-    my %files   = ();
-
-    foreach my $part ($email->parts()) {
-        my $mime    = $part->mime_type;
-        if ( $mime =~ /image/ ) {
-            my $encoding    = $part->encoding;
-            my $content     = $part->content;
-            my $filename    = $part->filename;
-            $files{images}{$filename} = $self->build_img($mime, $content, $filename);
-        }
-        if ( $part->is_attachment ) {
-            my $content     = $part->content;
-            my $filename    = $part->filename;
-            $files{files}{$filename} = $content; # allow responder to create files
+        if ( $self->regex_match($oksender, $from) 
+             or $self->wildcard_match($oksender)
+             or $self->explicit_match($oksender, $from)
+           ) {
+                return 1;
         }
     }
-    return wantarray ? %files : \%files;
 }
 
-sub build_img {
+sub regex_match {
     my $self    = shift;
-    my $mime    = shift;
-    my $data    = shift;
-    my $name    = shift;
-    my $uri     = URI->new("data:");
-    $uri->media_type($mime);
-    $uri->data($data);
-    # return qq(<img src="$uri" alt="$name">);
-    my $h       = HTML::Element->new('img','src'=>$uri, 'alt'=>$name);
-    return $h;
+    my $ok      = shift;
+    my $from    = shift;
+
+    if ( ref($ok) ) {
+        return $from =~ /$ok/;
+    }
+    return undef;
 }
+
+sub wildcard_match {
+    my $self    = shift;
+    my $ok      = shift;
+    return $ok eq '*';
+}
+
+sub explicit_match {
+    my $self    = shift;
+    my $ok      = shift;
+    my $from    = shift;
+    return $ok eq $from;
+}
+
 
 sub get_subject {
     my $self    = shift;
@@ -348,6 +409,7 @@ sub get_subject {
         $log->error($_);
     };
 
+
     return $subject;
 }
 
@@ -357,7 +419,10 @@ sub get_from {
     # my $client  = $self->client;
     my $log     = $self->env->log;
 
-    return $envelope->from_addresses;
+    my $angle_quoted = $envelope->from_addresses;
+
+    (my $from = $angle_quoted) =~ s/[<>]//g; # strip <> 
+    return $from;
 }
 
 sub get_to {
@@ -415,31 +480,6 @@ sub get_message_id {
     };
 
     return $msg_id;
-}
-
-sub extract_images {
-    my $self    = shift;
-    my $msg     = shift;
-    my $log     = $self->env->log;
-
-    my @parts   = $msg->parts();
-    my @htmls   = ();
-
-    foreach my $part (@parts) {
-        my $mt  = $part->mime_type();
-        my $enc = $part->encoding();
-        $log->debug("part mime: $mt, encoding: $enc");
-        next unless ($enc =~ /base64/i);
-        if ( $mt =~ /image/ ) {
-            my $b64image = $part->encoded_content();
-            my $html    = join('',
-                '<img src="data::image/jpeg;base64,',
-                $b64image,
-                '">');
-            push @htmls, $html;
-        }
-    }
-    return wantarray ? @htmls : \@htmls;
 }
 
 1;

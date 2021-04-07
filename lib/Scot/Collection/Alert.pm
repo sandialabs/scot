@@ -104,7 +104,8 @@ sub linked_create {
         columns     => $columns,
     };
 
-    $log->debug("attempting to create alert: ",{filter=>\&Dumper, value=>$ref});
+    $log->debug("attempting to create alert: ");
+    $log->trace({filter=>\&Dumper, value=>$ref});
 
     my $alert = $self->create($ref);
 

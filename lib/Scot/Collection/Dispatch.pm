@@ -34,7 +34,7 @@ override api_create => sub {
     my $env     = $self->env;
     my $log     = $env->log;
 
-    $log->trace("Custom create in Scot::Collection::Dispatch");
+    $log->debug("Custom create in Scot::Collection::Dispatch");
 
     my $json    = $request->{request}->{json};
     my $user    = $request->{user};
@@ -46,7 +46,7 @@ override api_create => sub {
 
     $self->validate_permissions($json);
 
-    # my $entry = delete $json->{entry};
+    my $entry = delete $json->{entry};
 
     $log->trace("Creating Dispatch with ",{filter=>\&Dumper,value=>$json});
 
@@ -63,12 +63,12 @@ override api_create => sub {
         $col->add_source_to("dispatch", $dispatch->id, \@tags);
     }
 
-    #if ( defined $entry ) {
-    #    $self->create_dispatch_entry($dispatch, $entry);
-    #}
-    #else {
-    #    $log->error("No entry provided in dispatch!");
-    #}
+    if ( defined $entry ) {
+        $self->create_dispatch_entry($dispatch, $entry);
+    }
+    else {
+        $log->error("No entry provided in dispatch!");
+    }
 
     return $dispatch;
 };
