@@ -9,6 +9,7 @@ use lib '/opt/scot/lib';
 use v5.16;
 use Scot::App::Responder::Flair;
 use Data::Dumper;
+use utf8::all;
 
 my $config_file = $ENV{'scot_app_flair_config_file'} //
                         '/opt/scot/etc/flair.cfg.pl';
