@@ -3,6 +3,7 @@ package Scot::Extractor::Processor;
 use strict;
 use warnings;
 use lib '../../../lib';
+use utf8;
 
 use List::Uniq ':all';
 use HTML::TreeBuilder 5 -weak;
@@ -15,6 +16,7 @@ use Try::Tiny;
 # use Mozilla::PublicSuffix qw(public_suffix);
 use Domain::PublicSuffix;
 use namespace::autoclean;
+use Encode;
 
 use Moose;
 
@@ -70,6 +72,11 @@ sub process_html {
     my $html    = shift;
     my $log     = $self->env->log;
     my %entities;
+
+    # clean up any utf8 problems hopefully
+    $html = (utf8::is_utf8($html)) ? 
+        Encode::encode_utf8($html) :
+        $html;
 
     # ee2 should set its loglevel in config
     $log->debug("=== Processing HTML ===");

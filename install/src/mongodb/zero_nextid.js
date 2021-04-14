@@ -21,3 +21,4 @@ db.nextid.insert({"for_collection": "user",     "last_id": 2});
 db.nextid.insert({"for_collection": "link",     "last_id": 0});
 db.nextid.insert({"for_collection": "appearance", "last_id": 0});
 db.nextid.insert({"for_collection": "entitytype", "last_id": 0});
+db.nextid.insert({"for_collection": "remoteflair", "last_id": 0});

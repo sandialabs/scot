@@ -190,15 +190,18 @@ sub list_regexes {
 
 sub list_multiword_regexes {
     my $self    = shift;
+    my $log     = $self->env->log;
     my @regexes = sort { $a->{order} <=> $b->{order} } grep { 
         defined( $_->{options}->{multiword} ) and
         $_->{options}->{multiword} eq "yes" 
     } $self->list_regexes;
+    $log->debug("Found ".scalar(@regexes)." regexes");
     return wantarray ? @regexes : \@regexes;
 }
 
 sub list_singleword_regexes {
     my $self    = shift;
+    my $log     = $self->env->log;
     my @regexes = sort { $a->{order} <=> $b->{order} } grep { 
         (
             defined( $_->{options}->{multiword} ) 
@@ -210,6 +213,7 @@ sub list_singleword_regexes {
             ! defined $_->{options}->{multiword} 
         )
     } $self->list_regexes;
+    $log->debug("Found ".scalar(@regexes)." regexes");
     return wantarray ? @regexes : \@regexes;
 }
 
