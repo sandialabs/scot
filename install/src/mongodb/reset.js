@@ -29,6 +29,7 @@ db.handler.drop();
 db.stat.drop();
 db.entitytype.drop();
 db.getCollection('group').drop()
+db.remoteflair.drop();
 
 print ("Creating indexes...");
 load("./indexes.js");

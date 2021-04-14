@@ -443,6 +443,10 @@ relies on the browser BasicAuth popup.
             ->to    ('controller-api#lriproxy')
             ->name  ('get_lri_data');
 
+    $scot   ->post  ('/api/v2/browser')
+            ->to    ('controller-api#browser')
+            ->name  ('browser_actions');
+
 
 =pod
 

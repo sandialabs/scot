@@ -107,6 +107,7 @@ sub _build_stomp {
     my $host    = $self->stomp_host;
     my $port    = $self->stomp_port;
     my $dest    = $self->destination;
+    $self->env->log->debug("Building STOMP connection");
     my $factory = Scot::Factory::Stomp->new;
     my $client  = $factory->make({ host => $host, port => $port, destination => $dest});
     return $client;

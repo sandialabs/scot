@@ -1,4 +1,5 @@
 #!/bin/bash
+export SYSTEMD_PAGER=
 
 DEVDIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd)"
 

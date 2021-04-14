@@ -2,6 +2,7 @@ package Scot::Controller::Api;
 
 use Carp qw(longmess);
 use Data::Dumper;
+use Digest::MD5 qw(md5_hex);
 use Data::Dumper::HTML qw(dumper_html);
 use Data::UUID;
 use Mojo::JSON qw(decode_json encode_json);
@@ -10,6 +11,8 @@ use Net::IP;
 use Crypt::PBKDF2;
 use Mail::Send;
 use Mojo::UserAgent;
+use Encode;
+use utf8;
 use strict;
 use warnings;
 use base 'Mojolicious::Controller';
@@ -1824,7 +1827,7 @@ sub get_request_params  {
             json    => $json,
         },
     );
-    if ( $request{collection} eq "task" ) {
+    if ( defined $request{collection} && $request{collection} eq "task" ) {
         $request{collection} = "entry";
         $request{task_search} = 1;
     }
@@ -2488,6 +2491,92 @@ sub get_chef_uri {
     my $self    = shift;
     my $uri     = $self->env->cyber_chef_uri;
     $self->do_render({ chef_uri => $uri });
+}
+
+# this will allow the scot browser extension to submit html 
+# to be saved or just flaired.
+sub browser {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+    my $user    = $self->session('user');
+
+    $log->debug("Remote Browser Post");
+
+    try {
+        my $req_href    = $self->get_request_params;
+        my $req_data    = $req_href->{request}->{json};
+
+        $log->trace("Request is ",{filter=>\&Dumper, value=>$req_data});
+
+        # get the command
+        my $command = $req_data->{command};
+
+        # pull out the html sent
+        my $html    = $req_data->{html};
+
+        my $encoded = utf8::is_utf8($html) ?
+                        Encode::encode_utf8($html) : $html;
+
+        # hash the content
+        my $md5     = md5_hex($encoded);
+
+        # get the URI of the page being flaired
+        my $uri     = $req_data->{uri};
+
+        my $data    = {
+            command => $command,
+            md5     => $md5,
+            uri     => $uri,
+            html    => $html,
+            status  => 'requested',
+        };
+        
+        if ( $command eq "insert") {
+            $data->{target} = $req_data->{target};
+        }
+
+        $log->debug("Creating with ",{filter=>\&Dumper, value => $data});
+
+        # save RemoteFlair Object
+        my $rfobj = $mongo->collection("Remoteflair")->create($data);
+
+        if (! defined $rfobj ) {
+            $log->error("Failed to create RemoteFlair Object!");
+            $self->render_error(400, { error_msg => "Failed to create RemoteFlair Object"});
+            return;
+        }
+
+        $log->debug("created rfobj");
+
+        # place command (create, add entry, or flair-in-place)
+        # on queue
+        $self->env->mq->send("/queue/remoteflair",{
+            action  => 'process',
+            data    => {
+                type    => 'remoteflair',
+                id      => $rfobj->id,
+            },
+        });
+
+        $log->debug("message on queue");
+
+        # return 
+        $self->render(
+            status  => 202,
+            json    => {
+                rfid    => $rfobj->id,
+            },
+        );
+
+    }
+    catch {
+        $log->error("In API browser, Error: $_");
+        $log->error(longmess);
+        $self->render_error(400, { error_msg => $_ } );
+
+    };
 }
 
 1;
