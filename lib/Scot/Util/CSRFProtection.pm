@@ -36,7 +36,9 @@ sub register {
     $routes->add_shortcut(
         with_csrf_protection => sub {
             my ($route) = @_;
-            return $route->requires( with_csrf_protection => 1 );
+            # mojo 9
+            # return $route->requires( with_csrf_protection => 1 );
+            return $route->over( with_csrf_protection => 1 );
         }
     );
 
