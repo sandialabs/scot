@@ -242,7 +242,7 @@ sub do_multiword_matches {
     $log->debug("looking for multi word matches");
 
     REGEX:
-    foreach my $href ($reutil->list_multiword_regexes) {
+    foreach my $href (@{$reutil->multi_word_regexes}) {
 
         my $regex   = $href->{regex};
         my $type    = $href->{type};
@@ -305,7 +305,7 @@ sub do_singleword_matches {
         my $foundmatch = 0;
 
         REGEX:
-        foreach my $href ($reutil->list_singleword_regexes) {
+        foreach my $href (@{$reutil->single_word_regexes}) {
 
             my $regex   = $href->{regex};
             my $type    = $href->{type};
