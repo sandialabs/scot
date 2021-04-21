@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use FindBin;
-BEGIN { unshift @INC, "$FindBin::Bin/../lib" }
+BEGIN { unshift @INC, "$FindBin::Bin/../lib"}
 
 eval 'use Mojolicious::Commands';
 die <<EOF if $@;

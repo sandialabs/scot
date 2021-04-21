@@ -19,6 +19,7 @@ use Scot::Env;
 use Moose;
 # use MooseX::Storage;
 use namespace::autoclean;
+use BSON::OID;
 
 =head1 Attributes
 
@@ -47,7 +48,8 @@ Every Mongo Document has one
 
 has '_id'   => (
     is          => 'ro',
-    isa         => 'MongoDB::OID',
+    # isa         => 'MongoDB::OID',
+    isa         => 'BSON::OID',
     writer      => 'set_mongo_oid',
     predicate   => 'mongo_oid_set',
     clearer     => 'reset_oid',
