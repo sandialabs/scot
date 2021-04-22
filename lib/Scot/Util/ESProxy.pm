@@ -232,10 +232,15 @@ sub do_request_new {
     my $json    = encode_json($eshref);
     $log->debug("GET to ES: $url ", { filter=>\&Dumper, value => $json });
 
-    my $tx      = $ua->get($url => json => $eshref);
-    if ( my $res    = $tx->success ) {
+    my $tx      = $ua->get( $url => {Accept => '*/*'} => json => $eshref);
+
+    # $log->debug("tx json is ",{filter=>\&Dumper, value=>$tx->result->json});
+
+    my $result  = $tx->result;
+
+    if ( $result->is_success ) {
         $log->debug("Successful GET to ES");
-        return $res->json;
+        return $result->json;
     }
     else {
         my $err = $tx->error;

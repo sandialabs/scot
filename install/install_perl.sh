@@ -300,12 +300,15 @@ function install_perl_modules {
 
     PERLMODULES='
         Array::Split
+        BSON
+        Convert::ASN1
         Data::Dumper
         Data::Dumper::HTML
         Data::Dumper::Concise
         Data::Clean@0.48
         Data::Clean::FromJSON
         Devel::Size
+        Devel::OverloadInfo
         Daemon::Control
         Net::LDAP
         Net::SMTP::TLS
@@ -323,7 +326,7 @@ function install_perl_modules {
         MooseX::Types
         MooseX::Types::Common
         MooseX::MethodAttributes
-        MooseX::Role::MongoDB@0.010
+        MooseX::Role::MongoDB
         Safe
         Readonly
         DateTime
@@ -336,6 +339,8 @@ function install_perl_modules {
         CGI::PSGI
         CGI::Compile
         HTTP::Server::Simple::PSGI
+        JSON::Any
+        CPANEL::JSON::XS
         JSON
         JSON::XS
         DBI
@@ -366,10 +371,9 @@ function install_perl_modules {
         Log::Log4perl
         Mail::IMAPClient
         Mail::IMAPClient::BodyStructure
-        MongoDB@1.8.3
-        MongoDB::GridFS@1.8.3
-        MongoDB::GridFS::File@1.8.3
-        MongoDB::OID@1.8.3
+        MongoDB
+        MongoDB::GridFS
+        MongoDB::GridFS::File
         Meerkat
         Mojo
         MojoX::Log::Log4perl
