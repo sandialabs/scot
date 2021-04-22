@@ -300,6 +300,7 @@ function install_perl_modules {
 
     PERLMODULES='
         Array::Split
+        Any::URI::Escape
         BSON
         Convert::ASN1
         Data::Dumper
@@ -368,6 +369,7 @@ function install_perl_modules {
         MIME::Parser
         IPC::Run
         IO::Prompt
+        Log::Any::IfLOG
         Log::Log4perl
         Mail::IMAPClient
         Mail::IMAPClient::BodyStructure
