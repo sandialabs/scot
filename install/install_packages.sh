@@ -24,6 +24,19 @@ function install_ubuntu_packages {
         apache2-utils
         bc
         libgmp3-dev
+        libmagickcore-6-headers 
+        libmagick++-6-headers 
+        libmagickwand-6-headers
+        libmagic-dev 
+        libmagick++-6.q16-dev 
+        libmagickcore-6.q16-dev 
+        libmagickcore-dev 
+        libmagick++-dev 
+        libmagickwand-6.q16-dev 
+        libmagickwand-dev 
+        libmagic-ocaml-dev 
+        libmagics++-dev 
+        libmagics++-metview-dev
     '
     # for some reason, maxmind ppa is foobar'ed and these packages
     # won't install unless we force them to with allow unauth
