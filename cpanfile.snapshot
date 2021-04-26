@@ -4629,6 +4629,12 @@ DISTRIBUTIONS
       IPC::Semaphore 0
       Scalar::Util 0
       Storable 0.607
+  IPC-Signal-1.00
+    pathname: R/RO/ROSCH/IPC-Signal-1.00.tar.gz
+    provides:
+      IPC::Signal 1.00
+    requirements:
+      ExtUtils::MakeMaker 0
   IPC-System-Simple-1.30
     pathname: J/JK/JKEENAN/IPC-System-Simple-1.30.tar.gz
     provides:
@@ -7615,6 +7621,22 @@ DISTRIBUTIONS
       Storable 0
       Test::More 0
       perl v5.8.0
+  Parallel-Prefork-0.18
+    pathname: K/KA/KAZUHO/Parallel-Prefork-0.18.tar.gz
+    provides:
+      Parallel::Prefork 0.18
+      Parallel::Prefork::SpareWorkers undef
+      Parallel::Prefork::SpareWorkers::Scoreboard undef
+    requirements:
+      Class::Accessor::Lite 0.04
+      ExtUtils::MakeMaker 6.59
+      List::MoreUtils 0
+      Proc::Wait3 0.03
+      Scope::Guard 0
+      Signal::Mask 0
+      Test::Requires 0
+      Test::SharedFork 0
+      perl 5.008001
   Params-Classify-0.015
     pathname: Z/ZE/ZEFRAM/Params-Classify-0.015.tar.gz
     provides:
@@ -8058,6 +8080,16 @@ DISTRIBUTIONS
       Pod::Usage 1.3
       Scalar::Util 0
       Test::More 0
+  PerlIO-utf8_strict-0.008
+    pathname: L/LE/LEONT/PerlIO-utf8_strict-0.008.tar.gz
+    provides:
+      PerlIO::utf8_strict 0.008
+    requirements:
+      ExtUtils::MakeMaker 0
+      XSLoader 0
+      perl 5.008
+      strict 0
+      warnings 0
   Plack-1.0048
     pathname: M/MI/MIYAGAWA/Plack-1.0048.tar.gz
     provides:
@@ -8258,6 +8290,12 @@ DISTRIBUTIONS
     pathname: D/DM/DMITRI/Proc-PID-File-1.29.tar.gz
     provides:
       Proc::PID::File 1.29
+    requirements:
+      ExtUtils::MakeMaker 0
+  Proc-Wait3-0.05
+    pathname: C/CT/CTILMES/Proc-Wait3-0.05.tar.gz
+    provides:
+      Proc::Wait3 0.05
     requirements:
       ExtUtils::MakeMaker 0
   RPC-XML-0.82
@@ -8569,6 +8607,18 @@ DISTRIBUTIONS
     requirements:
       Module::Build 0.4005
       perl 5.008
+  Signal-Mask-0.008
+    pathname: L/LE/LEONT/Signal-Mask-0.008.tar.gz
+    provides:
+      Signal::Mask 0.008
+      Signal::Pending 0.008
+    requirements:
+      Carp 0
+      ExtUtils::MakeMaker 6.30
+      IPC::Signal 0
+      POSIX 0
+      strict 0
+      warnings 0
   Socket6-0.29
     pathname: U/UM/UMEMOTO/Socket6-0.29.tar.gz
     provides:
@@ -10577,6 +10627,25 @@ DISTRIBUTIONS
       Test::More 0.94
       namespace::clean 0
       strict 0
+      warnings 0
+  utf8-all-0.024
+    pathname: H/HA/HAYOBAAN/utf8-all-0.024.tar.gz
+    provides:
+      utf8::all 0.024
+    requirements:
+      Carp 0
+      Encode 0
+      ExtUtils::MakeMaker 0
+      Import::Into 0
+      PerlIO::utf8_strict 0
+      Symbol 0
+      charnames 0
+      feature 0
+      open 0
+      parent 0
+      perl 5.010
+      strict 0
+      utf8 0
       warnings 0
   version-0.9929
     pathname: L/LE/LEONT/version-0.9929.tar.gz
