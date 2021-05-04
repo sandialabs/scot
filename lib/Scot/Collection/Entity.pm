@@ -22,6 +22,36 @@ sub entity_exists {
     return undef;
 }
 
+sub update_entity {
+    my $self    = shift;
+    my $target  = shift;
+    my $href    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+
+    $log->debug("updatiing entity",{filter=>\&Dumper, value=>$href});
+    $log->debug("Target is ".ref($target)." ".$target->id);
+
+    my $value   = $href->{value};
+    my $type    = $href->{type};
+
+    my $entity = $self->find_one({
+        value   => $value,
+        type    => $type,
+    });
+
+    if ( ! defined $entity or ref($entity) ne "Scot::Model::Entity") {
+        # create link
+        $log->debug("Creating new $type entity $value");
+        $entity = $self->create({
+            value   => $value,
+            type    => $type,
+        });
+    }
+    $self->create_entity_links($entity, $target);
+    return 1;
+}
 
 sub update_entities {
     my $self    = shift;
@@ -145,6 +175,10 @@ sub create_entity_links {
     my $self    = shift;
     my $entity  = shift; # object
     my $target  = shift; # object
+    my $log = $self->env->log;
+
+    $log->debug("create_entity_links");
+    $log->debug("Entity ".$entity->id." to Target ".$target->id);
 
     $self->upsert_link($entity, {
         id      => $target->id,
@@ -152,6 +186,7 @@ sub create_entity_links {
     });
 
     if ( $target->get_collection_name eq "entry" ) {
+        $log->debug("upserting entries target");
         my $additional_link = $self->upsert_link(
             $entity, {
                 type    => $target->target->{type},
@@ -168,7 +203,6 @@ sub create_entity_links {
         );
     }
 
-    my $log = $self->env->log;
 
     if ( $entity->type  eq "cidr" ) {
         # find and create links to ipaddresses in that range

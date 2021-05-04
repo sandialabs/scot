@@ -94,8 +94,14 @@ sub create {
                 id  => $object->id,
             };
             if ( ref($object) eq "Scot::Model::Entry" ) {
+                $log->debug("Entry creation: submit to flair queue");
                 $data->{target} = $object->target;
+                $self->env->mq->send("/queue/flair", {
+                    action  => 'created',
+                    data    => $data,
+                });
             }
+            $log->debug("Submitting to topic");
             $self->env->mq->send("/topic/scot",{
                 action  => "created",
                 data    => $data,
@@ -235,6 +241,14 @@ sub post_create_process {
         $mongo->collection('Stat')->put_stat(
             'alert created', $object->alert_count
         );
+        $self->env->mq->send("/queue/flair", {
+            action  => 'created',
+            data    => {
+                who => $self->session('user'),
+                type=> 'alertgroup',
+                id  => $object->id,
+            }
+        });
     }
 
     if ( ref($object) eq "Scot::Model::Alert" ) {
@@ -1352,6 +1366,7 @@ sub post_update_process {
             what    => "Entry update",
         };
         $env->mq->send("/topic/scot", $mq_msg);
+        $env->mq->sent("/queue/flair", $mq_msg);
         $self->add_history("updated entry ".$object->id, $object);
         # need to update target's updated time
         my $target = $env->mongo->collection(ucfirst($object->target->{type}))
@@ -1945,7 +1960,7 @@ sub thread_entries {
         $log->debug("The parent has $child_count children");
         $parent_kids_aref->[$new_child_index]  = $href;
         $log->debug("added entry to parents aref");
-        $log->debug("parents children: ",{filter=>\&Dumper, value => $parent_kids_aref});
+        $log->trace("parents children: ",{filter=>\&Dumper, value => $parent_kids_aref});
         $where{$entry->id} = \$parent_kids_aref->[$new_child_index];
     }
 

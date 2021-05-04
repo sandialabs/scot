@@ -347,7 +347,7 @@ override api_create => sub {
     if ( ! defined $json->{tlp} ) {
         $json->{tlp} = $self->get_target_tlp($target_type, $target_id);
     }
-    if ( $json->{class} eq "json" ) {
+    if ( defined $json->{class} && $json->{class} eq "json" ) {
         # we need to create body from json in metadata
         $json->{body}   = $self->create_json_html($json->{metadata});
     }
