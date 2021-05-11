@@ -72,9 +72,9 @@ sub thing_is_vertex {
     my $log     = $self->env->log;
 
     if ( ref($thing) eq "HASH" ) {
-        $log->debug("thing is a HASH");
+        $log->trace("thing is a HASH");
         if ( defined $thing->{id} and defined $thing->{type} ) {
-            $log->debug("thing has an id and type");
+            $log->trace("thing has an id and type");
             return 1;
         }
     }
@@ -121,7 +121,7 @@ sub get_vertex_memo {
     $log->trace("Thing is ",{filter=>\&Dumper, value=>$thing});
     if ( $self->thing_is_vertex($thing) ) {
         $thing = $self->get_vertex_object($thing);
-        $log->debug("Thing is now ".ref($thing));
+        $log->trace("Thing is now ".ref($thing));
     }
 
 
@@ -173,8 +173,8 @@ sub link_objects {
     ]}};
     my $link = $self->find_one($match); 
 
-    $self->env->log->debug("HEY DUDE: Link match is ",{filter=>\&Dumper, value=>$match});
-    $self->env->log->debug("HEY DUDE: Link match is ",{filter=>\&Dumper, value=>$link});
+    $self->env->log->trace("HEY DUDE: Link match is ",{filter=>\&Dumper, value=>$match});
+    $self->env->log->trace("HEY DUDE: Link match is ",{filter=>\&Dumper, value=>$link});
 
     if (defined $link ) {
         $self->env->log->debug("Link exists, returning a pointer");
@@ -348,7 +348,7 @@ sub get_display_count_agg {
     my $entity  = shift;
     my $log     = $self->env->log;
 
-    $log->debug("Counting links to entity");
+    $log->trace("Counting links to entity");
 
     if ( $entity->status eq "untracked" ) {
         $log->debug("untracked entity");

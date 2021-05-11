@@ -211,6 +211,10 @@ sub create_entity_links {
         if ( $cidrmask > 0 ) {
             $log->debug("Finding IPaddrs that are in $cidrbase/$cidrmask");
             my $ipobj   = Net::IP->new($value);
+            if ( ! defined $ipobj ) {
+                $log->error("Failed to create Net::IP object from $value!");
+                return;
+            }
             my $mask    = substr($ipobj->binip, 0, $cidrmask);
             my @records = $self->get_cidr_ipaddrs($mask);
             $log->debug("Found ".scalar(@records)." ipaddresses");
