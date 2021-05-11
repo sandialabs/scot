@@ -14,6 +14,7 @@ use HTML::Entities;
 use HTML::Element;
 use HTML::TreeBuilder;
 use HTML::FormatText;
+use Carp qw(confess);
 use Moose;
 
 my @ss = (); # see "Mastering Regular Expressions", 3rd Edition, Chpt. 7
@@ -70,6 +71,7 @@ sub process_html {
     my $html    = shift;
     my $log     = $self->env->log;
     my $timer   = $self->env->get_timer("process_html");
+    my $length  = length($html);
 
     my %edb = (
         entities => [],
@@ -83,7 +85,10 @@ sub process_html {
     $edb{text}  = $self->generate_plain_text($tree);
     $edb{flair} = $self->generate_new_html($tree);
 
-    &$timer;
+    my $elapsed = &$timer;
+    $length = 1 if ($length == 0);
+    my $timeperchar = $elapsed/$length;
+    $log->info("Time Per Char Length = $timeperchar");
 
     return \%edb;
 }
@@ -97,14 +102,14 @@ sub clean_html {
         Encode::encode_utf8($html)     :
         $html;
 
-    $log->debug("html  = ", {filter=>\&Dumper, value => $html});
+    $log->trace("html  = ", {filter=>\&Dumper, value => $html});
 
     if ( $clean !~ /^<.*>/ ) {
         $self->env->log->debug("plain text, detected, wrapping");
         $clean = "<html>".encode_entities($clean)."</html>";
     }
 
-    $log->debug("clean = ", {filter=>\&Dumper, value => $clean});
+    $log->trace("clean = ", {filter=>\&Dumper, value => $clean});
 
     return $clean;
 }
@@ -201,6 +206,11 @@ sub user_defined_entity_element {
     my $type  = $child->attr('data-entity-type');
     my $value = $child->attr('data-entity-value');
 
+    if ( ! defined $type or ! defined $value ) {
+        $log->error("User Def misidentitied, skipping: ".$child->as_HTML);
+        return undef;
+    }
+
     $self->add_entity($edb, $type, $value);
     $child->attr('class', "entity $class");
     return 1;
@@ -209,6 +219,7 @@ sub user_defined_entity_element {
 sub external_defined_entity_class {
     my $self    = shift;
     my $class   = shift;
+    return undef if ( ! defined $class);
     my @permitted   = (qw(
         userdef
         ghostbuster
@@ -266,8 +277,8 @@ sub has_splunk_ipv4_pattern {
 
     return undef if ( ! ref($c[$i]) );
 
-    $log->debug("c[$i] = ".$c[$i]->tag);
-    $log->debug("c[$i+6] = ".$c[$i]->tag);
+    $log->trace("c[$i] = ".$c[$i]->tag);
+    $log->trace("c[$i+6] = ".$c[$i]->tag);
     
     return undef if ( $c[$i]->tag   ne 'em');
     return undef if ( $c[$i+1]      ne '.');
@@ -354,7 +365,7 @@ sub find_multi_word_matches {
     my $timer   = $self->env->get_timer("multi word matches");
 
     $log->trace("looking for multi word matches");
-    $log->debug(scalar(@$mw_regexes)." MW Regexes to check");
+    $log->trace(scalar(@$mw_regexes)." MW Regexes to check");
 
     REGEX:
     foreach my $href (@$mw_regexes) {
@@ -443,6 +454,12 @@ sub add_entity {
     my $edb     = shift;
     my $type    = shift;
     my $match   = shift;
+
+    if ( ! defined $match ) {
+        confess();
+        die;
+    }
+
     push @{ $edb->{entities} } , {
         type    => $type,
         value   => lc($match),
@@ -463,12 +480,12 @@ sub find_single_word_matches {
     my $edb     = shift;
     my @new     = ();
     my $splitre = $self->splitre;
+    my @words   = ( $text =~ m/$splitre/g );
+
     my $log     = $self->env->log;
-    my $timer   = $self->env->get_timer("single word matches");
+    my $timer   = $self->env->get_timer(scalar(@words)." single word matches");
     $log->trace("looking for single word matches");
 
-    my @words   = ( $text =~ m/$splitre/g );
-    $log->debug(scalar(@words)." words to check");
 
     WORD:
     foreach my $word (@words) {
@@ -492,7 +509,7 @@ sub apply_regex_to_word {
     my @new     = ();
     my $log     = $self->env->log;
 
-    $log->debug(scalar(@$regexes)." SW Regexes to check");
+    $log->trace(scalar(@$regexes)." SW Regexes to check");
 
     REGEX:
     foreach my $href (@$regexes) {
@@ -509,7 +526,7 @@ sub apply_regex_to_word {
             next REGEX;
         }
 
-        $log->debug("matches $type");
+        $log->trace("matches $type");
 
         my $span = $self->post_sw_match_actions($match, $type, $edb);
 
