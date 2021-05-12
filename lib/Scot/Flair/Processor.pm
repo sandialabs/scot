@@ -32,9 +32,50 @@ sub flair {
     my $timer   = $self->env->get_timer("flair_time");
     my $object  = $self->retrieve($data);
     my $results = $self->flair_object($object);
-    $self->send_notifications($results);
+    $self->send_notifications($object, $results);
     $self->update_stats($results);
     &$timer;
+}
+
+sub send_notifications {
+    my $self    = shift;
+    my $object  = shift;
+    my $results = shift;
+    my $io      = $self->scotio;
+
+    my $type = $self->get_type($object);
+
+    # need to send message to /queue/enricher for each entity
+    foreach my $entity (@{$results->{entities}}) {
+        my $entityid    = $io->get_entity_id($entity);
+        if ( defined $entityid ) {
+            $io->send_mq('/queue/enricher',{
+                action  => 'updated',
+                data    => {
+                    type    => 'entity',
+                    id      => $entityid,
+                    who     => 'scot-flair',
+                },
+            });
+        }
+        else {
+            $self->env->log->error("Entity $entity->{value} $entity->{type} not found, enricher queue message not sent!");
+        }
+    }
+    $io->send_mq("/topic/scot", {
+        action  => 'updated',
+        data    => {
+            type    => $type,
+            id      => $object->id,
+        },
+    });
+}
+
+sub get_type {
+    my $self    = shift;
+    my $object  = shift;
+    my @parts   = split(/::/,ref($object));
+    return lc($parts[-1]);
 }
 
 sub retrieve {

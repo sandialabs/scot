@@ -1,0 +1,12 @@
+[Unit]
+Description=SCot Flair Daemon
+
+[Service]
+ExecStart=/opt/scot/bin/flairer2.pl
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target
