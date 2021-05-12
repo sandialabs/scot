@@ -129,7 +129,6 @@ sub get_vertex_memo {
         die "Invalid input to get_vertex_memo";
     }
 
-
     if ( $thing->meta->does_role("Scot::Role::Subject") ) {
         # Alertgroup, Checklist, Event, Guide, Incident, Intel
         return $thing->subject;
@@ -156,6 +155,11 @@ sub link_objects {
     my $weight  = $options->{weight} // 1;
     my $when    = $options->{when} // $self->env->now;
     my $context = $options->{context} // ' ';
+    my $log     = $self->env->log;
+
+    $log->debug("Linking Objects: ". ref($v0)." to ".ref($v1));
+    
+
 
     my @vertices = (
         $self->get_vertex($v0),

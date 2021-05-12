@@ -1,7 +1,10 @@
 %environment = (
     location    => 'snl',
     fetch_mode  => 'mongo',
+    max_workers => 1,
     mozilla_public_suffix_file => '/opt/scot/etc/public_suffix_list.dat',
+    html_root   => '/cached_images',
+    img_dir => '/tmp/cached_images',
     log_config => {
         logger_name => 'regex_test',
         layout      => '%d %7p [%P] %15F{1}: %4L %m%n',
@@ -25,6 +28,15 @@
                 find_master     => 1,
             },
         },
+        {
+            attr    => 'mq',
+            class   => 'Scot::Util::Messageq',
+            config  => {
+                destination => 'scot',
+                stomp_host  => 'localhost',
+                stomp_port  => 61613,
+            },
+        },
     ],
     local_regexes => [
         {
@@ -40,4 +52,14 @@
             options => { multiword => "no" },
         },
     ],
+    lwp         => {
+        use_proxy           => 1,
+        timeout             => 10,
+        ssl_verify_mode     => 1,
+        verify_hostaname    => 1,
+        ssl_ca_path         => '/etc/ssl/certs',
+        proxy_protocols     => ['http', 'https'],
+        proxy_uri           => 'http://wwwproxy.sandia.gov:80',
+        lwp_ua_string       => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit  /537.36 (KHTML, like Gecko) Chrome/41.0.2227.1 Safari/537.36",
+    },
 );

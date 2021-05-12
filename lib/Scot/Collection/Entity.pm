@@ -149,6 +149,9 @@ sub upsert_link {
     my $entity  = shift; # object
     my $target  = shift; # href
 
+    $self->env->log->debug("upsert link: Entity ".$entity->id." to ".
+        $target->{type}." ".$target->{id});
+
     my $linkcol = $self->env->mongo->collection('Link');
     my $v1 = {
         id     => $target->{id},
@@ -177,7 +180,7 @@ sub create_entity_links {
     my $target  = shift; # object
     my $log = $self->env->log;
 
-    $log->debug("create_entity_links");
+    $log->debug("collection: create_entity_links");
     $log->debug("Entity ".$entity->id." to Target ".$target->id);
 
     $self->upsert_link($entity, {
