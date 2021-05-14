@@ -180,7 +180,7 @@ sub create_entry {
     $data->{groups} = $dispatch->groups;
     $data->{owner} = $dispatch->owner;
     $data->{summary} = 0;
-    $data->{tlp} = $dispatch->tlp;
+    $data->{tlp} = $data->{tlp} // $dispatch->tlp;
 
     my $entry = $col->create($data);
 

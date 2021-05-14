@@ -3,8 +3,10 @@ package Scot::Extractor::Processor;
 use strict;
 use warnings;
 use lib '../../../lib';
+use utf8;
 
 use List::Uniq ':all';
+use Encode;
 use HTML::TreeBuilder 5 -weak;
 use HTML::FormatText;
 use HTML::Element;
@@ -70,6 +72,10 @@ sub process_html {
     my $html    = shift;
     my $log     = $self->env->log;
     my %entities;
+
+    $html = (utf8::is_utf8($html)) ?
+        Encode::encode_utf8($html) :
+        $html;
 
     # ee2 should set its loglevel in config
     $log->debug("=== Processing HTML ===");
@@ -235,7 +241,8 @@ sub do_multiword_matches {
     $log->debug("looking for multi word matches");
 
     REGEX:
-    foreach my $href ($reutil->list_multiword_regexes) {
+    # foreach my $href ($reutil->list_multiword_regexes) {
+    foreach my $href (@{$reutil->multi_word_regexes}) {
 
         my $regex   = $href->{regex};
         my $type    = $href->{type};
@@ -298,7 +305,8 @@ sub do_singleword_matches {
         my $foundmatch = 0;
 
         REGEX:
-        foreach my $href ($reutil->list_singleword_regexes) {
+        # foreach my $href ($reutil->list_singleword_regexes) {
+        foreach my $href (@{$reutil->single_word_regexes}) {
 
             my $regex   = $href->{regex};
             my $type    = $href->{type};

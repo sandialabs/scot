@@ -160,7 +160,8 @@ sub get_regex {
     my $self    = shift;
     my $rename  = shift;
     my $meta    = $self->meta;
-    my $log     = $self->env->log;
+    my $env     = $self->env;
+    my $log     = $env->log;
     my $method  = $meta->get_attribute($rename);
 
     if ( defined $method ) {
@@ -170,6 +171,14 @@ sub get_regex {
     $log->error("No regex $rename exists!");
     die "Regex $rename not found in ".__PACKAGE__;
 }
+
+has all_regexes => (
+    is          => 'ro',
+    isa         => 'ArrayRef',
+    required    => 1,
+    lazy        => 1,
+    builder     => 'list_regexes',
+);
 
 sub list_regexes {
     my $self    = shift;
@@ -188,17 +197,37 @@ sub list_regexes {
     return wantarray ? @regexes : \@regexes;
 }
 
+has multi_word_regexes => (
+    is      => 'ro',
+    isa     => 'ArrayRef',
+    required=> 1,
+    lazy    => 1,
+    builder => 'list_multiword_regexes',
+);
+
 sub list_multiword_regexes {
     my $self    = shift;
+    my $log     = $self->env->log;
     my @regexes = sort { $a->{order} <=> $b->{order} } grep { 
         defined( $_->{options}->{multiword} ) and
         $_->{options}->{multiword} eq "yes" 
-    } $self->list_regexes;
+    } @{$self->all_regexes};
+    $log->debug("Found ".scalar(@regexes)." regexes");
     return wantarray ? @regexes : \@regexes;
 }
 
+has single_word_regexes => (
+    is      => 'ro',
+    isa     => 'ArrayRef',
+    required=> 1,
+    lazy    => 1,
+    builder => 'list_singleword_regexes',
+);
+
 sub list_singleword_regexes {
     my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
     my @regexes = sort { $a->{order} <=> $b->{order} } grep { 
         (
             defined( $_->{options}->{multiword} ) 
@@ -209,7 +238,8 @@ sub list_singleword_regexes {
         (
             ! defined $_->{options}->{multiword} 
         )
-    } $self->list_regexes;
+    } @{$self->all_regexes};
+    $log->debug("Found ".scalar(@regexes)." regexes");
     return wantarray ? @regexes : \@regexes;
 }
 
@@ -843,22 +873,22 @@ sub _build_jarm_hash {
 sub find_all_matches {
     my $self    = shift;
     my $word    = shift;
-    my @regexes = $self->list_regexes;
-    return $self->find_matches($word, \@regexes);
+    my $regexes = $self->all_regexes;
+    return $self->find_matches($word, $regexes);
 }
 
 sub find_singleword_matches {
     my $self    = shift;
     my $word    = shift;
-    my @regexes = $self->list_singleword_regexes;
-    return $self->find_matches($word, \@regexes);
+    my $regexes = $self->single_word_regexes;
+    return $self->find_matches($word, $regexes);
 }
 
 sub find_multiword_matches {
     my $self    = shift;
     my $word    = shift;
-    my @regexes = $self->list_multiword_regexes;
-    return $self->find_matches($word, \@regexes);
+    my $regexes = $self->multi_word_regexes;
+    return $self->find_matches($word, $regexes);
 }
 
 # this sub will iterate throught the regular expressions

@@ -10,6 +10,7 @@ use Net::IP;
 use Crypt::PBKDF2;
 use Mail::Send;
 use Mojo::UserAgent;
+use utf8;
 use strict;
 use warnings;
 use base 'Mojolicious::Controller';
