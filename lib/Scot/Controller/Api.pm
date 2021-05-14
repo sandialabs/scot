@@ -1359,6 +1359,7 @@ sub post_update_process {
     $env->mq->send("/topic/scot", $mq_msg);
 
     if ( ref($object) eq "Scot::Model::Entry" ) {
+        $env->mq->send("/queue/flair", $mq_msg);
         $mq_msg->{data} = {
             who     => $self->session('user'),
             target  => { type => $object->target->{type},
@@ -1366,7 +1367,6 @@ sub post_update_process {
             what    => "Entry update",
         };
         $env->mq->send("/topic/scot", $mq_msg);
-        $env->mq->sent("/queue/flair", $mq_msg);
         $self->add_history("updated entry ".$object->id, $object);
         # need to update target's updated time
         my $target = $env->mongo->collection(ucfirst($object->target->{type}))

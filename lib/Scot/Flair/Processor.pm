@@ -1,5 +1,6 @@
 package Scot::Flair::Processor;
 
+use Data::Dumper;
 use Moose;
 
 has env => (
@@ -31,10 +32,22 @@ sub flair {
     my $data    = shift;
     my $timer   = $self->env->get_timer("flair_time");
     my $object  = $self->retrieve($data);
-    my $results = $self->flair_object($object);
-    $self->send_notifications($object, $results);
-    $self->update_stats($results);
+    if ( defined $object ) {
+        my $results = $self->flair_object($object);
+        $self->send_notifications($object, $results);
+        $self->update_stats($results);
+    }
+    else {
+        $self->env->log->error("Unable to retrieve object ",
+            {filter=>\&Dumper, value => $data});
+    }
     &$timer;
+}
+
+sub update_stats {
+    my $self    = shift;
+    my $results = shift;
+
 }
 
 sub send_notifications {
