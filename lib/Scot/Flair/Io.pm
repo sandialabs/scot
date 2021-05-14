@@ -34,6 +34,9 @@ sub get_from_mongo {
     my $self    = shift;
     my $colname = shift;
     my $id      = shift;
+    my $log     = $self->env->log;
+
+    $log->debug("get_from_mongo $colname $id");
 
     my $mongo   = $self->env->mongo;
     my $col     = $mongo->collection(ucfirst($colname));

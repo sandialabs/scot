@@ -16,7 +16,7 @@ sub flair_object {
     my $self    = shift;
     my $entry   = shift;
     my $log     = $self->env->log;
-
+    
     $log->debug("[$$] flairing Entry ".$entry->id);
 
     my $body    = $self->preprocess_body($entry);

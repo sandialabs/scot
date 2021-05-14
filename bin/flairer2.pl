@@ -5,7 +5,7 @@ use warnings;
 use lib '../lib';
 use lib '../../lib';
 use lib '../../Scot-Internal-Modules/lib';
-# use lib '/opt/scot/lib';
+use lib '/opt/scot/lib';
 use Scot::Flair::Worker;
 use Data::Dumper;
 use utf8::all;
