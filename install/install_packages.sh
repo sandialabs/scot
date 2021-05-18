@@ -154,6 +154,13 @@ function install_cent_packages {
         openssl-devel
         openssl
         net-tools
+        uuid-devel
+        ncurses-devel
+        libidn-devel
+        cairo-gobject-devel
+        libxslt-devel
+        libxml2-devel
+        expat-devel
         wget
         git
         file-devel
