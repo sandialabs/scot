@@ -1,8 +1,8 @@
 [Unit]
-Description=SCot EMail Alert passthrough Processing Daemon
+Description=SCOT Email Input Daemon
 
 [Service]
-ExecStart=/opt/scot/bin/email_responder.pl AlertPassthrough
+ExecStart=/opt/scot/bin/recemail.pl
 Restart=always
 RestartSec=10
 StandardOutput=syslog
