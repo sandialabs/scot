@@ -19,7 +19,7 @@ function default_variables {
     SCOT_CONFIG_SRC="$DEVDIR/install/src"
     #  where to get the html docs built from the markdown sources
     SCOT_DOCS_SRC="$DEVDIR/docs/build/html"
-    # restart SCOT daemons scfd and scep whe installing/upgrading
+    # restart SCOT daemons flair and scep whe installing/upgrading
     SCOT_RESTART_DAEMONS="no"
     # overwrite config files
     SCOT_ENV_OVERWRITE="no"
@@ -155,7 +155,7 @@ function usage {
         -A mode     where mode = (default) "Local", "Ldap", or "Remoteuser" 
         -M path     where to locate installer for scot private modules
         -D          delete target install directory before beginning install
-        -d          restart scot daemons (scepd and scfd)
+        -d          restart scot daemons (scepd and flair)
         -E          reset the Elasticsearch DB
         -r          delete existing SCOT Database (DATA LOSS POTENTIAL)
         -s          Install SCOT only, skip prerequisites (upgrade SCOT)

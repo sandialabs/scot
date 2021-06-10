@@ -46,17 +46,22 @@ sub flair_alert {
     my $log     = $self->env->log;
     my $timer   = $self->env->get_timer("flair_alert");
 
-    $log->debug("[$$] working alert ".$alert->id);
+    if ( ref($alert) eq "Scot::Model::Alert") {
+        $alert  = $alert->as_hash;
+    }
 
-    my $flair   = {                         # build and hold data extracted
+    $log->debug("[$$] working alert ".$alert->{id});
+
+    my $flair   = {   
+        # build and hold data extracted
         # flair => holds flaired text
         # seen => keeps track of seen entities
         # entities => array of { type: x, value: y } entities
     };               
-    my $data    = $alert->data;
+    my $data    = $alert->{data};
 
     if ( ! defined $data ) {
-        $log->error("[$$] Alert ".$alert->id." missing data");
+        $log->error("[$$] Alert ".$alert->{id}." missing data");
         return $flair;
     }
 
@@ -137,6 +142,7 @@ sub flair_key_values {
 sub process_html {
     my $self    = shift;
     my $html    = shift;
+    $self->env->log->debug("Processing HTML: $html");
     return $self->extractor->process_html($html);
 }
 
@@ -259,6 +265,7 @@ sub process_scanid_cell {
         $self->add_entity($flair, $entity_ref);
     }
     $self->append_flair($flair, $key, $flairtxt);
+}
 
 
 sub process_msg_id_cell {
@@ -318,7 +325,6 @@ sub process_cell {
         type    => $header,
     };
     return $href, $flair;
-}
 }
 
 

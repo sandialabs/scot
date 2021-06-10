@@ -42,10 +42,11 @@ sub _build_splitre {
     my $self    = shift;
     return qr{
         (
-        [ \t\n]                        # spaces/tabs/newline
-        | \W                           # or nonword chars
-        | [\+\=\@\w\.\[\]\(\)\{\}-]+   # or words with embedded periods,dashes
-                                       # with potential obsfucation [({})]
+            [^\w<]+     # non-word chars except <
+            |
+            [\s]+       # one or more whitespace
+            |
+            \S+         # one or more word chars
         )
     }xms;
 }
@@ -106,7 +107,7 @@ sub clean_html {
 
     if ( $clean !~ /^<.*>/ ) {
         $self->env->log->debug("plain text, detected, wrapping");
-        $clean = "<html>".encode_entities($clean)."</html>";
+        $clean = "<html>".encode_entities($clean,'<>')."</html>";
     }
 
     $log->trace("clean = ", {filter=>\&Dumper, value => $clean});
@@ -160,9 +161,9 @@ sub walk_tree {
         return;
     }
 
-    $element->normalize_content;
-    my @content = $element->content_list;
-    my @new     = ();
+    $element->normalize_content; # concats adjacent text nodes
+    my @content = $element->content_list; # get children (elements and text)
+    my @new     = (); # hold the newly flaired content
 
     for (my $index = 0; $index < scalar(@content); $index++ ) {
 
@@ -171,16 +172,20 @@ sub walk_tree {
         if ( $self->is_not_leaf_node($content[$index]) ) {
             my $child   = $content[$index];
 
+            # splunk likes to write ipaddrs (ip4 and ip6) in a "special" way
+            # this will fix them so the flair engine can detect
             $self->fix_weird_html($child);
 
+            # if this is userdefined flair, no further work is necessary
             if ( ! $self->user_defined_entity_element($child, $edb) ) {
                 $log->trace(" "x$spaces."Element ".$child->address." found, recursing.");
                 $self->walk_tree($child, $edb, $level);
             }
-
+            # push the possibly modified copy of the child onto the new stack
             push @new, $child;
         }
         else {
+            # leaf node case, start parsing the text
             my $text = $content[$index];
             $log->trace(" "x$spaces."Leaf Node content = ".$text);
             push @new, $self->parse($text, $edb);
@@ -486,10 +491,11 @@ sub find_single_word_matches {
     my $timer   = $self->env->get_timer(scalar(@words)." single word matches");
     $log->trace("looking for single word matches");
 
-
+    my $index = 0;
     WORD:
     foreach my $word (@words) {
         my @found = $self->apply_regex_to_word($word,$edb);
+        $index++;
         if (scalar(@found)>0) {
             push @new, @found;
         }

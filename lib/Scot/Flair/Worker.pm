@@ -168,6 +168,7 @@ sub process_frame {
         my $data    = $self->decode_frame($frame);
         $self->process_message($data);
         &$timer;
+        $stomp->ack({frame => $frame});
     }
     catch {
         $stomp->nack({frame => $frame});

@@ -2,7 +2,7 @@
 Description=SCot Flair Daemon
 
 [Service]
-ExecStart=/opt/scot/bin/flairer2.pl
+ExecStart=/opt/scot/bin/flair.pl
 Restart=always
 RestartSec=10
 StandardOutput=syslog

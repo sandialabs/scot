@@ -166,7 +166,7 @@ function start_services {
             wait_for_mongo
             systemctl --no-pager restart scot.service
             systemctl --no-pager restart apache2.service
-            systemctl --no-pager restart scf2d.service
+            systemctl --no-pager restart flair.service
             systemctl --no-pager restart scrfd.service
             systemctl --no-pager restart scepd.service
             systemctl --no-pager restart recfpd.service
@@ -176,7 +176,7 @@ function start_services {
             wait_for_mongo
             systemctl --no-pager restart scot.service
             systemctl --no-pager restart apache2.service
-            systemctl --no-pager restart scf2d.service
+            systemctl --no-pager restart flair.service
             systemctl --no-pager restart scrfd.service
             systemctl --no-pager restart scepd.service
             systemctl --no-pager restart recfpd.service
@@ -197,7 +197,7 @@ function start_services {
         wait_for_mongo
         systemctl --no-pager restart scot.service
         systemctl --no-pager restart httpd.service
-        systemctl --no-pager restart scfd.service
+        systemctl --no-pager restart flair.service
         systemctl --no-pager restart scrfd.service
         systemctl --no-pager restart scepd.service
         systemctl --no-pager restart recfpd.service

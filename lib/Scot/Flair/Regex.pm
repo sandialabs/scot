@@ -176,6 +176,10 @@ sub get_built_in_single_word_regexes {
         regex_appkey
         regex_uuid1
         regex_jarm_hash
+        regex_cidr
+        regex_ipv6
+        regex_lbsig
+        regex_angle_bracket_message_id
     ));
 
     foreach my $function (@re_builder_functions) {
@@ -190,10 +194,6 @@ sub get_built_in_multi_word_regexes {
     my @re      = ();
 
     my @re_builder_functions = (qw(
-        regex_cidr
-        regex_ipv6
-        regex_lbsig
-        regex_angle_bracket_message_id
     ));
 
     foreach my $function (@re_builder_functions) {
@@ -222,7 +222,7 @@ sub regex_cidr {
     my $self    = shift;
     my $type    = 'cidr';
     my $order   = 1;
-    my $options = { multiword => 'yes' };
+    my $options = { multiword => 'no' };
     my $re      = qr{
         \b                                      # word boundary
         (?<!\.)                                 # neg look ahead?
@@ -315,7 +315,7 @@ sub regex_ipv6 {
     my $self    = shift;
     my $type    = 'ipv6';
     my $order   = 11;
-    my $options = { multiword => 'yes' };
+    my $options = { multiword => 'no' };
     my $re      = qr{
     \b                      # word boundary
     # first look for a suricata/snort format (ip:port)
@@ -371,7 +371,7 @@ sub regex_ipv6_suricata {
     my $self    = shift;
     my $type    = 'ipv6';
     my $order   = 10;
-    my $options = { multiword => 'yes' };
+    my $options = { multiword => 'no' };
     my $re      = qr{
         \b                      # word boundary
         (?:
@@ -441,7 +441,7 @@ sub regex_lbsig {
     my $self    = shift;
     my $type    = 'lbsig';
     my $order   = 10;
-    my $options = { multiword => 'yes' };
+    my $options = { multiword => 'no' };
     my $re      = qr{
         \b                                      # word boundary
         (yr:[a-z\_]+_s[0-9]+)_[0-9]+
@@ -494,6 +494,7 @@ sub regex_common_file_extensions {
             pdf|
             msi|
             hta|
+            html|
             mht|
             doc|docx|
             xls|xlsx|
@@ -505,6 +506,8 @@ sub regex_common_file_extensions {
             sct|
             tgz|
             py|
+            rb|
+            php|
             wsc
         )
         \b
@@ -552,8 +555,8 @@ sub regex_uuid1 {
 sub regex_angle_bracket_message_id {
     my $self    = shift;
     my $type    = 'message_id';
-    my $order   = 10;
-    my $options = { multiword => 'yes' };
+    my $order   = 9;
+    my $options = { multiword => 'no' };
     my $re      = qr{
         (
             (<|&lt;)            # starts with <

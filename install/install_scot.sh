@@ -143,7 +143,7 @@ function configure_startup {
     echo "--"
     echo "-- configuring SCOT startup"
     echo "--"
-    SCOTSERVICES='scot scf2d scend scrfd scepd recfpd'
+    SCOTSERVICES='scot flair scend scrfd scepd recfpd'
     SRCDIR="$SCOT_CONFIG_SRC/scot"
 
     for service in $SCOTSERVICES; do
@@ -363,7 +363,7 @@ function setup_scot_admin {
 
 function restart_daemons {
 
-    SCOTSERVICES='scot scfd scrfd scepd recfpd'
+    SCOTSERVICES='scot flair scrfd scepd recfpd'
     if [[ "$SCOT_RESTART_DAEMONS" == "yes" ]] || [[ "$INSTMODE" != "SCOTONLY" ]]; then
         for service in $SCOTSERVICES; do
             if [[ $OS == "Ubuntu" ]]; then

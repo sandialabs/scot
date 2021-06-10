@@ -1118,6 +1118,14 @@ sub promote {
                 id  => $entry->id,
             }
         });
+        $self->env->mq->send("/queue/flair",{
+            action  => "created",
+            data    => {
+                who => $req->{user},
+                type=> "entry",
+                id  => $entry->id,
+            }
+        });
 
         ##      use this to memorialize the likaboss object
         if ( $env->meta->has_attribute('lbwebservice') ) {
@@ -1137,6 +1145,14 @@ sub promote {
         my $entry = $mongo->collection('Entry')
                           ->create_from_promoted_dispatch($object, $promotion_obj);
         $self->env->mq->send("/topic/scot", {
+            action  => 'created',
+            data    => {
+                who => $req->{user},
+                type => "entry",
+                id  => $entry->id,
+            }
+        });
+        $self->env->mq->send("/queue/flair", {
             action  => 'created',
             data    => {
                 who => $req->{user},
