@@ -54,8 +54,8 @@ sub test_samples {
         my $testname = $sample->{name};
         my $html     = $sample->{source};
         my $flair    = $sample->{flair};
-        my $edb     = $sample->{entities};
-        my $text    = $sample->{plain};
+        my $edb      = $sample->{entities};
+        my $text     = $sample->{plain};
         chomp($text);
         chomp($flair);
         my $got   = $extractor->process_html($html);
@@ -63,7 +63,7 @@ sub test_samples {
         chomp($got->{flair});
         chomp($got->{text});
 
-        is( $got->{flair}, $flair, "$testname flair correct") or done_testing, exit;
+        is( $got->{flair}, $flair, "$testname flair correct") or myfail($got->{flair}, $flair);
         is ( $got->{text}, $text, "$testname plain text") or myfail($got->{text}, $text);
         cmp_deeply($got->{entities}, $edb, "$testname") or done_testing, exit;
     }
@@ -72,8 +72,8 @@ sub test_samples {
 sub myfail {
     my $g = shift;
     my $e = shift;
-    print "G: >>$g<<\n";
-    print "E: >>$e<<\n";
+    print "Got: ====x=========x=========x\n$g\n";
+    print "Exp: ====x=========x=========x\n$e\n";
     done_testing();
     exit;
 }

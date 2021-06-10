@@ -6,7 +6,7 @@ if [[ "$OS" == "Ubuntu" ]]; then
       activemq
       scot
       apache2
-      scfd
+      flair
       scepd
   '
 else
@@ -15,7 +15,7 @@ else
       activemq
       scot
       httpd
-      scfd
+      flair
       scepd
   '
 fi

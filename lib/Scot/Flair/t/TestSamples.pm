@@ -453,6 +453,25 @@ EOF
             { type    => "ipaddr", value   => "10.126.188.212", },
         ],
     },
+    {
+        name    => 'leading ip4:',
+        source  => <<EOF,
+<html><p>
+  ip4:65.38.177[.]13
+</p></html>
+EOF
+        plain   => <<EOF,
+   ip4:65.38.177.13
+EOF
+        flair   => <<EOF,
+<div><p>
+  ip4:<span class="entity ipaddr" data-entity-type="ipaddr" data-entity-value="65.38.177.13">65.38.177.13</span>
+</div>
+EOF
+        entities    => [
+            { 'type'    => 'ipaddr', 'value' => '65.38.177.13' }
+        ],
+    },
 );
 
 our @email_tests = (
@@ -706,7 +725,8 @@ EOF
 10.10.10.0/30
 EOF
         flair       => <<'EOF',
-<div><span class="entity cidr" data-entity-type="cidr" data-entity-value="10.10.10.0/30">10.10.10.0/30</span></div>
+<div><span class="entity cidr" data-entity-type="cidr" data-entity-value="10.10.10.0/30">10.10.10.0/30</span>
+</div>
 EOF
         entities    => [
             { value   => '10.10.10.0/30', type    => 'cidr', }
@@ -806,7 +826,8 @@ EOF
 1762:0:0:0:0:B03:1:AF18
 EOF
         flair       => <<'EOF',
-<div><span class="entity ipv6" data-entity-type="ipv6" data-entity-value="1762:0:0:0:0:b03:1:af18">1762:0:0:0:0:B03:1:AF18</span></div>
+<div><span class="entity ipv6" data-entity-type="ipv6" data-entity-value="1762:0:0:0:0:b03:1:af18">1762:0:0:0:0:B03:1:AF18</span>
+</div>
 EOF
         entities    => [
             { value   => '1762:0:0:0:0:b03:1:af18', type    => 'ipv6', }
@@ -822,7 +843,8 @@ EOF
 1762::b03:1:af18
 EOF
         flair       => <<'EOF',
-<div><span class="entity ipv6" data-entity-type="ipv6" data-entity-value="1762::b03:1:af18">1762::b03:1:af18</span></div>
+<div><span class="entity ipv6" data-entity-type="ipv6" data-entity-value="1762::b03:1:af18">1762::b03:1:af18</span>
+</div>
 EOF
         entities    => [
             { value   => '1762::b03:1:af18', type    => 'ipv6', }
@@ -838,7 +860,8 @@ EOF
 2001:41d0:2:9d17::
 EOF
         flair       => <<'EOF',
-<div><span class="entity ipv6" data-entity-type="ipv6" data-entity-value="2001:41d0:2:9d17::">2001:41d0:2:9d17::</span></div>
+<div><span class="entity ipv6" data-entity-type="ipv6" data-entity-value="2001:41d0:2:9d17::">2001:41d0:2:9d17::</span>
+</div>
 EOF
         entities    => [
             { value   => '2001:41d0:2:9d17::', type    => 'ipv6', }
@@ -858,8 +881,8 @@ EOF
 </div>
 EOF
         entities    => [
-                { type    => "ipv6", value   => "2603:10b6:404:129::18", },
                 { type    => "domain", value   => "bn6pr27mb2539.namprd13.prod.poutlook.org", },
+                { type    => "ipv6", value   => "2603:10b6:404:129::18", },
         ],
         userdef => [],
     },
@@ -901,6 +924,21 @@ EOF
             { type    => 'ipv6', value   => '2620:0106:6008:009b:00f0:0000:0000:0021', },
         ],
     },
+    {
+        name    => 'leading ip4:',
+        source  => <<EOF,
+<html><p>ip4:65.38.177[.]13</p></html>
+EOF
+        plain   => <<EOF,
+   ip4:65.38.177.13
+EOF
+        flair   => <<'EOF',
+<div><p>ip4:<span class="entity ipaddr" data-entity-type="ipaddr" data-entity-value="65.38.177.13">65.38.177.13</span></div>
+EOF
+        entities    => [
+            { 'type'    => 'ipaddr', 'value' => '65.38.177.13' }
+        ],
+    },
 
 );
 
@@ -934,7 +972,8 @@ EOF
 <CAEr1S5-HuU1MjnUQtqT6Ri-i2ZaYcTm_+cjf6mkmOgwGJHjPJA@mail.gmail.com>
 EOF
     flair           => <<'EOF',
-<div><span class="entity message_id" data-entity-type="message_id" data-entity-value="&lt;caer1s5-huu1mjnuqtqt6ri-i2zayctm_+cjf6mkmogwgjhjpja@mail.gmail.com&gt;">&lt;CAEr1S5-HuU1MjnUQtqT6Ri-i2ZaYcTm_+cjf6mkmOgwGJHjPJA@mail.gmail.com&gt;</span></div>
+<div><span class="entity message_id" data-entity-type="message_id" data-entity-value="&lt;caer1s5-huu1mjnuqtqt6ri-i2zayctm_+cjf6mkmogwgjhjpja@mail.gmail.com&gt;">&lt;CAEr1S5-HuU1MjnUQtqT6Ri-i2ZaYcTm_+cjf6mkmOgwGJHjPJA@mail.gmail.com&gt;</span>
+</div>
 EOF
         entities    => [
             { value   => '<caer1s5-huu1mjnuqtqt6ri-i2zayctm_+cjf6mkmogwgjhjpja@mail.gmail.com>', type    => 'message_id', }

@@ -1,26 +1,30 @@
 #!/bin/bash
 
 echo "--------------------------------------------------------------------"
-echo "-- VAST Queue Sizes                                                 "
+echo "-- SCOT Queue Sizes                                                 "
 echo "--------------------------------------------------------------------"
 
 PASS="NX3FCKPASS"
 PASS="#jlkxj3LX_3lkx"
 PASS="admin"
 
-echo -n "Alert Email Processing Queue (email_alert)                  :"
-ss_size=`curl -s -u admin:$PASS http://localhost:8161/api/jolokia/read/org.apache.activemq:type=Broker,brokerName=localhost,destinationType=Queue,destinationName=email_alert/QueueSize | jq .value`
-echo $ss_size
+echo -n "SCOT Flair Queue          : "
+syseval_size=`curl -s -u admin:$PASS http://localhost:8161/api/jolokia/read/org.apache.activemq:type=Broker,brokerName=localhost,destinationType=Queue,destinationName=flair/QueueSize | jq .value`
+echo $syseval_size
 
-echo -n "Dispatch Email Processing Queue (email_dispatch)            :"
-sysid_size=`curl -s -u admin:$PASS http://localhost:8161/api/jolokia/read/org.apache.activemq:type=Broker,brokerName=localhost,destinationType=Queue,destinationName=email_dispatch/QueueSize | jq .value`
-echo $sysid_size
+echo -n "SCOT Enricher Queue       : "
+syseval_size=`curl -s -u admin:$PASS http://localhost:8161/api/jolokia/read/org.apache.activemq:type=Broker,brokerName=localhost,destinationType=Queue,destinationName=enricher/QueueSize | jq .value`
+echo $syseval_size
 
-echo -n "EventPassthrough Processing Queue (email_event_passthrough) :"
-scaneval_size=`curl -s -u admin:$PASS http://localhost:8161/api/jolokia/read/org.apache.activemq:type=Broker,brokerName=localhost,destinationType=Queue,destinationName=email_event_passthrough/QueueSize | jq .value`
-echo $scaneval_size
+echo -n "SCOT RemoteFlair Queue    : "
+syseval_size=`curl -s -u admin:$PASS http://localhost:8161/api/jolokia/read/org.apache.activemq:type=Broker,brokerName=localhost,destinationType=Queue,destinationName=remoteflair/QueueSize | jq .value`
+echo $syseval_size
 
-echo -n "Email Event Queue (email_event)                             :"
-syseval_size=`curl -s -u admin:$PASS http://localhost:8161/api/jolokia/read/org.apache.activemq:type=Broker,brokerName=localhost,destinationType=Queue,destinationName=email_event/QueueSize | jq .value`
+echo -n "SCOT Recorded Future Queue: "
+syseval_size=`curl -s -u admin:$PASS http://localhost:8161/api/jolokia/read/org.apache.activemq:type=Broker,brokerName=localhost,destinationType=Queue,destinationName=recfuture/QueueSize | jq .value`
+echo $syseval_size
+
+echo -n "SCOT LRI  Proxy Queue     : "
+syseval_size=`curl -s -u admin:$PASS http://localhost:8161/api/jolokia/read/org.apache.activemq:type=Broker,brokerName=localhost,destinationType=Queue,destinationName=lriproxy/QueueSize | jq .value`
 echo $syseval_size
 
