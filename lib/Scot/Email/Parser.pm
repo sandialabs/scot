@@ -6,6 +6,8 @@ use warnings;
 use HTML::TreeBuilder;
 use Courriel;
 use Moose;
+use Try::Tiny;
+use utf8;
 
 has env => (
     is      => 'ro',
@@ -38,21 +40,46 @@ sub build_html_tree {
     return $tree;
 }
 
+sub clean_messagestr {
+    my $self    = shift;
+    my $mstr    = shift;
+    my $clean   = (utf8::is_utf8($mstr)) ?
+        Encode::encode_utf8($mstr) :
+        $mstr;
+    # strip any ^M from windows polluted 
+    $clean =~ s///g;
+    return $clean;
+}
+
 sub get_body {
     my $self    = shift;
     my $mstr    = shift;
     my $log     = $self->env->log;
 
     $log->debug("getting body");
+    $log->debug("mstr = $mstr");
 
-    my $email       = Courriel->parse(text => $mstr);
-    my $htmlpart    = $email->html_body_part();
-    my $plainpart   = $email->plain_body_part();
+    my $clean = $self->clean_messagestr($mstr);
 
-    my $html  = $htmlpart->content if $htmlpart;
-    my $plain = $plainpart->content if $plainpart;
+    my $email       = try {
+        Courriel->parse(text => $clean);
+    }
+    catch {
+        $log->error("Courriel parse error: $_");
+    };
 
-    return $email, $html, $plain;
+    if ( defined $email ) {
+        my $htmlpart    = $email->html_body_part();
+        my $plainpart   = $email->plain_body_part();
+
+        my $html  = $htmlpart->content if $htmlpart;
+        my $plain = $plainpart->content if $plainpart;
+
+        return $email, $html, $plain;
+    }
+    else {
+        return undef, undef, undef;
+    }
 }
 
 sub body_not_html {

@@ -9,6 +9,7 @@ base class for processors
 
 =cut
 use lib '../../../lib';
+use utf8;
 use Scot::Email::Imap;
 use Moose;
 extends 'Scot::App';
@@ -77,7 +78,9 @@ sub run {
     my $index = 1;
     while ( my $message = $cursor->next ) {
         $log->debug("Processing message $index of $count");
-        $self->process_message($message);
+        if ( ! $self->process_message($message) ) {
+            $imap->mark_uid_unseen($message->{imap_uid});
+        }
         $index++;
     }
 }

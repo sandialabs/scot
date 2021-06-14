@@ -266,6 +266,14 @@ sub do_multiword_matches {
                     next REGEX;
                 }
             }
+            if ( $type eq "ipv6" ) {
+                $log->debug("Looking for weird ipv6");
+                $span = $self->ipv6_action($match, $pre, $post, $dbhref);
+                if ( ! defined $span ) {
+                    $log->warn("false match in ipv6, skipping");
+                    next REGEX;
+                }
+            }
             else {
                 $span = $self->span($match, $type);
                 # add found match to the entity list

@@ -19,20 +19,24 @@ sub process_message {
 
     if ( $self->already_processed($msg) ) {
         $log->warn("[$mbox->{name}] $msg->{message_id} already in SCOT");
-        return;
+        return 1;
     }
 
     my $parser  = $self->select_parser($msg);
     my $data    = $parser->parse($msg);
-    my $dispatch = $self->create_dispatch($data);
 
-    if ( defined $dispatch and ref($dispatch) eq "Scot::Model::Dispatch") {
-        $log->debug("Success creaing dispatch: ".$dispatch->id);
-        return;
+    if ( defined $data ) {
+
+        my $dispatch = $self->create_dispatch($data);
+        if ( defined $dispatch and ref($dispatch) eq "Scot::Model::Dispatch") {
+            $log->debug("Success creaing dispatch: ".$dispatch->id);
+            return 1;
+        }
     }
 
     $log->error("Failed to create dispatch!");
-    $log->trace({filter => \&Dumper, value => $msg});
+    $log->debug({filter => \&Dumper, value => $msg});
+    return undef;
 }
 
 sub select_parser {
@@ -180,6 +184,7 @@ sub create_entry {
     $data->{groups} = $dispatch->groups;
     $data->{owner} = $dispatch->owner;
     $data->{summary} = 0;
+    $data->{tlp} = $self->get_tlp($data, $dispatch);
     $data->{tlp} = $data->{tlp} // $dispatch->tlp;
 
     my $entry = $col->create($data);
@@ -190,6 +195,16 @@ sub create_entry {
     $log->error("Failed to create Entry with: ",
                 { filter => \&Dumper, value => $data });
     return undef;
+}
+
+sub get_tlp {
+    my $self    = shift;
+    my $data    = shift;
+    my $dispatch = shift;
+
+    return $data->{tlp} if defined $data->{tlp};
+    return $dispatch->tlp if defined $dispatch->tlp;
+    return 'unset';
 }
 
 sub process_attachments {

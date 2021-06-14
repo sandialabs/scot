@@ -14,6 +14,10 @@ sub parse {
 
     my ($courriel, $html, $plain) = $self->get_body($msg->{message_str});
 
+    if ( ! defined $courriel ) {
+        return undef;
+    }
+
     if ( $self->body_not_html($html)) {
         $html   = $self->wrap_non_html($html);
     }
@@ -38,6 +42,17 @@ sub parse {
     );
 
     return wantarray ? %json : \%json;
+}
+
+sub wrap_non_html {
+    my $self    = shift;
+    my $nonhtml = shift;
+    my $log     = $self->env->log;
+
+    $log->warn("non-html body encountered unexpectedly");
+    $log->debug("non-html body = $nonhtml");
+
+    return "<html>$nonhtml</html>";
 }
 
 sub build_entry {
