@@ -34,6 +34,18 @@ sub _build_scot_io {
     return Scot::Flair::Io->new({env => shift->env});
 }
 
+sub all {
+    my $self    = shift;
+    my @all     = ();
+
+    my @sw = @{$self->single_word_regexes};
+    my @mw = @{$self->multi_word_regexes};
+
+    push @all, @mw, @sw;
+
+    return wantarray ? @all : \@all;
+}
+
 has single_word_regexes => (
     is          => 'ro',
     isa         => 'ArrayRef',
@@ -54,7 +66,7 @@ sub _build_single_word_regexes {
 
     push @raw_regex_data, $self->get_built_in_single_word_regexes;
     push @raw_regex_data, $self->get_local_regexes('single');
-    push @raw_regex_data, $self->get_entitytypes('single');
+    push @regexes, $self->build_entitytype_regexes('single');
 
     foreach my $raw_regex_href (@raw_regex_data) {
         push @regexes, {
@@ -90,7 +102,6 @@ sub _build_multi_word_regexes {
 
     push @raw_data, $self->get_built_in_multi_word_regexes;
     push @raw_data, $self->get_local_regexes('multi');
-    push @raw_data, $self->get_entitytypes('multi');
 
     foreach my $raw (@raw_data) {
         push @regexes, {
@@ -100,9 +111,50 @@ sub _build_multi_word_regexes {
             options => $raw->{options},
         };
     }
+    my @etype_data = $self->build_entitytype_regexes('multi');
+    push @regexes, @etype_data;
     my @sorted = sort { $a->{order} <=> $b->{order} } @regexes;
     return \@sorted;
 }
+
+sub build_entitytype_regexes {
+    my $self    = shift;
+    my $type    = shift; # single | multi
+    my @raw     = $self->get_entitytypes($type);
+    my %matches = ();
+    # note: last of type overwrites order and options if they differ
+    # may be fine or may cause bug
+    foreach my $href (@raw) {
+        my $type    = $href->{type};
+        push @{$matches{$type}{regex}}, quotemeta($href->{regex});
+        $matches{$type}{order}   = $href->{order};
+        $matches{$type}{options} = $href->{options};
+    }
+    my @regexes = ();
+    foreach my $key (keys %matches) {
+        my $pattern = join('|', @{$matches{$key}{regex}});
+        my $order   = $self->calculate_order(
+            $matches{$key}{order}, 
+            scalar(@{$matches{$key}{regex}})
+        );
+        push @regexes, {
+            type    => "$key",
+            regex   => qr/($pattern)/,
+            order   => $order,
+            options => $matches{$key}{options},
+        };
+    }
+    return wantarray ? @regexes : \@regexes;
+}
+
+sub calculate_order {
+    my $self    = shift;
+    my $base    = shift;
+    my $num_of_regex = shift;
+
+    return $base - $num_of_regex;
+}
+
 
 sub get_local_regexes {
     my $self    = shift;
@@ -115,11 +167,14 @@ sub get_local_regexes {
 
     return wantarray ? @re : \@re if (! defined $local_regexes);
 
+
     foreach my $raw (@$local_regexes) {
-        if ( $raw->{options}->{multiword} = $tvalue ) {
+        $self->env->log->debug({filter => \&Dumper, value => $raw}) if ($raw->{type} eq 'snumber');
+        if ( $raw->{options}->{multiword} eq $tvalue ) {
+            my $rre = $raw->{regex};
             push @re, {
                 type    => $raw->{type},
-                regex   => $self->build_re($raw->{regex}),
+                regex   => qr{$rre}xims,
                 order   => $raw->{order},
                 options => $raw->{options},
             };
@@ -134,7 +189,8 @@ sub get_entitytypes {
     my $io      = $self->scotio;
     my $log     = $self->env->log;
     my $yn      = ($type eq "multi") ? "yes" : "no";
-    my $query   = { multiword => $yn };
+    my $query   = { options => {multiword => $yn }};
+    $log->trace("querying for ",{filter=>\&Dumper, value => $query});
     my @raw     = $io->get_entity_types($query);
     $log->warn("Adding ".scalar(@raw)." regexes to $type");
     return wantarray ? @raw : \@raw;

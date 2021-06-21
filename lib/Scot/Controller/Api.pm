@@ -1395,6 +1395,10 @@ sub post_update_process {
         }
     }
 
+    if ( ref($object) eq "Scot::Model::Alertgroup" ) {
+        $env->mq->send("/queue/flair", $mq_msg);
+    }
+
     if ( ref($object) eq "Scot::Model::Sigbody" ) {
         $mq_msg->{data} = {
             who     => $self->session('user'),

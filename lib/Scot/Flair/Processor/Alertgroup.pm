@@ -69,6 +69,7 @@ sub flair_alert {
     foreach my $key (keys %{$data}) {
 
         next KEY if ( $key eq "columns" );
+        next KEY if ( $key eq "_raw" );
 
         $log->debug("Retrieving values in column $key");
 
@@ -138,14 +139,6 @@ sub flair_key_values {
         $self->append_flair($flair, $key, $results->{flair});
     }
 }
-
-sub process_html {
-    my $self    = shift;
-    my $html    = shift;
-    $self->env->log->debug("Processing HTML: $html");
-    return $self->extractor->process_html($html);
-}
-
 
 sub value_not_seen {
     my $self    = shift;
