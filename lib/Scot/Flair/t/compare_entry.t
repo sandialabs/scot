@@ -30,7 +30,7 @@ my $col     = $mongo->collection('Entry');
 my $total_timer = $env->get_timer("total_timer");
 
 my $count   = 0;
-my $limit   = 100;
+my $limit   = 1000;
 my $prob    = .01;
 my $total_entries = $prod_entry_col->count_documents({});
 my $total_flair_time = 0;

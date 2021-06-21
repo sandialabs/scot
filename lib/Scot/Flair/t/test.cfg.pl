@@ -11,6 +11,7 @@
         appender_name => 'regex_log',
         logfile     => '/var/log/scot/test.log',
         log_level   => 'DEBUG',
+        # log_level   => 'TRACE',
     },
     default_groups  => {
         read => ['wg-scot-ir'],
@@ -23,7 +24,7 @@
             class   => 'Scot::Util::MongoFactory',
             config  => {
                 db_name         => 'scot-test',
-                host            => 'mongodb://localhost',
+                eost            => 'mongodb://localhost',
                 write_safety    => 1,
                 find_master     => 1,
             },
@@ -42,7 +43,7 @@
         {
             type    => 'snumber',
             regex   => '\b([sS][0-9]{6,7})\b',
-            order   => 500,
+            order   => 501,
             options => { multiword => "no" },
         },
         {
@@ -59,7 +60,7 @@
         verify_hostaname    => 1,
         ssl_ca_path         => '/etc/ssl/certs',
         proxy_protocols     => ['http', 'https'],
-        proxy_uri           => 'http://wwwproxy.sandia.gov:80',
+        proxy_uri           => 'http://proxy.sandia.gov:80',
         lwp_ua_string       => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit  /537.36 (KHTML, like Gecko) Chrome/41.0.2227.1 Safari/537.36",
     },
 );

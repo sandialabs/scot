@@ -3,6 +3,11 @@ package Scot::Flair::Processor;
 use Data::Dumper;
 use Moose;
 
+###
+### the job of the processor is to pull the data from the Alertgroup or Entry
+### and to Parse the data down to a set of strings that Extractor can work with
+###
+
 has env => (
     is          => 'ro',
     isa         => 'Scot::Env',
@@ -107,15 +112,262 @@ sub retrieve {
 sub process_html {
     my $self    = shift;
     my $html    = shift;
-    my $extractor   = $self->extractor;
+    my $log     = $self->env->log;
+    my $timer   = $self->env->get_timer("process_html");
 
-    return $extractor->process_html($html);
+    my %edb = (
+        # entities => [],
+        # flair    => '<flair html>',
+        # text     => 'plain text representation'
+    );
 
-    # return {
-    #     entities    => $entities,
-    #     flair       => $flair,
-    # };
+    my $cleanhtml   = $self->clean_html($html);
+    my $tree        = $self->build_html_tree($cleanhtml);
+
+    $self->walk_tree($tree, \%edb);
+
+    $edb{text} = $self->generate_plain_text($tree);
+    $edb{flair}= $self->generate_new_html($tree);
+
+    my $elapsed = &$timer;
+    $log->info("Elapsed time to process ".length($cleanhtml)." characters: $elapsed");
+
+    return \%edb;
 }
+
+sub clean_html {
+    my $self    = shift;
+    my $html    = shift;
+    my $clean   = (utf8::is_utf8($html)) ?
+                    Encode::encode_utf8($html) :
+                    $html;
+    if ($clean !~ /^<.*>/ ) { # if doesn't start with a <tag>, not the best test but...
+        # wrap in div and encode html entities (latter may cause problems for some matches)
+        $clean = '<div>'.
+                 encode_entities($clean, '<>').
+                 '</div>';
+    }
+    return $clean;
+}
+
+sub build_html_tree {
+    my $self    = shift;
+    my $html    = shift;
+    my $tree    = HTML::TreeBuilder->new;
+       $tree    ->implicit_tags(1);
+       $tree    ->p_strict(1);
+       $tree    ->no_space_compacting(1);
+       $tree    ->parse_content($html);
+       $tree    ->elementify;
+    return $tree;
+}
+
+sub generate_plain_text {
+    my $self    = shift;
+    my $tree    = shift;
+    my $fmt     = HTML::FormatText->new();
+    my $text    = $fmt->format($tree);
+    return $text;
+}
+
+sub generate_new_html {
+    my $self    = shift;
+    my $tree    = shift;
+    my $body    = $tree->look_down('_tag', 'body');
+    my $div     = HTML::Element->new('div');
+    $div->push_content($body->detach_content);
+    my $new     = $div->as_HTML();
+    return $new;
+}
+sub walk_tree {
+    my $self    = shift;
+    my $element = shift;
+    my $edb     = shift;
+    my $level   = shift;
+    my $extractor   = $self->extractor;
+    my $log     = $self->env->log;
+
+    $level += 1;
+    my $spaces = $level * 4;
+    $self->trace_decent($element, $spaces);
+
+    if ( $element->is_empty ) {
+        $log->trace(" "x$spaces."---- empty node ----");
+        return;
+    }
+
+    $element->normalize_content;            # concats adjacent text nodes
+    my @content = $element->content_list;   # get children (elements and text)
+    my @new     = ();                       # hold the newly flaired content
+
+    for (my $index = 0; $index < scalar(@content); $index++ ) {
+
+        $log->trace(" "x$spaces."Index $index");
+
+        if ( $self->is_not_leaf_node($content[$index]) ) {
+            my $child   = $content[$index];
+
+            # splunk likes to write ipaddrs (ip4 and ip6) in a "special" way
+            # this will fix them so the flair engine can detect
+            $self->fix_weird_html($child);
+
+            # if this is userdefined flair, no further work is necessary
+            if ( ! $self->user_defined_entity_element($child, $edb) ) {
+                $log->trace(" "x$spaces."Element ".$child->address." found, recursing.");
+                $self->walk_tree($child, $edb, $level);
+            }
+            # push the possibly modified copy of the child onto the new stack
+            push @new, $child;
+        }
+        else {
+            # leaf node case, start parsing the text
+            my $text = $content[$index];
+            $log->trace(" "x$spaces."Leaf Node content = ".$text);
+            push @new, $extractor->parse($edb, $text);
+        }
+    }
+    # replace the content of the element
+    $element->splice_content(0, scalar(@content), @new);
+}
+
+sub is_not_leaf_node {
+    my $self    = shift;
+    my $node    = shift;
+    return ref($node);
+}
+
+sub user_defined_entity_element {
+    my $self    = shift;
+    my $node    = shift;
+    my $edb     = shift;
+
+    my $tag = $node->tag;
+    return undef if ($tag ne "span");
+
+    my $class = $node->attr('class') // '';
+    return undef if ( ! $self->external_defined_entity_class($class) );
+
+    my $type    = $node->attr('data-entity-type');
+    my $value   = $node->attr('data-entity-value');
+    return undef if ( ! defined $type or ! defined $value);
+
+    $self->extractor->add_entity($edb, $value, $type);
+    $node->attr('class', "entity $class");
+    return 1;
+}
+
+sub external_defined_entity_class {
+    my $self    = shift;
+    my $class   = shift;
+    return undef if ( ! defined $class);
+    my @permitted = (qw(userdef ghostbuster));
+    return grep {/$class/} @permitted;
+}
+
+sub fix_weird_html {
+    my $self    = shift;
+    my $node    = shift;
+    my $log     = $self->env->log;
+
+    # splunk likes to wrap ipaddrs in a "special" way.  Undo the damage.
+
+    my @content = $node->content_list;
+    return if ( $self->fix_splunk_ipv4($node, @content));
+    return if ( $self->fix_splunk_ipv6($node, @content));
+}
+
+sub fix_splunk_ipv4 {
+    my $self    = shift;
+    my $child   = shift;
+    my @content = @_;
+    my $found   = 0;
+    my $log     = $self->env->log;
+
+    for (my $i = 0; $i < scalar(@content) - 6; $i++) {
+        if ( $self->has_splunk_ipv4_pattern($i, @content) ) {
+            my $new_ipaddr = join('.',
+                $content[$i]->as_text,
+                $content[$i+2]->as_text,
+                $content[$i+4]->as_text,
+                $content[$i+6]->as_text);
+            $child->splice_content($i, 7, $new_ipaddr);
+            $found++;
+        }
+    }
+    return $found;
+}
+
+sub has_splunk_ipv4_pattern {
+    my $self    = shift;
+    my $i       = shift;
+    my @c       = @_;
+    my $log     = $self->env->log;
+
+    return undef if ( ! ref($c[$i]) );
+
+    $log->trace("c[$i] = ".$c[$i]->tag);
+    $log->trace("c[$i+6] = ".$c[$i]->tag);
+
+    return undef if ( $c[$i]->tag   ne 'em');
+    return undef if ( $c[$i+1]      ne '.');
+    return undef if ( $c[$i+2]->tag ne 'em');
+    return undef if ( $c[$i+3]      ne '.');
+    return undef if ( $c[$i+4]->tag ne 'em');
+    return undef if ( $c[$i+5]      ne '.');
+    return undef if ( $c[$i+6]->tag ne 'em');
+    return 1;
+}
+
+sub fix_splunk_ipv6 {
+    my $self    = shift;
+    my $child   = shift;
+    my @content = @_;
+    my $found   = 0;
+
+    for (my $i = 0; $i < scalar(@content) - 8; $i++) {
+        if ( $self->has_splunk_ipv4_pattern($i, @content) ) {
+            my $new_ipaddr = join('.',
+                $content[$i]->as_text,
+                $content[$i+2]->as_text,
+                $content[$i+4]->as_text,
+                $content[$i+6]->as_text,
+                $content[$i+7]->as_text,
+                $content[$i+8]->as_text);
+            $child->splice_content($i, 7, $new_ipaddr);
+            $found++;
+        }
+    }
+    return $found;
+}
+
+sub has_splunk_ipv6_pattern {
+    my $self    = shift;
+    my $i       = shift;
+    my @c       = @_;
+
+    return undef if ( ! ref($c[$i]) );
+    return undef if ( $c[$i]->tag   ne 'span');
+    return undef if ( $c[$i+1]      ne ':');
+    return undef if ( $c[$i+2]->tag ne 'span');
+    return undef if ( $c[$i+3]      ne ':');
+    return undef if ( $c[$i+4]->tag ne 'span');
+    return undef if ( $c[$i+5]      ne ':');
+    return undef if ( $c[$i+6]->tag ne 'span');
+    return undef if ( $c[$i+7]      ne '0:0:0' and
+                      $c[$i+7]      !~ /([0-9a-f]{1,4}:){3}/i );
+    return undef if ( $c[$i+8]->tag ne 'span');
+    return 1;
+}
+
+
+sub trace_decent {
+    my $self    = shift;
+    my $element = shift;
+    my $spaces  = shift;
+    my $log     = $self->env->log;
+    $log->trace(" "x$spaces . "Walking Node: ".$element->starttag." (".$element->address.")");
+}
+
 
 sub genspan {
     my $self    = shift;

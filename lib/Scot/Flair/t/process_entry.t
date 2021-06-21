@@ -48,13 +48,13 @@ my $results     = $processor->flair_object($entry);
 my $expect = {
 	'entities' => [
 		{
+		'type' => 'ipaddr',
+		'value' => '10.10.10.1'
+		},
+		{
 		'type' => 'domain',
 		'value' => 'google.com'
 		},
-		{
-		'type' => 'ipaddr',
-		'value' => '10.10.10.1'
-		}
     ],
 	'text' => 'The quick brown fox google.com the ipaddr of 10.10.10.1
 ',

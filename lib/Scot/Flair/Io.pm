@@ -143,7 +143,10 @@ sub get_entity_types {
     my $cursor  = $col->find($query);
     my @etypes  = ();
 
+    $self->env->log->trace('get_entity_types');
+
     while (my $et = $cursor->next) {
+        $self->env->log->trace("adding type ".$et->value);
         push @etypes, {
             type    => $et->value,
             regex   => $et->match,
