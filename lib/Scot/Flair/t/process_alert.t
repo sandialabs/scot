@@ -141,8 +141,46 @@ while ( my $alert = $cursor->next ) {
     my $new_alert_data = $processor->flair_alert($alert);
 
 	cmp_deeply($new_alert_data->{data_with_flair}, $expected->{data_with_flair}, "Got expected flair data");
-    cmp_deeply($new_alert_data->{entities}, bag($expected->{entities}));
+    # cmp_deeply($new_alert_data->{entities}, bag($expected->{entities})) or dump_stuff($new_alert_data->{entities}, $expected->{entities});
+    ok(compare_edb($new_alert_data->{entities}, $expected->{entities}), "EDB is correct");
 }
 
+sub dump_stuff {
+    my $g = shift;
+    my $e = shift;
+
+    print "Got\n";
+    print Dumper($g)."\n";
+    print "Expected\n";
+    print Dumper($e);
+}
+
+sub compare_edb {
+    my $got = shift;
+    my $exp = shift;
+
+    my @ghrefs = sort { $a->{value} cmp $b->{value} } @$got;
+    my @ehrefs = sort { $a->{value} cmp $b->{value} } @$exp;
+
+    for ( my $i = 0; $i < scalar(@ghrefs); $i++ ) {
+        if ( $ghrefs[$i]->{type} ne $ehrefs[$i]->{type} ) {
+            print "EDB Index $i\n";
+            print "Types differ! \n";
+            print "g: $ghrefs[$i]->{type}\n";
+            print "e: $ehrefs[$i]->{type}\n";
+            done_testing();
+            exit;
+        }
+        if ($ghrefs[$i]->{value} ne $ehrefs[$i]->{value} ) {
+            print "EDB Index $i\n";
+            print "Values differ! \n";
+            print "g: $ghrefs[$i]->{value}\n";
+            print "e: $ehrefs[$i]->{value}\n";
+            done_testing();
+            exit;
+        }
+    }
+    return 1;
+}
 
 

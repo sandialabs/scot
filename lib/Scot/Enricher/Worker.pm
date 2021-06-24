@@ -13,6 +13,7 @@ use JSON;
 use DateTime;
 use Scot::Env;
 use Scot::Enricher::Processor;
+use Scot::Enricher::Io;
 use Module::Runtime qw(require_module);
 
 use Moose;
@@ -43,7 +44,7 @@ sub _build_stomp {
 
 has io      => (
     is      => 'ro',
-    isa     => 'Scot::Imgmunger::Io',
+    isa     => 'Scot::Enricher::Io',
     required=> 1,
     lazy    => 1,
     builder => '_build_io',
@@ -53,7 +54,7 @@ has io      => (
 sub _build_io {
     my $self    = shift;
     my $env     = $self->env;
-    return Scot::Imgmunger::Io->new(env => $env);
+    return Scot::Enricher::Io->new(env => $env);
 }
 
 
@@ -142,6 +143,7 @@ sub process_frame {
         my $data    = $self->decode_frame($frame);
         $self->process_message($data);
         &$timer;
+        $stomp->ack({frame => $frame});
     }
     catch {
         $stomp->nack({frame => $frame});
@@ -191,7 +193,7 @@ sub invalid_data {
     }
 
     my $type        = $json->{data}->{type};
-    my @valid_types = (qw(alertgroup entry remoteflair));
+    my @valid_types = (qw(entity));
     if ( ! grep {/$type/} @valid_types ) {
         $log->error("Invalid type $type in message.");
         return 1;

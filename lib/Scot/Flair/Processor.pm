@@ -35,6 +35,11 @@ has extractor   => (
 sub flair {
     my $self    = shift;
     my $data    = shift;
+    my $log     = $self->env->log;
+
+    $log->info("-------- BEGIN FLAIR -------");
+
+
     my $timer   = $self->env->get_timer("flair_time");
     my $object  = $self->retrieve($data);
     if ( defined $object ) {
@@ -47,6 +52,7 @@ sub flair {
             {filter=>\&Dumper, value => $data});
     }
     &$timer;
+    $log->info("-------- END FLAIR -------");
 }
 
 sub update_stats {
@@ -60,26 +66,32 @@ sub send_notifications {
     my $object  = shift;
     my $results = shift;
     my $io      = $self->scotio;
-
     my $type = $self->get_type($object);
 
+    $self->env->log->debug("RESULTS=",{filter=>\&Dumper, value=>$results});
+
     # need to send message to /queue/enricher for each entity
-    foreach my $entity (@{$results->{entities}}) {
-        my $entityid    = $io->get_entity_id($entity);
-        if ( defined $entityid ) {
-            $io->send_mq('/queue/enricher',{
-                action  => 'updated',
-                data    => {
-                    type    => 'entity',
-                    id      => $entityid,
-                    who     => 'scot-flair',
-                },
-            });
-        }
-        else {
-            $self->env->log->error("Entity $entity->{value} $entity->{type} not found, enricher queue message not sent!");
+
+    foreach my $href ( @$results ) {
+        foreach my $entity ( @{ $href->{entities} } ) {
+            my $entityid    = $io->get_entity_id($entity);
+            if ( defined $entityid ) {
+                $io->send_mq('/queue/enricher',{
+                    action  => 'updated',
+                    data    => {
+                        type    => 'entity',
+                        id      => $entityid,
+                        who     => 'scot-flair',
+                    },
+                });
+            }
+            else {
+                $self->env->log->error("Entity $entity->{value} $entity->{type} not found, enricher queue message not sent!");
+            }
+
         }
     }
+
     $io->send_mq("/topic/scot", {
         action  => 'updated',
         data    => {
@@ -131,6 +143,7 @@ sub process_html {
 
     my $elapsed = &$timer;
     $log->info("Elapsed time to process ".length($cleanhtml)." characters: $elapsed");
+    $log->debug("EDB =",{filter=>\&Dumper, value=>\%edb});
 
     return \%edb;
 }

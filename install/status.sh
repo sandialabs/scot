@@ -7,6 +7,7 @@ if [[ "$OS" == "Ubuntu" ]]; then
       scot
       apache2
       flair
+      enricher
       scepd
   '
 else
@@ -16,6 +17,7 @@ else
       scot
       httpd
       flair
+      enricher
       scepd
   '
 fi

@@ -28,6 +28,11 @@ sub process_item {
     $log->debug("Processing Item $type $id");
 
     my $entity    = $io->retrieve_entity_href($id);
+
+    if ( ! defined $entity ) {
+        $log->warn("Entity $id Not FOUND. Skipping...");
+        return;
+    }
     
     my @updates = $self->process_enrichments($entity);
 
@@ -38,6 +43,7 @@ sub process_enrichments {
     my $self    = shift;
     my $entity  = shift;
     my @updates = ();
+    my $log     = $self->env->log;
 
     my @mappings    = $self->get_applicable_enrichments($entity);
 
@@ -46,7 +52,8 @@ sub process_enrichments {
         next unless defined $enricher_config;
         push @updates, $self->enrich($entity, $enricher_config);
     }
-
+    my $update_count = scalar(@updates);
+    $log->debug("$update_count updates for entity ".$entity->{value});
     return wantarray ? @updates : \@updates;
 }
 
