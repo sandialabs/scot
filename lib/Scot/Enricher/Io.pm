@@ -34,4 +34,26 @@ sub retrieve_entity_href {
     return $obj->as_hash;
 }
 
+sub apply_enrichment_data {
+    my $self    = shift;
+    my $id      = shift;
+    my @updates = @_;
+    my $obj     = $self->retrieve_item($id);
+
+    # note to future self
+    # this overwrites the key for each enrichment
+    # if you want instead to push latest update
+    # update the $set to a $push
+
+    foreach my $update (@updates) {
+        my ($key, $val) = each %$update;
+        my $command = {
+            '$set' => {
+                "data.$key" => $val
+            }
+        };
+        $obj->update($command);
+    }
+}
+
 1;
