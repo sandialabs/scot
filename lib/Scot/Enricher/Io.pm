@@ -31,7 +31,10 @@ sub retrieve_entity_href {
     my $self    = shift;
     my $id      = shift;
     my $obj     = $self->retrieve_item('entity', $id);
-    return $obj->as_hash;
+    if ( defined $obj and ref($obj) eq "Scot::Model::Entity" ) {
+        return $obj->as_hash;
+    }
+    return undef;
 }
 
 sub apply_enrichment_data {

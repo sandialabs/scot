@@ -169,7 +169,6 @@ sub get_local_regexes {
 
 
     foreach my $raw (@$local_regexes) {
-        $self->env->log->debug({filter => \&Dumper, value => $raw}) if ($raw->{type} eq 'snumber');
         if ( $raw->{options}->{multiword} eq $tvalue ) {
             my $rre = $raw->{regex};
             push @re, {
