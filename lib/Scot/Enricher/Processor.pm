@@ -29,8 +29,9 @@ sub process_item {
 
     my $entity    = $io->retrieve_entity_href($id);
     
-    $self->process_enrichments($entity);
+    my @updates = $self->process_enrichments($entity);
 
+    $self->update_entity_data($id, @updates);
 }
 
 sub process_enrichments {
@@ -45,6 +46,8 @@ sub process_enrichments {
         next unless defined $enricher_config;
         push @updates, $self->enrich($entity, $enricher_config);
     }
+
+    return wantarray ? @updates : \@updates;
 }
 
 sub get_applicable_enrichments {
@@ -139,6 +142,15 @@ sub load_enricher {
         return undef;
     };
     return $instance;
+}
+
+sub update_entity_data {
+    my $self       = shift;
+    my $entity_id  = shift;
+    my @updates    = @_;
+    my $io         = $self->scotio;
+
+    $io->apply_enrichment_data($entity_id, @updates);
 }
 
 1;
