@@ -12,8 +12,8 @@ use Scot::Env;
 use Data::Dumper;
 use DateTime::Format::Strptime;
 
-$ENV{http_proxy} = 'http://wwwproxy.sandia.gov:80';
-$ENV{https_proxy} = 'http://wwwproxy.sandia.gov:80';
+$ENV{http_proxy} = 'http://proxy.sandia.gov:80';
+$ENV{https_proxy} = 'http://proxy.sandia.gov:80';
 
 say "--- Starting Rss  ---";
 

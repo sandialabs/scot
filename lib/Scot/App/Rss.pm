@@ -51,7 +51,7 @@ sub _build_lwp {
     $agent->ssl_opts(
         SSL_verify_mode => 1, verify_hostname => 1, SSL_ca_patch => '/etc/ssl/certs'
     );
-    $agent->proxy(['http','https'], 'http://wwwproxy.sandia.gov:80');
+    $agent->proxy(['http','https'], 'http://proxy.sandia.gov:80');
     $agent->agent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.1 Safari/537.36");
     return $agent;
 }
