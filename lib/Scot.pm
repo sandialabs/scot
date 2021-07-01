@@ -23,6 +23,7 @@ It is a child of Mojo::Base and therefore is a Mojolicious based app.
 
 sub startup {
     my $self    = shift;
+    $ENV{MOJO_MAX_MESSAGE_SIZE} = 67108864; # 64 MB
     $self->mode('development'); # remove when in prod
 
     my $config_file  = $ENV{'scot_config_file'} // "/opt/scot/etc/scot.cfg.pl";

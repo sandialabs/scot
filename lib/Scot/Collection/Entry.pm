@@ -4,6 +4,7 @@ use lib '../../../lib';
 use Moose 2;
 use Data::Dumper;
 use HTML::Element;
+use HTML::Entities;
 use JSON::XS;
 
 extends 'Scot::Collection';
@@ -197,7 +198,7 @@ sub build_table {
 
     foreach my $key ( @{$columns} ) {
         next if ($key eq "columns");
-        my $value   = $data->{$key};
+        my $value   = encode_entities($data->{$key});
         if ( $key =~ /^message[_-]id$/i ) {
             $value =~ s{<(.*?)>}{&lt;$1&gt;};
         }
