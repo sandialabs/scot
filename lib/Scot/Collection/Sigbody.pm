@@ -66,9 +66,7 @@ sub get_next_revision {
     my $self        = shift;
     my $signature   = shift;
 
-    my %command;
-    my $tie     = tie(%command, "Tie::IxHash");
-    %command    = (
+    my @command    = (
         findAndModify   => "signature",
         query           => { id => $signature->id },
         update          => { '$inc' => { latest_revision => 1 } },
@@ -80,7 +78,7 @@ sub get_next_revision {
         get_next_rev => sub {
             my $db_name = $mongo->database_name;
             my $db      = $mongo->_mongo_database($db_name);
-            my $job     = $db->run_command(\%command);
+            my $job     = $db->run_command(\@command);
             return $job->{value}->{latest_revision};
         }
     );
