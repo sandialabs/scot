@@ -2530,7 +2530,7 @@ sub get_chef_uri {
 
 # this will allow the scot browser extension to submit html 
 # to be saved or just flaired.
-sub browser {
+sub remoteflair {
     my $self    = shift;
     my $env     = $self->env;
     my $log     = $env->log;

@@ -2,7 +2,7 @@ package Scot;
 
 use strict;
 use warnings;
-
+use lib '../lib';
 use Carp qw(cluck longmess shortmess);
 use Mojo::Base 'Mojolicious';
 use Mojo::Cache;
@@ -42,7 +42,6 @@ sub startup {
     $self->attr     ( slog => sub {$slog} );
     $self->helper   ( slog => sub { shift->app->env } );
 
-    $slog->debug("MOJO = ".$Mojolicious::VERSION);
 
     $self->secrets( $env->mojo_defaults->{secrets} );
     $self->sessions->default_expiration( 
@@ -443,9 +442,9 @@ relies on the browser BasicAuth popup.
             ->to    ('controller-api#lriproxy')
             ->name  ('get_lri_data');
 
-    $scot   ->post  ('/api/v2/browser')
-            ->to    ('controller-api#browser')
-            ->name  ('browser_actions');
+    $scot   ->post  ('/api/v2/remoteflair')
+            ->to    ('controller-api#remoteflair')
+            ->name  ('remoteflair');
 
 
 =pod
@@ -711,16 +710,21 @@ other events.
             ->to    ('controller-api#delete')
             ->name  ('delete');
 
+    $self->log_startup($slog);
+
 }
 
 sub log_startup {
     my $self    = shift;
-    my $slog     = shift;
+    my $slog    = shift;
+    my $db      = $self->env->mongo->database_name;
 
     $slog->info(
                 "============================================================\n".
+        " "x55 ."| MOJO  ". $Mojolicious::VERSION."\n".
         " "x55 ."| SCOT  ". $self->env->version . "\n".
-        " "x55 ."| mode: ". $self->env->mode. "\n".
+        #" "x55 ."| mode: ". $self->env->mode. "\n".
+        " "x55 ."| db:   ". $db."\n".
         " "x55 ."============================================================\n"
     );
     # $self->env->dump_env;

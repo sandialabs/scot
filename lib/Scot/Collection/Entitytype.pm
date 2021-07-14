@@ -88,7 +88,7 @@ sub api_subthing {
     my $id      = $req->{id} + 0;
     my $subthing= $req->{subthing};
     my $env     = $self->env;
-    my $mongo   = $env->mongo;
+    my $mongo   = $self->meerkat;
     my $log     = $env->log;
 
     if ( $subthing eq "entity" ) {

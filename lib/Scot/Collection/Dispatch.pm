@@ -33,6 +33,7 @@ override api_create => sub {
     my $request = shift;
     my $env     = $self->env;
     my $log     = $env->log;
+    my $mongo   = $self->meerkat;
 
     $log->debug("Custom create in Scot::Collection::Dispatch");
 
@@ -55,11 +56,11 @@ override api_create => sub {
     my $id  = $dispatch->id;
 
     if ( scalar(@sources) > 0 ) {
-        my $col = $env->mongo->collection('Source');
+        my $col = $mongo->collection('Source');
         $col->add_source_to("dispatch", $dispatch->id, \@sources);
     }
     if ( scalar(@tags) > 0 ) {
-        my $col = $env->mongo->collection('Tag');
+        my $col = $mongo->collection('Tag');
         $col->add_source_to("dispatch", $dispatch->id, \@tags);
     }
 
@@ -77,7 +78,7 @@ sub create_dispatch_entry {
     my $self        = shift;
     my $dispatch    = shift;
     my $entry       = shift;
-    my $mongo       = $self->env->mongo;
+    my $mongo       = $self->meerkat;
     my $col         = $mongo->collection('Entry');
     my $log         = $self->env->log;
     my $data        = {
@@ -100,7 +101,7 @@ sub api_subthing {
     my $thing   = $req->{collection};
     my $id      = $req->{id} + 0;
     my $subthing= $req->{subthing};
-    my $mongo   = $self->env->mongo;
+    my $mongo   = $self->meerkat;
 
     if ( $subthing eq "entry" ) {
         return $mongo->collection('Entry')->get_entries_by_target({

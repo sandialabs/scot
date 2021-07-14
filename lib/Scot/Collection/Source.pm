@@ -35,7 +35,7 @@ override api_create => sub {
         # note that targets below is handled in the History
         # collection correctly, ie. converted to Links not 
         # an embedded array
-        $env->mongo->collection("History")->add_history_entry({
+        $self->meerkat->collection("History")->add_history_entry({
             who     => "api",
             what    => "source $value created",
             when    => $env->now,
@@ -77,7 +77,7 @@ sub add_source_to {
 
     my $env = $self->env;
     my $log = $env->log;
-    my $mongo   = $env->mongo;
+    my $mongo   = $self->meerkat;
 
     if ( ref($sources) ne "ARRAY" ) {
         $sources = [ $sources];

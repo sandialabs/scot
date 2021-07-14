@@ -39,13 +39,16 @@ sub update_entry {
 
     $io->update_entry($entry, $body, $results);
 
-    foreach my $entity_href (@{$results->{entities}}) {
-        $log->debug("processor: updating entity ",{filter=>\&Dumper, value => $entity_href});
-        if ( !defined $entity_href->{type} ) {
-            $log->warn("SKIPPING NULL ENTITY type in result");
-            next;
+    foreach my $entity_type (keys %{$results->{entities}}) {
+
+        foreach my $value (keys %{$results->{entities}->{$entity_type}}) {
+
+            my $entity_href = { 
+                type    => $entity_type, 
+                value   => $value,
+            };
+            $io->update_entity($entry, $entity_href);
         }
-        $io->update_entity($entry, $entity_href);
     }
 }
 

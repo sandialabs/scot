@@ -12,7 +12,7 @@ use utf8::all;
 use feature qw(say);
 
 my $config_file = $ENV{'scot_app_flair_config_file'} //
-                        '/opt/scot/etc/flair2.cfg.pl';
+                        '/opt/scot/etc/flair.cfg.pl';
 my $env = Scot::Env->new(
     config_file => $config_file,
 );

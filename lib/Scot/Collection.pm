@@ -173,7 +173,7 @@ sub get_subthing {
     my $subthing    = shift;
     my $env         = $self->env;
     my $log         = $env->log;
-    my $mongo       = $env->mongo;
+    my $mongo       = $self->meerkat;
 
     ## MOSTLY replaced with override's in the each collection module.
 

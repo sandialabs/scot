@@ -9,6 +9,7 @@ use Data::Dumper;
 use HTML::Entities;
 use SVG::Sparkline;
 use Scot::Flair::Io;
+use Try::Tiny;
 
 use Moose;
 extends 'Scot::Flair::Processor';
@@ -25,23 +26,26 @@ sub flair_object {
     my $alertgroup  = shift;
     my $log         = $self->env->log;
     my $timer       = $self->env->get_timer("flair_object");
-    my @results     = ();
+    my %results     = (); 
+    my $agid        = $alertgroup->id;
 
-    $log->debug("[$$] flairing Alertgroup ".$alertgroup->id);
+    $log->debug("[$$] flairing Alertgroup ".$agid);
 
     my $cursor  = $self->scotio->get_alerts($alertgroup);
 
     while (my $alert = $cursor->next) {
-        my $newalertdata = $self->flair_alert($alert);
-        push @results, $self->update_alert($alert, $newalertdata);
+        $self->flair_alert(\%results, $alert);
     }
-
+    
     &$timer;
-    return \@results;
+    $log->trace("Alertgroup results: ",{filter=>\&Dumper, value=> \%results});
+    $self->update_alertgroup(\%results, $agid);
+    return \%results;
 }
 
 sub flair_alert {
     my $self    = shift;
+    my $results = shift;
     my $alert   = shift;
     my $log     = $self->env->log;
     my $timer   = $self->env->get_timer("flair_alert");
@@ -50,278 +54,264 @@ sub flair_alert {
         $alert  = $alert->as_hash;
     }
 
-    $log->debug("[$$] working alert ".$alert->{id});
+    my $alertid = $alert->{id};
+    my $agid    = $alert->{alertgroup};
+    my $tracker = "{$agid:$alertid}";
+    $log->trace("$tracker flair alert $alertid begins");
 
-    my $flair   = {   
-        # build and hold data extracted
-        # flair => holds flaired text
-        # seen => keeps track of seen entities
-        # entities => array of { type: x, value: y } entities
-    };               
-    my $data    = $alert->{data};
+    my $alert_data  = $alert->{data};
 
-    if ( ! defined $data ) {
-        $log->error("[$$] Alert ".$alert->{id}." missing data");
-        return $flair;
-    }
-
-    KEY:
-    foreach my $key (keys %{$data}) {
-
-        next KEY if ( $key eq "columns" );
-        next KEY if ( $key eq "_raw" );
-
-        $log->debug("Retrieving values in column $key");
-
-        my @values = $self->get_key_values($data, $key);
-        $self->flair_key_values($key, $flair, @values);
-
-    }
-    &$timer;
-    return {
-        data_with_flair => $flair->{flair},
-        entities        => $flair->{entities},
-        parsed          => 1,
-    };
-}
-
-sub flair_key_values {
-    my $self    = shift;
-    my $key     = shift;
-    my $flair   = shift;
-    my @values  = @_;
-
-    VALUE:
-    foreach my $value (@values) {
-
-        if ( $key =~ /message[_-]id$/i ) {
-            $self->process_msg_id_cell($key, $flair, $value);
-            next VALUE;
-        }
-
-        if ( $key =~ /^(lb){0,1}scanid$/i ) {
-            $self->process_scanid_cell($key, $flair, $value);
-            next VALUE;
-        }
-
-        if ( $key =~ /^attachment[_-]name/i or
-             $key =~ /^attachments$/ ) {
-            $self->process_attachment_cell($key, $flair, $value);
-            next VALUE;
-        }
-
-        if ( $key =~ /^columns$/i ) {
-            $self->append_flair($flair, $key, $value);
-            next VALUE;
-        }
-
-        if ( $key =~ /^sparkline$/i or
-             grep {/__SPARKLINE__/} @values ) {
-            $self->process_sparkline_cell($flair, $key, @values);
-            return; # sparkline gobbles up entire @values array, so we are done
-        }
-
-        if ( $key =~ /sentinel_incident_url/i ) {
-            $self->process_sentinel_cell($key, $flair, $value);
-            return; # only every one in cell
-        }
-
-        # default
-        $self->env->log->debug("Default Cell Processing");
-        my $html    = '<html>'.encode_entities($value).'</html>';
-        my $results = $self->process_html($html);
-
-        foreach my $entity_href (@{$results->{entities}}) {
-            if ( $self->value_not_seen($flair, $entity_href->{value}) ) {
-                $self->add_entity($flair, $entity_href);
-            }
-        }
-        $self->append_flair($flair, $key, $results->{flair});
+    foreach my $column (keys %$alert_data) {
+        my $aref    = $self->ensure_array($alert_data->{$column});
+        my $cell = {
+            cell_data   => $aref,
+            colname     => $column,
+            alert       => $alertid,
+            alertgroup  => $agid,
+        };
+        $self->flair_cell($results, $cell);
     }
 }
 
-sub value_not_seen {
+sub ensure_array {
     my $self    = shift;
-    my $flair   = shift;
-    my $value   = shift;
+    my $data    = shift;
+    my @values  = ();
 
-    if ( ! defined $flair->{seen}->{$value} ) {
-        $flair->{seen}->{$value}++; # now it's seen
+    if ( ref($data) ne "ARRAY" ) {
+        push @values, $data;
+    }
+    else {
+        push @values, @{$data};
+    }
+    return wantarray ? @values : \@values;
+}
+
+sub flair_cell {
+    my $self    = shift;
+    my $results = shift;
+    my $cell    = shift;
+    my $column  = $cell->{colname};
+    my $alertid = $cell->{alert};
+    my $log     = $self->env->log;
+
+    $log->trace("flair_cell $alertid $column");
+
+    if ( $self->is_skippable_column($column) ) {
+        $results->{$alertid}->{$column}->{flair} = $cell->{cell_data};
+        return;
+    }
+
+    if ( my $special = $self->process_special_columns($results, $cell) ) {
+        $log->trace("special column processed: $column");
+        return;
+    }
+
+    my $items = $cell->{cell_data};
+
+    foreach my $item (@$items) {
+        $self->flair_item($results, $alertid, $column, $item);
+    }
+    $log->trace("results->{$alertid}->{entities} after flair cell $column ",
+                {filter=>\&Dumper, value => $results->{$alertid}->{entities}});
+}
+
+sub flair_item {
+    my $self    = shift;
+    my $results = shift;
+    my $alertid = shift;
+    my $column  = shift;
+    my $item    = shift;
+    my $log     = $self->env->log;
+
+    $log->trace("processing $alertid $column : $item");
+
+    my $html    = '<html>'.
+                  encode_entities($item).
+                  '</html>';
+
+    my $edb = $self->process_html($html);
+    $log->trace("edb ",{filter=>\&Dumper, value => $edb});
+    my $found_flair     = $edb->{flair};
+    my $plain_text      = $edb->{text};
+    my $found_entities  = $edb->{entities};
+
+    $log->trace("edb ",{filter=>\&Dumper, value => $edb});
+
+    push @{$results->{$alertid}->{$column}->{flair}},$found_flair;
+    push @{$results->{$alertid}->{$column}->{text}} ,$plain_text;
+    
+    foreach my $type (keys %$found_entities) {
+        foreach my $value (keys %{$found_entities->{$type}}) {
+             #note entites are up one level since we don't 
+             #track to the cell/column 
+            $results->{$alertid}->{entities}->{$type}->{$value}++;
+        }
+    }
+    $log->trace("results after flair item ",{filter=>\&Dumper, value => $results});
+}
+
+sub is_skippable_column {
+    my $self    = shift;
+    my $column  = shift;
+
+    if ( $column eq "columns" or
+         $column eq "_raw" or 
+         $column eq "search" ) {
         return 1;
     }
-    # we've seen it
     return undef;
 }
 
-sub add_entity {
+sub process_special_columns {
     my $self    = shift;
-    my $flair   = shift;
-    my $href    = shift;
-    push @{ $flair->{entities} }, $href;
+    my $results = shift;
+    my $cell    = shift;
+
+    return 1 if ( $self->process_msg_id_cell($results, $cell) ); 
+    return 1 if ( $self->process_scanid_cell($results, $cell) );
+    return 1 if ( $self->process_attachment_cell($results, $cell));
+    return 1 if ( $self->process_sparkline_cell($results, $cell));
+    return 1 if ( $self->process_sentinel_cell($results,$cell));
+    return undef;
 }
 
-sub append_flair {
+sub process_msg_id_cell {
     my $self    = shift;
-    my $flair   = shift;
-    my $key     = shift;
-    my $new     = shift;
-    my $existing = $flair->{flair}->{$key};
-    my $union   = $self->merge_flair($new, $existing);
+    my $results = shift;
+    my $cell    = shift;
+    my $alertid = $cell->{alert};
+    my $column  = $cell->{colname};
+    my $items   = $cell->{cell_data};
 
-    $flair->{flair}->{$key} = $union;
-}
+    if ( $column =~ /message[_-]id/i ) {
 
-sub merge_flair {
-    my $self    = shift;
-    my $new     = shift;
-    my $existing = shift;
-
-    return $new if ( ! defined $existing );
-    return $new if ( $existing eq '');
-    return $existing . " " . $new;
-}
-
-sub process_sentinel_cell {
-    my $self    = shift;
-    my $key     = shift;
-    my $flair   = shift;
-    my $value   = shift;
-
-    $self->env->log->debug("process_sentinel_cell");
-
-    my $image   = HTML::Element->new(
-        'img',
-        'alt', 'view in Azure Sentinel',
-        'src', $self->sentinel_logo
-    );
-    my $anchor  = HTML::Element->new(
-        'a',
-        'href', => $value,
-        'target'=> '_blank',
-    );
-    $anchor->push_content($image);
-    $self->append_flair($flair, $key, $anchor->as_HTML);
-}
-
-sub process_sparkline_cell {
-    my $self    = shift;
-    my $key     = shift;
-    my $flair   = shift;
-    my @values   = @_;
-    my $log     = $self->env->log;
-
-    $log->debug("[$$] creating sparkline");
-
-    my $head    = shift @values;
-    if ( $head eq "##__SPARKLINE__##" ) {
-        my $svg = SVG::Sparkline->new(
-            Line => {
-                value => \@values,
-                color => 'blue',
-                height => 12
-            }
-        );
-        $self->append_flair($flair, $key, $svg);
+        return 1;
     }
+    return undef;
+}
+    
+sub process_scanid_cell {
+    my $self    = shift;
+    my $results = shift;
+    my $cell    = shift;
+    my $alertid = $cell->{alert};
+    my $column  = $cell->{colname};
+    my $items   = $cell->{cell_data};
+
+    if ( $column =~ /^(lb){0,1}scanid$/i ) {
+        foreach my $item (@$items) {
+            push @{$results->{$alertid}->{$column}->{flair}},
+                $self->genspan($item, "uuid1");
+            push @{$results->{$alertid}->{$column}->{text}}, $item;
+            $results->{$alertid}->{entities}->{uuid1}->{$item}++;
+            
+        }
+        return 1;
+    }
+    return undef;
 }
 
 sub process_attachment_cell {
     my $self    = shift;
-    my $key     = shift;
-    my $flair   = shift;
-    my $value   = shift;
+    my $results = shift;
+    my $cell    = shift;
+    my $alertid = $cell->{alert};
+    my $column  = $cell->{colname};
+    my $items   = $cell->{cell_data};
 
-    $self->env->log->debug("process_attachement_cell");
+    if ( $column =~ /^attachment[_-]name/i or
+         $column =~ /^attachments$/i ) {
 
-    if ($value eq "" or $value eq " ") {
-        return;
+        foreach my $item (@$items) {
+            push @{$results->{$alertid}->{$column}->{flair}},
+                $self->genspan($item, "filename");
+            push @{$results->{$alertid}->{$column}->{text}}, $item;
+            $results->{$alertid}->{entities}->{filename}->{$item}++;
+        }
+        return 1;
+    }
+    return undef;
+}
+
+sub process_sparkline_cell {
+    my $self    = shift;
+    my $results = shift;
+    my $cell    = shift;
+    my $alertid = $cell->{alert};
+    my $column  = $cell->{colname};
+    my $items   = $cell->{cell_data};
+    my $head    = shift @$items;
+    if ( $head eq "##__SPARKLINE__##" ) {
+        my $svg = SVG::Sparkline->new(
+            Line => {
+                value   => $items,
+                color   => 'blue',
+                height  => 12,
+            }
+        );
+        push @{$results->{$alertid}->{$column}->{flair}}, $svg;
+        push @{$results->{$alertid}->{$column}->{text}}, $items;
+        return 1;
+    }
+    return undef;
+}
+
+sub process_sentinel_cell {
+    my $self    = shift;
+    my $results = shift;
+    my $cell    = shift;
+    my $alertid = $cell->{alert};
+    my $column  = $cell->{colname};
+    my $items   = $cell->{cell_data};
+
+    if ($column =~ /sentinel_incident_url/i) {
+
+        foreach my $item (@$items) {
+            my $image   = HTML::Element->new(
+                'img',
+                'alt', 'view in Azure Sentinel',
+                'src', $self->sentinel_logo,
+            );
+            my $anchor  = HTML::Element->new(
+                'a',
+                'href'      => $item,
+                'target'    => '_blank',
+            );
+            $anchor->push_content($image);
+            push @{$results->{$alertid}->{$column}->{flair}}, $anchor->as_HTML;
+            push @{$results->{$alertid}->{$column}->{text}}, $anchor->as_text;
+        }
+        return 1;
+    }
+    return undef;
+}
+
+sub update_alertgroup {
+    my $self    = shift;
+    my $results = shift;
+    my $agid    = shift;
+    my $io      = $self->scotio;
+
+    my %new_ag_data = ();
+    my %ag_edb      = ();
+
+    foreach my $alert_id (sort keys %$results) {
+
+        my $edb = $results->{$alert_id}->{entities};
+
+        foreach my $type (keys %$edb) {
+            foreach my $value (keys %{$edb->{$type}}) {
+                $ag_edb{$type}{$value}++;
+            }
+        }
+
+        $io->update_alert($alert_id, $results);
+
     }
 
-    my ($entity_ref, $flairtxt) = $self->process_cell($value, "filename");
-    if ( $self->value_not_seen($flair, $entity_ref->{value}) ) {
-        $self->add_entity($flair, $entity_ref);
-    }
-    $self->append_flair($flair, $key, $flairtxt);
+    $io->update_alertgroup($agid, \%ag_edb);
+    
 }
-
-sub process_scanid_cell {
-    my $self    = shift;
-    my $key     = shift;
-    my $flair   = shift;
-    my $value   = shift;
-
-    $self->env->log->debug("process_scanid_cell");
-
-    my ($entity_ref, $flairtxt) = $self->process_cell($value, "message_id");
-
-    if ( $self->value_not_seen($flair, $entity_ref->{value}) ) {
-        $self->add_entity($flair, $entity_ref);
-    }
-    $self->append_flair($flair, $key, $flairtxt);
-}
-
-
-sub process_msg_id_cell {
-    my $self    = shift;
-    my $key     = shift;
-    my $flair   = shift;
-    my $value   = shift;
-    $value =~ s/[\<\>]//g;  # remove angle quotes from msg id
-
-    $self->env->log->debug("process_msg_id_cell");
-
-    my ($entity_ref, $flairtxt) = $self->process_cell($value, "message_id");
-
-    if ( $self->value_not_seen($flair, $entity_ref->{value}) ) {
-        $self->add_entity($flair, $entity_ref);
-    }
-}
-
-sub get_key_values {
-    my $self    = shift;
-    my $data    = shift;
-    my $key     = shift;
-    my $log     = $self->env->log;
-
-    if ( ref($data->{$key}) ne "ARRAY" ) {
-        $log->warn("$key does not hold array, pushing it into one");
-        $data->{$key} = [ $data->{$key} ];
-    }
-    my @values = @{$data->{$key}};
-    $log->debug("value = ",{filter=>\&Dumper, value=>\@values});
-    return wantarray ? @values : \@values;
-}
-
-sub update_alert {
-    my $self    = shift;
-    my $alert   = shift;
-    my $newdata = shift;
-
-
-}
-
-sub send_notification {
-    my $self    = shift;
-    my $results = shift; # array ref
-
-}
-
-sub process_cell {
-    my $self    = shift;
-    my $text    = shift;
-    my $header  = shift;
-
-    $text = encode_entities($text);
-    my $flair   = $self->genspan($text, $header);
-    my $href    = {
-        value   => $text,
-        type    => $header,
-    };
-    return $href, $flair;
-}
-
-
-
-
 
 1;

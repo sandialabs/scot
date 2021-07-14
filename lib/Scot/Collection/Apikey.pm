@@ -27,7 +27,7 @@ sub get_users_apikeys {
     my $self    = shift;
     my $user    = shift;
     my $env     = $self->env;
-    my $mongo   = $env->mongo;
+    my $mongo   = $self->meerkat;
     my $log     = $env->log;
 
     my $cursor  = $self->find({ username => $user });

@@ -122,6 +122,7 @@ sub build_entitytype_regexes {
     my $type    = shift; # single | multi
     my @raw     = $self->get_entitytypes($type);
     my %matches = ();
+    my $contains_spaces = 0;
     # note: last of type overwrites order and options if they differ
     # may be fine or may cause bug
     foreach my $href (@raw) {
@@ -129,6 +130,9 @@ sub build_entitytype_regexes {
         push @{$matches{$type}{regex}}, quotemeta($href->{regex});
         $matches{$type}{order}   = $href->{order};
         $matches{$type}{options} = $href->{options};
+        if ( $href->{options}->{multiword} eq "yes" ) {
+            $contains_spaces++;
+        }
     }
     my @regexes = ();
     foreach my $key (keys %matches) {
@@ -137,12 +141,22 @@ sub build_entitytype_regexes {
             $matches{$key}{order}, 
             scalar(@{$matches{$key}{regex}})
         );
-        push @regexes, {
-            type    => "$key",
-            regex   => qr/($pattern)/,
-            order   => $order,
-            options => $matches{$key}{options},
-        };
+        if ( $contains_spaces ) {
+            push @regexes, {
+                type    => "$key",
+                regex   => qr/($pattern)/,
+                order   => $order,
+                options => $matches{$key}{options},
+            };
+        }
+        else {
+            push @regexes, {
+                type    => "$key",
+                regex   => qr/\b($pattern)\b/,
+                order   => $order,
+                options => $matches{$key}{options},
+            };
+        }
     }
     return wantarray ? @regexes : \@regexes;
 }
@@ -176,6 +190,7 @@ sub get_local_regexes {
                 regex   => qr{$rre}xims,
                 order   => $raw->{order},
                 options => $raw->{options},
+                core    => 1,
             };
         }
     }
@@ -527,46 +542,40 @@ sub regex_winregistry {
 sub regex_common_file_extensions {
     my $self    = shift;
     my $type    = 'file';
-    my $order   = 10;
+    my $order   = 50;
     my $options = { multiword => 'no' };
-    my $re      = qr{
-        \b
-        [0-9a-zA-Z_\-\.]+
-        \.
-        (
-            cfm|
-            exe|
-            bat|
-            zip|
-            txt|
-            rar|
-            tar|
-            dll|
-            7z|
-            ps1|
-            vbs|
-            js|
-            pdf|
-            msi|
-            hta|
-            html|
-            mht|
-            doc|docx|
-            xls|xlsx|
-            ppt|pptx|
-            jse|jar|
-            vbe|
-            wsf|
-            wsh|
-            sct|
-            tgz|
-            py|
-            rb|
-            php|
-            wsc
-        )
-        \b
-    }xims;                         
+    my $re  = qr{
+        \b(
+            [0-9a-zA-Z_\-\.]+
+            \.
+            (
+                7z|arg|deb|pkg|rar|rpm|tar|tgz|gz|z|zip|                  # compressed
+                aif|mid|midi|mp3|ogg|wav|wma|                             # audio
+                bin|dmg|iso|exe|bat|                                      # executables
+                csv|dat|log|mdb|sql|xml|                                  # db/data
+                eml|ost|oft|pst|vcf|                                      # email
+                apk|bat|bin|cgi|exe|jar|                             # executable
+                fnt|fon|otf|ttf|                                          # fonts
+                ai|bmp|gif|ico|jpeg|jpg|ps|png|psd|svg|tif|tiff|          # images
+                asp|aspx|cer|cfm|css|htm|html|js|jsp|part|php|rss|xhtml|  # web serving
+                key|odp|pps|ppt|pptx|                                     # presentation
+                c|class|cpp|h|vb|swift|py|rb|                             # source code
+                ods|xls|xlsm|xlsx|                                        #spreadsheats
+                cab|cfg|cpl|dll|ini|lnk|msi|sys|                          # misc sys files
+                3g2|3gp|avi|flv|h264|m4v|mkv|mov|mp4|mpg|mpeg|vob|wmv|   # video
+                doc|docx|odt|pdf|rtf|tex|txt|wpd|                        # word processing
+                jse|jar|
+                ipt|
+                hta|
+                mht|
+                ps1|
+                sct|
+                scr|
+                vbe|vbs|
+                wsf|wsh|wsc
+            )
+        )\b
+    }xims;
     return {
         regex => $re, type => $type, order => $order, options => $options,
     };
@@ -647,20 +656,49 @@ sub regex_domain {
     my $type    = 'domain';
     my $order   = 20;
     my $options = { multiword => 'no' };
+    #my $re      = qr{
+    #    (\b|http[s]*//:)                        # word boundary
+    #    (
+    #        (?=[a-z0-9-]{1,63}
+    #        [\(\{\[]*\.[\]\}\)]*)               # optional obsfucation
+    #        (xn--)?
+    #        [a-z0-9]+
+    #        (-[a-z0-9]+)*
+    #        [\(\{\[]*\.[\]\}\)]*                # optional obsfucation
+    #    )+
+    #    (
+    #        [-a-z0-9]{2,63}
+    #    )
+    #    (\b|\/)                                      # word boundary
+    #}xims;
+    my $re  = qr{
+        \b(
+            (
+                (?= [a-z0-9-]{1,63} [\(\{\[]* \. [\]\}\)]*)
+                (xn--)?
+                [a-z0-9]+
+                (-[a-z0-9]+)*
+                [\(\{\[]*
+                \.
+                [\]\}\)]*
+            )+
+            (
+                [a-z0-9-]{2,63}
+            )
+            (?<=[a-z])  # prevent foo.12 from being a match
+        )\b
+    }xims;
+    return {
+        regex => $re, type => $type, order => $order, options => $options,
+    };
+}
+sub regex_domain_nope {
+    my $self    = shift;
+    my $type    = 'domain';
+    my $order   = 20;
+    my $options = { multiword => 'no' };
     my $re      = qr{
-        (\b|http[s]*//:)                        # word boundary
-        (
-            (?=[a-z0-9-]{1,63}
-            [\(\{\[]*\.[\]\}\)]*)               # optional obsfucation
-            (xn--)?
-            [a-z0-9]+
-            (-[a-z0-9]+)*
-            [\(\{\[]*\.[\]\}\)]*                # optional obsfucation
-        )+
-        (
-            [-a-z0-9]{2,63}
-        )
-        (\b|\/)                                      # word boundary
+        (?:(?!-|[^.]+_)[A-Za-z0-9-_]{1,63}(?<!-)(?:\.|$)){2,}
     }xims;
     return {
         regex => $re, type => $type, order => $order, options => $options,

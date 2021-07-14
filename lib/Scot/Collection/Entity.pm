@@ -28,10 +28,10 @@ sub update_entity {
     my $href    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
-    my $mongo   = $env->mongo;
+    my $mongo   = $self->meerkat;
 
-    $log->debug("updatiing entity",{filter=>\&Dumper, value=>$href});
-    $log->debug("Target is ".ref($target)." ".$target->id);
+    $log->trace("updatiing entity",{filter=>\&Dumper, value=>$href});
+    $log->trace("Target is ".ref($target)." ".$target->id);
 
     my $value   = $href->{value};
     my $type    = $href->{type};
@@ -60,7 +60,7 @@ sub update_entities {
 
     my $env     = $self->env;
     my $log     = $env->log;
-    my $mongo   = $env->mongo;
+    my $mongo   = $self->meerkat;
     my $enrichments = $env->enrichments;
 
     my $thash = $target->as_hash;
@@ -149,10 +149,10 @@ sub upsert_link {
     my $entity  = shift; # object
     my $target  = shift; # href
 
-    $self->env->log->debug("upsert link: Entity ".$entity->id." to ".
+    $self->env->log->trace("upsert link: Entity ".$entity->id." to ".
         $target->{type}." ".$target->{id});
 
-    my $linkcol = $self->env->mongo->collection('Link');
+    my $linkcol = $self->meerkat->collection('Link');
     my $v1 = {
         id     => $target->{id},
         type   => $target->{type},
@@ -163,7 +163,7 @@ sub upsert_link {
         return;
     }
 
-    $self->env->log->debug("Link does not exist, creating...");
+    $self->env->log->trace("Link does not exist, creating...");
 
     my $linkobj    = $linkcol->link_objects(
         $entity, { 
@@ -180,8 +180,8 @@ sub create_entity_links {
     my $target  = shift; # object
     my $log = $self->env->log;
 
-    $log->debug("collection: create_entity_links");
-    $log->debug("Entity ".$entity->id." to Target ".$target->id);
+    $log->trace("collection: create_entity_links");
+    $log->trace("Entity ".$entity->id." to Target ".$target->id);
 
     $self->upsert_link($entity, {
         id      => $target->id,
@@ -242,7 +242,7 @@ sub api_subthing {
     my $id      = $req->{id} + 0;
     my $subthing= $req->{subthing};
     my $env     = $self->env;
-    my $mongo   = $env->mongo;
+    my $mongo   = $self->meerkat;
     my $log     = $env->log;
 
     if ( $subthing  eq "alert" or
@@ -325,7 +325,7 @@ sub autocomplete {
 sub get_cidr_ipaddrs {
     my $self    = shift;
     my $mask    = shift;
-    my $mongo   = $self->env->mongo;
+    my $mongo   = $self->meerkat;
     my @records = ();
 
     my $cursor = $self->find({
@@ -353,7 +353,7 @@ sub api_create {
     my $req     = shift;
     my $env     = $self->env;
     my $log     = $env->log;
-    my $mongo   = $env->mongo;
+    my $mongo   = $self->meerkat;
     my $user    = $req->{user};
     my $json    = $req->{request}->{json};
     

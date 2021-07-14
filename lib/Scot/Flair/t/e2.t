@@ -47,8 +47,9 @@ sub test_regex_build {
 sub test_samples {
     my @samples    = ();
     push @samples, 
-        $e2samples->build_local_tests,
+        $e2samples->build_deep_recursion_problem,
         $e2samples->build_flair_error_tests,
+        $e2samples->build_local_tests,
         $e2samples->build_domain_tests,
         $e2samples->build_ipv4_tests,
         $e2samples->build_ipv6_tests,
@@ -65,11 +66,12 @@ sub test_samples {
         my $source   = $sample->{source};
         my $flair    = $sample->{flair};
         my $edb      = $sample->{entities};
+        $env->log->debug("------- Test $testname ------------");
 
         my $gotedb  = {};
-        my @got     = $extractor->parse($gotedb, $source);
+        my @got     = $extractor->parse($testname,$gotedb, $source);
 
-        ok(compare_edb($gotedb->{entities}, $edb), "$testname EDB is correct");
+        ok(compare_edb($gotedb->{entities}, $edb), "$testname EDB is correct") || die;
         ok(compare_new_array(\@got,$flair), "$testname produced correct flair");
 
         my $flair_text = $extractor->build_html(@got);
@@ -93,25 +95,16 @@ sub compare_edb {
     my $got = shift;
     my $exp = shift;
 
-    my @ghrefs = sort { $a->{value} cmp $b->{value} } @$got;
-    my @ehrefs = sort { $a->{value} cmp $b->{value} } @$exp;
-
-    for ( my $i = 0; $i < scalar(@ghrefs); $i++ ) {
-        if ( $ghrefs[$i]->{type} ne $ehrefs[$i]->{type} ) {
-            print "EDB Index $i\n";
-            print "Types differ! \n";
-            print "g: $ghrefs[$i]->{type}\n";
-            print "e: $ehrefs[$i]->{type}\n";
-            done_testing();
-            exit;
-        }
-        if ($ghrefs[$i]->{value} ne $ehrefs[$i]->{value} ) {
-            print "EDB Index $i\n";
-            print "Values differ! \n";
-            print "g: $ghrefs[$i]->{value}\n";
-            print "e: $ehrefs[$i]->{value}\n";
-            done_testing();
-            exit;
+    foreach my $gt (keys %$got) {
+        foreach my $gk (keys %{$got->{$gt}}) {
+            my $gr = $got->{$gt}->{$gk};
+            my $er = $exp->{$gt}->{$gk};
+            if ( $gr != $er ) {
+                print "Type $gt Value $gk did not match! g = $gr e = $er\n";
+                print "Got ".Dumper($got)."\n";
+                print "Exp ".Dumper($exp)."\n";
+                return undef;
+            }
         }
     }
     return 1;
@@ -181,6 +174,23 @@ sub compare_element {
 
 }
 
+sub highlight_string_diff {
+    my $g   = shift;
+    my $e   = shift;
+
+    for (my $i = 0; $i < length($g); $i++) {
+        my $gc = substr $g, $i, 1;
+        my $ec = substr $e, $i, 1;
+
+        if ( $gc ne $ec ) {
+            print ">$gc<";
+        }
+        else {
+            print "$gc";
+        }
+    }
+}
+
 sub print_array_comparrison {
     my $g   = shift;
     my $e   = shift;
@@ -227,7 +237,7 @@ sub test_external_defined_entity_class {
     );
     my $rdb = {};
     my $edb = {
-        entities => [ { type => 'boombaz', value => 'foobar' } ],
+        entities => { 'boombaz' => {'foobar'=> 1 } },
     };
     ok ($extractor->user_defined_entity_element($good_test_element, $rdb), "user def entity found");
     ok (!$extractor->user_defined_entity_element($bad_test_element, $rdb), "non user def entity found");
@@ -237,9 +247,9 @@ sub test_external_defined_entity_class {
 sub test_add_entity {
     my $edb = {};
     my $expected = {
-        entities => [
-            { type => 'foo', value => 'bar' }
-        ]
+        entities => {
+             'foo' => {'bar'=>1}
+        },
     };
 
     $extractor->add_entity($edb, "bar", "foo");
@@ -255,10 +265,11 @@ sub test_ipaddr_action {
     my $span    = $extractor->ipaddr_action($ipobs, $edb);
     my $expected_span = qq|<span class="entity ipaddr" data-entity-type="ipaddr" data-entity-value="10.10.10.1">10.10.10.1</span>|;
     my $expected_edb = {
-        entities => [
-            { type => 'ipaddr', value => '10.10.10.1' },
-            { type => 'ipaddr', value => '192.168.1.1' }
-        ],
+        entities => {
+            'ipaddr' => { '10.10.10.1' => 1,
+                          '192.168.1.1' => 1
+            },
+        },
     };
 
     is ($span->as_HTML, $expected_span, "span is correct for $ipobs");
@@ -309,10 +320,10 @@ sub test_email_action {
     my $email = 'tbruner@sandia.gov';
     my $expect_span = q|<span class="entity email" data-entity-type="email" data-entity-value="tbruner@sandia.gov">tbruner@<span class="entity domain" data-entity-type="domain" data-entity-value="sandia.gov">sandia.gov</span></span>|;
     my $expect_edb  = {
-        entities => [
-            { type => 'domain', value => 'sandia.gov' },
-            { type => 'email',  value => 'tbruner@sandia.gov' },
-        ],
+        entities => {
+            'domain'=> {'sandia.gov' => 1 },
+            'email' => {'tbruner@sandia.gov' => 1 },
+        },
     };
     my $got_db  = {};
     my $got_span_element = $extractor->email_action($email, $got_db);

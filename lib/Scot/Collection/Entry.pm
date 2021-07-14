@@ -20,7 +20,7 @@ sub create_from_promoted_alert {
     my $event   = shift;
     my $env     = $self->env;
     my $log     = $env->log;
-    my $mongo   = $env->mongo;
+    my $mongo   = $self->meerkat;
     my $mq      = $env->mq;
     my $json;
 
@@ -83,7 +83,7 @@ sub create_from_promoted_dispatch {
     my $self    = shift;
     my $dispatch = shift;
     my $intel   = shift;
-    my $entry   = $self->env->mongo->collection('Entry')->find_one({
+    my $entry   = $self->meerkat->collection('Entry')->find_one({
         target => { type => 'dispatch', id => $dispatch->id }
     });
     my $new_e_data = {
@@ -96,7 +96,7 @@ sub create_from_promoted_dispatch {
         body    => $entry->body,
         owner   => $entry->owner,
     };  
-    my $newentry = $self->env->mongo->collection('Entry')->create($new_e_data);
+    my $newentry = $self->meerkat->collection('Entry')->create($new_e_data);
     return $newentry;
 }
 
@@ -106,7 +106,7 @@ sub find_existing_alert_entry {
     my $id      = shift;
     my $log     = $self->env->log;
 
-    my $col     = $self->env->mongo->collection('Entry');
+    my $col     = $self->meerkat->collection('Entry');
     my $obj     = $col->find_one({
         'target.type'   => $type,
         'target.id'     => $id,
@@ -126,7 +126,7 @@ sub find_existing_file_entry {
     my $type    = shift;
     my $id      = shift;
     my $log     = $self->env->log;
-    my $col     = $self->env->mongo->collection('Entry');
+    my $col     = $self->meerkat->collection('Entry');
     my $obj     = $col->find_one({
         'target.type'   => $type,
         'target.id'     => $id,
@@ -231,7 +231,7 @@ sub create_from_file_upload {
     my $target_id   = shift;
     my $fid         = $fileobj->id;
     my $env         = $self->env;
-    my $mongo       = $env->mongo;
+    my $mongo       = $self->meerkat;
     my $log         = $env->log;
     my $htmlsrc     = <<EOF;
 <div class="fileinfo">
@@ -320,7 +320,7 @@ override api_create => sub {
     my $req     = shift;
     my $env     = $self->env;
     my $log     = $env->log;
-    my $mongo   = $env->mongo;
+    my $mongo   = $self->meerkat;
     my $user    = $req->{user};
     my $json    = $req->{request}->{json};
     my $target_type = $json->{target_type};
@@ -358,7 +358,7 @@ sub get_target_tlp {
     my $self    = shift;
     my $type    = shift;
     my $id      = shift;
-    my $mongo   = $self->env->mongo;
+    my $mongo   = $self->meerkat;
 
     my $obj = $mongo->collection(ucfirst($type))->find_one({id => $id});
     if ( defined $obj) {
@@ -599,7 +599,7 @@ sub get_entries_on_alertgroups_alerts {
     my $self        = shift;
     my $alertgroup  = shift;
     my $env         = $self->env;
-    my $mongo       = $env->mongo;
+    my $mongo       = $self->meerkat;
 
     my $id  = $alertgroup->id;
     my $ac  = $mongo->collection('Alert')->find({alertgroup => $id});
@@ -622,7 +622,7 @@ sub api_subthing {
     my $id          = $req->{id} + 0;
     my $subthing    = $req->{subthing};
     my $env         = $self->env;
-    my $mongo       = $env->mongo;
+    my $mongo       = $self->meerkat;
     my $log         = $env->log;
 
     $log->debug("getting /$thing/$id/$subthing");
@@ -671,7 +671,7 @@ sub move_entry {
     my $self    = shift;
     my $object  = shift;
     my $thref   = shift;
-    my $mongo   = $self->env->mongo;
+    my $mongo   = $self->meerkat;
 
     my $current = $mongo->collection(
         ucfirst($object->target->{type})

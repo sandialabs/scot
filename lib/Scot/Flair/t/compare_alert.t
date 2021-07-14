@@ -57,11 +57,10 @@ while ( $count++ < $limit ) {
     my $p_data_flair    = $p_a_href->{data_with_flair};
 
     foreach my $key (keys %$p_data) {
-        next if $key eq "columns";
+        next if $key eq "columns" or $key eq "_raw";
         my $plain_aref          = $p_data->{$key};
         my $flaired_data          = $p_data_flair->{$key};
-        my $expected_entities   = build_expected_entities($rando);
-        my $expected_bag        = bag($expected_entities);
+        my $expected_entities   = build_expected_edb($rando);
         my $flair_time          = $env->get_timer("flair_$rando");
         my $result              = $proc->flair_alert($p_a_href);
         my $elapsed = &$flair_time;
@@ -71,7 +70,7 @@ while ( $count++ < $limit ) {
         # say Dumper($result);
         # say "===============================";
 
-        cmp_deeply($result->{entities}, supersetof(@$expected_entities), "EDB matches alert $rando key $key") or myfail($result->{entities}, $expected_entities);
+        ok(compare_edb($result->{entities}, $expected_entities), "Alert $rando Key $key") or die;
 
         my $got_flair = $result->{data_with_flair}->{$key};
         $got_flair =~ s/[\h\v]+/ /g; # concat all spaces to single
@@ -89,7 +88,7 @@ while ( $count++ < $limit ) {
 
 
 
-        is($got_flair, $flaired_data, "flair matches") or myfail($got_flair, $flaired_data);
+        is(lc($got_flair), lc($flaired_data), "flair matches") or myfail($got_flair, $flaired_data);
 
         if ( $do_this_id > 0 ) {
             last;
@@ -104,6 +103,25 @@ say "All test Time    = ". &$total_time;
 
 done_testing();
 
+sub compare_edb {
+    my $g   = shift;
+    my $e   = shift;
+
+    foreach my $type(keys %$e) {
+        foreach my $value (keys %{$e->{$type}} ) {
+            if ( ! defined $g->{$type}->{$value} ) {
+                print "Missing $type $value in parsed edb\n";
+                print "Got: ".Dumper($g);
+                print "Exp: ".Dumper($e);
+                return undef;
+            }
+        }
+    }
+    return 1;
+}
+
+
+
 sub myfail {
     my $g = shift;
     my $e = shift;
@@ -112,32 +130,55 @@ sub myfail {
     say Dumper($g);
     say "Exp: -----x---------x---------x";
     say Dumper($e);
+    if (! ref($g) and ! ref($e) ) {
+        highlight_string_diff($g,$e);
+    }
     say "\nContinue?....";
     my $input = <STDIN>;
 }
 
-sub build_expected_entities {
-    my $id  = shift;
-    my $req = {
-        collection  => 'Alert',
-        id          => $id,
-        subthing    => 'entity',
-    };
+sub highlight_string_diff {
+    my $g   = shift;
+    my $e   = shift;
 
-    my $cursor  = $mongo->collection('Alert')->api_subthing($req);
-    my @e       = ();
+    for (my $i = 0; $i < length($g); $i++) {
+        my $gc = substr $g, $i, 1;
+        my $ec = substr $e, $i, 1;
 
-    while ( my $entity = $cursor->next ) {
-        my $type    = $entity->type;
-        my $value   = $entity->value;
-        if ( defined $type and defined $value ) {
-            push @e, {
-                type    => $type,
-                value   => $value,
-            };
+        if ( $gc ne $ec ) {
+            print ">$gc<";
+            return;
+        }
+        else {
+            print "$gc";
         }
     }
-    return \@e;
 }
 
+
+sub build_expected_edb {
+    my $id      = shift;
+    my $vertex  = {
+        id      => $id,
+        type    => 'alert'
+    };
+    my $query   = {
+        '$and'  => [
+            { vertices => { '$elemMatch' => $vertex } },
+            { 'vertices.type' => 'entity' },
+        ],
+    };
+    my $cursor  = $proddb->get_collection('Link')->find($query);
+
+    my %edb = ();
+
+    while ( my $href = $cursor->next ) {
+
+        my $value   = $href->{value};
+        my $type    = $href->{type};
+
+        $edb{$type}{$value} ++;
+    }
+    return \%edb;
+}
 

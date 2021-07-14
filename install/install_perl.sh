@@ -406,8 +406,12 @@ function install_perl_modules {
         Math::HashSum
         Math::Vector::SortIndexes
         Lingua::EN::StopWords
+        local::lib
         XML::Twig
         XML::Simple
+        XML::RSS
+        XML::RSS::Parser::Lite
+        XML::RSSLite
         SVG::Sparkline
         Email::Stuffer
     '

@@ -9,7 +9,7 @@ override api_create => sub {
     my $self    = shift;
     my $href    = shift;
     my $env     = $self->env;
-    my $mongo   = $env->mongo;
+    my $mongo   = $self->meerkat;
     my $log     = $env->log;
     my $json    = $href->{request}->{json};
 
@@ -43,7 +43,7 @@ sub api_subthing {
     my $thing       = $req->{collection};
     my $id          = $req->{id} + 0;
     my $subthing    = $req->{subthing};
-    my $mongo       = $self->env->mongo;
+    my $mongo       = $self->meerkat;
     my $log         = $self->env->log;
 
     $log->debug("api_subthing /$thing/$id/$subthing");

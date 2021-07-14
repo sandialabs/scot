@@ -1,6 +1,7 @@
 package Scot::Flair::Processor;
 
 use Data::Dumper;
+use HTML::Entities;
 use Moose;
 
 ###
@@ -44,8 +45,7 @@ sub flair {
     my $object  = $self->retrieve($data);
     if ( defined $object ) {
         my $results = $self->flair_object($object);
-        $self->send_notifications($object, $results);
-        $self->update_stats($results);
+        $self->process_results($results);
     }
     else {
         $self->env->log->error("Unable to retrieve object ",
@@ -55,10 +55,60 @@ sub flair {
     $log->info("-------- END FLAIR -------");
 }
 
+sub process_results {
+    my $self    = shift;
+    my $results = shift; # bug, hash in entry array in alertgroup
+    my $io      = $self->scotio;
+    my %stats   = ();
+    my %notices = ();
+
+    foreach my $result (@$results) {
+        my $alert_id    = $result->{alert};
+        my $ag_id       = $result->{alertgroup};
+        if ($io->update_alert($result)) {
+
+            $stats{alert}{$alert_id}++;
+            $stats{alertgroup}{$ag_id}++;
+            $notices{alert}{$alert_id}++;
+            $notices{alertgroup}{$ag_id}++;
+
+            foreach my $type ( keys %{ $result->{entities} }) {
+                foreach my $value ( keys %{ $result->{entities}->{$type} } ) {
+                    $notices{entity}{$value}++;
+                }
+            }
+        }
+        if (my $eid = $io->upsert_entities($result)) {
+            $stats{entity}{$eid}++;
+        }
+    }
+    $self->update_stats(\%stats);
+    $self->send_notices(\%notices);
+}
+
+
 sub update_stats {
     my $self    = shift;
-    my $results = shift;
+    my $stats   = shift;
+    my $io      = $self->scotio;
 
+    foreach my $type (keys %$stats) {
+        foreach my $id (keys %{$stats->{$type}}) {
+            $io->put_stat("$type flaired", 1);
+        }
+    }
+}
+
+sub send_notices {
+    my $self    = shift;
+    my $notices = shift;
+    my $io      = $self->scotio;
+
+    foreach my $type (keys %$notices) {
+        foreach my $id (keys %{$notices->{$type}}) {
+            $io->send_update_notice($type, $id);
+        }
+    }
 }
 
 sub send_notifications {
@@ -72,9 +122,15 @@ sub send_notifications {
 
     # need to send message to /queue/enricher for each entity
 
+    my $agid    = $object->id;
+
     foreach my $href ( @$results ) {
         foreach my $entity ( @{ $href->{entities} } ) {
             my $entityid    = $io->get_entity_id($entity);
+            if ( ! defined $entityid ) {
+                # create the entity
+                $entityid = $io->create_entity($entity, $agid, $href->{alert});
+            }
             if ( defined $entityid ) {
                 $io->send_mq('/queue/enricher',{
                     action  => 'updated',
@@ -124,6 +180,7 @@ sub retrieve {
 sub process_html {
     my $self    = shift;
     my $html    = shift;
+    my $lid     = shift // '';
     my $log     = $self->env->log;
     my $timer   = $self->env->get_timer("process_html");
 
@@ -136,14 +193,16 @@ sub process_html {
     my $cleanhtml   = $self->clean_html($html);
     my $tree        = $self->build_html_tree($cleanhtml);
 
-    $self->walk_tree($tree, \%edb);
+    $self->walk_tree($lid, $tree, \%edb);
 
     $edb{text} = $self->generate_plain_text($tree);
     $edb{flair}= $self->generate_new_html($tree);
 
+    $tree->delete;  # help prevent potential memory leaks
+
     my $elapsed = &$timer;
-    $log->info("Elapsed time to process ".length($cleanhtml)." characters: $elapsed");
-    $log->debug("EDB =",{filter=>\&Dumper, value=>\%edb});
+    $log->info("$lid Elapsed time to process ".length($cleanhtml)." characters: $elapsed");
+    $log->trace("$lid EDB =",{filter=>\&Dumper, value=>\%edb});
 
     return \%edb;
 }
@@ -157,7 +216,8 @@ sub clean_html {
     if ($clean !~ /^<.*>/ ) { # if doesn't start with a <tag>, not the best test but...
         # wrap in div and encode html entities (latter may cause problems for some matches)
         $clean = '<div>'.
-                 encode_entities($clean, '<>').
+                 # encode_entities($clean, '<>').
+                 $clean .
                  '</div>';
     }
     return $clean;
@@ -194,6 +254,7 @@ sub generate_new_html {
 }
 sub walk_tree {
     my $self    = shift;
+    my $lid     = shift;
     my $element = shift;
     my $edb     = shift;
     my $level   = shift;
@@ -202,10 +263,10 @@ sub walk_tree {
 
     $level += 1;
     my $spaces = $level * 4;
-    $self->trace_decent($element, $spaces);
+    $self->trace_decent($lid, $element, $spaces);
 
     if ( $element->is_empty ) {
-        $log->trace(" "x$spaces."---- empty node ----");
+        $log->trace($lid." "x$spaces."---- empty node ----");
         return;
     }
 
@@ -215,7 +276,7 @@ sub walk_tree {
 
     for (my $index = 0; $index < scalar(@content); $index++ ) {
 
-        $log->trace(" "x$spaces."Index $index");
+        $log->trace($lid." "x$spaces."Index $index");
 
         if ( $self->is_not_leaf_node($content[$index]) ) {
             my $child   = $content[$index];
@@ -226,8 +287,8 @@ sub walk_tree {
 
             # if this is userdefined flair, no further work is necessary
             if ( ! $self->user_defined_entity_element($child, $edb) ) {
-                $log->trace(" "x$spaces."Element ".$child->address." found, recursing.");
-                $self->walk_tree($child, $edb, $level);
+                $log->trace($lid." "x$spaces."Element ".$child->address." found, recursing.");
+                $self->walk_tree($lid, $child, $edb, $level);
             }
             # push the possibly modified copy of the child onto the new stack
             push @new, $child;
@@ -235,8 +296,8 @@ sub walk_tree {
         else {
             # leaf node case, start parsing the text
             my $text = $content[$index];
-            $log->trace(" "x$spaces."Leaf Node content = ".$text);
-            push @new, $extractor->parse($edb, $text);
+            $log->trace($lid." "x$spaces."Leaf Node content = ".$text);
+            push @new, $extractor->parse($lid, $edb, $text);
         }
     }
     # replace the content of the element
@@ -375,10 +436,11 @@ sub has_splunk_ipv6_pattern {
 
 sub trace_decent {
     my $self    = shift;
+    my $lid     = shift;
     my $element = shift;
     my $spaces  = shift;
     my $log     = $self->env->log;
-    $log->trace(" "x$spaces . "Walking Node: ".$element->starttag." (".$element->address.")");
+    $log->trace($lid." "x$spaces . "Walking Node: ".$element->starttag." (".$element->address.")");
 }
 
 
