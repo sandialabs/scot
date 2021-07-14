@@ -52,7 +52,7 @@ override api_create => sub {
     my $id  = $feed->id;
 
     if ( scalar(@tags) > 0 ) {
-        my $col = $env->mongo->collection('Tag');
+        my $col = $env->meerkat->collection('Tag');
         $col->add_source_to("feed", $feed->id, \@tags);
     }
 
@@ -65,7 +65,7 @@ sub api_subthing {
     my $thing   = $req->{collection};
     my $id      = $req->{id} + 0;
     my $subthing= $req->{subthing};
-    my $mongo   = $self->env->mongo;
+    my $mongo   = $self->meerkat;
 
     if ( $subthing eq "entry" ) {
         return $mongo->collection('Entry')->get_entries_by_target({

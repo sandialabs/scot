@@ -30,7 +30,7 @@ override api_create => sub {
     my $href    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
-    my $mongo   = $env->mongo;
+    my $mongo   = $self->meerkat;
 
     $log->trace("Custom create in Scot::Collection::Handler");
 

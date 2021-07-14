@@ -28,7 +28,7 @@ override api_create => sub {
     my $request = shift;
     my $env     = $self->env;
     my $log     = $env->log;
-    my $mongo   = $env->mongo;
+    my $mongo   = $self->meerkat;
 
     $log->debug("Creating Sigbody from POST to API");
     $log->debug( Dumper($request) );

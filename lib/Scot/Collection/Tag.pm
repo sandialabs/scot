@@ -40,7 +40,7 @@ override api_create => sub {
         my $href    = { value => $value };
         $href->{note} = $note if $note;
         $tag_obj    = $self->create($href);
-        $env->mongo->collection("History")->add_history_entry({
+        $self->meerkat->collection("History")->add_history_entry({
             who     => $request->{user},
             what    => "tag created",
             when    => $env->now(),
@@ -97,7 +97,7 @@ sub add_tag_to {
             });
         }
 
-        $env->mongo->collection("Appearance")->create({
+        $self->meerkat->collection("Appearance")->create({
             type    => "tag",
             value   => $tag,
             apid    => $tag_obj->id,
@@ -107,7 +107,7 @@ sub add_tag_to {
                 id      => $id,
             }
         });
-        $env->mongo->collection("History")->add_history_entry({
+        $self->meerkat->collection("History")->add_history_entry({
             who     => $user,
             what    => "tag created",
             when    => $env->now(),
@@ -128,7 +128,7 @@ sub syncro_tags {
 
     $log->debug("syncronizing tags");
 
-    my $current_cur = $env->mongo->collection("Appearance")->find({
+    my $current_cur = $self->meerkat->collection("Appearance")->find({
         target  => {
             type    => $target_type,
             id      => $id+0,

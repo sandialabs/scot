@@ -73,8 +73,10 @@ sub thing_is_vertex {
 
     if ( ref($thing) eq "HASH" ) {
         $log->trace("thing is a HASH");
-        if ( defined $thing->{id} and defined $thing->{type} ) {
-            $log->trace("thing has an id and type");
+        my $id = $thing->{id};
+        my $type = $thing->{type};
+        if ( defined $id and defined $type ) {
+            $log->trace("thing has an id $id and type $type");
             return 1;
         }
     }
@@ -102,13 +104,14 @@ sub get_vertex {
 sub get_vertex_object {
     my $self    = shift;
     my $vertex  = shift;
+    my $log     = $self->env->log;
 
     if ( ref($vertex) ne "HASH" ) {
         die "Must provide get_vertex_object with a vertex Hash Ref";
     }
     my $id      = $vertex->{id} + 0;
     my $type    = $vertex->{type};
-    my $col     = $self->env->mongo->collection(ucfirst($type));
+    my $col     = $self->meerkat->collection(ucfirst($type));
     my $obj     = $col->find_iid($id);
     return $obj;
 }
@@ -157,7 +160,7 @@ sub link_objects {
     my $context = $options->{context} // ' ';
     my $log     = $self->env->log;
 
-    $log->debug("Linking Objects: ". ref($v0)." to ".ref($v1));
+    $log->trace("Linking Objects: ". ref($v0)." to ".ref($v1));
     
 
 
@@ -181,10 +184,10 @@ sub link_objects {
     $self->env->log->trace("HEY DUDE: Link match is ",{filter=>\&Dumper, value=>$link});
 
     if (defined $link ) {
-        $self->env->log->debug("Link exists, returning a pointer");
+        $self->env->log->trace("Link exists, returning a pointer");
         return $link;
     }
-    $self->env->log->debug("Link does not exist already, creating...");
+    $self->env->log->trace("Link does not exist already, creating...");
 
     return $self->create({
         vertices    =>  \@vertices,
@@ -219,7 +222,7 @@ sub get_object_links {
 sub get_entity_links_by_value {
     my $self    = shift;
     my $value   = shift;
-    my $entitycol   = $self->mongo->collection('Entity');
+    my $entitycol   = $self->meerkat->collection('Entity');
     my $entityobj   = $entitycol->find({value => $value});
     return $self->get_object_links($entityobj);
 }
@@ -382,7 +385,7 @@ sub get_linked_objects_cursor {
     my $self    = shift;
     my $object  = shift;     # href or scot::model
     my $type    = shift;
-    my $mongo   = $self->env->mongo;
+    my $mongo   = $self->meerkat;
     my $log     = $self->env->log;
 
     $log->debug("get_linked_objects_cursor of object ".
@@ -397,15 +400,16 @@ sub get_linked_objects_cursor {
         my $varef   = $link->vertices;
         if ( $varef->[0]->{type} eq $targetvertex->{type} and
              $varef->[0]->{id} == $targetvertex->{id} ) {
-            push @linked_ids, $varef->[1]->{id};
+            push @linked_ids, $varef->[1]->{id} + 0;
         }
         else {
-            push @linked_ids, $varef->[0]->{id};
+            push @linked_ids, $varef->[0]->{id} + 0;
         }
     }
-
     my $match       = { id => { '$in' => \@linked_ids }};
+    $log->debug("matching $type with ",{filter=>\&Dumper, value=>$match});
     my $lo_cursor   = $mongo->collection(ucfirst($type))->find($match);
+    $log->debug("cursor = ", {filter=>\&Dumper, value => $lo_cursor->info});
     return $lo_cursor;
 }
 

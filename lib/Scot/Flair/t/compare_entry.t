@@ -68,9 +68,7 @@ while ( $count++ < $limit ) {
 
     my $expected_entities = build_expected_entities($prod_entry_href->{id});
     my $expected_bag = bag($expected_entities);
-
-    cmp_deeply($results->{entities}, supersetof(@$expected_entities), "EDB matches entry ".$entry->id) or 
-        say "Got:".Dumper($results->{entities})."\n". "Exp:".Dumper($expected_entities);
+    ok(compare_edb($results->{entities}, $expected_entities, "EDB Matches entry ".$entry->id) or mydie($results->{entities}, $expected_entities));
 
 }
 
@@ -80,29 +78,54 @@ say "Avg   Flair Time = ".$avg;
 
 say "All Test ran in ".&$total_timer;
 
+sub mydie {
+    my $g   = shift;
+    my $e   = shift;
+
+    print "Test failed:\n";
+    print "Got: ".Dumper($g);
+    print "\nExp: ".Dumper($e);
+    die;
+}
+
+
+sub compare_edb {
+    my $g   = shift;
+    my $e   = shift;
+
+    foreach my $type (keys %$e) {
+        foreach my $value (keys %{$e->{$type}}) {
+            if ( ! defined $g->{$type}->{$value} ) {
+                print "Expected $type $value but it missing.\n";
+                return undef;
+            }
+        }
+    }
+    return 1;
+}
+
 sub build_expected_entities {
     my $id  = shift;
     my $req = {
-        collection  => 'Entry',
+        collection  => 'entry',
         id          => $id,
         subthing    => 'entity',
     };
 
     my $cursor = $mongo->collection('Entry')->api_subthing($req);
 
-    my @e = ();
+    my %e = ();
 
     while (my $entity = $cursor->next) {
+        my $href    = $entity->as_hash;
         my $type    = $entity->type;
         my $value   = $entity->value;
+        print "Entity = ".Dumper($href);
         if ( defined $type and defined $value ) {
-            push @e,{
-                type    => $entity->type,
-                value   => $entity->value,
-            };
+            $e{$type}{$value}++;
         }
     }
-    return \@e;
+    return \%e;
 }
 
 sub create_target {

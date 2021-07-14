@@ -5,6 +5,7 @@ use Test::More;
 use Test::Deep;
 use Data::Dumper;
 use Scot::Env;
+use Array::Utils qw(:all);
 use feature qw(say);
 
 
@@ -123,6 +124,7 @@ my $expected = {
 		{ 'type' => 'message_id', 'value' => '112233445566778899aabbccddeeff' },
 	], 
 	data_with_flair => {
+       'columns' => [qw(scanid col2 attachment_name col1 sentinel_incident_url col3)],
        'scanid' => '<span class="entity message_id"  data-entity-value="b8aef540-7720-11e7-9da3-65e99acc6ead"  data-entity-type="message_id">b8aef540-7720-11e7-9da3-65e99acc6ead</span>',
 		'col2' => '<div><span class="entity domain" data-entity-type="domain" data-entity-value="sandia.gov">sandia.gov</span></div>',
        'attachment_name' => '<span class="entity filename"  data-entity-value="foobar.exe"  data-entity-type="filename">foobar.exe</span>',
@@ -140,10 +142,11 @@ while ( my $alert = $cursor->next ) {
 
     my $new_alert_data = $processor->flair_alert($alert);
 
-	cmp_deeply($new_alert_data->{data_with_flair}, $expected->{data_with_flair}, "Got expected flair data");
+    ok(compare_flair_data($new_alert_data->{data_with_flair}, $expected->{data_with_flair}), "Got expected flair data") or die;
     # cmp_deeply($new_alert_data->{entities}, bag($expected->{entities})) or dump_stuff($new_alert_data->{entities}, $expected->{entities});
     ok(compare_edb($new_alert_data->{entities}, $expected->{entities}), "EDB is correct");
 }
+done_testing();
 
 sub dump_stuff {
     my $g = shift;
@@ -154,6 +157,46 @@ sub dump_stuff {
     print "Expected\n";
     print Dumper($e);
 }
+
+sub compare_flair_data {
+    my $got = shift;
+    my $exp = shift;
+
+    my @got_keys    = sort keys %{$got};
+    my @exp_keys    = sort keys %{$exp};
+
+    if ( array_diff(@got_keys, @exp_keys) ) {
+        print "Keys in Got and Expected differ!\n";
+        my $max_index = (scalar(@got_keys) > scalar(@exp_keys)) ? scalar(@got_keys) : scalar(@exp_keys);
+        for (my $i = 0; $i <= $max_index; $i++ ) {
+            if ( $got->{$got_keys[$i]} ne $exp->{$exp_keys[$i]}) {
+                print "g[$i] = $got_keys[$i] = $got->{$got_keys[$i]}\n";
+                print "e[$i] = $exp_keys[$i] = $exp->{$exp_keys[$i]}\n";
+            }
+        }
+        done_testing();
+        return undef;
+    }
+
+
+    foreach my $key (@got_keys) {
+        my $g = $got->{$key};
+        my $e = $exp->{$key};
+
+        if ( $g ne $e ) {
+            next if ( $key eq "columns");
+            print "For Key $key:\n";
+            print "  Got: $g\n";
+            print "  Exp: $e\n";
+            done_testing();
+            return undef;
+        }
+    }
+    return 1;
+}
+
+        
+
 
 sub compare_edb {
     my $got = shift;

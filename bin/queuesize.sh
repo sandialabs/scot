@@ -28,3 +28,6 @@ echo -n "SCOT LRI  Proxy Queue     : "
 syseval_size=`curl -s -u admin:$PASS http://localhost:8161/api/jolokia/read/org.apache.activemq:type=Broker,brokerName=localhost,destinationType=Queue,destinationName=lriproxy/QueueSize | jq .value`
 echo $syseval_size
 
+echo -n "SCOT RemoteFlair Queue    : "
+syseval_size=`curl -s -u admin:$PASS http://localhost:8161/api/jolokia/read/org.apache.activemq:type=Broker,brokerName=localhost,destinationType=Queue,destinationName=remoteflair/QueueSize | jq .value`
+echo $syseval_size

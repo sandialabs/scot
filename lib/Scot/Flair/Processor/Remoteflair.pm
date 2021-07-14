@@ -21,7 +21,7 @@ sub flair_object {
     my $body = $self->preprocess_body($remflair);
     my $results = $self->process_html($body);
 
-    $self->update_entry($remflair, $results);
+    $self->update_remoteflair($remflair, $results);
 
     return $results;
 }
@@ -29,21 +29,17 @@ sub flair_object {
 sub preprocess_body {
     my $self        = shift;
     my $remflair    = shift;
-    my $body;
-    
-    # todo: any pre-processing that might be necessary
-
+    my $body        = $remflair->html;
     return $body;
 }
 
-sub update_entry {
+sub update_remoteflair {
     my $self    = shift;
-    my $entry   = shift;
+    my $rfobj   = shift;
     my $results = shift;
+    my $io      = $self->scotio;
 
-    # pull results out 
-    # update remote_flair via scotio
-
+    $io->update_remoteflair($rfobj, $results);
 }
 
 

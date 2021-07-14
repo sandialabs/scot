@@ -69,11 +69,11 @@ override api_create => sub {
 
     my $id      = $event->id;
     if ( scalar(@sources) > 0 ) {
-        my $col = $env->mongo->collection('Source');
+        my $col = $self->meerkat->collection('Source');
         $col->add_source_to("event", $event->id, \@sources);
     }
     if ( scalar(@tags) > 0 ) {
-        my $col = $env->mongo->collection('Tag');
+        my $col = $self->meerkat->collection('Tag');
         $col->add_source_to("event", $event->id, \@tags);
     }
 
@@ -104,11 +104,11 @@ sub create_event_from_message {
     }
     my $id      = $event->id;
     if ( scalar(@sources) > 0 ) {
-        my $col = $env->mongo->collection('Source');
+        my $col = $self->meerkat->collection('Source');
         $col->add_source_to("event", $event->id, \@sources);
     }
     if ( scalar(@tags) > 0 ) {
-        my $col = $env->mongo->collection('Tag');
+        my $col = $self->meerkat->collection('Tag');
         $col->add_source_to("event", $event->id, \@tags);
     }
 
@@ -204,7 +204,7 @@ sub build_from_alerts {
     my $handler     = shift;
     my $build_href  = shift;
     my $env         = $handler->env;
-    my $mongo       = $env->mongo;
+    my $mongo       = $self->meerkat;
     my $alerts_aref = $build_href->{from_alerts};
 
     my $alert_col   = $mongo->collection("Alert");
@@ -296,7 +296,7 @@ sub get_subject {
     
     if ( ref($object) eq "Scot::Model::Alert" ) {
         my $agid    = $object->alertgroup;
-        my $agcol   = $self->env->mongo->collection('Alertgroup');
+        my $agcol   = $self->meerkat->collection('Alertgroup');
         my $agobj   = $agcol->find_iid($agid);
         return $agobj->subject;
     }
@@ -313,7 +313,7 @@ override 'has_computed_attributes' => sub {
 sub api_subthing {
     my $self    = shift;
     my $req     = shift;
-    my $mongo   = $self->env->mongo;
+    my $mongo   = $self->meerkat;
     my $log     = $self->env->log;
 
     my $thing       = $req->{collection};

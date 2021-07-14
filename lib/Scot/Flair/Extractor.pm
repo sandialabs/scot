@@ -66,6 +66,13 @@ sub _build_regexes {
 #   plain   => "plain text version of string",
 # }
 
+has max_level => (
+    is          => 'rw',
+    isa         => 'Int',
+    required    => 1,
+    default     => 0,
+);
+
 sub extract_entities {
     my $self    = shift;
     my $input   = shift;
@@ -75,6 +82,7 @@ sub extract_entities {
         entities => [],
         flair    => '',
         text     => '',
+        cache    => {}, # store data to speed things up like previously encountered false +
     );
 
     my $clean = $self->clean_input($input);
@@ -87,61 +95,121 @@ sub extract_entities {
     return wantarray ? %edb : \%edb;
 }
 
-sub ilog {
-    my $self    = shift;
-    my $level   = shift;
-    my $msg     = shift;
-    $self->env->log->debug(" - "x$level.$msg);
-}
-
 sub parse {
     my $self    = shift;
+    my $tracker = shift;
     my $edb     = shift;
     my $text    = shift;
     my $level   = shift // 1;
     my $log     = $self->env->log;
     my @new     = ();
 
-    $self->ilog($level, "Parsing TEXT = $text");
     if ( $text eq '' ) {
-        $self->ilog($level, 'null text');
+        $log->trace($tracker." - "x$level. 'null text');
         return;
     }
-
+    $log->trace($tracker." - "x$level." PARSING = $text");
+    if ( $self->max_level < $level ) {
+        $self->max_level($level);
+    }
 
     my @all_re          = $self->regexes->all;
     my $total_re        = scalar(@all_re);
-    my $re_index        = 1;
-    my $found_entity    = 0;
+    my $re_index        = 0;
 
-    REGEX: 
+    REGEX:
     foreach my $re_href (@all_re) {
+        if ( defined $edb->{core} ) {
+            $log->trace($tracker." - "x$level." Limited to core REs only");
+            next REGEX if ! defined $re_href->{core};
+        }
+        $re_index++;
         my $re      = $re_href->{regex};
         my $type    = $re_href->{type};
 
-        my ($pre, $match, $post) = $self->attempt_match($text, $re, $type, $level);
-
-        next REGEX if ( ! defined $match );
-
-        my $span    = $self->post_match_actions($match, $type, $edb, $level);
-
-        if ( ! defined $span ) {
-            $log->debug(" - "x$level."False positive match of type $type");
-            $span = $match;
+        if ( $re_index == 1) {
+            $log->debug($tracker." - "x$level."$type ($re_index of $total_re)");
+        #    $log->debug("RE = ",{filter=>\&Dumper, value => $re});
         }
-        $found_entity++;
-        push @new, $self->parse($edb, $pre, $level+1);
-        push @new, $span;
-        push @new, $self->parse($edb, $post, $level+1);
+
+        my ($pre, $flair, $post) = $self->find_flairable($text, $re, $type, $edb, $level, $tracker);
+
+        if ( ! defined $flair ) {
+            $log->trace($tracker." - "x$level."Did not match $type ($re_index of $total_re)");
+            next REGEX;
+        }
+
+        $log->trace($tracker." - "x$level."Found Flairable of type $type. ($re_index of $total_re)");
+
+        # search the pre match text for flair
+        push @new, $self->parse($tracker,$edb, $pre, $level+1);
+        # add the flair
+        push @new, $flair;
+        # search the post match text for flair
+        push @new, $self->parse($tracker,$edb, $post, $level+1);
+
         last REGEX;
     }
-    if ( $found_entity == 0 ) {
-        $log->debug(" - "x$level. "No Matches. Placing text unchanged on stack");
+
+    if ( scalar(@new) < 1 ) {
+        $log->trace($tracker." - "x$level."No Flairables in Text, pushing text onto stack");
         push @new, $text;
     }
-    $log->debug(" - "x$level. 'NEW= '.join('', map { (ref($_)) ? $_->as_HTML : $_} @new));
+
     return wantarray ? @new : \@new;
 }
+
+sub find_flairable {
+    my $self    = shift;
+    my $text    = shift;
+    my $re      = shift;
+    my $type    = shift;
+    my $edb     = shift;
+    my $level   = shift;
+    my $tracker = shift;
+    my $log     = $self->env->log;
+
+    my $PRE     = ''; # hold text before match
+    my $attempt = 0;
+
+    MATCH:
+    while ( $text =~ m/$re/g ) {
+        $attempt++;
+        $log->trace($tracker." - "x$level."Attempt $attempt to match type $type");
+
+        my $pre     = substr($text, 0, $-[0]);
+        my $match   = substr($text, $-[0], $+[0] - $-[0]);
+        my $post    = substr($text, $+[0]); # $'
+
+        if ( defined $match ) {
+            $log->trace($tracker." - "x$level."Potentential $type Match $match");
+        }
+
+        my $flairable = $self->post_match_actions($match, $type, $edb, $level);
+
+        if (defined $flairable) {
+            # we found a positive match
+            $log->debug($tracker." - "x$level."Found Flairable ".$flairable->as_HTML." in $attempt tries");
+            $log->trace($tracker." - "x$level."PRE   = ".$PRE.$pre);
+            $log->trace($tracker." - "x$level."MATCH = ".$match);
+            $log->trace($tracker." - "x$level."POST  = ".$post);
+            return $PRE.$pre, $flairable, $post;
+        }
+        else {  
+            # we have a false positive
+            $PRE .= $pre . $match; # essentially $`
+            $log->trace($tracker." - "x$level."False Positive match, PRE = $PRE");
+            $log->trace($tracker." - "x$level."Continuing to match against $post");
+            next MATCH;
+        }
+    }
+
+    # when we reach here, we have exhausted all attempts to match the $re against $text
+    # or didn't find any matches in the first place
+    $log->trace("Failed to find $type flairable in $attempt passes");
+    return undef, undef, undef;
+}
+
 
 sub attempt_match {
     my $self    = shift;
@@ -163,7 +231,7 @@ sub attempt_match {
 
         return $pre, $match, $post;
     }
-    # $self->ilog($level,"...no match");
+    # $log->debug($level,"...no match");
     return undef, undef, undef;
 }
 
@@ -241,10 +309,13 @@ sub add_entity {
         die;
     }
 
-    push @{ $edb->{entities} } , {
-        type    => $type,
-        value   => lc($match),
-    };
+    # can have duplicate entities
+    #push @{ $edb->{entities} } , {
+    #    type    => $type,
+    #    value   => lc($match),
+    #};
+    # no duplication
+    $edb->{entities}->{$type}->{lc($match)}++;
 }
 
 sub deobsfucate_ipdomain {
@@ -350,19 +421,31 @@ sub domain_action {
 
     $domain = $self->deobsfucate_ipdomain($domain);
 
-    $self->ilog($level, "validating potential domain: $domain");
+    $log->trace(" - "x$level. "validating potential domain: $domain");
+
+    # if we have seen this domain before as a false positive, short circuit
+    if ( defined $edb->{cache}->{domain_fp}->{$domain} ) {
+        return undef;
+    }
 
     return try {
         my $root = $self->get_root_domain($domain);
         if ( ! defined $root ) {
-            $self->ilog($level, "Error Getting root domain: ".$pds->error);
+            $log->debug(" - "x$level. "($domain) Error Getting root domain: ".$pds->error);
+            $edb->{cache}->{domain_fp}->{$domain}++;
+            return undef;
+        }
+        # special case of zip tld
+        if ( $domain =~ m/.*\.zip$/ ) {
+            $log->debug(" - "x$level."($domain) zip, although valid tld, assumed to be file extension, since it is more common");
             return undef;
         }
         $self->add_entity($edb, $domain, "domain");
         return $self->create_span($domain, "domain");
     }
     catch {
-        $self->ilog($level, "Error matching root domain: $_");
+        $log->debug(" - "x$level. "($domain) Error matching root domain: $_");
+        $edb->{cache}->{domain_fp}->{$domain}++;
         return undef;
     };
 }

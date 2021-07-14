@@ -166,7 +166,7 @@ override 'update'   => sub {
 sub update_alertgroup_data {
     my $self    = shift;
     my $obj     = shift;
-    my $mongo   = $self->env->mongo;
+    my $mongo   = $self->meerkat;
 
     my $alertgroup_id   = $obj->alertgroup;
 
@@ -187,7 +187,7 @@ sub get_alerts_in_alertgroup {
 sub api_subthing {
     my $self    = shift;
     my $req     = shift;
-    my $mongo   = $self->env->mongo;
+    my $mongo   = $self->meerkat;
 
     my $thing       = $req->{collection};
     my $id          = $req->{id}+0;
@@ -354,7 +354,7 @@ sub update_alert_parsed {
 #     my $id      = shift;
 #     my $subthing    = shift;
 #     my $env     = $self->env;
-#     my $mongo   = $env->mongo;
+#     my $mongo   = $self->meerkat;
 #     my $log     = $env->log;
 # 
 #     $id += 0;

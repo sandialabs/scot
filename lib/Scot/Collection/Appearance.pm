@@ -64,7 +64,7 @@ sub lookup_value_id {
     my $self    = shift;
     my $value   = shift;
     my $type    = shift;
-    my $mongo   = $self->env->mongo;
+    my $mongo   = $self->meerkat;
     my $log     = $self->env->log;
 
     my $object  = $mongo->collection(ucfirst($type))->find_one({

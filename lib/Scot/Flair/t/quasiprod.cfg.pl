@@ -1,11 +1,6 @@
 %environment = (
-    version     => '3.20',
     location    => 'snl',
     fetch_mode  => 'mongo',
-    mode        => 'testing',
-    auth_type   => 'Testing',
-    authclass   => 'Controller::Auth::Testing',
-    group_mode  => 'ldap',
     max_workers => 1,
     mozilla_public_suffix_file => '/opt/scot/etc/public_suffix_list.dat',
     html_root   => '/cached_images',
@@ -23,34 +18,17 @@
         modify => ['wg-scot-ir'],
     },
     default_owner   => 'scot-admin',
-    mojo_defaults   => {
-        secrets => [qw(test moretest)],
-        default_expiration  => 14400,
-        hypnotoad_workers   => 2,
-    },
-
     modules => [
         {
             attr    => 'mongo',
             class   => 'Scot::Util::MongoFactory',
             config  => {
-                db_name         => 'scot-test',
+                db_name         => 'scot-prod',
                 eost            => 'mongodb://localhost',
                 write_safety    => 1,
                 find_master     => 1,
             },
         },
-        #{
-        #    attr    => 'pmongo',
-        #    class   => 'Scot::Util::MongoFactory',
-        #    config  => {
-        #        db_name         => 'scot-prod',
-        #        eost            => 'mongodb://localhost',
-        #        write_safety    => 1,
-        #        find_master     => 1,
-        #    },
-#
-#        },
         {
             attr    => 'mq',
             class   => 'Scot::Util::Messageq',

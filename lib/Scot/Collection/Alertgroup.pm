@@ -93,7 +93,7 @@ override api_create => sub {
     my $self    = shift;
     my $href    = shift;
     my $env     = $self->env;
-    my $mongo   = $env->mongo;
+    my $mongo   = $self->meerkat;
     my $log     = $env->log;
 
     my @mq_msgs     = ();
@@ -251,7 +251,7 @@ sub api_subthing {
     my $thing       = $req->{collection};
     my $id          = $req->{id} + 0;
     my $subthing    = $req->{subthing};
-    my $mongo       = $self->env->mongo;
+    my $mongo       = $self->meerkat;
 
     $self->env->log->debug("api_subthing /$thing/$id/$subthing");
 
@@ -333,7 +333,7 @@ sub update_alerts_in_alertgroup {
     my $agobj    = shift;
     my $href     = shift;
     my $env      = $self->env;
-    my $mongo    = $env->mongo;
+    my $mongo    = $self->meerkat;
     my $log      = $env->log;
     my $mq       = $env->mq;
     my $status   = { updated => [] };
@@ -407,7 +407,7 @@ sub update_alerts_in_alertgroup {
                 when    => $env->now(),
                 target  => { id => $alertobj->id, type => "alert" },
             };
-            $self->env->mongo->collection("History")->add_history_entry($hist);
+            $mongo->collection("History")->add_history_entry($hist);
         }
     }
     return $status;
@@ -418,10 +418,11 @@ sub get_bundled_alertgroup {
     my $self    = shift;
     my $id      = shift;
     my $log     = $self->env->log;
+    my $mongo   = $self->meerkat;
     my $agobj   = $self->find_iid($id);
     my $href    = $agobj->as_hash;
        $href->{alerts} = [];
-    my $col     = $self->env->mongo->collection('Alert');
+    my $col     = $mongo->collection('Alert');
     $id         += 0;
     my $match   = { alertgroup => $id };
     $log->debug("Looking for alerts in alertgroup $id");
@@ -447,8 +448,9 @@ return array of alerts for a given alertgroup
 sub get_alerts_in_alertgroup {
     my $self    = shift;
     my $object  = shift;
+    my $mongo   = $self->meerkat;
     my $id      = $object->id + 0;
-    my $col     = $self->env->mongo->collection('Alert');
+    my $col     = $mongo->collection('Alert');
     my $cursor  = $col->find({alertgroup => $id});
     my @alerts  = ();
 
@@ -468,7 +470,7 @@ sub update_alertgroup_with_bundled_alert {
     my $putdata = shift;
     my $env     = $self->env;
     my $log     = $env->log;
-    my $mongo   = $env->mongo;
+    my $mongo   = $self->meerkat;
     my $alertcol    = $mongo->collection('Alert');
     my $entitycol   = $mongo->collection('Entity');
 
@@ -532,7 +534,7 @@ sub update_alertgroup_with_bundled_alert_old {
     my $self    = shift;
     my $putdata = shift;
     my $env      = $self->env;
-    my $mongo    = $env->mongo;
+    my $mongo    = $self->meerkat;
     my $log      = $env->log;
 
     my $alertgroup_id = delete $putdata->{id};

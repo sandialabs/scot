@@ -32,7 +32,7 @@ override get_subthing => sub {
     my $id          = shift;
     my $subthing    = shift;
     my $env         = $self->env;
-    my $mongo       = $env->mongo;
+    my $mongo       = $self->meerkat;
     my $log         = $env->log;
     $id += 0;
 
@@ -63,7 +63,7 @@ sub api_subthing {
     my $thing       = $req->{collection};
     my $id          = $req->{id} + 0;
     my $subthing    = $req->{subthing};
-    my $mongo       = $self->env->mongo;
+    my $mongo       = $self->meerkat;
     my $log         = $self->env->log;
 
     $log->debug("api_subthing /$thing/$id/$subthing");
