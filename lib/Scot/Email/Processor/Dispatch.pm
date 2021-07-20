@@ -106,7 +106,7 @@ sub notify_flair_engine {
             who     => 'scot-feeds',
         }
     });
-    $mq->send("/topic/scot", {
+    $mq->send("/queue/flair", {
         action  => "created",
         data    => { 
             type    => 'entry',

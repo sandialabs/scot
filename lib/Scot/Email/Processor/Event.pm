@@ -52,7 +52,7 @@ sub process_message {
     my $event  = $self->create_event($json);
 
     if ( defined $event and ref($event) eq "Scot::Model::Event" ) {
-        $log->debug("Sucess creating Event: ".$event->id);
+        $log->debug("Success creating Event: ".$event->id);
         return 1;
     }
 
@@ -407,7 +407,7 @@ sub notify_flair_engine {
             who     => "scot-events",
         }
     });
-    $mq->send("/topic/scot", {
+    $mq->send("/queue/flair", {
         action  => "created",
         data    => {
             type    => "entry",
@@ -416,7 +416,7 @@ sub notify_flair_engine {
         }
     });
     foreach my $a (@$attachments) {
-        $mq->send("/topic/scot", {
+        $mq->send("/queue/flair", {
             action  => "created",
             data    => {
                 type    => "entry",

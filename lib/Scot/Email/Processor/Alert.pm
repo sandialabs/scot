@@ -151,7 +151,7 @@ sub notify_flair_engine {
     my $self        = shift;
     my $alertgroup  = shift;
     my $mq          = $self->env->mq;
-    $mq->send("/topic/scot", {
+    $mq->send("/queue/flair", {
         action  => "created",
         data    => {
             type    => "alertgroup",
