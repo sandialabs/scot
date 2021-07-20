@@ -482,5 +482,27 @@ sub get_message_id {
     return $msg_id;
 }
 
+sub mark_uid_unseen {
+    my $self    = shift;
+    my $uid     = shift;
+    my $log     = $self->env->log;
+    my $client  = $self->client;
+    my @usuid   = ($uid);
+
+    $log->trace("Marking message $uid as Unseen");
+
+    retry {
+        $client->unset_flag('\Seen', @usuid);
+    }
+    on_retry {
+        $self->clear_client_connections;
+    }
+    catch {
+        $log->error("failed to mark $uid as unseen");
+    }
+}
+
+
+
 1;
 

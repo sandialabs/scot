@@ -110,9 +110,7 @@ sub set_next_id {
     my $self    = shift;
     my $id      = shift;
     my $collection  = $self->collection_name;
-    my @command;
-    # my $tie     = tie(%command, "Tie::IxHash");
-    @command        = (
+    my @command        = (
         findAndModify   => "nextid",
         query           => { for_collection => $collection },
         update          => { '$set' => { last_id => $id } },
@@ -140,9 +138,7 @@ users hate typing in oid's on the URL, so give them a friendly integer
 sub get_next_id {
     my $self        = shift;
     my $collection  = $self->collection_name;
-    my @command;
-    # my $tie         = tie(%command, "Tie::IxHash");
-    @command        = (
+    my @command        = (
         findAndModify   => "nextid",
         query           => { for_collection => $collection },
         update          => { '$inc' => { last_id => 1 } },

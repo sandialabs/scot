@@ -9,6 +9,7 @@ base class for processors
 
 =cut
 use lib '../../../lib';
+use utf8;
 use Scot::Email::Imap;
 use Moose;
 extends 'Scot::App';
@@ -77,9 +78,36 @@ sub run {
     my $index = 1;
     while ( my $message = $cursor->next ) {
         $log->debug("Processing message $index of $count");
-        $self->process_message($message);
+        if ( ! $self->process_message($message) ) {
+            $imap->mark_uid_unseen($message->{imap_uid});
+        }
         $index++;
     }
+}
+
+sub get_tlp {
+    my $self    = shift;
+    my $data    = shift;
+    my $parent  = shift;
+    my $log     = $self->env->log;
+
+    my @valid   = (qw(amber black green red unset white));
+
+    my $tlp = $data->{tlp};
+    if (defined $tlp and $tlp ne "" and grep {/$tlp/} @valid ) {
+        $log->trace("found tlp in data = $tlp");
+        return  $tlp;
+    }
+
+    $tlp = $parent ->tlp;
+    if (defined $tlp and $tlp ne "" and grep {/$tlp/} @valid ) {
+        $log->trace("found tlp from dispatch = $tlp");
+        return  $tlp;
+    }
+    $log->trace("tlp not found, using unset");
+
+    $tlp = 'unset';
+    return $tlp;
 }
 
 1;

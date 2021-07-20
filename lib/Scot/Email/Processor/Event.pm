@@ -36,12 +36,12 @@ sub process_message {
     if ( $self->is_health_check($msg) ) {
         $log->warn("[$mbox->{name}] Healthcheck received");
         # TODO: write to db or file so watchdog process sees it
-        return; # nothing more necessary
+        return 1; # nothing more necessary
     }
 
     if ( $self->already_processed($msg) ) {
         $log->warn("[$mbox->{name}] $msg->{message_id} already processed");
-        return;
+        return 1;
     }
 
     my $parser  = $self->select_parser($msg);
@@ -53,12 +53,12 @@ sub process_message {
 
     if ( defined $event and ref($event) eq "Scot::Model::Event" ) {
         $log->debug("Sucess creating Event: ".$event->id);
-        return;
+        return 1;
     }
 
     $log->error("Failed to create Event!");
     $log->trace({filter=>\&Dumper, value=>$msg});
-
+    return undef;
 }
 
 sub is_health_check {
@@ -179,7 +179,7 @@ sub create_822_entry {
 
     require_modue("Scot::Email::Parser::Email822");
     my $parser  = Scot::Email::Parser::Email822->new({env => $env});
-    my $data    = $parser->parse({ message_str => $body });
+    my $mdata    = $parser->parse({ message_str => $body });
 
 
 }
@@ -367,7 +367,7 @@ sub create_entry_obj {
     $data->{target} = { type => "event", id => $event->id };
     $data->{groups} = $event->groups;
     $data->{summary} = 0;
-    $data->{tlp}    = $event->tlp;
+    $data->{tlp}    = $self->get_tlp($data, $event);
 
     my $entry = $col->create($data);
 

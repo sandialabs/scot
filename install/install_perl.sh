@@ -376,6 +376,7 @@ function install_perl_modules {
         MongoDB
         MongoDB::GridFS
         MongoDB::GridFS::File
+        MongoDB::OID
         Meerkat
         Mojo
         MojoX::Log::Log4perl

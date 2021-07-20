@@ -114,7 +114,7 @@ has mode    => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
-    default     => 'continuous',
+    default     => 'single',
 );
 
 sub run {
@@ -125,12 +125,13 @@ sub run {
 
     my $mode    = $self->env->mode;
 
-    if ( $mode eq "cron" ) {
+    if ( $mode eq "single" ) {
         $self->single($pm, \@mailboxes);
     }
     else {
         $self->continuous($pm, \@mailboxes);
     }
+    $log->debug("completed run");
 }
 
 sub single {
@@ -138,8 +139,9 @@ sub single {
     my $pm          = shift;
     my $mailboxes   = shift;
     my $log         = $self->log;
+    my %lastrun     = ();
 
-    $self->process_mailboxes($pm, $mailboxes);
+    $self->process_mailboxes($pm, $mailboxes, \%lastrun);
 
 }
 
@@ -149,6 +151,8 @@ sub continuous {
     my $mailboxes = shift;
     my $log     = $self->log;
     my %lastrun = ();
+
+    $log->debug("CONTINUOUS OPERATION!");
 
     while (1) {
         $self->process_mailboxes($pm, $mailboxes, \%lastrun);
@@ -166,8 +170,8 @@ sub process_mailboxes {
     $log->debug("-"x60);
     MBOX:
     foreach my $mbox (@{$mailboxes}) {
-
         my $boxname = $mbox->{name};
+        $log->debug("$boxname --------");
         my $last    = $lastrun->{$boxname};
         if ( $self->time_to_run($mbox, $last) ) {
             $lastrun->{$boxname} = time();
@@ -191,6 +195,7 @@ sub time_to_run {
         $log->debug("$name is not active.");
         return undef;
     }
+    $log->debug("$name is active!");
 
     my $interval    = $mbox->{check_interval};
 
