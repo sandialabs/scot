@@ -100,6 +100,7 @@ sub update_entry {
     $log->debug("update_entry(".$entry->id.")");
 
     my $update = {
+        parsed      => 1,
         body        => $body,            # may have been updated my imgmunger
         body_plain  => $results->{text},
         body_flair  => $results->{flair},
@@ -109,6 +110,7 @@ sub update_entry {
         $entry->update({
             '$set'  => $update
         });
+        $self->send_update_to_scot_topic($entry);
         return;
     }
     # TODO API update
@@ -129,6 +131,7 @@ sub update_entity {
         my $mongo   = $self->env->mongo;
         my $col     = $mongo->collection('Entity');
         $col->update_entity($target, $entity);
+        $self->send_update_to_scot_topic($entity);
         return;
     }
 }
@@ -539,6 +542,9 @@ sub send_mq {
     my $queue   = shift;
     my $data    = shift;
     my $mq      = $self->env->mq;
+    my $log     = $self->env->log;
+
+    $log->debug("Sending to $queue : ",{filter=>\&Dumper, value => $data});
 
     $mq->send($queue, $data);
 }
@@ -852,6 +858,8 @@ sub update_remoteflair {
         }
     };
 
+    $log->debug("UPDATE REMOTEFLAIR: ",{filter=>\&Dumper, value => $update});
+
     try {
         $rfobj->update($update);
     }
@@ -874,6 +882,51 @@ sub xform_entities {
         }
     }
     return wantarray ? @entities : \@entities;
+}
+
+sub send_update_to_scot_topic {
+    my $self    = shift;
+    my $object  = shift;
+    my $log     = $self->env->log;
+    
+    my $type    = lc((split(/::/,ref($object)))[-1]);
+    my $message = {
+        action  => 'updated',
+        data    => {},
+    };
+
+    if ( $type eq "alertgroup" ) {
+        my @aids    = $self->get_alertids($object);
+        foreach my $aid (@aids) {
+            $message->{data} = { type => 'alert', id => $aid };
+            $self->send_mq("/topic/scot", $message);
+        }
+        my $agid    = $object->id;
+        $message->{data} = { type => 'alertgroup', id => $agid };
+        $self->send_mq("/topic/scot", $message);
+    }
+    elsif ( $type eq "entry" ) {
+        my $eid     = $object->id;
+        $message->{data} = { type => 'entry', id => $eid };
+        $self->send_mq("/topic/scot", $message);
+        my $target  = $object->target;
+        $message->{data} = { type => $target->{type}, id => $target->{id} };
+        $self->send_mq("/topic/scot", $message);
+    }
+    else {
+        $log->debug("dont send update to topic for $type");
+    }
+}
+
+sub get_alertids {
+    my $self    = shift;
+    my $agobj   = shift;
+    my $cursor  = $self->get_alerts($agobj);
+    my @ids     = ();
+    while (my $alert = $cursor->next ) {
+        push @ids, $alert->id + 0;
+    }
+    return wantarray ? @ids : \@ids;
 }
 
 
