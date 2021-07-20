@@ -82,8 +82,12 @@ sub increment {
         });
     }
     else {
-        $log->debug("Updating existing stat record");
-        $obj->update_inc( value   => $value );
+        $log->debug("Updating existing stat record ".ref($obj));
+        $log->debug("object is ",{filter=>\&Dumper, value=>$obj});
+        my $newvalue = $obj->value + $value;
+        $obj->update({
+            '$set'  => { value => $newvalue },
+        });
     }
     return $obj;
 }
@@ -111,9 +115,7 @@ sub get_dow_statistics {
     my $self    = shift;
     my $metric  = shift;
     my $log     = $self->env->log;
-    my %command;
-    my $tie = tie(%command, "Tie::IxHash");
-    %command = (
+    my @command = (
         mapreduce   => "stat",
         out         => { inline => 1 },
         query       => { metric => $metric},
@@ -130,7 +132,7 @@ sub get_dow_statistics {
     my $db      = $mongo->_mongo_database($db_name);
     my $result  = $self->_try_mongo_op(
         get_stats   => sub {
-            my $job     = $db->run_command(\%command);
+            my $job     = $db->run_command(\@command);
             return $job;
         }
     );

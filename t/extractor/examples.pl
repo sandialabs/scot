@@ -1481,4 +1481,30 @@ EOF
             },
         ],
     },
+    {
+        testname    => 'stupid ip4 prefixed',
+        testgroup   => 'ipaddr',
+        testnumber  => 2223,
+        source      => <<EOF,
+<html>
+    <p>
+        ip4:65.38.172[.]37
+    </p>
+</html>
+EOF
+        flair           => <<EOF,
+<div><p>
+        ip4:<span class="entity ipaddr" data-entity-type="ipaddr" data-entity-value="65.38.172.37">65.38.172.37</span>
+    </div>
+EOF
+        plain => <<EOF,
+   ip4:65.38.172.37
+EOF
+        entities    => [
+            {
+                'type' => 'ipaddr',
+                'value' => '65.38.172.37'
+            }
+        ],
+    },
 );

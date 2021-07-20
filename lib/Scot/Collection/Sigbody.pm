@@ -62,17 +62,15 @@ override api_create => sub {
 };
 
 sub get_next_revision {
-    my $self      = shift;
-    my $signature = shift;
+    my $self        = shift;
+    my $signature   = shift;
 
-    my @command;
-    # my $tie = tie( %command, "Tie::IxHash" );
-    @command = (
-        findAndModify => "signature",
-        query         => { id => $signature->id },
-        update        => { '$inc' => { latest_revision => 1 } },
-        'new'         => 1,
-        upsert        => 1,
+    my @command    = (
+        findAndModify   => "signature",
+        query           => { id => $signature->id },
+        update          => { '$inc' => { latest_revision => 1 } },
+        'new'           => 1,
+        upsert          => 1,
     );
     my $mongo = $self->meerkat;
     my $revid = $self->_try_mongo_op(

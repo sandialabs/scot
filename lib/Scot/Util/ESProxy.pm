@@ -229,33 +229,34 @@ sub do_request_new {
 
     $eshref->{size}  = undef unless ($eshref->{size});
 
-    my $json    = encode_json($eshref);
+    # my $json    = encode_json($eshref);
+    my $json = $eshref;
+
     $log->debug("GET to ES: $url ", { filter=>\&Dumper, value => $json });
 
-    my $tx      = $ua->get( $url => {Accept => '*/*'} => json => $eshref);
+    my $accept = { Accept => '*/*' };
+    my $response = $ua->get($url => $accept => json => $json)->result;
 
-    # $log->debug("tx json is ",{filter=>\&Dumper, value=>$tx->result->json});
+    $log->debug("RESPONSE = ",{filter=>\&Dumper, value => $response});
 
-    my $result  = $tx->result;
-
-    if ( $result->is_success ) {
-        $log->debug("Successful GET to ES");
-        return $result->json;
+    if ( $response->is_success ) {
+        return $response->json;
     }
     else {
-        my $err = $tx->error;
-        if ( $err->{code} ) {
-            $log->error("ERROR ".$err->{code}." response: ". $err->{message});
-            if ( $err->{code} eq "403" ) {
+        my $message = $response->message;
+        my $code = $response->code;
+        if ( $code ) {
+            $log->error("ERROR ".$code." response: ". $message);
+            if ( $code eq "403" ) {
                 die "SCOT returned 403 Forbidden";
             }
         }
         else {
-            $log->error("ERROR: ". $err->{message} );
-            die $err->{mesage};
+            $log->error("ERROR: ". $message );
+            die $message;
         }
     }
-    $log->error("TX is ",{filter=>\&Dumper, value=>$tx});
+    $log->error("RESPONSE is ",{filter=>\&Dumper, value=>$response});
     die "Request utterly failed";
 }
 

@@ -13,11 +13,11 @@ sub will_parse {
     my $from    = $href->{from};
     my $subject = $href->{subject};
 
-    if ( $subject =~ /splunk alert/i ) {
+    if ( $subject =~ /splunk alert/i or $subject =~ /splunk report/i ) {
         return 1;
     }
     # TODO remove email address to config
-    if ( $from =~ /splunk\@sandia.gov/i ) {
+    if ( $from =~ /splunk\@sandia.gov/i  or $from =~ /Splunk-Alerts\@sandia.gov/i ) {
         return 1;
     }
     return undef;

@@ -19,20 +19,24 @@ sub process_message {
 
     if ( $self->already_processed($msg) ) {
         $log->warn("[$mbox->{name}] $msg->{message_id} already in SCOT");
-        return;
+        return 1;
     }
 
     my $parser  = $self->select_parser($msg);
     my $data    = $parser->parse($msg);
-    my $dispatch = $self->create_dispatch($data);
 
-    if ( defined $dispatch and ref($dispatch) eq "Scot::Model::Dispatch") {
-        $log->debug("Success creaing dispatch: ".$dispatch->id);
-        return;
+    if ( defined $data ) {
+
+        my $dispatch = $self->create_dispatch($data);
+        if ( defined $dispatch and ref($dispatch) eq "Scot::Model::Dispatch") {
+            $log->debug("Success creaing dispatch: ".$dispatch->id);
+            return 1;
+        }
     }
 
     $log->error("Failed to create dispatch!");
-    $log->trace({filter => \&Dumper, value => $msg});
+    $log->debug({filter => \&Dumper, value => $msg});
+    return undef;
 }
 
 sub select_parser {
@@ -57,6 +61,10 @@ sub already_processed {
 sub create_dispatch {
     my $self    = shift;
     my $data    = shift;
+    my $log     = $self->env->log;
+
+    my $cl  = $log->level();
+    $log->level('TRACE');
 
     my $dispatch_data   = $data->{dispatch};
     my $attachment_data = $data->{attachments};
@@ -70,7 +78,7 @@ sub create_dispatch {
     if (defined $dispatch) {
         $self->scot_housekeeping($dispatch, $entry, \@files);
     }
-
+    $log->level($cl);
 }
 
 sub scot_housekeeping {
@@ -152,6 +160,8 @@ sub create_dispatch_obj {
     $log->debug("Creating Dispatch Object");
     $log->debug("Dispatch Data is ",{filter=>\&Dumper, value=>$data});
 
+    $data->{tlp} = 'unset' if (! defined $data->{tlp} or $data->{tlp} eq '');
+
     my $dispatch = $col->create($data);
 
     if ( defined $dispatch and ref($dispatch) eq "Scot::Model::Dispatch" ){
@@ -180,7 +190,7 @@ sub create_entry {
     $data->{groups} = $dispatch->groups;
     $data->{owner} = $dispatch->owner;
     $data->{summary} = 0;
-    $data->{tlp} = $dispatch->tlp;
+    $data->{tlp} = $self->get_tlp($data, $dispatch);
 
     my $entry = $col->create($data);
 

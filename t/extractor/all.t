@@ -50,10 +50,17 @@ my @copy        = @$arrayname;
 my $aref        = \@copy;
 use strict 'refs';
 
+my $single_test = $ARGV[0] + 0;
+
 foreach my $test (sort { $a->{testnumber} <=> $b->{testnumber} } @$aref) {
 
     print "=== Test number $test->{testnumber} ====\n";
     print "=== $test->{testname} : $test->{testgroup}\n";
+
+    if ( $single_test != 0 && $single_test != $test->{testnumber} ) {
+        print "Skipping...\n";
+        next;
+    }
 
     my $errorcount  = 0;
     my $debug       = $test->{debug};

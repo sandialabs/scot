@@ -372,7 +372,7 @@ export default class App extends React.Component {
                 </LinkContainer>
                 <MenuItem href="/docs/index.html">Documentation</MenuItem>
                 <MenuItem divider />
-                <MenuItem href="/cyberchef/index.html">Cyber Chef</MenuItem>
+                <MenuItem href="https://cybertools-cc.sandia.gov/">Cyber Chef</MenuItem>
                 <MenuItem divider />
                 <MenuItem href="/#/" onClick={this.LogOut}>
                   Log Out

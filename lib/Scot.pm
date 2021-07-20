@@ -23,6 +23,7 @@ It is a child of Mojo::Base and therefore is a Mojolicious based app.
 
 sub startup {
     my $self    = shift;
+    $ENV{MOJO_MAX_MESSAGE_SIZE} = 67108864; # 64 MB
     $self->mode('development'); # remove when in prod
 
     my $config_file  = $ENV{'scot_config_file'} // "/opt/scot/etc/scot.cfg.pl";
@@ -198,11 +199,11 @@ relies on the browser BasicAuth popup.
 
     # /api/v2/hitsearch?match=foo%20bar
 
-    $scot   ->any ('/api/v2/hitsearch')
+    $scot   ->any   ('/api/v2/hitsearch')
             ->to    ('controller-search#hitsearch')
             ->name  ('hitsearch');
 
-    $scot   ->any ('/api/v2/entitytypecount')
+    $scot   ->any   ('/api/v2/entitytypecount')
             ->to    ('controller-api#entitytypecount')
             ->name  ('entitytypecount');
 
@@ -641,7 +642,7 @@ Incident subthings
 
 =cut
 
-    $scot   ->put  ('/api/v2/:thing/:id')
+    $scot   ->put   ('/api/v2/:thing/:id')
             ->to    ('controller-api#update')
             ->name  ('update');
 
@@ -706,7 +707,7 @@ other events.
 
 =cut
 
-    $scot   ->delete  ('/api/v2/:thing/:id')
+    $scot   ->delete ('/api/v2/:thing/:id')
             ->to    ('controller-api#delete')
             ->name  ('delete');
 

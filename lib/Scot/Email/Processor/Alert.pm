@@ -32,12 +32,12 @@ sub process_message {
     if ( $self->is_health_check($msg) ) {
         $log->warn("[$mbox->{name}] Healthcheck received");
         # TODO: write to db or file so watchdog process sees it
-        return; # nothing more necessary
+        return 1; # nothing more necessary
     }
 
     if ( $self->already_processed($msg) ) {
         $log->warn("[$mbox->{name}] $msg->{message_id} already processed");
-        return;
+        return 1;
     }
 
 
@@ -49,12 +49,13 @@ sub process_message {
     my $agroup  = $self->create_alertgroup($json);
 
     if ( defined $agroup and ref($agroup) eq "Scot::Model::Alertgroup" ) {
-        $log->debug("Sucess creating alergroup: ".$agroup->id);
-        return;
+        $log->debug("Success creating alergroup: ".$agroup->id);
+        return 1;
     }
 
     $log->error("Failed to create Alertgroup!");
     $log->trace({filter=>\&Dumper, value=>$msg});
+    return undef;
 
 }
 
