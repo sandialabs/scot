@@ -268,7 +268,7 @@ sub do_multiword_matches {
             }
             if ( $type eq "ipv6" ) {
                 $log->debug("Looking for weird ipv6");
-                $span = $self->ipv6_action($match, $pre, $post, $dbhref);
+                $span = $self->ipv6_action($match, $dbhref);
                 if ( ! defined $span ) {
                     $log->warn("false match in ipv6, skipping");
                     next REGEX;
@@ -427,6 +427,18 @@ sub ipaddr_action {
     };
     return $self->span($match,"ipaddr");
 
+}
+
+sub ipv6_action {
+    my $self    = shift;
+    my $match   = shift;
+    my $dbhref  = shift;
+
+    push @{$dbhref->{entities}}, {
+        value   => $match,
+        type    => 'ipv6',
+    };
+    return $self->span($match, 'ipv6');
 }
 
 sub cidr_action {

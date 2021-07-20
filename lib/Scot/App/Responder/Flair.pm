@@ -79,7 +79,7 @@ sub process_message {
         $log->trace("--- $action message ---");
         if ( $type eq "alertgroup" ) {
             $self->process_alertgroup($id,$opts);
-            $self->put_stat("alertgroup flaired", 1);
+            # $self->put_stat("alertgroup flaired", 1);
             return 1;
         }
         elsif ( $type eq "entry" ) {
@@ -146,7 +146,7 @@ sub process_alertgroup {
         parsed  => 1,
         alerts  => \@update,
     };
-    # $log->debug("updating with ",{filter=>\&Dumper, value => $putdata});
+    $log->debug("updating with ",{filter=>\&Dumper, value => $putdata});
 
     my $response = $self->update_alertgroup($putdata);
 
@@ -214,7 +214,7 @@ sub flair_record {
         }
 
         if (ref($data->{$column}) ne "ARRAY" ) {
-            $log->warn("WEIRD! $column is not an ARRAY is ",
+            $log->trace("WEIRD! $column is not an ARRAY is ",
                         {filter=>\&Dumper, value=>$data->{$column}});
             $data->{$column} = [ $data->{$column} ];
         }

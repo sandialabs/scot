@@ -82,8 +82,12 @@ sub increment {
         });
     }
     else {
-        $log->debug("Updating existing stat record");
-        $obj->update_inc( value   => $value );
+        $log->debug("Updating existing stat record ".ref($obj));
+        $log->debug("object is ",{filter=>\&Dumper, value=>$obj});
+        my $newvalue = $obj->value + $value;
+        $obj->update({
+            '$set'  => { value => $newvalue },
+        });
     }
     return $obj;
 }

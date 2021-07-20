@@ -61,6 +61,10 @@ sub already_processed {
 sub create_dispatch {
     my $self    = shift;
     my $data    = shift;
+    my $log     = $self->env->log;
+
+    my $cl  = $log->level();
+    $log->level('TRACE');
 
     my $dispatch_data   = $data->{dispatch};
     my $attachment_data = $data->{attachments};
@@ -74,7 +78,7 @@ sub create_dispatch {
     if (defined $dispatch) {
         $self->scot_housekeeping($dispatch, $entry, \@files);
     }
-
+    $log->level($cl);
 }
 
 sub scot_housekeeping {
@@ -156,6 +160,8 @@ sub create_dispatch_obj {
     $log->debug("Creating Dispatch Object");
     $log->debug("Dispatch Data is ",{filter=>\&Dumper, value=>$data});
 
+    $data->{tlp} = 'unset' if (! defined $data->{tlp} or $data->{tlp} eq '');
+
     my $dispatch = $col->create($data);
 
     if ( defined $dispatch and ref($dispatch) eq "Scot::Model::Dispatch" ){
@@ -185,7 +191,6 @@ sub create_entry {
     $data->{owner} = $dispatch->owner;
     $data->{summary} = 0;
     $data->{tlp} = $self->get_tlp($data, $dispatch);
-    $data->{tlp} = $data->{tlp} // $dispatch->tlp;
 
     my $entry = $col->create($data);
 
@@ -195,16 +200,6 @@ sub create_entry {
     $log->error("Failed to create Entry with: ",
                 { filter => \&Dumper, value => $data });
     return undef;
-}
-
-sub get_tlp {
-    my $self    = shift;
-    my $data    = shift;
-    my $dispatch = shift;
-
-    return $data->{tlp} if defined $data->{tlp};
-    return $dispatch->tlp if defined $dispatch->tlp;
-    return 'unset';
 }
 
 sub process_attachments {

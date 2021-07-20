@@ -367,7 +367,7 @@ sub create_entry_obj {
     $data->{target} = { type => "event", id => $event->id };
     $data->{groups} = $event->groups;
     $data->{summary} = 0;
-    $data->{tlp}    = $event->tlp;
+    $data->{tlp}    = $self->get_tlp($data, $event);
 
     my $entry = $col->create($data);
 

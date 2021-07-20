@@ -85,4 +85,29 @@ sub run {
     }
 }
 
+sub get_tlp {
+    my $self    = shift;
+    my $data    = shift;
+    my $parent  = shift;
+    my $log     = $self->env->log;
+
+    my @valid   = (qw(amber black green red unset white));
+
+    my $tlp = $data->{tlp};
+    if (defined $tlp and $tlp ne "" and grep {/$tlp/} @valid ) {
+        $log->trace("found tlp in data = $tlp");
+        return  $tlp;
+    }
+
+    $tlp = $parent ->tlp;
+    if (defined $tlp and $tlp ne "" and grep {/$tlp/} @valid ) {
+        $log->trace("found tlp from dispatch = $tlp");
+        return  $tlp;
+    }
+    $log->trace("tlp not found, using unset");
+
+    $tlp = 'unset';
+    return $tlp;
+}
+
 1;

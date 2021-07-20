@@ -60,15 +60,19 @@ sub get_body {
     $log->debug("mstr = $mstr");
 
     my $clean = $self->clean_messagestr($mstr);
+    $log->debug("clean = $clean");
 
     my $email       = try {
-        Courriel->parse(text => $clean);
+        # Courriel->parse(text => $clean);
+        # see if Courriel handles the cleaning better
+        Courriel->parse(text => $mstr);
     }
     catch {
         $log->error("Courriel parse error: $_");
     };
 
-    if ( defined $email ) {
+    if ( defined $email and ref($email)) {
+        $log->debug("Courriel object parsed");
         my $htmlpart    = $email->html_body_part();
         my $plainpart   = $email->plain_body_part();
 
@@ -78,6 +82,7 @@ sub get_body {
         return $email, $html, $plain;
     }
     else {
+        $log->error("Courriel failed parsing");
         return undef, undef, undef;
     }
 }

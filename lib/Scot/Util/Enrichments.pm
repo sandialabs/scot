@@ -101,7 +101,7 @@ sub BUILD {
             $self->$name($href);
         }
         else {
-            die "Unsupported Enrichment Type!";
+            warn "Unsupported Enrichment Type!";
         }
     }
     $meta->make_immutable;
