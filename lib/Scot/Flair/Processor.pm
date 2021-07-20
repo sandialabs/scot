@@ -45,7 +45,6 @@ sub flair {
     my $object  = $self->retrieve($data);
     if ( defined $object ) {
         my $results = $self->flair_object($object);
-        $self->process_results($results);
     }
     else {
         $self->env->log->error("Unable to retrieve object ",
@@ -53,37 +52,6 @@ sub flair {
     }
     &$timer;
     $log->info("-------- END FLAIR -------");
-}
-
-sub process_results {
-    my $self    = shift;
-    my $results = shift; # bug, hash in entry array in alertgroup
-    my $io      = $self->scotio;
-    my %stats   = ();
-    my %notices = ();
-
-    foreach my $result (@$results) {
-        my $alert_id    = $result->{alert};
-        my $ag_id       = $result->{alertgroup};
-        if ($io->update_alert($result)) {
-
-            $stats{alert}{$alert_id}++;
-            $stats{alertgroup}{$ag_id}++;
-            $notices{alert}{$alert_id}++;
-            $notices{alertgroup}{$ag_id}++;
-
-            foreach my $type ( keys %{ $result->{entities} }) {
-                foreach my $value ( keys %{ $result->{entities}->{$type} } ) {
-                    $notices{entity}{$value}++;
-                }
-            }
-        }
-        if (my $eid = $io->upsert_entities($result)) {
-            $stats{entity}{$eid}++;
-        }
-    }
-    $self->update_stats(\%stats);
-    $self->send_notices(\%notices);
 }
 
 

@@ -24,8 +24,8 @@ $SIG{__DIE__} = sub { our @reason = @_ };
 END {
     our @reason;
     if (@reason) {
-        say "Flairer died because: @reason";
-        $env->log->error("Flairer died because: ",{filter=>\&Dumper, value=>\@reason});
+        say "Enricher died because: @reason";
+        $env->log->error("Enricher died because: ",{filter=>\&Dumper, value=>\@reason});
     }
 }
 

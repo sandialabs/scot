@@ -30,10 +30,12 @@ sub retrieve_item {
 sub retrieve_entity_href {
     my $self    = shift;
     my $id      = shift;
-    my $obj     = $self->retrieve_item('entity', $id);
+    my $log     = $self->env->log;
+    my $obj     = $self->retrieve_item('entity', $id + 0);
     if ( defined $obj and ref($obj) eq "Scot::Model::Entity" ) {
         return $obj->as_hash;
     }
+    $log->error("Entity $id not found in DB");
     return undef;
 }
 

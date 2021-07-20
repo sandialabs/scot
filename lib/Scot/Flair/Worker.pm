@@ -236,6 +236,7 @@ sub get_processor {
     my $self    = shift;
     my $json    = shift;
     my $type    = ucfirst(lc($json->{data}->{type}));
+    my $log     = $self->env->log;
 
     my $class   = "Scot::Flair::Processor::$type";
     require_module($class);

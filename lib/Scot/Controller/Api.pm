@@ -517,7 +517,7 @@ sub get_one {
             });
             return;
         }
-
+        $log->debug("GET ONE request = ",{filter=>\&Dumper, value=>$req_href});
         my $object  = $collection->api_find($req_href);
         if (! defined $object ) {
             die "Object not found for request:".Dumper($req_href);
@@ -2587,8 +2587,8 @@ sub remoteflair {
 
         # place command (create, add entry, or flair-in-place)
         # on queue
-        $self->env->mq->send("/queue/remoteflair",{
-            action  => 'process',
+        $self->env->mq->send("/queue/flair",{
+            action  => 'created',
             data    => {
                 type    => 'remoteflair',
                 id      => $rfobj->id,
