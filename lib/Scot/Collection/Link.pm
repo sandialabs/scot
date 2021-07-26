@@ -160,9 +160,19 @@ sub link_objects {
     my $context = $options->{context} // ' ';
     my $log     = $self->env->log;
 
-    $log->trace("Linking Objects: ". ref($v0)." to ".ref($v1));
-    
+    if ( ! defined $v0 ) {
+        $log->logdie("v0 is undefined!");
+    }
+    if ( ! defined $v1 ) {
+        $log->logdie("v1 is undefined!");
+    }
 
+    my $v0id = (ref($v0) eq "HASH") ? $v0->{id} : $v0->id;
+    my $v1id = (ref($v1) eq "HASH") ? $v1->{id} : $v1->id;
+
+    $log->debug("Linking Objects: ". 
+                ref($v0)." ".$v0id .
+                " to ".ref($v1)." ".$v1id);
 
     my @vertices = (
         $self->get_vertex($v0),
@@ -180,22 +190,24 @@ sub link_objects {
     ]}};
     my $link = $self->find_one($match); 
 
-    $self->env->log->trace("HEY DUDE: Link match is ",{filter=>\&Dumper, value=>$match});
-    $self->env->log->trace("HEY DUDE: Link match is ",{filter=>\&Dumper, value=>$link});
+    $log->trace("HEY DUDE: Link match is ",{filter=>\&Dumper, value=>$match});
+    $log->trace("HEY DUDE: Link match is ",{filter=>\&Dumper, value=>$link});
 
     if (defined $link ) {
-        $self->env->log->trace("Link exists, returning a pointer");
+        $log->debug("Link ".$link->id." exists, returning a pointer");
         return $link;
     }
-    $self->env->log->trace("Link does not exist already, creating...");
+    $log->debug("Link does not exist already, creating...");
 
-    return $self->create({
+    $link =  $self->create({
         vertices    =>  \@vertices,
         weight      => $weight,
         when        => $when,
         memo        => \@memos,
         context     => $context,
     });
+    $log->debug("Link ".$link->id." created");
+    return $link;
 }
 
 sub get_object_links {

@@ -5,6 +5,7 @@ use warnings;
 use utf8;
 use Try::Tiny;
 use Carp qw(longmess);
+use Module::Runtime qw(require_module compose_module_name);
 
 use Mojo::Base 'Mojolicious::Controller', -signatures;
 
@@ -140,6 +141,18 @@ sub link ($self) {
     };
 }
 
+sub maxid ($self) {
+    my $request     = $self->get_api_request;
+    my $domain      = $self->get_domain($request);
+    my $collection  = lc($request->{subthing});
+    my $maxid       = $domain->max_id;
+    my $result      = {
+        max_id      => $maxid,
+        collection  => $collection,
+    };
+    $self->perform_render($result);
+}
+
 sub move ($self) {
     my $log = $self->env->log;
     try {
@@ -210,14 +223,67 @@ sub render_error ($self, $code, $errormsg) {
 }
 
 sub get_api_request ($self) {
+    my $env = $self->env;
+    my $log = $env->log;
 
+    $log->trace("get_api_request");
+
+    my $mojo_request    = $self->req;
+    my $params          = $mojo_request->params->to_hash;
+    my $json            = $mojo_request->json;
+
+    if ( defined $params ) {
+        $params = $self->normalize_json_in_params($params);
+    }
+
+    my %scot_request    = (
+        collection      => $self->stash('thing'),
+        id              => $self->stash('id') + 0,
+        subcollection   => $self->stash('subthing'),
+        subid           => $self->stash('subid') + 0,
+        user            => $self->session('user'),
+        groups          => $self->session('groups'),
+        data            => {
+            params  => $params,
+            json    => $json,
+        },
+    );
+
+    return wantarray ? %scot_request : \%scot_request;
 }
 
 sub get_domain ($self, $request) {
+    my $log         = $self->env->log;
+    my $mongo       = $self->env->mongo;
+    my $collection  = $request->{collection};
+    my $classname   = 'Scot::Domain::'.ucfirst(lc($collection));
 
+    try {
+        require_module($classname);
+    }
+    catch {
+        $log->logdie("Failed Require of $classname: $_");
+    };
+
+    my $domain = try {
+        $classname->new({log => $log, mongo => $mongo});
+    }
+    catch {
+        $log->logdie("Instantiation of $classname failed: $_");
+    };
+
+    if ( defined $domain and ref($domain) eq $classname ) {
+        return $domain;
+    }
+    $log->logdie("Can not work on collection $collection because unable to create domain instance of $classname");
 }
 
 sub perform_render ($self, $result) {
+
+    $self->render(
+        status  => $result->{code},
+        json    => $result->{json},
+    );
 
 }
 

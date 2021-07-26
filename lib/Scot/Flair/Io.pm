@@ -33,6 +33,9 @@ sub get_object {
     my $type    = shift;
     my $id      = shift;
     my $mode    = $self->env->fetch_mode // 'mongo';
+    my $log     = $self->env->log;
+
+    $log->debug("get object $type $id");
 
     return ($mode eq 'mongo') ? 
         $self->get_from_mongo($type, $id) :
@@ -46,12 +49,18 @@ sub get_from_mongo {
     my $id      = shift;
     my $log     = $self->env->log;
 
-    $log->trace("get_from_mongo $colname $id");
+    $log->debug("get_from_mongo $colname $id");
 
     my $mongo   = $self->env->mongo;
     my $col     = $mongo->collection(ucfirst($colname));
 
-    my $object  = $col->find_iid($id);
+    my $object  = try {
+        $col->find_iid($id);
+    }
+    catch {
+        $log->warn("error in finding $id: $_");
+    };
+    $log->warn("object not found $colname $id") if (! defined $object);
 
     return $object;
 }
@@ -164,8 +173,10 @@ sub get_entity_types {
 
     while (my $et = $cursor->next) {
         if ( length($et->match) < 3 ) {
-            $log->debug("EntityType ".$et->id." length less than 3 chars (".
-                        $et->match.").  Skipping.");
+            # causes crashes due to unicode in et->match.  Can scrub it
+            # but this really isn't needed for now
+            # $log->debug("EntityType ".$et->id." length less than 3 chars (".
+            #             $et->match.").  Skipping.");
             next;
         }
         $self->env->log->trace("adding type ".$et->value);
@@ -603,6 +614,7 @@ sub send_entity_notice {
         my $enrich_message = {
             action  => 'created',
             data    => {
+                who     => 'flair',
                 type    => 'entity',
                 id      => $obj->id,
             }
@@ -622,6 +634,7 @@ sub send_other_notice {
     my $message = {
         action  => 'updated',
         data    => {
+            who     => 'flair',
             type    => $type,
             id      => $id,
         }
@@ -652,6 +665,7 @@ sub update_alert_via_mongo {
         }
     };
 
+    $log->debug("update_alert $id");
     $log->trace("update_alert $id edb: ", {filter => \&Dumper, value=>$edb});
     $log->trace("update_alert $id results: ", {filter => \&Dumper, value=>$results});
 
@@ -678,6 +692,7 @@ sub update_alert_via_mongo {
     my $message = {
         action  => 'updated',
         data    => {
+            who     => 'flair',
             type    => 'alert',
             id      => $id,
         }
@@ -716,6 +731,7 @@ sub update_alertgroup_via_mongo {
     my $message = {
         action  => 'updated',
         data    => {
+            who     => 'flair',
             type    => 'alertgroup',
             id      => $id,
         }
@@ -731,6 +747,7 @@ sub link_alert_entities {
     my $mongo   = $self->env->mongo;
     my $log     = $self->env->log;
 
+    $log->debug("link_alert_entities");
     $log->trace("link_alert_entities was passed edb of ",
                 { filter => \&Dumper, value => $edb });
 
@@ -751,6 +768,8 @@ sub link_alertgroup_entities {
     my $mongo   = $self->env->mongo;
     my $log     = $self->env->log;
 
+    $log->debug("link_alertgroup_entities");
+
     foreach my $type (keys %$edb) {
         foreach my $value (keys %{$edb->{$type}}) {
             $self->link_via_mongo(
@@ -770,15 +789,26 @@ sub link_via_mongo {
     my $mongo   = $self->env->mongo;
     my $log     = $self->env->log;
 
-    my $entity = $self->get_entity($etype,$evalue);
-    my $obj    = $self->get_object($otype, $id);
+    $log->debug("link_via_mongo");
 
-    try {
+    my $entity = $self->get_entity($etype,$evalue);
+    if ( ! defined $entity ) {
+        $log->error("Entity $evalue not found!");
+    }
+
+    my $obj    = $self->get_object($otype, $id);
+    if ( ! defined $obj ) {
+        $log->error("$otype $id not found!");
+    }
+
+    my $link = try {
         $mongo->collection('Link')->link_objects($obj, $entity);
     }
     catch {
         $log->error("Failed to Link $otype $id to $etype $evalue");
     };
+
+    $log->warn("link undefined") if (! defined $link);
 }
 
 sub get_entity {
@@ -787,31 +817,16 @@ sub get_entity {
     my $value   = shift;
     my $mongo   = $self->env->mongo;
     my $log     = $self->env->log;
-    my $entity;
 
-    $log->trace("get_entity $type $value");
+    $log->debug("get_entity $type $value");
 
-    while ( ! defined $entity ) {
-        $entity  = try {
-            $mongo->collection('Entity')->get_by_value($value);
-        }
-        catch {
-            $log->error("Failed to entity by value $value");
-        };
 
-        $log->trace("entity = ",{filter=>\&Dumper, value => $entity});
-
-        if ( ! defined $entity ) {
-            $log->error("Entity not found! Creating...");
-            $entity = $self->create_entity($type, $value);
-        }
-
-        if ( $entity->type ne $type ) {
-            $log->error("whoops, looking for $type entity but got ".$entity->type);
-            $entity = undef;
-        }
+    my $entity  = $mongo->collection('Entity')->find_one({ value => $value, type => $type});
+    if ( ! defined $entity ) {
+        $log->debug("Entity not found! Creating...");
+        $entity = $self->create_entity($type, $value);
     }
-    $log->trace("got entity ".$entity->value);
+
     return $entity;
 }
 
@@ -891,6 +906,7 @@ sub send_update_to_scot_topic {
     
     my $type    = lc((split(/::/,ref($object)))[-1]);
     my $message = {
+        who     => 'flair',
         action  => 'updated',
         data    => {},
     };
@@ -899,7 +915,8 @@ sub send_update_to_scot_topic {
         my @aids    = $self->get_alertids($object);
         foreach my $aid (@aids) {
             $message->{data} = { type => 'alert', id => $aid };
-            $self->send_mq("/topic/scot", $message);
+            # floods the toast popup in scot
+            # $self->send_mq("/topic/scot", $message);
         }
         my $agid    = $object->id;
         $message->{data} = { type => 'alertgroup', id => $agid };

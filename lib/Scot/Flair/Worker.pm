@@ -164,11 +164,13 @@ sub process_frame {
     try {
         $frame      = $stomp->receive_frame;
         next unless (defined $frame);
+        $log->info("========= Recieved Frame ============");
         my $timer   = $env->get_timer("total_frame_process_time");
         my $data    = $self->decode_frame($frame);
         $self->process_message($data);
         &$timer;
         $stomp->ack({frame => $frame});
+        $log->info("========= Acknowledged Frame ============");
     }
     catch {
         $stomp->nack({frame => $frame});
@@ -192,10 +194,11 @@ sub process_message {
     my $self    = shift;
     my $data    = shift;
     my $json    = $data->{body};
+    my $log     = $self->env->log;
 
     return undef if ($self->invalid_data($json));
-
     my $processor = $self->get_processor($json);
+    $log->debug("will process with ".ref($processor));
     $processor->flair($json);
 }
 

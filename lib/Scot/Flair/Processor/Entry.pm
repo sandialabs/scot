@@ -17,12 +17,13 @@ sub flair_object {
     my $entry   = shift;
     my $log     = $self->env->log;
     
-    $log->debug("[$$] flairing Entry ".$entry->id);
+    $log->debug("+++ [$$] flairing Entry ".$entry->id);
 
     my $body    = $self->preprocess_body($entry);
     my $results = $self->process_html($body);
 
     $self->update_entry($entry, $body, $results);
+    $log->debug("+++ [$$] done flairing Entry ".$entry->id);
 
     return $results;
 }

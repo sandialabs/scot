@@ -127,11 +127,6 @@ sub parse {
         my $re      = $re_href->{regex};
         my $type    = $re_href->{type};
 
-        if ( $re_index == 1) {
-            $log->debug($tracker." - "x$level."$type ($re_index of $total_re)");
-        #    $log->debug("RE = ",{filter=>\&Dumper, value => $re});
-        }
-
         my ($pre, $flair, $post) = $self->find_flairable($text, $re, $type, $edb, $level, $tracker);
 
         if ( ! defined $flair ) {
@@ -189,7 +184,7 @@ sub find_flairable {
 
         if (defined $flairable) {
             # we found a positive match
-            $log->debug($tracker." - "x$level."Found Flairable ".$flairable->as_HTML." in $attempt tries");
+            $log->trace($tracker." - "x$level."Found Flairable ".$flairable->as_HTML." in $attempt tries");
             $log->trace($tracker." - "x$level."PRE   = ".$PRE.$pre);
             $log->trace($tracker." - "x$level."MATCH = ".$match);
             $log->trace($tracker." - "x$level."POST  = ".$post);

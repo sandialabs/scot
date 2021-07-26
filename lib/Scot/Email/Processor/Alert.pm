@@ -70,6 +70,7 @@ sub select_parser {
     my $self    = shift;
     my $msg     = shift;
     my $env     = $self->env;
+    my $log     = $env->log;
 
     my $subject = $msg->{subject};
     my $from    = $msg->{from};
@@ -81,7 +82,7 @@ sub select_parser {
     else {
         $class  = "Scot::Email::Parser::GenericAlert";
     }
-
+    $log->debug("requiring $class to parse message...");
     require_module($class);
     my $instance = $class->new({env => $env});
     return $instance;

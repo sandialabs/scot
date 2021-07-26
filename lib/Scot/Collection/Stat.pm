@@ -83,7 +83,7 @@ sub increment {
     }
     else {
         $log->debug("Updating existing stat record ".ref($obj));
-        $log->debug("object is ",{filter=>\&Dumper, value=>$obj});
+        $log->trace("object is ",{filter=>\&Dumper, value=>$obj});
         my $newvalue = $obj->value + $value;
         $obj->update({
             '$set'  => { value => $newvalue },
