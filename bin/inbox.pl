@@ -10,7 +10,7 @@ use Scot::Env;
 use Scot::Email::Scheduler;
 
 my $dry = $ARGV[0];
-my $pidfile = '/var/run/recemail.pid';
+my $pidfile = '/var/run/inbox.pid';
 
 if ( -s $pidfile ) {
     die "$pidfile exists. Kill running $0 and delete $pidfile to continue";

@@ -29,7 +29,7 @@ sub flair_object {
     my %results     = (); 
     my $agid        = $alertgroup->id;
 
-    $log->debug("[$$] flairing Alertgroup ".$agid);
+    $log->debug("+++ [$$] flairing Alertgroup ".$agid);
 
     my $cursor  = $self->scotio->get_alerts($alertgroup);
 
@@ -40,6 +40,7 @@ sub flair_object {
     &$timer;
     $log->trace("Alertgroup results: ",{filter=>\&Dumper, value=> \%results});
     $self->update_alertgroup(\%results, $agid);
+    $log->debug("+++ [$$] done flairing Alertgroup ".$agid);
     return \%results;
 }
 
@@ -57,7 +58,7 @@ sub flair_alert {
     my $alertid = $alert->{id};
     my $agid    = $alert->{alertgroup};
     my $tracker = "{$agid:$alertid}";
-    $log->trace("$tracker flair alert $alertid begins");
+    $log->debug("$tracker flair alert $alertid begins");
 
     my $alert_data  = $alert->{data};
 
@@ -71,6 +72,7 @@ sub flair_alert {
         };
         $self->flair_cell($results, $cell);
     }
+    $log->debug("$tracker flair alert $alertid ends");
 }
 
 sub ensure_array {
@@ -95,7 +97,7 @@ sub flair_cell {
     my $alertid = $cell->{alert};
     my $log     = $self->env->log;
 
-    $log->trace("flair_cell $alertid $column");
+    $log->debug("___ begin flair_cell $alertid $column");
 
     if ( $self->is_skippable_column($column) ) {
         $results->{$alertid}->{$column}->{flair} = $cell->{cell_data};
@@ -112,6 +114,7 @@ sub flair_cell {
     foreach my $item (@$items) {
         $self->flair_item($results, $alertid, $column, $item);
     }
+    $log->debug("___ end flair_cell $alertid $column");
     $log->trace("results->{$alertid}->{entities} after flair cell $column ",
                 {filter=>\&Dumper, value => $results->{$alertid}->{entities}});
 }
@@ -131,7 +134,7 @@ sub flair_item {
                   '</html>';
 
     my $edb = $self->process_html($html);
-    $log->trace("edb ",{filter=>\&Dumper, value => $edb});
+
     my $found_flair     = $edb->{flair};
     my $plain_text      = $edb->{text};
     my $found_entities  = $edb->{entities};
@@ -141,8 +144,11 @@ sub flair_item {
     push @{$results->{$alertid}->{$column}->{flair}},$found_flair;
     push @{$results->{$alertid}->{$column}->{text}} ,$plain_text;
     
+    $log->debug("Processing found entities");
     foreach my $type (keys %$found_entities) {
+        $log->debug("    Type $type");
         foreach my $value (keys %{$found_entities->{$type}}) {
+            $log->debug("        value $value");
              #note entites are up one level since we don't 
              #track to the cell/column 
             $results->{$alertid}->{entities}->{$type}->{$value}++;
@@ -238,23 +244,50 @@ sub process_sparkline_cell {
     my $self    = shift;
     my $results = shift;
     my $cell    = shift;
+    my $log     = $self->env->log;
     my $alertid = $cell->{alert};
     my $column  = $cell->{colname};
     my $items   = $cell->{cell_data};
-    my $head    = shift @$items;
-    if ( $head eq "##__SPARKLINE__##" ) {
-        my $svg = SVG::Sparkline->new(
-            Line => {
-                value   => $items,
-                color   => 'blue',
-                height  => 12,
-            }
-        );
-        push @{$results->{$alertid}->{$column}->{flair}}, $svg;
-        push @{$results->{$alertid}->{$column}->{text}}, $items;
-        return 1;
+
+    if ( ref($items) ne 'ARRAY' ) {
+        if ( $items !~ /^##__SPARKLINE__##/ ) {
+            $log->trace("string cell data does not begin with ##__SPARKLINE");
+            return undef;
+        }
+        $items  = $self->convert_to_sparkline_array($items);
     }
-    return undef;
+    else {
+        if ( $items->[0] ne "##__SPARKLINE__##" ) {
+            $log->trace("cell[0] is not a sparkline header");
+            return undef;
+        }
+    }
+
+    $log->debug("Processing SPARKLINE cell items= ",{filter=>\&Dumper, value => $items});
+    my $head    = shift @$items;
+
+    $log->debug("found a sparkline data cell");
+    $log->trace("value => ",{filter=>\&Dumper, value=>$items});
+
+    my @vals = grep {/\S+/} @$items;    # weed out " "
+
+    my $svg = SVG::Sparkline->new(
+        Line => {
+            values  => \@vals,
+            color   => 'blue',
+            height  => 12,
+        }
+    );
+    push @{$results->{$alertid}->{$column}->{flair}}, $svg->to_string;
+    push @{$results->{$alertid}->{$column}->{text}}, $items;
+    return 1;
+}
+
+sub convert_to_sparkline_array {
+    my $self    = shift;
+    my $items   = shift;
+    my @new     = split(',',$items);
+    return wantarray ? @new : \@new;
 }
 
 sub process_sentinel_cell {
@@ -292,9 +325,12 @@ sub update_alertgroup {
     my $results = shift;
     my $agid    = shift;
     my $io      = $self->scotio;
+    my $log     = $self->env->log;
 
     my %new_ag_data = ();
     my %ag_edb      = ();
+
+    $log->debug("update_alertgroup $agid");
 
     foreach my $alert_id (sort keys %$results) {
 

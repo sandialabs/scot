@@ -38,20 +38,21 @@ sub flair {
     my $data    = shift;
     my $log     = $self->env->log;
 
-    $log->info("-------- BEGIN FLAIR -------");
+    $log->info("-------- BEGIN FLAIR PROCESSOR -------");
 
 
     my $timer   = $self->env->get_timer("flair_time");
     my $object  = $self->retrieve($data);
     if ( defined $object ) {
         my $results = $self->flair_object($object);
+        $log->trace("Flair object results = ",{filter=>\&Dumper, value => $results});
     }
     else {
         $self->env->log->error("Unable to retrieve object ",
             {filter=>\&Dumper, value => $data});
     }
     &$timer;
-    $log->info("-------- END FLAIR -------");
+    $log->info("-------- END FLAIR PROCESSOR -------");
 }
 
 
@@ -152,6 +153,8 @@ sub process_html {
     my $log     = $self->env->log;
     my $timer   = $self->env->get_timer("process_html");
 
+    $log->debug('$$$ process html begins $$$');
+
     my %edb = (
         # entities => [],
         # flair    => '<flair html>',
@@ -172,6 +175,7 @@ sub process_html {
     $log->info("$lid Elapsed time to process ".length($cleanhtml)." characters: $elapsed");
     $log->trace("$lid EDB =",{filter=>\&Dumper, value=>\%edb});
 
+    $log->debug('$$$ process html ends $$$');
     return \%edb;
 }
 

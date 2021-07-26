@@ -16,12 +16,13 @@ sub flair_object {
     my $remflair = shift;
     my $log     = $self->env->log;
 
-    $log->debug("[$$] flairing RemoteFlair Request".$remflair->id);
+    $log->debug("+++ [$$] flairing RemoteFlair Request".$remflair->id);
 
     my $body = $self->preprocess_body($remflair);
     my $results = $self->process_html($body);
 
     $self->update_remoteflair($remflair, $results);
+    $log->debug("+++ [$$] done flairing RemoteFlair Request".$remflair->id);
 
     return $results;
 }
