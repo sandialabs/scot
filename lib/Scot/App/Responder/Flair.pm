@@ -298,7 +298,8 @@ sub flair_record {
                 $log->trace("head is $head");
                 if ($head eq "##__SPARKLINE__##" ) {
                     $log->trace("creating svg::sparkline");
-                    my $svg = SVG::Sparkline->new( Line => { values =>\@sparkvalues, color => 'blue', height =>12 } );
+                    my @spv = grep { /\S+/ } @sparkvalues;
+                    my $svg = SVG::Sparkline->new( Line => { values =>\@spv, color => 'blue', height =>12 } );
                     $flair{$column} = $svg->to_string();
                     # we have gobbled up all the @values, move to next column
                     next COLUMN; 
