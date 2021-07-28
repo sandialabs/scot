@@ -95,14 +95,14 @@ sub get_api_basics {
         if ( defined $val_cell and ref($val_cell) eq "HTML::Element" ) {
             $val = lc($val_cell->as_text);
         }
-        if ( $key eq "subject" ) {
+        if ( lc($key) eq "subject" ) {
             $subject = $val;
         }
-        if ( $key eq "sources" ) {
-            $sources = [ split(/[ ]*,[ ]*/, $val) ];
+        if ( lc($key) eq "sources" ) {
+            $sources = [ map { lc($_); } split(/[ ]*,[ ]*/, $val) ];
         }
-        if ( $key eq "tags" ) {
-            $tags    = [ split(/[ ]*,[ ]*/, $val) ];
+        if ( lc($key) eq "tags" ) {
+            $tags    = [ map { lc($_); } split(/[ ]*,[ ]*/, $val) ];
         }
     }
     return $subject, $tags, $sources;
