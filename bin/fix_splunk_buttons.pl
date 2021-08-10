@@ -18,7 +18,6 @@ $cursor->immortal(1);
 while (my $entity = $cursor->next) {
     my $id      = $entity->id;
     my $data    = $entity->data;
-    print Dumper($data);
     if ( defined $data->{splunk} ) {
         if (defined $data->{splunkit}) {
             printf "%10d SplunkIt present, deleting splunk button\n",$id;
@@ -46,7 +45,6 @@ while (my $entity = $cursor->next) {
 
             $entity->update({'$set' => { data => $data }});
         }
-        print Dumper($data);
     }
 }
 
