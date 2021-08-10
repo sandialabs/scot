@@ -78,6 +78,7 @@ sub is_event_api {
 sub get_api_basics {
     my $self    = shift;
     my $tree    = shift;
+    my $log     = $self->env->log;
     my $table   = ($tree->look_down('_tag','table'))[0]->detach_content;
     my @cells   = $table->look_down('_tag','td');
     my ($subject, $tags, $sources);
@@ -88,6 +89,9 @@ sub get_api_basics {
 
         my $key_cell = $cells[$i];
         my $val_cell = $cells[$j];
+
+        $log->debug("Cell Key = $key_cell");
+        $log->debug("Cell Val = $val_cell");
 
         if ( defined $key_cell and ref($key_cell) eq "HTML::Element" ) {
             $key = lc($key_cell->as_text);
@@ -105,6 +109,7 @@ sub get_api_basics {
             $tags    = [ map { lc($_); } split(/[ ]*,[ ]*/, $val) ];
         }
     }
+    $log->debug("Subject = $subject Tags = ".join(',',@$tags)." Sources = ".join(',',@$sources));
     return $subject, $tags, $sources;
 }
 

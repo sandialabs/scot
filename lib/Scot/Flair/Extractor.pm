@@ -95,6 +95,65 @@ sub extract_entities {
     return wantarray ? %edb : \%edb;
 }
 
+sub get_whitespace_in_text {
+    my $self    = shift;
+    my $text    = shift;
+    my @white   = ();
+    my $wsre    = qr/\s|<br>|<br \/>/;
+    foreach my $w ($text =~ m/$wsre/g) {
+        push @white, $w;
+    }
+    $self->env->log->debug("found ".scalar(@white)." whitespace characters");
+    return wantarray ? @white : \@white;
+}
+
+sub split_large_text {
+    my $self    = shift;
+    my $text    = shift;
+    my $limit   = 500;
+    my $size    = length($text);
+    my @parts   = ();
+    my $log     = $self->env->log;
+
+    if ( $size < $limit ) {
+        push @parts, $text;
+        return wantarray ? @parts : \@parts;
+    }
+
+    my $splitre = qr/\s|<br>|<br \/>/;
+
+    my @words   = split(/$splitre/,$text);
+    my @white   = $self->get_whitespace_in_text($text);
+    my $ws_count    = scalar(@white);
+    my $part    = '';
+
+    my $word_count  = scalar(@words);
+    my $char_count  = 0; 
+
+    $log->debug("Word count = $word_count");
+    $log->debug("WS   count = $ws_count");
+
+    foreach my $word (@words) {
+        my $word_len    = length($word);
+        my $ws          = shift @white;
+        $char_count     += $word_len;
+        $char_count++ if (defined $ws);
+
+        if ( $char_count > $limit ) {
+            push @parts, $part;
+            $part       = '';
+            $char_count = 0;
+        }
+        $part .= $word;
+        $part .= $ws if (defined $ws);
+    }
+    push @parts, $part;
+
+    $log->debug("Created ".scalar(@parts). " parts");
+
+    return wantarray ? @parts : \@parts;
+}
+
 sub parse {
     my $self    = shift;
     my $tracker = shift;
@@ -104,11 +163,40 @@ sub parse {
     my $log     = $self->env->log;
     my @new     = ();
 
+    my @textparts   = $self->split_large_text($text);
+    my $partcount   = scalar(@textparts);
+
+    # sometimes a continuous string can be larger than the char limit 
+    if ( length($textparts[0]) == 0 ) {
+        shift @textparts;
+    }
+    my $i = 1;
+    foreach my $part (@textparts) {
+        push @new, $self->recursive_parse($tracker."{p$i/$partcount}", $edb, $part, $level);
+        $i++;
+    }
+    return wantarray ? @new : \@new;
+}
+
+sub recursive_parse {
+    my $self    = shift;
+    my $tracker = shift;
+    my $edb     = shift;
+    my $text    = shift;
+    my $level   = shift // 1;
+    my $log     = $self->env->log;
+    my @new     = ();
+
+    $log->debug($tracker." - "x$level." begin parse of ".length($text)." characters");
+
     if ( $text eq '' ) {
         $log->trace($tracker." - "x$level. 'null text');
         return;
     }
+
+    $log->trace($tracker." - "x$level." Text block under size threshold");
     $log->trace($tracker." - "x$level." PARSING = $text");
+
     if ( $self->max_level < $level ) {
         $self->max_level($level);
     }
@@ -127,7 +215,8 @@ sub parse {
         my $re      = $re_href->{regex};
         my $type    = $re_href->{type};
 
-        my ($pre, $flair, $post) = $self->find_flairable($text, $re, $type, $edb, $level, $tracker);
+        my ($pre, $flair, $post) = 
+            $self->find_flairable($text, $re, $type, $edb, $level, $tracker);
 
         if ( ! defined $flair ) {
             $log->trace($tracker." - "x$level."Did not match $type ($re_index of $total_re)");
@@ -137,11 +226,13 @@ sub parse {
         $log->trace($tracker." - "x$level."Found Flairable of type $type. ($re_index of $total_re)");
 
         # search the pre match text for flair
-        push @new, $self->parse($tracker,$edb, $pre, $level+1);
+        $log->debug($tracker." - "x$level."flair found, recursing pre match");
+        push @new, $self->recursive_parse($tracker,$edb, $pre, $level+1);
         # add the flair
         push @new, $flair;
         # search the post match text for flair
-        push @new, $self->parse($tracker,$edb, $post, $level+1);
+        $log->debug($tracker." - "x$level."flair found, recursing post match");
+        push @new, $self->recursive_parse($tracker,$edb, $post, $level+1);
 
         last REGEX;
     }
@@ -150,7 +241,7 @@ sub parse {
         $log->trace($tracker." - "x$level."No Flairables in Text, pushing text onto stack");
         push @new, $text;
     }
-
+    $log->debug($tracker." - "x$level."parsing complete");
     return wantarray ? @new : \@new;
 }
 
