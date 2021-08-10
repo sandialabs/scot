@@ -153,7 +153,7 @@ sub process_html {
     my $log     = $self->env->log;
     my $timer   = $self->env->get_timer("process_html");
 
-    $log->debug('$$$ process html begins $$$');
+    $log->debug($lid.' $$$ process html begins $$$');
 
     my %edb = (
         # entities => [],

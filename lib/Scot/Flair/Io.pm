@@ -946,5 +946,35 @@ sub get_alertids {
     return wantarray ? @ids : \@ids;
 }
 
+sub update_entry_body {
+    my $self    = shift;
+    my $entry   = shift;
+    my $body    = shift;
+
+    $entry->update_set({
+        '$set'  => { body => $body }
+    });
+}
+
+sub create_child_entry {
+    my $self    = shift;
+    my $entry   = shift;
+    my $part    = shift;
+
+    my $json    = $entry->as_hash;
+
+    delete $json->{id};
+    delete $json->{body_flair};
+    delete $json->{body_plain};
+    $json->{body}   = $part;
+    $json->{parent} = $entry->id;
+
+    my $mongo   = $self->env->mongo;
+    my $col     = $mongo->collection('Entry');
+    my $newentry   = $col->create($json);
+
+    return $newentry;
+}
+
 
 1;

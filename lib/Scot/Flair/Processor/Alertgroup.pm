@@ -70,7 +70,8 @@ sub flair_alert {
             alert       => $alertid,
             alertgroup  => $agid,
         };
-        $self->flair_cell($results, $cell);
+        my $tracker = "[$agid:$alertid";
+        $self->flair_cell($results, $cell,$tracker);
     }
     $log->debug("$tracker flair alert $alertid ends");
 }
@@ -93,6 +94,7 @@ sub flair_cell {
     my $self    = shift;
     my $results = shift;
     my $cell    = shift;
+    my $tracker = shift;
     my $column  = $cell->{colname};
     my $alertid = $cell->{alert};
     my $log     = $self->env->log;
@@ -112,7 +114,7 @@ sub flair_cell {
     my $items = $cell->{cell_data};
 
     foreach my $item (@$items) {
-        $self->flair_item($results, $alertid, $column, $item);
+        $self->flair_item($results, $alertid, $column, $item, $tracker);
     }
     $log->debug("___ end flair_cell $alertid $column");
     $log->trace("results->{$alertid}->{entities} after flair cell $column ",
@@ -125,15 +127,18 @@ sub flair_item {
     my $alertid = shift;
     my $column  = shift;
     my $item    = shift;
+    my $tracker = shift;
     my $log     = $self->env->log;
 
     $log->trace("processing $alertid $column : $item");
+
+    $tracker .= ":$column]";
 
     my $html    = '<html>'.
                   encode_entities($item).
                   '</html>';
 
-    my $edb = $self->process_html($html);
+    my $edb = $self->process_html($html, $tracker);
 
     my $found_flair     = $edb->{flair};
     my $plain_text      = $edb->{text};

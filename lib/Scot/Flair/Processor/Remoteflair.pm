@@ -18,8 +18,9 @@ sub flair_object {
 
     $log->debug("+++ [$$] flairing RemoteFlair Request".$remflair->id);
 
+    my $tracker = "[rf:".$remflair->id."]";
     my $body = $self->preprocess_body($remflair);
-    my $results = $self->process_html($body);
+    my $results = $self->process_html($body,$tracker);
 
     $self->update_remoteflair($remflair, $results);
     $log->debug("+++ [$$] done flairing RemoteFlair Request".$remflair->id);

@@ -57,10 +57,10 @@ sub get_body {
     my $log     = $self->env->log;
 
     $log->debug("getting body");
-    $log->debug("mstr = $mstr");
+    $log->trace("mstr = $mstr");
 
     my $clean = $self->clean_messagestr($mstr);
-    $log->debug("clean = $clean");
+    $log->trace("clean = $clean");
 
     my $email       = try {
         # Courriel->parse(text => $clean);
