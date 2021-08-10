@@ -335,6 +335,7 @@ function install_perl_modules {
         DateTime::Format::Strptime
         DateTime::Format::Natural
         Time::HiRes
+        Time::Duration
         Server::Starter
         PSGI
         CGI::PSGI

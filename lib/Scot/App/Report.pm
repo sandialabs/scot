@@ -227,6 +227,59 @@ sub response_times {
     return wantarray ? %result : \%result;
 }
 
+sub top_domains {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+
+    my $query   = { type => "domain", status => "tracked" };
+    my $cursor  = $mongo->collection('Entity')->find($query);
+    my $lincol  = $mongo->collection('Link');
+    my $dscol   = $mongo->collection('Domainstat');
+
+    while ( my $entity = $cursor->next ) {
+        my $eid     = $entity->id;
+        my $count   = $lincol->get_display_count($entity);
+        my $bldata  = $entity->data->{blocklist3};
+        my $row     = {
+            entity_id   => $eid,
+            value       => $entity->value,
+            count       => $count,
+            entries     => $entity->entry_count,
+            blocklist   => $bldata,
+        };
+        my $result  = $self->upsert_domain_data($row);
+        $log->debug("upsert domain result = ",{filter => \&Dumper, value => $result});
+    }
+}
+
+sub upsert_domain {
+    my $self    = shift;
+    my $row     = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+    my $dscol   = $mongo->collection('Domainstat');
+
+    my @command = (
+        findAndModify   => "domainstat",
+        query           => { entity_id  => $row->{entity_id} },
+        update          => { '$set'  => $row },
+        upsert          => 1,
+    );
+
+    my $result = $dscol->_try_mongo_op(
+        upsert_domain   => sub {
+            my $dbname  = $mongo->database_name;
+            my $db      = $mongo->_mongo_database($dbname);
+            my $job     = $db->run_command(\@command);
+            return $job->{value};
+        }
+    );
+    return $result;
+}
+
 
 
 1;
