@@ -89,3 +89,5 @@ db.user.ensureIndex ( {"username": 1} );
 db.getCollection('group').ensureIndex({"name": 1},{unique: true, dropDups:true});
 
 db.remoteflair.ensureIndex({"id": 1}, {unique: true, dropDups:true});
+db.domainstat.ensureIndex({"id": 1}, {unique: true, dropDups:true});
+db.domainstat.ensureIndex({"count": 1});
