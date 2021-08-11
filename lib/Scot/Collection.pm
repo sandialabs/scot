@@ -479,6 +479,7 @@ sub api_list {
        && ref($self) ne "Scot::Collection::Entitytype" 
        && ref($self) ne "Scot::Collection::Entity" 
        && ref($self) ne "Scot::Collection::Deleted" 
+       && ref($self) ne "Scot::Collection::Domainstat" 
        && ref($self) ne "Scot::Collection::Link" ) {
         $match->{'groups.read'} = { '$in' => $groups };
     }
