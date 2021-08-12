@@ -793,12 +793,21 @@ sub link_via_mongo {
 
     my $entity = $self->get_entity($etype,$evalue);
     if ( ! defined $entity ) {
-        $log->error("Entity $evalue not found!");
+        $log->error("Entity $evalue not found! No linking.");
+        return;
     }
+
+    my $estatus = $entity->status;
+    if ( defined $estatus and $estatus eq "untracked" ) {
+        $log->info("untracked entity ".$entity->value.". Not linking.");
+        return;
+    }
+
 
     my $obj    = $self->get_object($otype, $id);
     if ( ! defined $obj ) {
-        $log->error("$otype $id not found!");
+        $log->error("$otype $id not found! No linking.");
+        return;
     }
 
     my $link = try {

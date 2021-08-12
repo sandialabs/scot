@@ -116,6 +116,7 @@ sub split_large_text {
     my $log     = $self->env->log;
 
     if ( $size < $limit ) {
+        $log->debug("Text under limit");
         push @parts, $text;
         return wantarray ? @parts : \@parts;
     }
@@ -226,7 +227,7 @@ sub recursive_parse {
         $log->trace($tracker." - "x$level."Found Flairable of type $type. ($re_index of $total_re)");
 
         # search the pre match text for flair
-        $log->debug($tracker." - "x$level."flair found, recursing pre match");
+        $log->debug($tracker." - "x$level."$type flair found, recursing pre match");
         push @new, $self->recursive_parse($tracker,$edb, $pre, $level+1);
         # add the flair
         push @new, $flair;
