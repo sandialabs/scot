@@ -168,7 +168,8 @@ sub process_frame {
         my $timer   = $env->get_timer("total_frame_process_time");
         my $data    = $self->decode_frame($frame);
         $self->process_message($data);
-        &$timer;
+        my $elapsed = &$timer;
+        $log->info("========= $elapsed secs Frame process time =======");
         $stomp->ack({frame => $frame});
         $log->info("========= Acknowledged Frame ============");
     }

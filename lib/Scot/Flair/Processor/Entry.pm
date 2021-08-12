@@ -18,21 +18,15 @@ sub flair_object {
     my $log     = $self->env->log;
     
 
-    my @entries = $self->split_entry($entry);
-    my @results = ();
+    $log->debug("+++ [$$] flairing Entry ".$entry->id);
+    my $tracker = "[entry:".$entry->id."]";
+    my $body    = $self->preprocess_body($entry);
+    my $result  = $self->process_html($body, $tracker);
 
-    foreach my $entry (@entries) {
-        $log->debug("+++ [$$] flairing Entry ".$entry->id);
-        my $tracker = "[entry:".$entry->id."]";
-        my $body    = $self->preprocess_body($entry);
-        my $result  = $self->process_html($body, $tracker);
-        push @results, $result;
+    $self->update_entry($entry, $body, $result);
+    $log->debug("+++ [$$] done flairing Entry ".$entry->id);
 
-        $self->update_entry($entry, $body, $result);
-        $log->debug("+++ [$$] done flairing Entry ".$entry->id);
-    }
-
-    return wantarray ? @results : \@results;
+    return $result;
 }
 
 sub split_entry {
@@ -45,7 +39,7 @@ sub split_entry {
     my $bsize   = length($body);
     my $limit   = 4 * 1024 * 1024; # 4 MB
     if ( $bsize > $limit ) {
-        my @parts = $self->split_body($body);
+        my @parts = $self->split_body($body, $limit);
         my $parent  = $entry->id;
 
         my $first_part  = shift @parts;

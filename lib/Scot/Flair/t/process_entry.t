@@ -46,21 +46,16 @@ my $processor   = $worker->get_processor($message);
 my $results     = $processor->flair_object($entry);
 
 my $expect = {
-	'entities' => [
-		{
-		'type' => 'ipaddr',
-		'value' => '10.10.10.1'
-		},
-		{
-		'type' => 'domain',
-		'value' => 'google.com'
-		},
-    ],
+	'entities' => {
+		'ipaddr' => { '10.10.10.1' => 1 },
+		'domain' => { 'google.com' => 1 },
+    },
 	'text' => 'The quick brown fox google.com the ipaddr of 10.10.10.1
 ',
 	'flair' => '<div>The quick brown fox <span class="entity domain" data-entity-type="domain" data-entity-value="google.com">google.com</span> the ipaddr of <span class="entity ipaddr" data-entity-type="ipaddr" data-entity-value="10.10.10.1">10.10.10.1</span></div>'
 };
-
+delete $results->{cache};
+say Dumper($results);
 cmp_deeply ($results, $expect, "Flaired correctly");
 
 is ($entry->body_flair, $expect->{flair}, "Entry flair was updated");

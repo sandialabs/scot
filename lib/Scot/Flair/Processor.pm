@@ -224,6 +224,7 @@ sub generate_new_html {
     my $new     = $div->as_HTML();
     return $new;
 }
+
 sub walk_tree {
     my $self    = shift;
     my $lid     = shift;
@@ -269,12 +270,13 @@ sub walk_tree {
             # leaf node case, start parsing the text
             my $text = $content[$index];
             $log->trace($lid." "x$spaces."Leaf Node content = ".$text);
-            push @new, $extractor->parse($lid, $edb, $text);
+            push @new, $extractor->parse($lid, $edb, $text) ;
         }
     }
     # replace the content of the element
     $element->splice_content(0, scalar(@content), @new);
 }
+
 
 sub is_not_leaf_node {
     my $self    = shift;
