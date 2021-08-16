@@ -173,7 +173,7 @@ sub process_html {
     $tree->delete;  # help prevent potential memory leaks
 
     my $elapsed = &$timer;
-    $log->info("$lid Elapsed time to process ".length($cleanhtml)." characters: $elapsed");
+    $log->info("TIME: $elapsed :: $lid ". length($cleanhtml)." characters");
     $log->trace("$lid EDB =",{filter=>\&Dumper, value=>\%edb});
 
     $log->debug('$$$ process html ends $$$');
