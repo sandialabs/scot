@@ -170,6 +170,7 @@ sub process_frame {
         $self->process_message($data);
         my $elapsed = &$timer;
         $log->info("========= $elapsed secs Frame process time =======");
+        $log->info("TIME: $elapsed :: Frame process time =======");
         $stomp->ack({frame => $frame});
         $log->info("========= Acknowledged Frame ============");
     }

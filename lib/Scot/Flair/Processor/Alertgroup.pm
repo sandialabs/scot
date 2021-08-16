@@ -21,6 +21,9 @@ has sentinel_logo => (
     default     => '/images/azure-sentinel.png',
 );
 
+# Processor::flair() calls flair_object
+# %results are returned but not really used by flair() yet
+
 sub flair_object {
     my $self        = shift;
     my $alertgroup  = shift;
@@ -32,14 +35,16 @@ sub flair_object {
     $log->debug("+++ [$$] flairing Alertgroup ".$agid);
 
     my $cursor  = $self->scotio->get_alerts($alertgroup);
-
+    my $alertcount  = 0;
     while (my $alert = $cursor->next) {
         $self->flair_alert(\%results, $alert);
+        $alertcount++;
     }
     
-    &$timer;
+    my $elapsed = &$timer;
     $log->trace("Alertgroup results: ",{filter=>\&Dumper, value=> \%results});
     $self->update_alertgroup(\%results, $agid);
+    $log->debug("TIME: $elapsed :: flair alertgroup $agid ($alertcount alerts)");
     $log->debug("+++ [$$] done flairing Alertgroup ".$agid);
     return \%results;
 }

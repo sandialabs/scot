@@ -51,7 +51,8 @@ sub flair {
         $self->env->log->error("Unable to retrieve object ",
             {filter=>\&Dumper, value => $data});
     }
-    &$timer;
+    my $elapsed = &$timer;
+    $log->debug("TIME: $elapsed :: flair ".ref($object)."[".$object->id."]");
     $log->info("-------- END FLAIR PROCESSOR -------");
 }
 

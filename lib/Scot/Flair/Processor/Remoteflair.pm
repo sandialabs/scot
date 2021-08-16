@@ -15,6 +15,7 @@ sub flair_object {
     my $self    = shift;
     my $remflair = shift;
     my $log     = $self->env->log;
+    my $timer   = $self->env->get_timer("remote_flair");
 
     $log->debug("+++ [$$] flairing RemoteFlair Request".$remflair->id);
 
@@ -23,6 +24,8 @@ sub flair_object {
     my $results = $self->process_html($body,$tracker);
 
     $self->update_remoteflair($remflair, $results);
+    my $elapsed = &$timer;
+    $log->debug("TIME: $elapsed :: remote_flair ".$remflair->id);
     $log->debug("+++ [$$] done flairing RemoteFlair Request".$remflair->id);
 
     return $results;

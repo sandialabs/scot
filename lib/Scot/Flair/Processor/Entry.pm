@@ -16,14 +16,17 @@ sub flair_object {
     my $self    = shift;
     my $entry   = shift;
     my $log     = $self->env->log;
+    my $timer   = $self->env->get_timer("flair_entry");
+    my $eid     = $entry->id;
     
 
-    $log->debug("+++ [$$] flairing Entry ".$entry->id);
-    my $tracker = "[entry:".$entry->id."]";
+    $log->debug("+++ [$$] flairing Entry $eid");
+    my $tracker = "[entry: $eid]";
     my $body    = $self->preprocess_body($entry);
     my $result  = $self->process_html($body, $tracker);
-
     $self->update_entry($entry, $body, $result);
+    my $elapsed = &$timer;
+    $log->debug("TIME: $elapsed :: flair entry $eid");
     $log->debug("+++ [$$] done flairing Entry ".$entry->id);
 
     return $result;
