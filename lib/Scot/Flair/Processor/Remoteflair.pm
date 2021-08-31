@@ -25,7 +25,7 @@ sub flair_object {
 
     $self->update_remoteflair($remflair, $results);
     my $elapsed = &$timer;
-    $log->debug("TIME: $elapsed :: remote_flair ".$remflair->id);
+    $log->info("TIME == $elapsed secs :: remote_flair ".$remflair->id);
     $log->debug("+++ [$$] done flairing RemoteFlair Request".$remflair->id);
 
     return $results;

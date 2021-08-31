@@ -53,6 +53,11 @@ $SIG{'__DIE__'} = sub {
 
 # say Dumper($env);
 
+$env->log->info("------");
+$env->log->info("------ flair daemon starts");
+$env->log->info("------ flair daemon config file = $config_file");
+$env->log->info("------");
+
 my $loop    = Scot::Flair::Worker->new(env => $env);
 $loop->run();
 

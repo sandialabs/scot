@@ -15,6 +15,7 @@ use Scot::Env;
 use Scot::Flair::Regex;
 use Scot::Flair::Extractor;
 use Module::Runtime qw(require_module);
+use namespace::autoclean;
 
 use Moose;
 
@@ -120,6 +121,29 @@ sub _build_procmgr {
     return Parallel::Prefork->new({max_workers => $workers});
 }
 
+#has timelog =>  (
+#    is          => 'ro',
+#    isa         => 'Log::Log4Perl::Logger',
+#    required    => 1,
+#    builder     => '_build_timelog',
+#);
+
+#sub _build_timelog {
+#    my $self    = shift;
+#    my $log     = Log::Log4perl->get_logger('timing');
+#    my $layout  = Log::Log4perl::Layout::PatternLayout->new("%d [%P]  %12F{1}: %m%n");
+#    my $append  = Log::Log4perl::Appender->new(
+#        'Log::Log4perl::Appender::File',
+#        name        => 'flair_time_log',
+#        filename    => '/var/log/scot/times.log',
+#        autoflush   => 1,
+#    );
+#    $append->layout($layout);
+#    $log->add_appender($append);
+#    $log->level('INFO');
+#    return $log;
+#}
+
 sub run {
     my $self    = shift;
     my $log     = $self->env->log;
@@ -170,9 +194,10 @@ sub process_frame {
         $self->process_message($data);
         my $elapsed = &$timer;
         $log->info("========= $elapsed secs Frame process time =======");
-        $log->info("TIME: $elapsed :: Frame process time =======");
         $stomp->ack({frame => $frame});
         $log->info("========= Acknowledged Frame ============");
+
+        $log->info("TIME == $elapsed secs :: Frame Time");
     }
     catch {
         $stomp->nack({frame => $frame});
@@ -246,10 +271,10 @@ sub get_processor {
     my $class   = "Scot::Flair::Processor::$type";
     require_module($class);
     my $processor = $class->new(
-        env     => $self->env,
-        regexes => $self->regexes,
-        extractor=> $self->extractor,
-        scotio  => $self->io,
+        env         => $self->env,
+        regexes     => $self->regexes,
+        extractor   => $self->extractor,
+        scotio      => $self->io,
     );
     return $processor;
 }

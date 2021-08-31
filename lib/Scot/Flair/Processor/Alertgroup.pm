@@ -44,7 +44,7 @@ sub flair_object {
     my $elapsed = &$timer;
     $log->trace("Alertgroup results: ",{filter=>\&Dumper, value=> \%results});
     $self->update_alertgroup(\%results, $agid);
-    $log->debug("TIME: $elapsed :: flair alertgroup $agid ($alertcount alerts)");
+    $log->info("TIME == $elapsed secs :: flair alertgroup $agid ($alertcount alerts)"); 
     $log->debug("+++ [$$] done flairing Alertgroup ".$agid);
     return \%results;
 }

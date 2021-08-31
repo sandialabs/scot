@@ -26,7 +26,7 @@ sub flair_object {
     my $result  = $self->process_html($body, $tracker);
     $self->update_entry($entry, $body, $result);
     my $elapsed = &$timer;
-    $log->debug("TIME: $elapsed :: flair entry $eid");
+    $log->info("TIME == $elapsed secs :: flair entry $eid"); 
     $log->debug("+++ [$$] done flairing Entry ".$entry->id);
 
     return $result;
