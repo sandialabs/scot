@@ -33,6 +33,7 @@ has extractor   => (
     required    => 1,
 );
 
+
 sub flair {
     my $self    = shift;
     my $data    = shift;
@@ -52,7 +53,7 @@ sub flair {
             {filter=>\&Dumper, value => $data});
     }
     my $elapsed = &$timer;
-    $log->debug("TIME: $elapsed :: flair ".ref($object)."[".$object->id."]");
+    $log->info("TIME == $elapsed secs :: ".ref($object)."(".$object->id.")");
     $log->info("-------- END FLAIR PROCESSOR -------");
 }
 
@@ -173,7 +174,8 @@ sub process_html {
     $tree->delete;  # help prevent potential memory leaks
 
     my $elapsed = &$timer;
-    $log->info("TIME: $elapsed :: $lid ". length($cleanhtml)." characters");
+    my $charlen = length($cleanhtml);
+    $log->info("TIME == $elapsed secs :: $lid $charlen characters");
     $log->trace("$lid EDB =",{filter=>\&Dumper, value=>\%edb});
 
     $log->debug('$$$ process html ends $$$');
@@ -265,7 +267,12 @@ sub walk_tree {
                 $self->walk_tree($lid, $child, $edb, $level);
             }
             # push the possibly modified copy of the child onto the new stack
-            push @new, $child;
+            #if ( $child->is_empty ) {
+            #    $log->debug("child is empty!?!");
+            #    $log->debug({filter=>\&Dumper, value =>$child});
+            #}
+
+            push @new, $child; 
         }
         else {
             # leaf node case, start parsing the text
