@@ -12,6 +12,23 @@ use Scot::Flair::Imgmunger;
 use Moose;
 extends 'Scot::Flair::Processor';
 
+sub flair {
+    my $self    = shift;
+    my $data    = shift;
+    my $log     = $self->env->log;
+
+    $log->info("=== Entry Flair Processor Begins");
+    my $entry   = $self->retrieve($data);
+    if ( defined $entry ) {
+        my $results = $self->flair_object($entry);
+    }
+    else {
+        $log->error("Unable to retrieve Entry from ", {filter=>\&Dumper, value=>$data});
+    }
+    $log->info("=== Entry Flair Processor Ends");
+
+}
+
 sub flair_object {
     my $self    = shift;
     my $entry   = shift;
@@ -19,15 +36,17 @@ sub flair_object {
     my $timer   = $self->env->get_timer("flair_entry");
     my $eid     = $entry->id;
     
-
-    $log->debug("+++ [$$] flairing Entry $eid");
-    my $tracker = "[entry: $eid]";
+    $log->debug("+++ flairing Entry $eid");
+    
     my $body    = $self->preprocess_body($entry);
+    my $tracker = "[entry: $eid]";
     my $result  = $self->process_html($body, $tracker);
+
     $self->update_entry($entry, $body, $result);
+
     my $elapsed = &$timer;
     $log->info("TIME == $elapsed secs :: flair entry $eid"); 
-    $log->debug("+++ [$$] done flairing Entry ".$entry->id);
+    $log->debug("+++ done flairing Entry ".$entry->id);
 
     return $result;
 }
@@ -72,17 +91,6 @@ sub update_entry {
 
     $io->update_entry($entry, $body, $results);
 
-    foreach my $entity_type (keys %{$results->{entities}}) {
-
-        foreach my $value (keys %{$results->{entities}->{$entity_type}}) {
-
-            my $entity_href = { 
-                type    => $entity_type, 
-                value   => $value,
-            };
-            $io->update_entity($entry, $entity_href);
-        }
-    }
 }
 
 sub preprocess_body {

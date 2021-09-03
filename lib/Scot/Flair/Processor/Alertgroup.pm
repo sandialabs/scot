@@ -21,8 +21,21 @@ has sentinel_logo => (
     default     => '/images/azure-sentinel.png',
 );
 
-# Processor::flair() calls flair_object
-# %results are returned but not really used by flair() yet
+sub flair {
+    my $self    = shift;
+    my $data    = shift;
+    my $log     = $self->env->log;
+
+    $log->info("=== Alertgroup Flair Processor Begins");
+    my $alertgroup  = $self->retrieve($data);
+    if ( defined $alertgroup ) {
+        my $results = $self->flair_object($alertgroup);
+    }
+    else{
+        $log->error("Unable to retrieve Alertgroup from ",{filter=>\&Dumper, value=>$data});
+    }
+    $log->info("=== Alertgroup Flair Processor Ends");
+}
 
 sub flair_object {
     my $self        = shift;

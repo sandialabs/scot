@@ -21,7 +21,7 @@ print $pidfh "$$";
 close $pidfh;
 
 # my $config  = "../../Scot-Internal-Modules/etc/email.cfg.pl";
-my $config  = "/opt/scot/etc/email.cfg.pl";
+my $config  = "/opt/scot/etc/inbox.cfg.pl";
 my $env     = Scot::Env->new(config_file => $config);
 
 my $options = { env => $env };

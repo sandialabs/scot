@@ -1,5 +1,6 @@
 package Scot::Enricher::Io;
 
+use Data::Dumper;
 use Try::Tiny;
 use HTTP::Request;
 use LWP::UserAgent;
@@ -21,9 +22,16 @@ sub retrieve_item {
     my $self    = shift;
     my $type    = shift;
     my $id      = shift;
+    my $log     = $self->env->log;
     my $mongo   = $self->env->mongo;
-    my $col     = $mongo->collection(ucfirst($type));
+    my $colname = ucfirst($type);
+    my $col     = $mongo->collection($colname);
     my $item    = $col->find_iid($id);
+
+    if ( ! defined $item ) {
+        $log->error("Unable to find $colname $id!");
+    }
+
     return $item;
 }
 
@@ -31,6 +39,9 @@ sub retrieve_entity_href {
     my $self    = shift;
     my $id      = shift;
     my $log     = $self->env->log;
+
+    $log->debug("retrieving entity $id");
+
     my $obj     = $self->retrieve_item('entity', $id + 0);
     if ( defined $obj and ref($obj) eq "Scot::Model::Entity" ) {
         return $obj->as_hash;
@@ -42,23 +53,45 @@ sub retrieve_entity_href {
 sub apply_enrichment_data {
     my $self    = shift;
     my $id      = shift;
-    my @updates = @_;
-    my $obj     = $self->retrieve_item($id);
+    my $update  = shift;
+    my $obj     = $self->retrieve_item('entity', $id);
+    my $log     = $self->env->log;
 
     # note to future self
     # this overwrites the key for each enrichment
     # if you want instead to push latest update
     # update the $set to a $push
 
-    foreach my $update (@updates) {
-        my ($key, $val) = each %$update;
+    foreach my $key (keys %$update) {
+        my $val = $update->{$key};
         my $command = {
             '$set' => {
                 "data.$key" => $val
             }
         };
+        $log->debug("Updating entity $id with ",{filter=>\&Dumper, value => $command});
         $obj->update($command);
+        my $msg = {
+            'action'    => 'updated',
+            data        => {
+                type    => 'entity',
+                id      => $id,
+            }
+        };
+        $self->send_mq('/topic/scot', $msg);
     }
 }
 
+sub send_mq {
+    my $self    = shift;
+    my $queue   = shift;
+    my $data    = shift;
+    my $mq      = $self->env->mq;
+    my $log     = $self->env->log;
+
+    $log->debug("Sending to $queue : ");
+    $log->trace({filter=>\&Dumper, value => $data});
+
+    $mq->send($queue, $data);
+}
 1;

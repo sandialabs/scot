@@ -1,8 +1,7 @@
 package Scot::Flair::Io;
 
-use Data::Dumper;
-use DateTime;
 use Try::Tiny;
+use Data::Dumper;
 use HTTP::Request;
 use LWP::UserAgent;
 use LWP::Protocol::https;
@@ -16,133 +15,380 @@ use File::Copy;
 use Moose;
 
 has env => (
-    is          => 'ro',
-    isa         => 'Scot::Env',
-    required    => 1,
+    is      => 'ro',
+    isa     => 'Scot::Env',
+    required=> 1,
 );
 
 has filemagic => (
-    is          => 'ro',
-    isa         => 'File::Magic',
-    required    => 1,
-    default     => sub { File::Magic->new(); } ,
+    is      => 'ro',
+    isa     => 'File::Magic',
+    required=> 1,
+    default => sub { File::Magic->new(); },
 );
 
 sub get_object {
     my $self    = shift;
     my $type    = shift;
     my $id      = shift;
-    my $mode    = $self->env->fetch_mode // 'mongo';
     my $log     = $self->env->log;
-
-    $log->debug("get object $type $id");
-
-    return ($mode eq 'mongo') ? 
-        $self->get_from_mongo($type, $id) :
-        $self->get_via_api($type, $id);
-
-}
-
-sub get_from_mongo {
-    my $self    = shift;
-    my $colname = shift;
-    my $id      = shift;
-    my $log     = $self->env->log;
-
-    $log->debug("get_from_mongo $colname $id");
-
     my $mongo   = $self->env->mongo;
-    my $col     = $mongo->collection(ucfirst($colname));
+
+    $log->debug("Retrieving $type $id object");
+
+    my $colname     = ucfirst($type);
+    my $collection  = $mongo->collection($colname);
 
     my $object  = try {
-        $col->find_iid($id);
+        $collection->find_iid($id);
     }
     catch {
-        $log->warn("error in finding $id: $_");
+        $log->error("Error finding $type $id: $_");
     };
-    $log->warn("object not found $colname $id") if (! defined $object);
 
-    return $object;
-}
-
-sub get_via_api {
-    my $self    = shift;
-    my $colname = shift;
-    my $id      = shift;
-    my $uri     = "/scot/api/v2/$colname/$id";
-
-    # TODO
-    # get via the API
-    # convert API return into object
-    # return the object
-
+    if ( ! defined $object ) {
+        $log->error("$type $id object not found!");
+    }
+    return $object
 }
 
 sub get_alerts {
-    my $self        = shift;
-    my $alertgroup  = shift;
-    my $agid        = $alertgroup->id;
-    my $mode    = $self->env->fetch_mode // 'mongo';
-    my @alerts  = ();
-    my $log     = $self->env->log;
+    my $self    = shift;
+    my $agobj   = shift;
+    my $agid    = $agobj->id;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
 
-    if ( $mode eq "mongo" ) {
-        my $col     = $self->env->mongo->collection('Alert');
-        my $count   = $col->count({alertgroup => $agid});
-        $log->debug("Found $count alerts as part of alertgroup $agid");
-        my $cursor  = $col->find({ alertgroup => $agid });
-        return  $cursor;
-    }
-    # TODO API fetch json array
-    # turn into a "cursor"
-    # return that cursor;
+    my @alerts  = ();
+
+    my $query   = { alertgroup => $agid };
+    my $col     = $mongo->collection('Alert');
+    my $count   = $col->count($query);
+    my $cursor  = $col->find($query);
+
+    $log->debug("Found $count alerts in Alertgroup $agid");
+    return $cursor;
 }
+
+sub get_entity {
+    my $self    = shift;
+    my $href    = shift; # { type => t, value => v }
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+
+    my $type    = $href->{type};
+    my $value   = $href->{value};
+    $log->debug("Retrieving for $type $value entity");
+
+    my $col     = $mongo->collection('Entity');
+    my $entity  = try {
+        $col->find_one($href);
+    }
+    catch {
+        $log->error("Error finding entity $type $value");
+    };
+
+    if ( ! defined $entity ) {
+        $log->debug("$type $value entity did not exist, creating");
+        $entity = $self->create_entity($type, $value);
+    }
+    return $entity;
+}
+
+sub create_entity {
+    my $self    = shift;
+    my $type    = shift;
+    my $value   = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+
+    my $data    = { type => $type, value => $value };
+    my $entity  = try {
+        $mongo->collection('Entity')->create($data);
+    }
+    catch {
+        $log->error("Failed to create new Entity $type $value: $_");
+    };
+    return $entity;
+}
+
+sub get_entity_id {
+    my $self    = shift;
+    my $href    = shift;
+
+    my $entity  = $self->get_entity($href);
+    return $entity->id;
+}
+
+sub update_alert {
+    my $self    = shift;
+    my $alertid = shift;
+    my $results = shift;
+    my $edb     = $results->{entities};
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+
+    $log->debug("updating alert $alertid");
+
+    my $data  = { parsed => 1 };
+
+    foreach my $column (keys %{$results->{$alertid}}) {
+        next if $column eq "entities";
+        $data->{data_with_flair}->{$column} = $results->{$alertid}->{$column}->{flair};
+    }
+
+    my $update  = { '$set' => $data };
+    my $alert   = $self->get_object('alert', $alertid);
+
+    try { $alert->update($update) }
+    catch { $log->error("Failed to update Alert $alertid"); };
+
+    $self->link_entities($alert, $edb);
+    $self->send_entities_to_enricher($edb);
+    $self->send_alert_updated_message($alertid);
+}
+
+sub send_entities_to_enricher {
+    my $self    = shift;
+    my $edb     = shift;
+    my $msg     = {
+        action  => 'updated',
+        data    => {
+            type    => 'entity',
+            who     => 'flair',
+        }
+    };
+
+    foreach my $type (keys %$edb) {
+        foreach my $value (keys %{$edb->{$type}}) {
+            my $entity  = $self->get_entity({type => $type, value => $value});
+            $msg->{data}->{id} = $entity->id;
+            $self->send_mq('/queue/enricher', $msg);
+        }
+    }
+}
+
+sub send_alert_updated_message {
+    my $self    = shift;
+    my $aid     = shift;
+    my $msg     = {
+        action  => 'updated',
+        data    => {
+            type    => 'alert',
+            id      => $aid,
+        }
+    };
+    $self->send_mq('/topic/scot', $msg);
+}
+
+sub update_alertgroup {
+    my $self    = shift;
+    my $agid    = shift;
+    my $edb     = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+
+    $log->debug("updating alertgroup $agid");
+
+    my $update  = {'$set' => { parsed => 1 }};
+    my $alertgroup  = $self->get_object('alertgroup', $agid);
+
+    try { $alertgroup->update($update); }
+    catch { $log->error("Failed to update Alertgroup $agid") };
+
+    $self->link_entities($alertgroup, $edb);
+    #  no need to send entities to enrich as it is done with each alert
+    $self->send_alertgroup_updated_message($agid);
+}
+
+sub send_alertgroup_updated_message {
+    my $self    = shift;
+    my $agid    = shift;
+    my $msg     = {
+        action  => 'updated',
+        data    => {
+            type    => 'alertgroup',
+            id      => $agid,
+        }
+    };
+    $self->send_mq('/topic/scot', $msg);
+}
+
+sub update_remoteflair {
+    my $self    = shift;
+    my $rfobj   = shift;
+    my $results = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+
+    my $entities = $self->transform_entities($results->{entities});
+    my $update   = {
+        results => {
+            entities    => $entities,
+            flair       => $results->{flair},
+            text        => $results->{text},
+        },
+        status  => 'ready',
+    };
+
+    try { $rfobj->update({ '$set' => $update }); }
+    catch { $log->error("Failed to update Remoteflair $rfobj->id: $_"); };
+}
+
+sub transform_entities {
+    my $self    = shift;
+    my $href    = shift;
+    my @entities    = ();
+
+    foreach my $type (keys %$href) {
+        foreach my $value (keys %{$href->{$type}}) {
+            push @entities, { type => $type, value => $value };
+        }
+    }
+    return wantarray ? @entities : \@entities;
+}
+
 
 sub update_entry {
     my $self    = shift;
     my $entry   = shift;
     my $body    = shift;
     my $results = shift;
-    my $log     = $self->env->log;
-    my $mode    = $self->env->fetch_mode // 'mongo';
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
 
-    $log->debug("update_entry(".$entry->id.")");
+    $log->debug("update entry $entry->id");
 
-    my $update = {
+    my $update  = {
         parsed      => 1,
-        body        => $body,            # may have been updated my imgmunger
+        body        => $body,
         body_plain  => $results->{text},
         body_flair  => $results->{flair},
     };
 
-    if ( $mode eq "mongo" ) {
-        $entry->update({
-            '$set'  => $update
-        });
-        $self->send_update_to_scot_topic($entry);
-        return;
-    }
-    # TODO API update
-    $log->debug("need to implement api update");
+    try { $entry->update({ '$set' => $update }) }
+    catch { $log->error("Failed to update entry $entry->id: $_"); };
+
+    $self->send_entities_to_enricher($results->{entities});
+    $self->send_entry_updated_messages($entry);
+    $self->link_entities($entry, $results->{entities});
 }
 
-sub update_entity {
+sub link_entities {
     my $self    = shift;
-    my $target  = shift;
-    my $entity  = shift;
-    my $log     = $self->env->log;
-    my $mode    = $self->env->fetch_mode // 'mongo';
+    my $obj     = shift;
+    my $objtype = (split(/::/,ref($obj)))[-1];
+    my $edb     = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+    my $col     = $mongo->collection('Link');
 
-    $log->trace("Updating Entity ",{filter=>\&Dumper, value=>$entity});
-    $log->trace("target is ", {filter=>\&Dumper, value=>$target});
+    $log->debug("linking Entities and $objtype");
 
-    if ( $mode eq "mongo" ) {
-        my $mongo   = $self->env->mongo;
-        my $col     = $mongo->collection('Entity');
-        $col->update_entity($target, $entity);
-        $self->send_update_to_scot_topic($entity);
-        return;
+    my $target; # will only be defined if an entry
+    if ( $objtype eq "entry") {
+        $target = $obj->target;
     }
+
+    foreach my $type (keys %$edb) {
+        foreach my $value (keys %{$edb->{$type}}) {
+            my $entity  = $self->get_entity({type => $type, value => $value});
+
+            my $estatus = $entity->status;
+
+            next if ( defined $estatus and $estatus eq "untracked");
+
+            my $link = $self->link_objects($obj, $entity);
+
+            if ( defined $target ) {
+                my $secondlink = $self->link_target($entity, $target);
+            }
+        }
+    }
+}
+
+sub link_objects {
+    my $self    = shift;
+    my $obj1    = shift;
+    my $obj2    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+    my $col     = $mongo->collection('Link');
+    my $link = try {
+        $col->link_objects($obj1, $obj2);
+    }
+    catch {
+        my $type1 = ref($obj1);
+        my $type2 = ref($obj2);
+        $log->error("Failed to create Link between $type1 $obj1->id and $type2 $obj2->id");
+    };
+    return $link;
+}
+
+sub link_target {
+    my $self    = shift;
+    my $obj1    = shift;
+    my $target  = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+    my $col     = $mongo->collection('Link');
+
+    my $obj2    = $self->get_object($target->{type}, $target->{id});
+    if (defined $obj2 ) {
+        my $seclink = try {
+            $col->link_objects($obj1, $obj2);
+        }
+        catch {
+            my $type1 = ref($obj1);
+            my $type2 = ref($obj2);
+            $log->error("Failed to create secondary link between $type1 $obj1->id and $type2 $obj2->id");
+        };
+        return $seclink;
+    }
+    else {
+        $log->error("Unable to find secondary target $target->{type} $target->{id}");
+    }
+    return undef;
+}
+
+sub send_entry_updated_messages {
+    my $self    = shift;
+    my $entry   = shift;
+    my $eid     = $entry->id;
+    my $target  = $entry->target;
+    my $msg     = {
+        action  => 'updated',
+        data    => {
+            type    => 'entry',
+            id      => $eid,
+        }
+    };
+    $self->send_mq('/topic/scot', $msg);
+    $msg->{data} = $target;
+    $self->send_mq('/topic/scot', $msg);
+}
+
+sub send_mq {
+    my $self    = shift;
+    my $queue   = shift;
+    my $data    = shift;
+    my $mq      = $self->env->mq;
+    my $log     = $self->env->log;
+
+    $log->debug("Sending to $queue : ");
+    $log->trace({filter=>\&Dumper, value => $data});
+
+    $mq->send($queue, $data);
 }
 
 sub get_single_word_regexes {
@@ -188,43 +434,6 @@ sub get_entity_types {
         };
     }
     return wantarray ? @etypes : \@etypes;
-}
-
-sub get_entity_id {
-    my $self    = shift;
-    my $entity  = shift;
-    my $log     = $self->env->log;
-    my $query   = { value => $entity->{value} };
-    $log->trace("Looking for entity matching ", {filter=>\&Dumper, value => $query});
-    my $mongo   = $self->env->mongo;
-    my $col     = $mongo->collection('Entity');
-    my $obj     = $col->find_one($query);
-    if (defined $obj) {
-        return $obj->id;
-    }
-    $log->debug("error: no matching entity");
-    return undef;
-}
-
-sub update_entities {
-    my $self    = shift;
-    my $target  = shift;
-    my $results = shift;
-    my $mongo   = $self->env->mongo;
-    my $ecol    = $mongo->collection('Entity');
-    my $log     = $self->env->log;
-
-    $log->debug("updating entities");
-
-    my $entities    = $results->{entities};
-
-    foreach my $entity_href (@$entities) {
-        my $query   = { 
-            type => $entity_href->{type}, 
-            value => $entity_href->{value} };
-        my $status = $ecol->update_entity($target, $entity_href);
-    }
-
 }
 
 sub save_data_uri {
@@ -548,18 +757,6 @@ sub make_unique_name {
     return $newfqn;
 }
 
-sub send_mq {
-    my $self    = shift;
-    my $queue   = shift;
-    my $data    = shift;
-    my $mq      = $self->env->mq;
-    my $log     = $self->env->log;
-
-    $log->debug("Sending to $queue : ",{filter=>\&Dumper, value => $data});
-
-    $mq->send($queue, $data);
-}
-
 sub put_stat {
     my $self    = shift;
     my $metric  = shift;
@@ -582,377 +779,6 @@ sub put_stat {
     else {
         $log->error("put_stat has not implemented API update");
     }
-}
-
-sub send_update_notices {
-    my $self    = shift;
-    my $type    = shift;
-    my $id      = shift;
-
-    if ( $type eq "entity" ) {
-        $self->send_entity_notice($id);
-    }
-    else {
-        $self->send_other_notice($type, $id);
-    }
-}
-
-sub send_entity_notice {
-    my $self    = shift;
-    my $value   = shift;
-    my $mode    = $self->env->fetch_mode // 'mongo';
-    my $log     = $self->env->log;
-
-    if ( $mode eq "mongo" ) {
-        my $mongo   = $self->env->mongo;
-        my $col     = $mongo->collection('Entity');
-        my $obj     = $col->get_by_value($value);
-        if ( ! defined $obj ) {
-            $log->error("Entity $value NOT FOUND!");
-            return;
-        }
-        my $enrich_message = {
-            action  => 'created',
-            data    => {
-                who     => 'flair',
-                type    => 'entity',
-                id      => $obj->id,
-            }
-        };
-        $self->send_mq("/queue/enricher", $enrich_message);
-        return;
-    }
-    $log->logdie("api fetch of entity in send entity notice not implemented yet");
-} 
-
-sub send_other_notice {
-    my $self    = shift;
-    my $type    = shift;
-    my $id      = shift;
-    my $log     = $self->env->log;
-
-    my $message = {
-        action  => 'updated',
-        data    => {
-            who     => 'flair',
-            type    => $type,
-            id      => $id,
-        }
-    };
-    $self->send_mq("/topic/scot", $message);
-}
-
-sub update_alert {
-    my $self    = shift;
-    my $id      = shift;
-    my $results = shift;
-
-    return ($self->env->fetch_mode eq 'mongo') ? 
-        $self->update_alert_via_mongo( $id, $results) :
-        $self->update_alert_via_api( $id, $results);
-}
-
-sub update_alert_via_mongo {
-    my $self    = shift;
-    my $id      = shift;
-    my $results = shift;
-    my $edb     = $results->{entities};
-    my $log     = $self->env->log;
-
-    my $update  = {
-        '$set'  => {
-            parsed  => 1,
-        }
-    };
-
-    $log->debug("update_alert $id");
-    $log->trace("update_alert $id edb: ", {filter => \&Dumper, value=>$edb});
-    $log->trace("update_alert $id results: ", {filter => \&Dumper, value=>$results});
-
-    foreach my $column (keys %{$results->{$id}}) {
-        next if $column eq 'entities';
-        $update->{'$set'}->{data_with_flair}->{$column} = 
-            $results->{$id}->{$column}->{flair};
-    }
-
-    $log->trace("Alert Update for $id = ",{filter=>\&Dumper, value => $update});
-
-    my $alert   = $self->get_object('alert', $id);
-
-    try {
-        $alert->update($update);
-    }
-    catch {
-        $log->error("Failed to upated Alert $id: $_");
-    };
-
-    $self->link_alert_entities($alert, $edb);
-
-    # send mq 
-    my $message = {
-        action  => 'updated',
-        data    => {
-            who     => 'flair',
-            type    => 'alert',
-            id      => $id,
-        }
-    };
-    $self->send_mq("/topic/scot", $message);
-
-}
-
-sub update_alertgroup {
-    my $self    = shift;
-    my $id      = shift;
-    my $edb     = shift;
-    return ($self->env->fetch_mode eq 'mongo') ? 
-        $self->update_alertgroup_via_mongo( $id, $edb):
-        $self->update_alertgroup_via_api( $id, $edb);
-}
-
-sub update_alertgroup_via_mongo {
-    my $self    = shift;
-    my $id      = shift;
-    my $edb     = shift;
-    my $log     = $self->env->log;
-    my $ag      = $self->get_object('alertgroup', $id);
-    my $update  = {
-        '$set'  => {
-            parsed  => 1,
-        }
-    };
-
-    try {
-        $ag->update($update);
-    }
-    catch {
-        $log->error("Failed to update Alertgroup $id: $_");
-    };
-    my $message = {
-        action  => 'updated',
-        data    => {
-            who     => 'flair',
-            type    => 'alertgroup',
-            id      => $id,
-        }
-    };
-    $self->link_alertgroup_entities($ag,$edb);
-    $self->send_mq("/topic/scot", $message);
-}
-
-sub link_alert_entities {
-    my $self    = shift;
-    my $alert   = shift;
-    my $edb     = shift;
-    my $mongo   = $self->env->mongo;
-    my $log     = $self->env->log;
-
-    $log->debug("link_alert_entities");
-    $log->trace("link_alert_entities was passed edb of ",
-                { filter => \&Dumper, value => $edb });
-
-    foreach my $type (keys %$edb) {
-        foreach my $value (keys %{$edb->{$type}}) {
-            $self->link_via_mongo(
-                $alert->id, 'alert',
-                $type, $value,
-            );
-        }
-    }
-}
-
-sub link_alertgroup_entities {
-    my $self    = shift;
-    my $ag      = shift;
-    my $edb     = shift;
-    my $mongo   = $self->env->mongo;
-    my $log     = $self->env->log;
-
-    $log->debug("link_alertgroup_entities");
-
-    foreach my $type (keys %$edb) {
-        foreach my $value (keys %{$edb->{$type}}) {
-            $self->link_via_mongo(
-                $ag->id, 'alertgroup',
-                $type, $value,
-            );
-        }
-    }
-}
-
-sub link_via_mongo {
-    my $self    = shift;
-    my $id      = shift;
-    my $otype   = shift;
-    my $etype   = shift;
-    my $evalue  = shift;
-    my $mongo   = $self->env->mongo;
-    my $log     = $self->env->log;
-
-    $log->debug("link_via_mongo");
-
-    my $entity = $self->get_entity($etype,$evalue);
-    if ( ! defined $entity ) {
-        $log->error("Entity $evalue not found! No linking.");
-        return;
-    }
-
-    my $estatus = $entity->status;
-    if ( defined $estatus and $estatus eq "untracked" ) {
-        $log->info("untracked entity ".$entity->value.". Not linking.");
-        return;
-    }
-
-
-    my $obj    = $self->get_object($otype, $id);
-    if ( ! defined $obj ) {
-        $log->error("$otype $id not found! No linking.");
-        return;
-    }
-
-    my $link = try {
-        $mongo->collection('Link')->link_objects($obj, $entity);
-    }
-    catch {
-        $log->error("Failed to Link $otype $id to $etype $evalue");
-    };
-
-    $log->warn("link undefined") if (! defined $link);
-}
-
-sub get_entity {
-    my $self    = shift;
-    my $type    = shift;
-    my $value   = shift;
-    my $mongo   = $self->env->mongo;
-    my $log     = $self->env->log;
-
-    $log->debug("get_entity $type $value");
-
-
-    my $entity  = $mongo->collection('Entity')->find_one({ value => $value, type => $type});
-    if ( ! defined $entity ) {
-        $log->debug("Entity not found! Creating...");
-        $entity = $self->create_entity($type, $value);
-    }
-
-    return $entity;
-}
-
-sub create_entity {
-    my $self    = shift;
-    my $type    = shift;
-    my $value   = shift;
-    my $mongo   = $self->env->mongo;
-    my $log     = $self->env->log;
-
-    my $href    = {
-        type    => $type,
-        value   => $value,
-    };
-
-    my $entity = try {
-        $mongo->collection('Entity')->create($href);
-    }
-    catch {
-        $log->error("Failed to create Entity: $_, ",{filter=>\&Dumper, value=>$href});
-    };
-
-    return $entity;
-}
-
-    
-sub update_remoteflair {
-    my $self    = shift;
-    my $rfobj   = shift;
-    my $results = shift;
-    my $mongo   = $self->env->mongo;
-    my $log     = $self->env->log;
-
-    my $entities    = $self->xform_entities($results->{entities});
-
-    my $update  = {
-        '$set'  => {
-            results => {
-                entities    => $entities,
-                flair       => $results->{flair},
-                text        => $results->{text},
-            },
-            status  => 'ready',
-        }
-    };
-
-    $log->debug("UPDATE REMOTEFLAIR: ",{filter=>\&Dumper, value => $update});
-
-    try {
-        $rfobj->update($update);
-    }
-    catch {
-        $log->error("Failed to update Remoteflair ".$rfobj->id.": $_");
-    };
-}
-
-sub xform_entities {
-    my $self    = shift;
-    my $href    = shift;
-    my @entities    = ();
-
-    foreach my $type (keys %$href) {
-        foreach my $value (keys %{$href->{$type}}) {
-            push @entities, {
-                type    => $type,
-                value   => $value,
-            };
-        }
-    }
-    return wantarray ? @entities : \@entities;
-}
-
-sub send_update_to_scot_topic {
-    my $self    = shift;
-    my $object  = shift;
-    my $log     = $self->env->log;
-    
-    my $type    = lc((split(/::/,ref($object)))[-1]);
-    my $message = {
-        who     => 'flair',
-        action  => 'updated',
-        data    => {},
-    };
-
-    if ( $type eq "alertgroup" ) {
-        my @aids    = $self->get_alertids($object);
-        foreach my $aid (@aids) {
-            $message->{data} = { type => 'alert', id => $aid };
-            # floods the toast popup in scot
-            # $self->send_mq("/topic/scot", $message);
-        }
-        my $agid    = $object->id;
-        $message->{data} = { type => 'alertgroup', id => $agid };
-        $self->send_mq("/topic/scot", $message);
-    }
-    elsif ( $type eq "entry" ) {
-        my $eid     = $object->id;
-        $message->{data} = { type => 'entry', id => $eid };
-        $self->send_mq("/topic/scot", $message);
-        my $target  = $object->target;
-        $message->{data} = { type => $target->{type}, id => $target->{id} };
-        $self->send_mq("/topic/scot", $message);
-    }
-    else {
-        $log->debug("dont send update to topic for $type");
-    }
-}
-
-sub get_alertids {
-    my $self    = shift;
-    my $agobj   = shift;
-    my $cursor  = $self->get_alerts($agobj);
-    my @ids     = ();
-    while (my $alert = $cursor->next ) {
-        push @ids, $alert->id + 0;
-    }
-    return wantarray ? @ids : \@ids;
 }
 
 sub update_entry_body {
@@ -984,6 +810,4 @@ sub create_child_entry {
 
     return $newentry;
 }
-
-
 1;

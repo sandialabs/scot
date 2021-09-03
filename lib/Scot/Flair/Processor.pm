@@ -70,64 +70,6 @@ sub update_stats {
     }
 }
 
-sub send_notices {
-    my $self    = shift;
-    my $notices = shift;
-    my $io      = $self->scotio;
-
-    foreach my $type (keys %$notices) {
-        foreach my $id (keys %{$notices->{$type}}) {
-            $io->send_update_notice($type, $id);
-        }
-    }
-}
-
-sub send_notifications {
-    my $self    = shift;
-    my $object  = shift;
-    my $results = shift;
-    my $io      = $self->scotio;
-    my $type = $self->get_type($object);
-
-    $self->env->log->debug("RESULTS=",{filter=>\&Dumper, value=>$results});
-
-    # need to send message to /queue/enricher for each entity
-
-    my $agid    = $object->id;
-
-    foreach my $href ( @$results ) {
-        foreach my $entity ( @{ $href->{entities} } ) {
-            my $entityid    = $io->get_entity_id($entity);
-            if ( ! defined $entityid ) {
-                # create the entity
-                $entityid = $io->create_entity($entity, $agid, $href->{alert});
-            }
-            if ( defined $entityid ) {
-                $io->send_mq('/queue/enricher',{
-                    action  => 'updated',
-                    data    => {
-                        type    => 'entity',
-                        id      => $entityid,
-                        who     => 'scot-flair',
-                    },
-                });
-            }
-            else {
-                $self->env->log->error("Entity $entity->{value} $entity->{type} not found, enricher queue message not sent!");
-            }
-
-        }
-    }
-
-    $io->send_mq("/topic/scot", {
-        action  => 'updated',
-        data    => {
-            type    => $type,
-            id      => $object->id,
-        },
-    });
-}
-
 sub get_type {
     my $self    = shift;
     my $object  = shift;
