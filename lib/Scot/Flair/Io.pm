@@ -127,12 +127,13 @@ sub update_alert {
     my $self    = shift;
     my $alertid = shift;
     my $results = shift;
-    my $edb     = $results->{entities};
+    my $edb     = $results->{$alertid}->{entities};
     my $env     = $self->env;
     my $mongo   = $env->mongo;
     my $log     = $env->log;
 
     $log->debug("updating alert $alertid");
+    $log->debug("EDB = ",{filter=>\&Dumper, value=>$edb});
 
     my $data  = { parsed => 1 };
 
@@ -155,6 +156,7 @@ sub update_alert {
 sub send_entities_to_enricher {
     my $self    = shift;
     my $edb     = shift;
+    my $log     = $self->env->log;
     my $msg     = {
         action  => 'updated',
         data    => {
@@ -162,6 +164,8 @@ sub send_entities_to_enricher {
             who     => 'flair',
         }
     };
+
+    $log->debug("Attempting to enrich edb: ",{filter=>\&Dumper, value=>$edb});
 
     foreach my $type (keys %$edb) {
         foreach my $value (keys %{$edb->{$type}}) {
