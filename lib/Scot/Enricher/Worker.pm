@@ -57,6 +57,38 @@ sub _build_io {
     return Scot::Enricher::Io->new(env => $env);
 }
 
+has enrichments => (
+    is          => 'ro',
+    isa         => 'ArrayRef',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_enrichments',
+);
+
+sub _build_enrichments {
+    my $self                = shift;
+    my $enrichment_configs  = $self->env->enrichers;
+    my @enrichments         = ();
+    my $log                 = $self->env->log;
+
+    $log->debug("building enrichments");
+    $log->trace({filter=>\&Dumper, value => $enrichment_configs});
+
+    foreach my $enrichment_name (sort keys %$enrichment_configs) {
+        my $ename   = ucfirst($enrichment_name);
+        my $class   = "Scot::Enricher::Enrichment::$ename";
+        $log->debug("Building enrichment $ename");
+        my $config  = $enrichment_configs->{$enrichment_name};
+        $log->debug("Config is ",{filter=>\&Dumper, value=>$config});
+        require_module($class);
+        my $enrichment  = $class->new(
+            env     => $self->env,
+            conf    => $config,
+        );
+        push @enrichments, $enrichment;
+    }
+    return \@enrichments;
+}
 
 has workers => (
     is      => 'ro',
@@ -170,7 +202,11 @@ sub process_message {
 
     return undef if ($self->invalid_data($json));
 
-    my $proc = Scot::Enricher::Processor->new(env => $self->env, scotio => $self->io);
+    my $proc = Scot::Enricher::Processor->new(
+        env         => $self->env, 
+        scotio      => $self->io, 
+        enrichments => $self->enrichments,
+    );
     $proc->process_item($json);
 }
 

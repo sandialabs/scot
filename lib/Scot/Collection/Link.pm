@@ -146,7 +146,7 @@ sub get_vertex_memo {
         return $thing->name;
     }
 
-    $self->env->log->warn("Do not know what to provide as memo for ".ref($thing));
+    $self->env->log->debug("no memo for type ".ref($thing));
     return " ";
 }
 
