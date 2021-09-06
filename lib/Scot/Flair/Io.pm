@@ -298,7 +298,7 @@ sub link_entities {
     $log->debug("linking Entities and $objtype");
 
     my $target; # will only be defined if an entry
-    if ( $objtype eq "entry") {
+    if ( $objtype eq "Entry") {
         $target = $obj->target;
     }
 
@@ -313,6 +313,7 @@ sub link_entities {
             my $link = $self->link_objects($obj, $entity);
 
             if ( defined $target ) {
+                $log->debug("Linking Entry Target to Entity");
                 my $secondlink = $self->link_target($entity, $target);
             }
         }
