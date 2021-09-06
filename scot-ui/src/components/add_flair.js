@@ -84,29 +84,31 @@ export const AddFlair = {
                             }
 
                             if (entitydata.geoip !== undefined) {
-                              if (entitydata.geoip.data.isocode) {
-                                let country_code;
-                                if (
-                                  entitydata.geoip.data.isp ===
-                                  "Sandia National Laboratories"
-                                ) {
-                                  country_code = "sandia";
-                                } else {
-                                  country_code = entitydata.geoip.data.isocode;
-                                }
-                                if (country_code !== null) {
-                                  let flag = $(
-                                    '<img title="' +
-                                      country_code.toLowerCase() +
-                                      '">'
-                                  ).attr(
-                                    "src",
-                                    "/images/flags/" +
-                                      country_code.toLowerCase() +
-                                      ".png"
-                                  );
-                                  flag.addClass("extras");
-                                  $(entity).append(flag);
+                              if (entitydata.geoip.data !== undefined) {
+                                if (entitydata.geoip.data.isocode) {
+                                    let country_code;
+                                    if (
+                                    entitydata.geoip.data.isp ===
+                                    "Sandia National Laboratories"
+                                    ) {
+                                    country_code = "sandia";
+                                    } else {
+                                    country_code = entitydata.geoip.data.isocode;
+                                    }
+                                    if (country_code !== null) {
+                                    let flag = $(
+                                        '<img title="' +
+                                        country_code.toLowerCase() +
+                                        '">'
+                                    ).attr(
+                                        "src",
+                                        "/images/flags/" +
+                                        country_code.toLowerCase() +
+                                        ".png"
+                                    );
+                                    flag.addClass("extras");
+                                    $(entity).append(flag);
+                                    }
                                 }
                               }
                             }

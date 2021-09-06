@@ -167,6 +167,7 @@ function start_services {
             systemctl --no-pager restart scot.service
             systemctl --no-pager restart apache2.service
             systemctl --no-pager restart flair.service
+            systemctl --no-pager restart enricher.service
             systemctl --no-pager restart remoteflair.service
             systemctl --no-pager restart scrfd.service
             systemctl --no-pager restart scepd.service
@@ -178,6 +179,7 @@ function start_services {
             systemctl --no-pager restart scot.service
             systemctl --no-pager restart apache2.service
             systemctl --no-pager restart flair.service
+            systemctl --no-pager restart enricher.service
             systemctl --no-pager restart remoteflair.service
             systemctl --no-pager restart scrfd.service
             systemctl --no-pager restart scepd.service
@@ -200,6 +202,7 @@ function start_services {
         systemctl --no-pager restart scot.service
         systemctl --no-pager restart httpd.service
         systemctl --no-pager restart flair.service
+        systemctl --no-pager restart enricher.service
         systemctl --no-pager restart remoteflair.service
         systemctl --no-pager restart scrfd.service
         systemctl --no-pager restart scepd.service
