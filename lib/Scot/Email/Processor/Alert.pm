@@ -152,14 +152,16 @@ sub notify_flair_engine {
     my $self        = shift;
     my $alertgroup  = shift;
     my $mq          = $self->env->mq;
-    $mq->send("/queue/flair", {
+    my $message     = {
         action  => "created",
         data    => {
             type    => "alertgroup",
             id      => $alertgroup->id,
             who     => "scot-alerts",
         }
-    });
+    };
+    $mq->send("/queue/flair", $message);
+    $mq->send("/topic/scot", $message);
 }
 
 sub begin_history {
