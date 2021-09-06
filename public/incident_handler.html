@@ -617,21 +617,19 @@ $(document).ready(function() {
 var buttonsObj = {};
 
 function create_incident_handler(start, end) {
-    $("#start").val(new Date(new Date(start).getTime() + (new Date(start).getTimezoneOffset()*60000)));
-    $("#end").val(new Date(new Date(end).getTime() + (new Date(end).getTimezoneOffset()*60000)));
-    $('#id').text('');
-    buttonsObj = {};
-    buttonsObj["Create"] = function() {
+$("#start").val(new Date(new Date(start).getTime() + (new Date(start).getTimezoneOffset()*60000)));
+$("#end").val(new Date(new Date(end).getTime() + (new Date(end).getTimezoneOffset()*60000)));
+$('#id').text('');
+buttonsObj = {};
+buttonsObj["Create"] = function() {
         var startTime= new Date($('#ih_form input[id=start]')[0].value).getTime()/1000;
         var endTime =  new Date($('#ih_form input[id=end]')[0].value).getTime()/1000;
         var user = $('#ih_form select[id=user_select]')[0].value;
         var id = $('#ih_form input[id=id]').text();
-        var htype = $('#ih_form select[id=htype_select]')[0].value;
         var data = {
             start: startTime,
             end: endTime,
             username: user,
-            type: htype,
         }
         var type = 'post';
         var url = '/scot/api/v2/handler';
@@ -647,43 +645,40 @@ function create_incident_handler(start, end) {
                 alert('failed to update calendar')
             }
         })
-        $(this).dialog('close');
-    }
-
-    buttonsObj['Cancel'] = function() {
-        $(this).dialog('close');
-    },
-    $(function() {
-        $("#start").datetimepicker({ showOn: "button", buttonImage: "/images/cal.gif"});
-        $("#end").datetimepicker({ showOn: "button", buttonImage: "/images/cal.gif"});
-        $("#ih_creator").dialog({
-            bgiframe : true,
-            autoOpen : false,
-            height : 400,
-            width : 400,
-            modal : true,
-            buttons : buttonsObj
-        });
-    });
-    $("#ih_creator").dialog('open');
+    $(this).dialog('close');
+}
+buttonsObj['Cancel'] = function() {
+    $(this).dialog('close');
+},
+$(function() {
+  $("#start").datetimepicker({ showOn: "button", buttonImage: "/images/cal.gif"});
+  $("#end").datetimepicker({ showOn: "button", buttonImage: "/images/cal.gif"});
+  $("#ih_creator").dialog({
+    bgiframe : true,
+    autoOpen : false,
+    height : 400,
+    width : 400,
+    modal : true,
+    buttons : buttonsObj
+  });
+});
+$("#ih_creator").dialog('open');
 } 
 
 function edit_incident_handler(start, end, id) {
-    $("#start").val(new Date(new Date(start).getTime() + (new Date(start).getTimezoneOffset()*60000)));
-    $("#end").val(new Date(new Date(end).getTime() + (new Date(end).getTimezoneOffset()*60000)));
-    $('#id').text(id);
-    buttonsObj = {};
-    buttonsObj["Edit"] = function() {
+$("#start").val(new Date(new Date(start).getTime() + (new Date(start).getTimezoneOffset()*60000)));
+$("#end").val(new Date(new Date(end).getTime() + (new Date(end).getTimezoneOffset()*60000)));
+$('#id').text(id);
+buttonsObj = {};
+buttonsObj["Edit"] = function() {
         var startTime= new Date($('#ih_form input[id=start]')[0].value).getTime()/1000;
         var endTime =  new Date($('#ih_form input[id=end]')[0].value).getTime()/1000;
         var user = $('#ih_form select[id=user_select]')[0].value;
         var id = $('#ih_form input[id=id]').text();
-        var htype = $('#ih_form select[id=htype_select]')[0].value;
         var data = {
             start: startTime,
             end: endTime,
             username: user,
-            type: htype
         }
         var type = 'put';
         var url = '/scot/api/v2/handler/' + id;
@@ -699,155 +694,97 @@ function edit_incident_handler(start, end, id) {
                 alert('failed to update calendar')
             }
         })
-        $(this).dialog('close');
-    }
-    buttonsObj['Cancel'] = function() {
-        $(this).dialog('close');
-    }
-    buttonsObj['Delete'] = function() {
-        var id = $('#ih_form input[id=id]').text();
-        $.ajax({
-            type: 'DELETE',
-            url: '/scot/api/v2/handler/'+id,
-            contentType: 'application/json; charset=UTF-8',
-            success: function(data) {
-                do_refresh();
-            },
-            error: function() {
-                alert('failed to update calendar')
-            }
-        })
-    }
-    $(function() {
-        $("#start").datetimepicker({ showOn: "button", buttonImage: "/images/cal.gif"});
-        $("#end").datetimepicker({ showOn: "button", buttonImage: "/images/cal.gif"});
-        $("#ih_creator").dialog({
-            bgiframe : true,
-            autoOpen : false,
-            height : 400,
-            width : 400,
-            modal : true,
-            buttons : buttonsObj
-        });
-    });
-    $("#ih_creator").dialog('open');
+    $(this).dialog('close');
+}
+buttonsObj['Cancel'] = function() {
+    $(this).dialog('close');
+}
+buttonsObj['Delete'] = function() {
+    var id = $('#ih_form input[id=id]').text();
+    $.ajax({
+        type: 'DELETE',
+        url: '/scot/api/v2/handler/'+id,
+        contentType: 'application/json; charset=UTF-8',
+        success: function(data) {
+            do_refresh();
+        },
+        error: function() {
+            alert('failed to update calendar')
+        }
+    })
+}
+$(function() {
+  $("#start").datetimepicker({ showOn: "button", buttonImage: "/images/cal.gif"});
+  $("#end").datetimepicker({ showOn: "button", buttonImage: "/images/cal.gif"});
+  $("#ih_creator").dialog({
+    bgiframe : true,
+    autoOpen : false,
+    height : 400,
+    width : 400,
+    modal : true,
+    buttons : buttonsObj
+  });
+});
+$("#ih_creator").dialog('open');
 }
 
 $('#calendar').fullCalendar({
-    theme       :   true,
-    buttonIcons :   false,
-    header      :   {
-        left    :   'prev,next today',
-        center  :   'title'
-    },
-    selectable  :   true,
-    selectHelper:   true,
-    dayClick    :   function (date, allDay, jsEvent, view) {        
-        // only for testing
-        $(this).css('border-color', 'red');
-    },
-    editable    :   false,
-    unselectCancel: true,
-    select      :   function (startDate, endDate, allDay, jsEvent, view) { 
-        create_incident_handler(startDate, endDate);
-    },
-    eventClick: function(calEvent, jsEvent, view, x, y) {
-        edit_incident_handler(calEvent.start, calEvent.end, calEvent.id);
-    },
-    eventSources: [
-        {
-            events: function(start, end, timezone, callback) {
-                $.ajax({
-                    url: '/scot/api/v2/handler?type=handler&start='+start/1000+'&end='+end/1000,
-                    type: 'GET',
-                    success: function(data) {
-                        var events = [];
-                        $(data.records).each(function(index, obj) {
-                            var startISO = new Date(obj.start * 1000).toISOString();
-                            var startTime = moment(new Date(obj.start * 1000)).format('LT');
-                            var endISO = new Date(obj.end * 1000).toISOString();
-                            var endTime = moment(new Date(obj.end * 1000)).format('LT');
-                            events.push({
-                                title: startTime + ' handler ' + obj.username + ' ' +  endTime,
-                                start: startISO,
-                                end: endISO,
-                                id: obj.id,
-                            })
-                        })
-                        callback(events);
-                    },
-                    error: function() {
-                        console.log('failed to get calendar information');
-                    }
-                })
+                        theme       :   true,
+                        buttonIcons :   false,
+                        header      :   {
+                            left    :   'prev,next today',
+                            center  :   'title'
+                        },
+                        selectable  :   true,
+                        selectHelper:   true,
+                        dayClick    :   function (date, allDay, jsEvent, view) {        
+                            // only for testing
+                            $(this).css('border-color', 'red');
+                        },
+                        editable    :   false,
+                        unselectCancel: true,
+                        select      :   function (  startDate, endDate, 
+                                                    allDay, jsEvent, view) { 
+                            create_incident_handler(startDate, endDate);
+                        },
+                        eventClick: function(calEvent, jsEvent, view, x, y) {
+                            edit_incident_handler(calEvent.start, calEvent.end, calEvent.id);
+                        },
+                        eventSources:   [
+                            {
+                                events: function(start, end, timezone, callback) {
+                                   $.ajax({
+                                        url: '/scot/api/v2/handler?start='+start/1000+'&end='+end/1000,
+                                        type: 'GET',
+                                        success: function(data) {
+                                            var events = [];
+                                            $(data.records).each(function(index, obj) {
+                                                var startISO = new Date(obj.start * 1000).toISOString();
+                                                var startTime = moment(new Date(obj.start * 1000)).format('LT');
+                                                var endISO = new Date(obj.end * 1000).toISOString();
+                                                var endTime = moment(new Date(obj.end * 1000)).format('LT');
+                                                events.push({
+                                                    title: startTime + ' ' + obj.username + ' ' +  endTime,
+                                                    start: startISO,
+                                                    end: endISO,
+                                                    id: obj.id,
+                                                })
+                                            })
+                                            callback(events);
+                                        },
+                                        error: function() {
+                                            console.log('failed to get calendar information');
+                                        }
+                                    })
 
-            },
-            color    :   'yellow',
-            textColor:   'black' 
-        },
-        // and each one would have a different color to signify type
-        {
-            events: function(start, end, timezone, callback) {
-                $.ajax({
-                    url: '/scot/api/v2/handler?type=hunter&start='+start/1000+'&end='+end/1000,
-                    type: 'GET',
-                    success: function(data) {
-                        var events = [];
-                        $(data.records).each(function(index, obj) {
-                            var startISO = new Date(obj.start * 1000).toISOString();
-                            var startTime = moment(new Date(obj.start * 1000)).format('LT');
-                            var endISO = new Date(obj.end * 1000).toISOString();
-                            var endTime = moment(new Date(obj.end * 1000)).format('LT');
-                            events.push({
-                                title: startTime + ' hunter ' + obj.username + ' ' +  endTime,
-                                start: startISO,
-                                end: endISO,
-                                id: obj.id,
-                            })
-                        })
-                        callback(events);
-                    },
-                    error: function() {
-                        console.log('failed to get calendar information');
-                    }
-                })
-            },
-            color    :   'green',
-            textColor:   'yellow' 
-        },
-        {
-            events: function(start, end, timezone, callback) {
-                $.ajax({
-                    url: '/scot/api/v2/handler?type=commander&start='+start/1000+'&end='+end/1000,
-                    type: 'GET',
-                    success: function(data) {
-                        var events = [];
-                        $(data.records).each(function(index, obj) {
-                            var startISO = new Date(obj.start * 1000).toISOString();
-                            var startTime = moment(new Date(obj.start * 1000)).format('LT');
-                            var endISO = new Date(obj.end * 1000).toISOString();
-                            var endTime = moment(new Date(obj.end * 1000)).format('LT');
-                            events.push({
-                                title: startTime + ' commander ' + obj.username + ' ' +  endTime,
-                                start: startISO,
-                                end: endISO,
-                                id: obj.id,
-                            })
-                        })
-                        callback(events);
-                    },
-                    error: function() {
-                        console.log('failed to get calendar information');
-                    }
-                })
-            },
-            color    :   'red',
-            textColor:   'white' 
-        },
-    ]
-});
+                                },
+                                color    :   'yellow',
+                                textColor:   'black' 
+                            }
+                        ]
+                    });
+
 </script>
-
 <div id="ih_creator" title="Add/Edit Incident Handler">
     <h3>Select Date Range to assign Incident Handler</h3>
     <form id="ih_form" action="/scot/api/v2/handler" method="post">
@@ -868,16 +805,6 @@ $('#calendar').fullCalendar({
                 <th>User: </th>
                 <td>
                     <select id="user_select" name="handler" size="1">
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <th>Type: </th>
-                <td>
-                    <select id="htype_select" name="type" size="1">
-                        <option value="handler" selected>handler</option>
-                        <option value="hunter">hunter</option>
-                        <option value="commander">commander</option>
                     </select>
                 </td>
             </tr>
