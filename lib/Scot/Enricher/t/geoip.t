@@ -12,10 +12,10 @@ use feature qw(say);
 my $config_file = "./test.cfg.pl";
 my $env         = Scot::Env->new(config_file=>$config_file);
 
-my $config  = {};
+my $config  = { foo => "bar" };
 
 require_ok('Scot::Enricher::Enrichment::Geoip');
-my $geo = Scot::Enricher::Enrichment::Geoip->new({config => $config});
+my $geo = Scot::Enricher::Enrichment::Geoip->new({conf => $config, env => $env});
 
 my @tests = (
     {
@@ -66,6 +66,23 @@ my @tests = (
           'country' => 'United States',
           'org' => 'Sandia National Laboratories',
           'latitude' => '37.751'
+        },
+    },
+    {
+        test    => 'problem ip',
+        ip      => '184.181.217.210',
+        expect  => {
+            'asn' => 22773,
+            'timezone' => 'America/Chicago',
+            'longitude' => '-97.822',
+            'country' => 'United States',
+            'asorg' => 'ASN-CXA-ALL-CCI-22773-RDC',
+            'latitude' => '37.751',
+            'isp' => 'Cox Communications',
+            'continent' => 'North America',
+            'org' => 'Cox Communications',
+            'city' => undef,
+            'isocode' => 'US'
         },
     },
 );

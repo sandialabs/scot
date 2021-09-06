@@ -3,6 +3,7 @@ package Scot::Enricher::Enrichment::Geoip;
 use GeoIP2::Database::Reader;
 use namespace::autoclean;
 use Try::Tiny;
+use Data::Dumper;
 
 use Moose;
 extends 'Scot::Enricher::Enrichment';
@@ -66,16 +67,21 @@ sub _build_ispdb {
 
 sub enrich {
     my $self    = shift;
-    my $ipaddr  = shift;
+    my $entity  = shift;
+    my $ipaddr  = $entity->value;
+    my $log     = $self->env->log;
+    # $log->debug("GEOIP ENRICH ",{filter=>\&Dumper, value=> $ipaddr});
     my $city    = $self->get_city_data($ipaddr);
     my $isp     = $self->get_isp_data($ipaddr);
     my %data    = (%$city, %$isp);
-    return wantarray ? %data : \%data;
+    $log->debug("GEOIP returns ",{filter=>\&Dumper, value => \%data});
+    return { data => \%data };
 }
 
 sub get_city_data {
     my $self    = shift;
     my $ipaddr  = shift;
+    my $log     = $self->env->log;
 
     my $data    = try {
         my $city    = $self->citydb->city( ip => $ipaddr );
@@ -104,12 +110,14 @@ sub get_city_data {
         }
         return {};  # unknown
     };
+    $log->debug("Got City data: ",{filter=>\&Dumper, value=>$data});
     return $data;
 }
 
 sub get_isp_data {
     my $self    = shift;
     my $ipaddr  = shift;
+    my $log     = $self->env->log;
 
     my $data    = try {
         my $isp = $self->ispdb->isp( ip => $ipaddr );
@@ -139,4 +147,5 @@ sub is_not_public_ipaddr {
     my $message = shift;
     return ($message =~ /not a public IP/);
 }
+
 1;
