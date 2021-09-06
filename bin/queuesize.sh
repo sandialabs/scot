@@ -6,7 +6,7 @@ echo "--------------------------------------------------------------------"
 
 PASS="NX3FCKPASS"
 PASS="#jlkxj3LX_3lkx"
-PASS="admin"
+# PASS="admin"
 
 echo -n "SCOT Flair Queue          : "
 syseval_size=`curl -s -u admin:$PASS http://localhost:8161/api/jolokia/read/org.apache.activemq:type=Broker,brokerName=localhost,destinationType=Queue,destinationName=flair/QueueSize | jq .value`

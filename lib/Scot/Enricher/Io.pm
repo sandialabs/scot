@@ -74,6 +74,7 @@ sub apply_enrichment_data {
         my $msg = {
             'action'    => 'updated',
             data        => {
+                who     => 'scot-enricher',
                 type    => 'entity',
                 id      => $id,
             }
