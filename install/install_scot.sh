@@ -369,7 +369,7 @@ function setup_scot_admin {
 
 function restart_daemons {
 
-    SCOTSERVICES='scot flair scrfd scepd recfpd '
+    SCOTSERVICES='scot flair enricher scrfd scepd recfpd '
     if [[ "$SCOT_RESTART_DAEMONS" == "yes" ]] || [[ "$INSTMODE" != "SCOTONLY" ]]; then
         for service in $SCOTSERVICES; do
             if [[ $OS == "Ubuntu" ]]; then
