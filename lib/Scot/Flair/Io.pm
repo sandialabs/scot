@@ -161,7 +161,7 @@ sub send_entities_to_enricher {
         action  => 'updated',
         data    => {
             type    => 'entity',
-            who     => 'flair',
+            who     => 'scot-flair',
         }
     };
 
@@ -182,6 +182,7 @@ sub send_alert_updated_message {
     my $msg     = {
         action  => 'updated',
         data    => {
+            who     => 'scot-flair',
             type    => 'alert',
             id      => $aid,
         }
@@ -216,6 +217,7 @@ sub send_alertgroup_updated_message {
     my $msg     = {
         action  => 'updated',
         data    => {
+            who     => 'scot-flair',
             type    => 'alertgroup',
             id      => $agid,
         }

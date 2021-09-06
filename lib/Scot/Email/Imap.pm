@@ -28,7 +28,7 @@ has test => (
     is      => 'ro',
     isa     => 'Bool',
     required    => 1,
-    default => 0,
+    default     => 0,
 );
 
 has mailbox => (
@@ -154,6 +154,7 @@ sub _build_imap {
         $client->Peek(1);
     }
     if ( $self->peeking ) {
+        $log->debug("Config want to peek, setting Peek to 1");
         $client->Peek(1);
     }
     return $client;
@@ -317,7 +318,7 @@ sub get_message {
     return unless $uid;
 
     my $mode = $peek ? "Peeking" : "Nonpeeking";
-    $log->trace("Getting Message uid=$uid ($mode)");
+    $log->debug("Getting Message uid=$uid ($mode)");
     $self->client->Peek($peek);
 
     my $envelope = $self->get_envelope_from_uid($uid);
