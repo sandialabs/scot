@@ -37,6 +37,7 @@ sub parse {
         subject => $msg->{subject},
         data    => $alerts,
         columns => $columns,
+        source  => [qw(email, splunk)],
         tag     => $tags,
         ahrefs  => \@splunklinks,
         body    => $html,

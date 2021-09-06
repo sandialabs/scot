@@ -318,6 +318,7 @@ function install_perl_modules {
         Net::IDN::Encode
         Net::Works::Network
         Net::IP
+        Net::IPv6addr
         Moose
         Moose::Role
         Moose::Util::TypeConstraints
@@ -347,6 +348,7 @@ function install_perl_modules {
         JSON::XS
         DBI
         Parallel::ForkManager
+        Parallel::Prefork
         AnyEvent
         AnyEvent::STOMP::Client
         AnyEvent::ForkManager
@@ -358,6 +360,7 @@ function install_perl_modules {
         File::Slurp
         File::Temp
         File::Type
+        File::Magic
         HTML::Entities
         HTML::Make
         HTML::Scrubber
@@ -368,6 +371,7 @@ function install_perl_modules {
         HTML::FormatText
         MIME::Base64
         MIME::Parser
+        utf8::all
         IPC::Run
         IO::Prompt
         Log::Any::IfLOG
