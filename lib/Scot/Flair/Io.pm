@@ -160,8 +160,8 @@ sub send_entities_to_enricher {
     my $msg     = {
         action  => 'updated',
         data    => {
-            type    => 'entity',
             who     => 'scot-flair',
+            type    => 'entity',
         }
     };
 
@@ -270,7 +270,7 @@ sub update_entry {
     my $log     = $env->log;
     my $mongo   = $env->mongo;
 
-    $log->debug("update entry $entry->id");
+    $log->debug("update entry ".$entry->id);
 
     my $update  = {
         parsed      => 1,
@@ -376,6 +376,7 @@ sub send_entry_updated_messages {
     my $msg     = {
         action  => 'updated',
         data    => {
+            who     => 'scot-flair',
             type    => 'entry',
             id      => $eid,
         }
