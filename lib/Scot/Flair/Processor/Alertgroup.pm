@@ -148,7 +148,9 @@ sub flair_item {
     my $tracker = shift;
     my $log     = $self->env->log;
 
-    $log->trace("processing $alertid $column : $item");
+    return if ($item eq '' or $item eq ' ');
+
+    $log->debug("processing $alertid $column : $item.");
 
     $tracker .= ":$column]";
 
@@ -162,10 +164,15 @@ sub flair_item {
     my $plain_text      = $edb->{text};
     my $found_entities  = $edb->{entities};
 
-    $log->trace("edb ",{filter=>\&Dumper, value => $edb});
+    $log->debug("edb ",{filter=>\&Dumper, value => $edb});
 
-    push @{$results->{$alertid}->{$column}->{flair}},$found_flair if ($self->not_empty($found_flair));
-    push @{$results->{$alertid}->{$column}->{text}} ,$plain_text if ($self->not_empty($plain_text));
+    if ( $self->not_empty($found_flair) and $self->not_empty($plain_text) and ! defined $edb->{entities} ) {
+        $log->debug("Flair process return blank field, suppressing.");
+        return;
+    }
+
+    push @{$results->{$alertid}->{$column}->{flair}},$found_flair;
+    push @{$results->{$alertid}->{$column}->{text}} ,$plain_text;
     
     $log->debug("Processing found entities");
     foreach my $type (keys %$found_entities) {
@@ -187,6 +194,7 @@ sub not_empty {
     return undef if ( ! defined $text );
     return undef if ( $text eq '' );
     return undef if ( $text =~ /^ +$/);
+    return undef if ( $text eq '<div></div>' );
     return 1;
 }
 
