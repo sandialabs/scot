@@ -56,7 +56,12 @@ sub process_images {
 
         my ( $link, $element, $attr, $tag ) = @{$img_aref};
 
-        $log->trace("link = $link");
+        $log->debug("link = $link");
+
+        if ( $link =~ /^\/cached_images\// ) {
+            $log->debug("Image already cached.");
+            next;
+        }
 
         my ( $fqn, $fname, $origname );
 
@@ -96,7 +101,14 @@ sub update_html {
 
     $log->debug("updating html with fqn = $fqn name = $name orig = $orig");
 
-    my $source  = join('/', $self->env->html_root, $name);
+    my $location = (split(/cached_images\//, $fqn))[-1];
+
+    $log->debug("Location is $location");
+
+    my $source  = join('/', '/cached_images', $location);
+
+    $log->debug("New source for image: $source");
+
     my $alt     = $element->attr('alt');
     $alt = (defined $alt) ? 
         "Scot Copy of $orig" :
