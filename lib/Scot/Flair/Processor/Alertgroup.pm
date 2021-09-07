@@ -164,8 +164,8 @@ sub flair_item {
 
     $log->trace("edb ",{filter=>\&Dumper, value => $edb});
 
-    push @{$results->{$alertid}->{$column}->{flair}},$found_flair;
-    push @{$results->{$alertid}->{$column}->{text}} ,$plain_text;
+    push @{$results->{$alertid}->{$column}->{flair}},$found_flair if ($self->not_empty($found_flair));
+    push @{$results->{$alertid}->{$column}->{text}} ,$plain_text if ($self->not_empty($plain_text));
     
     $log->debug("Processing found entities");
     foreach my $type (keys %$found_entities) {
@@ -178,6 +178,16 @@ sub flair_item {
         }
     }
     $log->trace("results after flair item ",{filter=>\&Dumper, value => $results});
+}
+
+sub not_empty {
+    my $self    = shift;
+    my $text    = shift;
+
+    return undef if ( ! defined $text );
+    return undef if ( $text eq '' );
+    return undef if ( $text =~ /^ +$/);
+    return 1;
 }
 
 sub is_skippable_column {
