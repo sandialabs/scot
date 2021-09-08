@@ -382,7 +382,8 @@ sub send_entry_updated_messages {
         }
     };
     $self->send_mq('/topic/scot', $msg);
-    $msg->{data} = $target;
+    $msg->{data}->{type} = $target->{type};
+    $msg->{data}->{id}   = $target->{id};
     $self->send_mq('/topic/scot', $msg);
 }
 
