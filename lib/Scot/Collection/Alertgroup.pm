@@ -453,9 +453,14 @@ sub get_alerts_in_alertgroup {
     my $col     = $mongo->collection('Alert');
     my $cursor  = $col->find({alertgroup => $id});
     my @alerts  = ();
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    $log->debug("GET ALERTS in ALERTGROUP $id");
 
     while ( my $alert = $cursor->next ) {
         my $alert_href  = $alert->as_hash;
+        $log->debug({filter=>\&Dumper, value=>$alert_href});
         push @alerts, $alert_href;
     }
     return wantarray ? @alerts : \@alerts;
