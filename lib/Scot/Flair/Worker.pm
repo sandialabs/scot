@@ -235,7 +235,7 @@ sub invalid_data {
     my $action  = $json->{action};
     my $log     = $self->env->log;
 
-    $self->env->log->trace({filter => \&Dumper, value => $json});
+    $self->env->log->debug({filter => \&Dumper, value => $json});
 
     if (! defined $action ) {
         $log->error("Missing Action key");
