@@ -103,7 +103,7 @@ sub get_whitespace_in_text {
     foreach my $w ($text =~ m/$wsre/g) {
         push @white, $w;
     }
-    $self->env->log->debug("found ".scalar(@white)." whitespace characters");
+    $self->env->log->trace("found ".scalar(@white)." whitespace characters");
     return wantarray ? @white : \@white;
 }
 
@@ -116,7 +116,7 @@ sub split_large_text {
     my $log     = $self->env->log;
 
     if ( $size < $limit ) {
-        $log->debug("Text under limit");
+        $log->trace("Text under limit");
         push @parts, $text;
         return wantarray ? @parts : \@parts;
     }
@@ -131,8 +131,8 @@ sub split_large_text {
     my $word_count  = scalar(@words);
     my $char_count  = 0; 
 
-    $log->debug("Word count = $word_count");
-    $log->debug("WS   count = $ws_count");
+    $log->trace("Word count = $word_count");
+    $log->trace("WS   count = $ws_count");
 
     foreach my $word (@words) {
         my $word_len    = length($word);
@@ -150,7 +150,7 @@ sub split_large_text {
     }
     push @parts, $part;
 
-    $log->debug("Created ".scalar(@parts). " parts");
+    $log->trace("Created ".scalar(@parts). " parts");
 
     return wantarray ? @parts : \@parts;
 }
@@ -311,10 +311,10 @@ sub attempt_match {
         my $match   = substr($text, $-[0], $+[0] - $-[0]);
         my $post    = substr($text, $+[0]);
 
-        $log->debug(" - "x$level,"Type  = $type");
-        $log->debug(" - "x$level,"PRE   = $pre");
-        $log->debug(" - "x$level,"MATCH = $match");
-        $log->debug(" - "x$level,"POST  = $post");
+        $log->trace(" - "x$level,"Type  = $type");
+        $log->trace(" - "x$level,"PRE   = $pre");
+        $log->trace(" - "x$level,"MATCH = $match");
+        $log->trace(" - "x$level,"POST  = $post");
 
         return $pre, $match, $post;
     }
