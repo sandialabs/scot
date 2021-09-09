@@ -14,7 +14,7 @@ use Data::Dumper;
 use Scot::Env;
 use Parallel::ForkManager;
 use Mojo::JSON qw(decode_json encode_json);
-use Scot::App::Responder::Flair;
+use Scot::Flair::Worker;
 
 $ENV{'scot_mode'}           = "testing";
 $ENV{'scot_auth_type'}      = "Testing";
@@ -33,7 +33,7 @@ foreach my $k (keys %ENV) {
 
 my $t       = Test::Mojo->new('Scot');
 my $env     = Scot::Env->instance;
-my $flairer = Scot::App::Responder::Flair->new({env=>$env});
+my $flairer = Scot::Flair::Worker->new(env=>$env);
 
 $t  ->post_ok  ('/scot/api/v2/event'  => json => {
         subject => "Test Event 1",
@@ -61,11 +61,13 @@ $t  ->post_ok('/scot/api/v2/entry'    => json => {
     ->json_is('/status' => 'ok');
 
 my $entry2  = $t->tx->res->json->{id};
-$flairer->process_message(undef, {
-    action  => "created", 
-    data    => {
-        type    => "entry", 
-        id      => $entry2
+$flairer->process_message({
+    body    => {
+        action  => "created", 
+        data    => {
+            type    => "entry", 
+            id      => $entry2
+        }
     }
 });
 
@@ -85,11 +87,13 @@ $t  ->post_ok('/scot/api/v2/entry'    => json => {
     ->json_is('/status' => 'ok');
 
 my $entry3  = $t->tx->res->json->{id};
-$flairer->process_message(undef, {
-    action  => "created", 
-    data    => {
-        type    => "entry", 
-        id      => $entry3
+$flairer->process_message({
+    body    => {
+        action  => "created", 
+        data    => {
+            type    => "entry", 
+            id      => $entry3
+        }
     }
 });
 
@@ -117,7 +121,32 @@ $t->get_ok("/scot/api/v2/link")
 my $rec_aref = $t->tx->res->json->{records};
 my @gotvertices = map { $_->{vertices} } @{$rec_aref};
 
-cmp_deeply(\@okvertices, \@gotvertices, "Got correct links");
+my $idx = 0;
+foreach my $vpair (@gotvertices) {
+    my $gotv0 = $vpair->[0];
+    my $gotv1 = $vpair->[1];
+    my $expv0 = $okvertices[$idx]->[0];
+    my $expv1 = $okvertices[$idx]->[1];
+    print "comparing $idx    $gotv0->{type} $gotv0->{id}, $gotv1->{type} $gotv1->{id} to \n";
+    print "               $expv0->{type} $expv0->{id}, $expv1->{type} $expv1->{id}\n";
+    ok( 
+        (
+        (
+            ($gotv0->{type} eq $expv0->{type} and $gotv0->{id} eq $expv0->{id}) or
+            ($gotv0->{type} eq $expv1->{type} and $gotv0->{id} eq $expv1->{id}) 
+        ) and (
+            ($gotv1->{type} eq $expv0->{type} and $gotv1->{id} eq $expv0->{id}) or
+            ($gotv1->{type} eq $expv1->{type} and $gotv1->{id} eq $expv1->{id}) 
+        )
+        ),
+        "Vertice pair $idx match"
+    );
+    $idx++;
+}
+            
+
+
+
     
 # more test of linking arbitrary things
 

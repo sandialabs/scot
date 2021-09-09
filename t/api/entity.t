@@ -10,7 +10,7 @@ use Data::Dumper;
 use Scot::Env;
 use Parallel::ForkManager;
 use Mojo::JSON qw(decode_json encode_json);
-use Scot::App::Responder::Flair;
+use Scot::Flair::Worker;
 
 $ENV{'scot_mode'}           = "testing";
 $ENV{'scot_auth_type'}      = "Testing";
@@ -29,7 +29,7 @@ foreach my $k (keys %ENV) {
 
 my $t       = Test::Mojo->new('Scot');
 my $env     = Scot::Env->instance;
-my $flairer = Scot::App::Responder::Flair->new({env=>$env});
+my $flairer = Scot::Flair::Worker->new(env=>$env);
 
 $t  ->post_ok  ('/scot/api/v2/event'  => json => {
         subject => "Test Event 1",
@@ -55,12 +55,14 @@ $t  ->post_ok('/scot/api/v2/entry'    => json => {
     ->json_is('/status' => 'ok');
 
 my $entry2  = $t->tx->res->json->{id};
-$flairer->process_message(undef, {
-    action  => "created", 
-    data    => {
-        type    => "entry", 
-        id      => $entry2
-    },
+$flairer->process_message({
+    body => {
+        action  => "created", 
+        data    => {
+            type    => "entry", 
+            id      => $entry2
+        },
+    }
 });
 
 $t  ->get_ok("/scot/api/v2/entry/$entry2")
@@ -103,11 +105,13 @@ $t  ->post_ok('/scot/api/v2/entry'  => json => {
     ->json_is('/status' => 'ok');
 
 my $sidd_entry_id = $t->tx->res->json->{id};
-$flairer->process_message(undef, {
-    action  => "created", 
-    data    => {
-        type    => "entry", 
-        id      => $sidd_entry_id
+$flairer->process_message({
+    body    => {
+        action  => "created", 
+        data    => {
+            type    => "entry", 
+            id      => $sidd_entry_id
+        }
     }
 });
 
@@ -144,11 +148,13 @@ $t->post_ok(
     }
 )->status_is(200);
 my $alertgroup_id   = $t->tx->res->json->{id};
-$flairer->process_message(undef, {
-    action  => "created", 
-    data    => {
-        type    => "alertgroup", 
-        id      => $alertgroup_id
+$flairer->process_message({
+    body    => {
+        action  => "created", 
+        data    => {
+            type    => "alertgroup", 
+            id      => $alertgroup_id
+        }
     }
 });
 
