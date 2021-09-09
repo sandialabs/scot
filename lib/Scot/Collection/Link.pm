@@ -194,7 +194,7 @@ sub link_objects {
     $log->trace("HEY DUDE: Link match is ",{filter=>\&Dumper, value=>$link});
 
     if (defined $link ) {
-        $log->debug("Link ".$link->id." exists, returning a pointer");
+        $log->trace("Link ".$link->id." exists, returning a pointer");
         return $link;
     }
     $log->debug("Link does not exist already, creating...");

@@ -133,7 +133,7 @@ sub update_alert {
     my $log     = $env->log;
 
     $log->debug("updating alert $alertid");
-    $log->debug("EDB = ",{filter=>\&Dumper, value=>$edb});
+    $log->trace("EDB = ",{filter=>\&Dumper, value=>$edb});
 
     my $data  = { parsed => 1 };
 
@@ -165,7 +165,8 @@ sub send_entities_to_enricher {
         }
     };
 
-    $log->debug("Attempting to enrich edb: ",{filter=>\&Dumper, value=>$edb});
+    $log->debug("Attempting to enrich edb: ");
+    $log->trace({filter=>\&Dumper, value=>$edb});
 
     foreach my $type (keys %$edb) {
         foreach my $value (keys %{$edb->{$type}}) {
@@ -315,7 +316,7 @@ sub link_entities {
             my $link = $self->link_objects($obj, $entity);
 
             if ( defined $target ) {
-                $log->debug("Linking Entry Target to Entity");
+                $log->trace("Linking Entry Target to Entity");
                 my $secondlink = $self->link_target($entity, $target);
             }
         }
@@ -394,7 +395,7 @@ sub send_mq {
     my $mq      = $self->env->mq;
     my $log     = $self->env->log;
 
-    $log->debug("Sending to $queue : ");
+    $log->trace("Sending to $queue : ");
     $log->trace({filter=>\&Dumper, value => $data});
 
     $mq->send($queue, $data);
