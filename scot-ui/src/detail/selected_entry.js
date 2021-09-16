@@ -599,6 +599,7 @@ class NewAlertTable extends React.Component {
   }
 
   componentDidMount() {
+    console.log("componentDidMount");
     if (this.props.items.length > 0) {
       const data = this.createData();
       const columns = buildTypeColumns("alert", data, this.props.items, true);
@@ -638,6 +639,7 @@ class NewAlertTable extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log("componentDidUpdate");
     if (prevProps.entityData !== this.props.entityData) {
       this.setState({
         entityData: this.props.entityData,
@@ -665,6 +667,7 @@ class NewAlertTable extends React.Component {
     ) {
       this.setState({ selected: this.props.alertsSelected });
     }
+
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -677,6 +680,7 @@ class NewAlertTable extends React.Component {
   }
 
   createData = () => {
+    console.log("createData");
     const dataarray = [];
     this.props.items.forEach(
       function (element) {
@@ -696,6 +700,8 @@ class NewAlertTable extends React.Component {
         dataitem["id"] = element.id;
         dataitem["status"] = element.status;
         dataitem["entry_count"] = element.entry_count;
+        console.log('adding dataitem');
+        console.log(dataitem);
         dataarray.push(dataitem);
       }.bind(this)
     );

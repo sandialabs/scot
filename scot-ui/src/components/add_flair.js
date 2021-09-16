@@ -1,4 +1,7 @@
 import $ from "jquery";
+// import ResizeAlertTable from '../detail/resize.js';
+import { getTextWidth, getCssStyle, getMaxColumnWidths, resizeColumns } from '../detail/resize2';
+
 export const AddFlair = {
   entityUpdate: function (
     entityData,
@@ -205,6 +208,7 @@ export const AddFlair = {
             }.bind(this)
           );
         } else if (type === "alertgroup") {
+          console.log("FOOBAR!!!!!");
           $(document.body)
             .find(".alertTableHorizontal")
             .find(".entity")
@@ -364,6 +368,8 @@ export const AddFlair = {
         if (scrollTo !== undefined && scrollTo !== null) {
           scrollTo();
         }
+        console.log("BOOMBAZ");
+        resizeColumns();
       }.bind(this),
       1000
     );
