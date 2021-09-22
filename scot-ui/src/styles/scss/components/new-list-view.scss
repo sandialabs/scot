@@ -9,6 +9,8 @@
 		// Should be removed after react-table fixes issue
 		//overflow-y: scroll;
 	    padding-right: 15px !important;
+        // attempt to lock the headers
+        //position: fixed;
     }
 
 	.rt-tbody {

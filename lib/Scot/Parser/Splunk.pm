@@ -121,14 +121,28 @@ sub parse_message {
 
             my $cell = $values[$i];
             # $rowresult{$colname} = $cell;
-            my @children   = map {
-              if ( ref($_) eq "HTML::Element" ) {
-                $_->as_text;
-              } 
-              else {
-                $_;
-              }
-            } $cell->content_list;
+            #my @children   = map {
+            #  if ( ref($_) eq "HTML::Element" ) {
+            #    $_->as_text;
+            #  } 
+            #  else {
+            #    $_;
+            #  }
+            #} $cell->content_list;
+
+            my @children    = ();
+            foreach my $item (@{$cell->content_list}) {
+                my $cv;
+                if ( ref($item) eq "HTML::Element" ) {
+                    $cv = $item->as_text;
+                }
+                else {
+                    $cv = $item;
+                }
+                if ( defined $cv and $cv ne '' and $cv ne ' ' ) {
+                    push @children, $cv;
+                }
+            }
             $rowresult{$colname} = \@children
         }
         push @results, \%rowresult;
