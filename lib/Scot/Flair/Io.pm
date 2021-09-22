@@ -27,6 +27,15 @@ has filemagic => (
     default => sub { File::Magic->new(); },
 );
 
+sub retrieve {
+    my $self    = shift;
+    my $msg     = shift;
+    my $type    = $msg->{data}->{type};
+    my $id      = $msg->{data}->{id} + 0;
+    return $self->get_object($type, $id);
+}
+
+
 sub get_object {
     my $self    = shift;
     my $type    = shift;
@@ -125,33 +134,63 @@ sub get_entity_id {
 
 sub update_alert {
     my $self    = shift;
-    my $alertid = shift;
-    my $results = shift;
-    my $edb     = $results->{$alertid}->{entities};
-    my $env     = $self->env;
-    my $mongo   = $env->mongo;
-    my $log     = $env->log;
+    my $agroup  = shift;
+    my $alert   = shift;
+    my $new     = shift;
+    my $edb     = shift;
+    my $log     = $self->env->log;
 
-    $log->debug("updating alert $alertid");
-    $log->trace("EDB = ",{filter=>\&Dumper, value=>$edb});
+    my $update  = { parsed  => 1, data_with_flair => {}, };
 
-    my $data  = { parsed => 1 };
-
-    foreach my $column (keys %{$results->{$alertid}}) {
-        next if $column eq "entities";
-        $data->{data_with_flair}->{$column} = $results->{$alertid}->{$column}->{flair};
+    foreach my $key (keys %$new) {
+        $update->{data_with_flair}->{$key} = $new->{$key};
     }
+    
+    try {
+        $alert->update({'$set' => $update});
+    }
+    catch {
+        $log->error("FAILED update of alert ".$alert->id.": $_");
+    };
 
-    my $update  = { '$set' => $data };
-    my $alert   = $self->get_object('alert', $alertid);
+    my $entities = $edb->{entities};
 
-    try { $alert->update($update) }
-    catch { $log->error("Failed to update Alert $alertid"); };
+    $self->link_entities($alert, $entities);
+    $self->link_entities($agroup, $entities);
+    $self->send_entities_to_enricher($entities);
+    $self->send_alert_updated_message($alert->id);
 
-    $self->link_entities($alert, $edb);
-    $self->send_entities_to_enricher($edb);
-    $self->send_alert_updated_message($alertid);
 }
+
+# sub update_alert_x {
+#     my $self    = shift;
+#     my $alertid = shift;
+#     my $results = shift;
+#     my $edb     = $results->{$alertid}->{entities};
+#     my $env     = $self->env;
+#     my $mongo   = $env->mongo;
+#     my $log     = $env->log;
+# 
+#     $log->debug("updating alert $alertid");
+#     $log->trace("EDB = ",{filter=>\&Dumper, value=>$edb});
+# 
+#     my $data  = { parsed => 1 };
+# 
+#     foreach my $column (keys %{$results->{$alertid}}) {
+#         next if $column eq "entities";
+#         $data->{data_with_flair}->{$column} = $results->{$alertid}->{$column}->{flair};
+#     }
+# 
+#     my $update  = { '$set' => $data };
+#     my $alert   = $self->get_object('alert', $alertid);
+# 
+#     try { $alert->update($update) }
+#     catch { $log->error("Failed to update Alert $alertid"); };
+# 
+#     $self->link_entities($alert, $edb);
+#     $self->send_entities_to_enricher($edb);
+#     $self->send_alert_updated_message($alertid);
+# }
 
 sub send_entities_to_enricher {
     my $self    = shift;
@@ -166,7 +205,7 @@ sub send_entities_to_enricher {
     };
 
     $log->debug("Attempting to enrich edb: ");
-    $log->trace({filter=>\&Dumper, value=>$edb});
+    $log->debug({filter=>\&Dumper, value=>$edb});
 
     foreach my $type (keys %$edb) {
         foreach my $value (keys %{$edb->{$type}}) {
@@ -261,32 +300,89 @@ sub transform_entities {
     return wantarray ? @entities : \@entities;
 }
 
+sub alert_entry_body {
+    my $self    = shift;
+    my $entry   = shift;
+    my $html    = shift;
+    my $log     = $self->env->log;
+
+    # normally scot does not alter the original body of an entry, but in this
+    # case, imgmunger has re-written <img> sources and we do not want the old
+    # links to linger.
+    try {
+        $entry->update({'$set' => { body => $html } });
+    }
+    catch {
+        $log->error("FAILED to update entry ".$entry->id." with altered body from Imgmunger: $_");
+    };
+}
 
 sub update_entry {
     my $self    = shift;
     my $entry   = shift;
-    my $body    = shift;
-    my $results = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;
-
-    $log->debug("update entry ".$entry->id);
+    my $edb     = shift;
+    my $flair   = shift;
+    my $text    = shift;
+    my $log     = $self->env->log;
 
     my $update  = {
-        parsed      => 1,
-        body        => $body,
-        body_plain  => $results->{text},
-        body_flair  => $results->{flair},
+        parsed  => 1,
+        body_plain  => $text,
+        body_flair  => $flair,
     };
 
-    try { $entry->update({ '$set' => $update }) }
-    catch { $log->error("Failed to update entry $entry->id: $_"); };
+    try { 
+        $entry->update({ '$set' => $update });
+    }
+    catch {
+        $log->error("FAILED to update entry ".$entry->id.": $_");
+    };
 
-    $self->send_entities_to_enricher($results->{entities});
+    my $entities    = $edb->{entities};
+
+    $self->send_entities_to_enricher($entities);
     $self->send_entry_updated_messages($entry);
-    $self->link_entities($entry, $results->{entities});
+    $self->link_entities($entry, $entities);
 }
+
+sub alter_entry_body {
+    my $self    = shift;
+    my $entry   = shift;
+    my $html    = shift;
+
+    try {
+        $entry->update({'$set' => { body => $html }});
+    }
+    catch {
+        $self->env->log->error("FAILED to update Entry ".$entry->id." body: $_");
+    };
+}
+
+# sub update_entry_x {
+#     my $self    = shift;
+#     my $entry   = shift;
+#     my $body    = shift;
+#     my $results = shift;
+#     my $env     = $self->env;
+#     my $log     = $env->log;
+#     my $mongo   = $env->mongo;
+# 
+#     $log->debug("update entry ".$entry->id);
+# 
+#     my $update  = {
+#         parsed      => 1,
+#         body        => $body,
+#         body_plain  => $results->{text},
+#         body_flair  => $results->{flair},
+#     };
+# 
+#     try { $entry->update({ '$set' => $update }) }
+#     catch { $log->error("Failed to update entry $entry->id: $_"); };
+# 
+#     $self->send_entities_to_enricher($results->{entities});
+#     $self->send_entry_updated_messages($entry);
+#     $self->link_entities($entry, $results->{entities});
+# }
 
 sub link_entities {
     my $self    = shift;
@@ -299,6 +395,9 @@ sub link_entities {
     my $col     = $mongo->collection('Link');
 
     $log->debug("linking Entities and $objtype");
+    $log->debug("EDB:");
+    $log->debug({filter=> \&Dumper, value => $edb});
+
 
     my $target; # will only be defined if an entry
     if ( $objtype eq "Entry") {
@@ -530,6 +629,7 @@ sub do_download {
     if ( $response->is_success ) {
         my $filename = (split('/', $link))[-1];
         my $content  = $response->content;
+        $log->debug("content downloaded: ",{filter=>\&Dumper, value=>$content});
         my ($fqn, $fname, $orig) = $self->create_file($entry_id, $filename, $content);
         return $fqn, $fname, $orig;
     }
@@ -820,4 +920,56 @@ sub create_child_entry {
 
     return $newentry;
 }
+
+sub update_worker_status {
+    my $self    = shift;
+    my $procid  = shift;
+    my $otype   = shift;
+    my $oid     = shift;
+    my $node    = shift; # node being processed
+    my $tnc     = shift; # total node count
+    my $pnc     = shift; # processed node count
+    my $update  = time();
+    my $log     = $self->env->log;
+
+    my $mongo   = $self->env->mongo;
+    my $col     = $mongo->collection('WorkerStat');
+
+    my $statobj     = $col->find_one({procid => $procid + 0});
+
+    if (defined $statobj) {
+        $log->debug("updating existing worker stat");
+        $statobj->update({ 
+            '$set' => {
+                node            => $node,
+                processed_count => $pnc,
+                updated         => $update,
+            }
+        });
+    }
+    else {
+        $log->debug("creating new worker stat");
+        $col->create({
+            procid  => $procid,
+            otype   => $otype,
+            oid     => $oid,
+            node    => $node,
+            total_node_count => $tnc,
+            processed_count => $pnc,
+        });
+    }
+}
+
+sub clear_worker_status {
+    my $self    = shift;
+    my $mongo   = $self->env->mongo;
+    my $col     = $mongo->collection('WorkerStat');
+    my $cur     = $col->find({});
+    while ( my $ws = $cur->next ) {
+        $ws->remove;
+    }
+}
+
+
+
 1;

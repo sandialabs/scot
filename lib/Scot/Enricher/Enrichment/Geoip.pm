@@ -65,6 +65,25 @@ sub _build_ispdb {
     );
 }
 
+has anondb => (
+    is          => 'ro',
+    isa         => 'GeoIP2::Database::Reader',
+    lazy        => 1,
+    required    => 1,
+    builder     => '_build_anondb',
+);
+
+sub _build_anondb {
+    my $self    = shift;
+    my $dbfile  = '/usr/share/GeoIP/GeoIP2-Anonymous.mmdb';
+    my $locales = ['en'];
+
+    return GeoIP2::Database::Reader->new(
+        file    => $dbfile,
+        locales => $locales,
+    );
+}
+
 sub enrich {
     my $self    = shift;
     my $entity  = shift;
@@ -73,9 +92,38 @@ sub enrich {
     # $log->debug("GEOIP ENRICH ",{filter=>\&Dumper, value=> $ipaddr});
     my $city    = $self->get_city_data($ipaddr);
     my $isp     = $self->get_isp_data($ipaddr);
-    my %data    = (%$city, %$isp);
+    my $anon    = $self->get_anon_data($ipaddr);
+    my %data    = (%$city, %$isp, %$anon);
     $log->debug("GEOIP returns ",{filter=>\&Dumper, value => \%data});
     return { data => \%data };
+}
+
+sub get_anon_data {
+    my $self    = shift;
+    my $ipaddr  = shift;
+    my $log     = $self->env->log;
+
+    my $data    = try {
+        my $anon    = $self->anondb->anonymous_ip;
+        return {
+            is_anonymous        => $anon->is_anonymous,
+            is_anonymous_vpn    => $anon->is_anonymous_vpn,
+            is_hosting_provider => $anon->is_hosting_provider,
+            is_public_proxy     => $anon->is_public_proxy,
+            is_tor_exit_node    => $anon->is_tor_exit_node,
+        };
+    }
+    catch {
+        return {
+            is_anonymous        => 0,
+            is_anonymous_vpn    => 0,
+            is_hosting_provider => 0,
+            is_public_proxy     => 0,
+            is_tor_exit_node    => 0,
+        };
+    };
+    $log->debug("Got Anon Data: ", {filter => \&Dumper, value=> $data});
+    return $data;
 }
 
 sub get_city_data {

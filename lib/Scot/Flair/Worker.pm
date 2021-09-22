@@ -14,6 +14,7 @@ use DateTime;
 use Scot::Env;
 use Scot::Flair::Regex;
 use Scot::Flair::Extractor;
+use Scot::Flair::Engine;
 use Module::Runtime qw(require_module);
 use namespace::autoclean;
 
@@ -85,6 +86,26 @@ sub _build_extractor {
     return Scot::Flair::Extractor->new(env => $env, scot_regex => $regex);
 }
 
+has engine  => (
+    is      => 'ro',
+    isa     => 'Scot::Flair::Engine',
+    required => 1,
+    lazy    => 1,
+    builder => '_build_engine',
+);
+
+sub _build_engine {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $engine  = Scot::Flair::Engine->new(
+        env => $env,
+        regexes => $self->regexes,
+        scotio  => $self->io,
+        extractor => $self->extractor,
+    );
+    return $engine;
+}
+
 has workers => (
     is      => 'ro',
     isa     => 'Int',
@@ -150,6 +171,7 @@ sub run {
     my $pm      = $self->procmgr;
 
     $log->info("Starting PreFork Flair Worker");
+    $self->io->clear_worker_status;
 
     while ($pm->signal_received ne "TERM") {
 
@@ -224,9 +246,7 @@ sub process_message {
     my $log     = $self->env->log;
 
     return undef if ($self->invalid_data($json));
-    my $processor = $self->get_processor($json);
-    $log->debug("will process with ".ref($processor));
-    $processor->flair($json);
+    $self->engine->flair($json);
 }
 
 sub invalid_data {

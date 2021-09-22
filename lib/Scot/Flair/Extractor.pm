@@ -76,6 +76,10 @@ has max_level => (
 sub extract_entities {
     my $self    = shift;
     my $input   = shift;
+    my $log     = $self->env->log;
+
+
+    $log->debug("Extracting Entities");
 
     # populate and return this
     my %edb = (
@@ -164,6 +168,8 @@ sub parse {
     my $log     = $self->env->log;
     my @new     = ();
 
+    $log->debug("Parsing txt = $text");
+
     my @textparts   = $self->split_large_text($text);
     my $partcount   = scalar(@textparts);
 
@@ -228,12 +234,12 @@ sub recursive_parse {
 
         # search the pre match text for flair
         $log->debug($tracker." - "x$level."$type flair found, recursing pre match");
-        push @new, $self->recursive_parse($tracker,$edb, $pre, $level+1);
+        push @new, $self->recursive_parse($tracker, $edb, $pre, $level+1);
         # add the flair
         push @new, $flair;
         # search the post match text for flair
         $log->debug($tracker." - "x$level."flair found, recursing post match");
-        push @new, $self->recursive_parse($tracker,$edb, $post, $level+1);
+        push @new, $self->recursive_parse($tracker, $edb, $post, $level+1);
 
         last REGEX;
     }
@@ -326,9 +332,40 @@ sub build_html {
     my $self    = shift;
     my @new     = @_;
     my $text    = '';
+    my @elements    = ();
+    my $log     = $self->env->log;
 
-    my @elements = map { (ref($_)) ? $_->as_HTML : $_ } @new;
-    return join('',@elements);
+    # may have been incuding empty divs
+    #my @elements = map { (ref($_)) ? $_->as_HTML : $_ } @new;
+    #return join('',@elements);
+
+    $log->info("Building HTML");
+
+    ELEMENT:
+    foreach my $element (@new) {
+        if ( ref($element) ) {
+           if ($self->element_is_empty($element)) {
+                $log->debug("skipping empty element");
+                next ELEMENT;
+           }
+           $log->debug("adding HTML::Element element to html ".$element->as_HTML);
+           push @elements, $element->as_HTML;
+           next ELEMENT;
+        }
+        $log->debug("Adding text to html");
+        push @elements, $element;
+    }
+}
+
+sub element_is_empty {
+    my $self    = shift;
+    my $element = shift;
+    my $log     = $self->env->log;
+    
+    my $text    = $element->as_text();
+    $log->debug("checking element text = $text =");
+    return 1 if ( $text eq '' );
+
 }
 
 sub clean_input {

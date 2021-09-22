@@ -109,8 +109,7 @@ sub preprocess_body {
     # also entries can be almost to limit of size of entry and will
     # need to be split
 
-
-
+    return $newhtml;
 }
 
 sub munge_images {

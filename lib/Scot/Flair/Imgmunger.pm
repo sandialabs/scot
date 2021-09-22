@@ -24,9 +24,12 @@ sub process_body {
     my $self    = shift;
     my $id      = shift;
     my $body    = shift;
+    my $log     = $self->env->log;
+
+    $log->debug("processing body for images");
+
     my $tree    = $self->build_tree($body);
-    my @images  = @{$tree->extract_links('img')};
-    my @files   = $self->process_images($id, @images);
+    my @files   = $self->process_images($id, $tree);
     my $newbody = $self->clean_html($tree);
 }
 
@@ -47,9 +50,12 @@ sub build_tree {
 sub process_images {
     my $self    = shift;
     my $id      = shift;
-    my @images  = @_;
+    my $tree    = shift;
+    my @images  = @{$tree->extract_links('img')};
     my @files   = ();
     my $log     = $self->env->log;
+
+    $log->debug("process_image links");
     
 
     foreach my $img_aref (@images) {
@@ -101,6 +107,11 @@ sub update_html {
 
     $log->debug("updating html with fqn = $fqn name = $name orig = $orig");
 
+    if (! defined $fqn or ! defined $name or ! defined $orig ) {
+        $log->error("FAILED retrieving remote image. skipping replacement in body");
+        return;
+    }
+
     my $location = (split(/cached_images\//, $fqn))[-1];
 
     $log->debug("Location is $location");
@@ -136,7 +147,13 @@ sub download_image {
     my $id      = shift;
     my $io      = $self->scotio;
     my $log     = $self->env->log;
+
+    $log->debug("Attempting to download: $link $id");
+
     my ($fqn, $fname, $orig) = $io->download($link, $id);
+
+    $log->debug("Download results: fqn = $fqn fname = $fname orig => $orig");
+
     return $fqn, $fname, $orig;
 }
 

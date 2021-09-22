@@ -208,11 +208,12 @@ sub walk_tree {
                 $log->trace($lid." "x$spaces."Element ".$child->address." found, recursing.");
                 $self->walk_tree($lid, $child, $edb, $level);
             }
+
             # push the possibly modified copy of the child onto the new stack
-            #if ( $child->is_empty ) {
-            #    $log->debug("child is empty!?!");
-            #    $log->debug({filter=>\&Dumper, value =>$child});
-            #}
+            if ( $child->is_empty ) {
+                $log->debug("child is empty!?!");
+                $log->debug({filter=>\&Dumper, value =>$child});
+            }
 
             push @new, $child; 
         }

@@ -84,18 +84,36 @@ sub create_from_promoted_dispatch {
     my $self    = shift;
     my $dispatch = shift;
     my $intel   = shift;
+    my $log     = $self->env->log;
+
+    $log->debug("create from promoted dispatch");
+
+    my $dispatch_id = $dispatch->id + 0;
+
+    $log->debug("--- dispatch id = $dispatch_id");
+
     my $entry   = $self->meerkat->collection('Entry')->find_one({
-        target => { type => 'dispatch', id => $dispatch->id }
+        'target.type' => 'dispatch', 
+        'target.id'   => $dispatch_id 
     });
+
+    if ( ! defined $entry ) {
+        $log->error("FAILED to retrieve Entry for dispatch $dispatch_id");
+    }
+
+    my $newgroups = (defined $entry) ? $entry->groups : $self->env->default_groups;
+    my $newbody   = (defined $entry) ? $entry->body   : 'error retrieving entry from dispatch';
+    my $newowner  = (defined $entry) ? $entry->owner  : 'scot-admin';
+
     my $new_e_data = {
         target  => {
             type    => 'intel',
             id      => $intel->id,
         },
-        groups  => $entry->groups,
+        groups  => $newgroups,
         summary => 0,
-        body    => $entry->body,
-        owner   => $entry->owner,
+        body    => $newbody,
+        owner   => $newowner,
     };  
     my $newentry = $self->meerkat->collection('Entry')->create($new_e_data);
     return $newentry;
