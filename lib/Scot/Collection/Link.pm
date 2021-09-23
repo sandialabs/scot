@@ -170,7 +170,7 @@ sub link_objects {
     my $v0id = (ref($v0) eq "HASH") ? $v0->{id} : $v0->id;
     my $v1id = (ref($v1) eq "HASH") ? $v1->{id} : $v1->id;
 
-    $log->debug("Linking Objects: ". 
+    $log->trace("Linking Objects: ". 
                 ref($v0)." ".$v0id .
                 " to ".ref($v1)." ".$v1id);
 

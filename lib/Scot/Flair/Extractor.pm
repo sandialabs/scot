@@ -179,7 +179,7 @@ sub parse {
     }
     my $i = 1;
     foreach my $part (@textparts) {
-        push @new, $self->recursive_parse($tracker."{p$i/$partcount}", $edb, $part, $level);
+        push @new, $self->recursive_parse($tracker." {p$i/$partcount} ", $edb, $part, $level);
         $i++;
     }
     return wantarray ? @new : \@new;
@@ -194,15 +194,15 @@ sub recursive_parse {
     my $log     = $self->env->log;
     my @new     = ();
 
-    $log->debug($tracker." - "x$level." begin parse of ".length($text)." characters");
+    $log->debug($tracker." "x$level." begin parse of ".length($text)." characters");
 
     if ( $text eq '' ) {
-        $log->trace($tracker." - "x$level. 'null text');
+        $log->trace($tracker." "x$level. 'null text');
         return;
     }
 
-    $log->trace($tracker." - "x$level." Text block under size threshold");
-    $log->trace($tracker." - "x$level." PARSING = $text");
+    $log->trace($tracker." "x$level." Text block under size threshold");
+    $log->trace($tracker." "x$level." PARSING = $text");
 
     if ( $self->max_level < $level ) {
         $self->max_level($level);
