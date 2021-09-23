@@ -31,6 +31,7 @@ sub process_body {
     my $tree    = $self->build_tree($body);
     my @files   = $self->process_images($id, $tree);
     my $newbody = $self->clean_html($tree);
+    return $newbody;
 }
 
 sub build_tree {
@@ -56,7 +57,6 @@ sub process_images {
     my $log     = $self->env->log;
 
     $log->debug("process_image links");
-    
 
     foreach my $img_aref (@images) {
 
@@ -114,7 +114,7 @@ sub update_html {
 
     my $location = (split(/cached_images\//, $fqn))[-1];
 
-    $log->debug("Location is $location");
+    # $log->debug("Location is $location");
 
     my $source  = join('/', '/cached_images', $location);
 
@@ -128,6 +128,7 @@ sub update_html {
         'img', 'src' => $source, 'alt' => $alt
     );
     $element->replace_with($newimg);
+    $log->debug("New element ".$element->as_HTML());
 }
 
 sub extract_data_image {

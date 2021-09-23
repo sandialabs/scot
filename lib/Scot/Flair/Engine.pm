@@ -117,6 +117,7 @@ sub flair_alertgroup {
     $log->info("---- Begin Flair Alertgroup ---");
 
     $self->extract_from_alertgroup($alertgroup);
+    $self->scotio->send_alertgroup_updated_message($alertgroup->id);
 
     $log->info("---- End Flair Alertgroup ---");
 }
@@ -154,13 +155,15 @@ sub get_entry_html {
     my $self    = shift;
     my $entry   = shift;
     my $body    = $entry->body;
+    my $log     = $self->env->log;
 
     # entry body may contain images.  imgmunger handles this.
     my $munger  = Scot::Flair::Imgmunger->new(
         env     => $self->env,
         scotio  => $self->scotio,
     );
-    my $html    = $munger->process_body($entry->id, $body);
+    my $html    = $self->clean_html($munger->process_body($entry->id, $body));
+    $log->debug("IMGMUNGER HTML = $html");
     $self->scotio->alter_entry_body($entry, $html);
     return $html;
 }
@@ -378,7 +381,7 @@ sub extract_from_alert {
         $new->{$column} = \@cell_flair;
     }
 
-    $log->debug("EDB after alert is ",{filter=>\&Dumper, value => $edb});
+    $log->trace("EDB after alert is ",{filter=>\&Dumper, value => $edb});
 
     $self->scotio->update_alert($alertgroup, $alert, $new, $edb);
 }
@@ -615,7 +618,7 @@ sub has_splunk_ipv6_pattern {
     my $log     = $self->env->log;
 
     return undef if ( ! ref($c[$i]) );
-    $log->debug("c[$i] = ".$c[$i]->tag);
+    $log->trace("c[$i] = ".$c[$i]->tag);
     return undef if ( $c[$i]->tag   ne 'span');
     return undef if ( $c[$i+1]      ne ':');
     return undef if ( $c[$i+2]->tag ne 'span');
@@ -635,20 +638,32 @@ sub generate_flair_html {
     my $body    = $tree->look_down('_tag', 'body');
     my $log     = $self->env->log;
 
-    if ( defined $body ) {
-        my $content = $body->detach_content;
-        if ( defined $content ) {
-            if ( ref($content) ) {
-                if ( $content->tag eq "div" ) {
-                    return $content->as_HTML();
-                }
-            }
-            my $div     = HTML::Element->new('div');
-            $div->push_content($content);
-            return $div->as_HTML();
-        }
+    $log->debug("generating flair html");
+
+    if (! defined $body) {
+        $log->warn("no <body> within html tree!");
+        return undef;
     }
-    return undef;
+
+    my @content = $body->detach_content;
+
+    if (scalar(@content) < 1) {
+        $log->warn("no content detatched from body!");
+        return undef;
+    }
+
+    $log->trace({filter => \&Dumper, value => \@content});
+
+    if ( scalar(@content) == 1 and ref($content[0]) and $content[0]->tag eq "div" ) {
+        $log->info("content was a single div, returning that element");
+        return $content[0]->as_HTML;
+    }
+
+    $log->debug("creating holder div");
+
+    my $div = HTML::Element->new('div');
+    $div->push_content(@content);
+    return $div->as_HTML;
 }
 
 sub generate_plain_text {

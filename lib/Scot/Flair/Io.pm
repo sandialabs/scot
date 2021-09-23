@@ -89,7 +89,8 @@ sub get_entity {
 
     my $type    = $href->{type};
     my $value   = $href->{value};
-    $log->debug("Retrieving for $type $value entity");
+
+    $log->trace("Retrieving for $type $value entity");
 
     my $col     = $mongo->collection('Entity');
     my $entity  = try {
@@ -205,7 +206,7 @@ sub send_entities_to_enricher {
     };
 
     $log->debug("Attempting to enrich edb: ");
-    $log->debug({filter=>\&Dumper, value=>$edb});
+    $log->trace({filter=>\&Dumper, value=>$edb});
 
     foreach my $type (keys %$edb) {
         foreach my $value (keys %{$edb->{$type}}) {
@@ -331,6 +332,8 @@ sub update_entry {
         body_flair  => $flair,
     };
 
+    $log->trace("update entry with ",{ filter => \&Dumper, value => $update});
+
     try { 
         $entry->update({ '$set' => $update });
     }
@@ -395,8 +398,8 @@ sub link_entities {
     my $col     = $mongo->collection('Link');
 
     $log->debug("linking Entities and $objtype");
-    $log->debug("EDB:");
-    $log->debug({filter=> \&Dumper, value => $edb});
+    $log->trace("EDB:");
+    $log->trace({filter=> \&Dumper, value => $edb});
 
 
     my $target; # will only be defined if an entry
@@ -629,7 +632,7 @@ sub do_download {
     if ( $response->is_success ) {
         my $filename = (split('/', $link))[-1];
         my $content  = $response->content;
-        $log->debug("content downloaded: ",{filter=>\&Dumper, value=>$content});
+        $log->trace("content downloaded: ",{filter=>\&Dumper, value=>$content});
         my ($fqn, $fname, $orig) = $self->create_file($entry_id, $filename, $content);
         return $fqn, $fname, $orig;
     }
@@ -731,7 +734,7 @@ sub create_fqn {
     push @parts, $year if defined $year;
     push @parts, 'entry', $id, $newname;
     my $fqn     = join('/',@parts);
-    $log->debug("created fqn or $fqn");
+    $log->debug("created fqn = $fqn");
     return $fqn;
 }
 
