@@ -247,7 +247,7 @@ sub get_users_groups {
     my $ldap    = $self->ldap; 
     my @groups  = ();
 
-    $log->debug("Attempting to find user = $user = groups");
+    $log->trace("Attempting to find user $user groups");
     
     my $server          = $self->servername;
     my $binddn          = $self->dn;
@@ -292,9 +292,9 @@ sub get_users_groups {
     my $membership  = $search->pop_entry();
 
     if(defined($membership)) {    
-        $log->debug("membership returned");
+        $log->trace("membership returned");
         foreach my $attr ( $membership->attributes() ) {
-            $log->debug("attr $attr ");
+            $log->trace("attr $attr ");
             push @groups,
                 grep { /scot/i }            # only care about scot groups
                 map { /cn=(.*?),.*/; $1 } $membership->get_value($attr);

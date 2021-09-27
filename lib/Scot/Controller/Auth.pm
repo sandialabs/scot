@@ -290,7 +290,7 @@ sub authenticate_via_ldap {
     # if ( defined $type ) {
     #     if ( $type eq "ldap" ) {
             if ( $self->ldap_authenticates($user, $pass) ) {
-                $log->debug("$user authenticated via ldap");
+                $log->trace("$user authenticated via ldap");
                 return 1;
             }
             else {
@@ -324,13 +324,13 @@ sub ldap_authenticates {
     my $log     = $env->log;
     my $ldap    = $env->get_handle('ldap');
 
-    $log->debug("seeing if ldap will authenticate");
+    $log->trace("seeing if ldap will authenticate");
 
     if ( defined $ldap ) {
         my $return = $ldap->authenticate_user($user, $pass);
-        $log->debug("return from ldap auth is ",{filter=>\&Dumper, value=>$return});
+        $log->trace("return from ldap auth is ",{filter=>\&Dumper, value=>$return});
         if ( $return != 0 ) {
-            $log->debug("$user authenticated by ldap");
+            $log->trace("$user authenticated by ldap");
             return 1;
         }
         else {
@@ -438,20 +438,20 @@ sub valid_authorization_header {
     my $log     = $self->env->log;
     my $user;
 
-    $log->debug("checking for valid authorization header");
+    $log->trace("checking for valid authorization header");
 
     my $auth_header     = $headers->header('authorization');
 
     if ( defined $auth_header ) {
 
-        $log->debug("Authorization header = $auth_header");
+        $log->trace("Authorization header = $auth_header");
 
         my ($type,$value)   = split(/ /, $auth_header, 2);
 
         if ( $type =~ /basic/i ) {
             $log->debug("Basic Authentication Attempt...");
             if ( $user = $self->validate_basic($value) ) {
-                $log->debug("User $user appears authentic");
+                $log->trace("User $user appears authentic");
                 return $user;
             }
             else {
@@ -785,17 +785,17 @@ sub sucessful_auth {
 
     my $groups  = $self->get_groups($user);
 
-    $log->debug("Got groups : ",{filter=>\&Dumper, value=>$groups});
+    $log->trace("Got groups : ",{filter=>\&Dumper, value=>$groups});
 
     $self->session('groups' => $groups);
 
-    $log->debug("attempting to set user sucess");
+    $log->trace("attempting to set user sucess");
     
     $self->update_user_sucess($user);
 
     my $expiration = $self->get_expiration;
 
-    $log->debug("setting users session");
+    $log->trace("setting users session");
 
     $self->session(
         user    => $user,

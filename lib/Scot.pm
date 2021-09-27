@@ -186,7 +186,7 @@ relies on the browser BasicAuth popup.
     $r   ->get('/')
             ->to( cb => sub {
                 my $c = shift;
-                $slog->debug("Hitting Static /");
+                $slog->trace("Hitting Static /");
                 $c->reply->static('index.html');
             });
 

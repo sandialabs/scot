@@ -633,6 +633,10 @@ sub do_download {
         my $filename = (split('/', $link))[-1];
         my $content  = $response->content;
         $log->trace("content downloaded: ",{filter=>\&Dumper, value=>$content});
+        if ( $content =~ /<html/ ) {
+            $log->warn("did not receive an image! proxy prob?");
+            return undef, undef, undef;
+        }
         my ($fqn, $fname, $orig) = $self->create_file($entry_id, $filename, $content);
         return $fqn, $fname, $orig;
     }
