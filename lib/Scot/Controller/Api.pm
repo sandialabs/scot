@@ -2155,7 +2155,7 @@ sub get_form {
 
     my $form    = $env->forms;
 
-    $log->debug("Forms is ",{filter=>\&Dumper, value=>$form});
+    $log->trace("Forms is ",{filter=>\&Dumper, value=>$form});
 
     $self->do_render($form);
 }

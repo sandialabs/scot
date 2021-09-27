@@ -78,12 +78,17 @@ sub process_images {
         else {
             ($fqn, $fname, $origname) = $self->download_image($link, $id);
         }
-        push @files, {
-            fqn         => $fqn,
-            fname       => $fname,
-            origname    => $origname
-        };
-        $self->update_html($element, $fqn, $fname, $origname);
+        if ( defined $fqn and defined $fname and defined $origname ) {
+            push @files, {
+                fqn         => $fqn,
+                fname       => $fname,
+                origname    => $origname
+            };
+            $self->update_html($element, $fqn, $fname, $origname);
+        }
+        else {
+            $log->warn("download may have failed, keeping original link");
+        }
     }
     return wantarray ? @files : \@files;
 }
