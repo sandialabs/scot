@@ -418,7 +418,7 @@ sub post_list_process {
                     last ALERT;
                 }
             }
-            $log->debug("pushing on records: ",{filter=>\&Dumper, value=>$href});
+            $log->trace("pushing on records: ",{filter=>\&Dumper, value=>$href});
             push @records, $href;
         }
     }
@@ -977,7 +977,7 @@ sub pre_update_process {
     if ( $object->meta->does_role("Scot::Role::Entitiable") ) {
         $log->debug("object is entitiable");
         my $entity_aref = delete $req->{request}->{json}->{entities};
-        $log->debug("entities aref is ",{filter=>\&Dumper, value=>$entity_aref});
+        $log->trace("entities aref is ",{filter=>\&Dumper, value=>$entity_aref});
         my $collection  = $self->env->mongo->collection('Entity');
         $collection->update_entities($object, $entity_aref);
     }
@@ -1330,7 +1330,7 @@ sub post_update_process {
 
 
     foreach my $uphref (@$updates) {
-        $env->log->debug("--- UPREF --- ",{filter=>\&Dumper, value => $uphref});
+        $env->log->trace("--- UPREF --- ",{filter=>\&Dumper, value => $uphref});
         if ( $uphref->{attribute} eq "status" ) {
             my $msg = "$colname status change to ". $uphref->{new_value};
             $env->mongo->collection('Stat')->put_stat($msg,1);
@@ -1460,7 +1460,7 @@ sub process_entities {
             status  => $entity->status,
             entries => \@threaded_entries,
         };
-        $log->debug("thing{".$entity->value."} = ",
+        $log->trace("thing{".$entity->value."} = ",
                     {filter=>\&Dumper, value=>$things{$entity->value}});
 
     }
@@ -1544,7 +1544,7 @@ sub update_target {
         ucfirst($object->target->{type})
     )->find_iid($object->target->{id});
 
-    $self->env->log->debug("updating target ",{filter=>\&Dumper, value=>$object->target});
+    $self->env->log->trace("updating target ",{filter=>\&Dumper, value=>$object->target});
 
     my $tmphref = $target->as_hash;
 #    $self->env->log->debug("found target       = ",{filter=>\&Dumper, value=>$tmphref});
@@ -1901,7 +1901,7 @@ sub thread_entries {
     my $user        = $self->session('user');
 
     $log->debug("Threading entries...");
-    $log->debug("users groups are: ", {filter=>\&Dumper, value=>$mygroups});
+    $log->trace("users groups are: ", {filter=>\&Dumper, value=>$mygroups});
 
     my @threaded    = ();
     my %where       = ();
@@ -2173,7 +2173,7 @@ sub undelete {
 
     my $collection  = (split(/::/,$obj->type))[-1];
     my $href    = $obj->data;
-    $log->debug("obj dump ",{filter=>\&Dumper, value=>$href});
+    $log->trace("obj dump ",{filter=>\&Dumper, value=>$href});
     my %request = (
         collection  => lc($collection),
         id          => $href->{id},
@@ -2186,7 +2186,7 @@ sub undelete {
     $log->debug("restore id = ".$restored->id);
     push my @returnjson, $self->post_create_process($restored);
 
-    $log->debug("Returnjson is ", {filter=>\&Dumper, value=>\@returnjson});
+    $log->trace("Returnjson is ", {filter=>\&Dumper, value=>\@returnjson});
 
     my $data = {
         who => $req->{user},
@@ -2235,7 +2235,7 @@ sub export {
         return;
         my $html    = $self->render_to_string();
 
-        $log->debug("HTML is ",{filter=>\&Dumper, value=>$html});
+        $log->trace("HTML is ",{filter=>\&Dumper, value=>$html});
 
         # $self->mail_to_user($user, $html, $collection, $id);
         # $self->do_render({ status => "Email generated and sent to user" } );
@@ -2291,7 +2291,7 @@ sub create_export {
         $href->{tags}   = $self->build_tag_export($object->id, $col);
     }
 
-    $log->debug("export data is ",{filter=>\&Dumper,value=>$href});
+    $log->trace("export data is ",{filter=>\&Dumper,value=>$href});
 
     return $href;
 }
@@ -2572,7 +2572,7 @@ sub remoteflair {
             $data->{target} = $req_data->{target};
         }
 
-        $log->debug("Creating with ",{filter=>\&Dumper, value => $data});
+        $log->trace("Creating with ",{filter=>\&Dumper, value => $data});
 
         # save RemoteFlair Object
         my $rfobj = $mongo->collection("Remoteflair")->create($data);
