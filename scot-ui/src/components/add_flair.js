@@ -113,6 +113,58 @@ export const AddFlair = {
                                     $(entity).append(flag);
                                     }
                                 }
+                                if (entitydata.geoip.data.is_anonymous) {
+                                    let anonicon = $(
+                                        '<img title="is_anonymous">'
+                                    ).attr(
+                                        'src',
+                                        '/images/flair/anon.png'
+                                    );
+                                    anonicon.addClass("extras");
+                                    $(entity).append(anonicon);
+                                }
+                                if (entitydata.geoip.data.is_anonymous_vpn) {
+                                    let icon = $(
+                                        '<img title="is_anonymous_vpn">'
+                                    ).attr(
+                                        'src',
+                                        '/images/flair/anonvpn.png'
+                                    );
+                                    icon.addClass("extras");
+                                    $(entity).append(icon);
+                                }
+                                if (entitydata.geoip.data.is_hosting_provider) {
+                                    let icon = $(
+                                        '<img title="is_hosting_provider">'
+                                    ).attr(
+                                        'src',
+                                        '/images/flair/hosting.png'
+                                    );
+                                    icon.addClass("extras");
+                                    $(entity).append(icon);
+                                }
+                                if (entitydata.geoip.data.is_public_proxy) {
+                                    let icon = $(
+                                        '<img title="is_public_proxy">'
+                                    ).attr(
+                                        'src',
+                                        '/images/flair/proxy.png'
+                                    );
+                                    icon.addClass("extras");
+                                    $(entity).append(icon);
+                                }
+                                if (entitydata.geoip.data.is_tor_exit_node) {
+                                    let icon = $(
+                                        '<img title="is_tor_exit_node">'
+                                    ).attr(
+                                        'src',
+                                        '/images/flair/tor.png'
+                                    );
+                                    icon.addClass("extras");
+                                    $(entity).append(icon);
+                                }
+
+
                               }
                             }
 
