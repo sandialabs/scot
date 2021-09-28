@@ -60,8 +60,9 @@ sub update_entities {
 
     my $env     = $self->env;
     my $log     = $env->log;
-    my $mongo   = $self->meerkat;
-    my $enrichments = $env->enrichments;
+    my $mongo   = $self->meerkat;   
+    # no done async
+    # my $enrichments = $env->enrichments;
 
     my $thash = $target->as_hash;
     $self->env->log->debug("updating entities on target ",
@@ -114,11 +115,21 @@ sub update_entities {
             push @created_ids, $entity->id;
         }
         $self->create_entity_links($entity, $target);
-        my ($updated,$data) = $enrichments->enrich($entity);
-        if ( $updated > 0 ) {
-            my $merged = $self->merge_entity_data($entity->data, $data);
-            $entity->update_set(data => $merged);
-        }
+        # async now
+        #my ($updated,$data) = $enrichments->enrich($entity);
+        #if ( $updated > 0 ) {
+        #    my $merged = $self->merge_entity_data($entity->data, $data);
+        #    $entity->update_set(data => $merged);
+        #}
+        $self->env->mq->send('/queue/enricher',{
+            action  => 'updated',
+            data    => {
+                who => 'scot-api',
+                type=> 'entity',
+                id  => $entity->id,
+            }
+        });
+
     }
     return \@created_ids, \@updated_ids;
 }
