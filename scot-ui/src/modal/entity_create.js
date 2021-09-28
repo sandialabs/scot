@@ -93,6 +93,7 @@ class EntityCreateModal extends Component {
       value: this.state.value,
       match: this.state.match,
       status: "active",
+      entry_id: this.props.reparseEntryId,
       options: { multiword: this.state.multiword }
     };
     $.ajax({

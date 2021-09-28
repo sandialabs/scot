@@ -1094,6 +1094,7 @@ class EntryParent extends React.Component {
       <div>
         {this.state.showEntityCreateModal ? (
           <EntityCreateModal
+            reparseEntryId={this.props.items.id}
             match={this.state.highlightedText}
             modalActive={this.state.showEntityCreateModal}
             ToggleCreateEntity={this.ToggleCreateEntity}
