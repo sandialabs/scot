@@ -61,26 +61,25 @@ sub apply_enrichment_data {
     # this overwrites the key for each enrichment
     # if you want instead to push latest update
     # update the $set to a $push
-
+    my $update_data = {};
     foreach my $key (keys %$update) {
         my $val = $update->{$key};
-        my $command = {
-            '$set' => {
-                "data.$key" => $val
-            }
-        };
-        $log->debug("Updating entity $id with ",{filter=>\&Dumper, value => $command});
-        $obj->update($command);
-        my $msg = {
-            'action'    => 'updated',
-            data        => {
-                who     => 'scot-enricher',
-                type    => 'entity',
-                id      => $id,
-            }
-        };
-        $self->send_mq('/topic/scot', $msg);
+        my $i   = 'data.'.$key;
+        $update_data->{$i} = $val;
     }
+    my $command     = { '$set' => $update_data };
+    $log->debug("Updating entity $id with ",{filter=>\&Dumper, value => $command});
+    $obj->update($command);
+
+    my $msg = {
+        'action'    => 'updated',
+        data        => {
+            who     => 'scot-enricher',
+            type    => 'entity',
+            id      => $id,
+        }
+    };
+    $self->send_mq('/topic/scot', $msg);
 }
 
 sub send_mq {
@@ -91,7 +90,7 @@ sub send_mq {
     my $log     = $self->env->log;
 
     $log->debug("Sending to $queue : ");
-    $log->trace({filter=>\&Dumper, value => $data});
+    $log->debug({filter=>\&Dumper, value => $data});
 
     $mq->send($queue, $data);
 }
