@@ -583,7 +583,7 @@ sub post_get_one_process {
 
     if ( ref($object) eq "Scot::Model::Entity" ) {
         # do entity enrichment refresh
-        $self->refresh_entity_enrichments($object);
+        # $self->refresh_entity_enrichments($object);
     }
 
     my $href    = $object->as_hash;

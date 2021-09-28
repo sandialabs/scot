@@ -75,7 +75,7 @@ has anondb => (
 
 sub _build_anondb {
     my $self    = shift;
-    my $dbfile  = '/usr/share/GeoIP/GeoIP2-Anonymous.mmdb';
+    my $dbfile  = '/usr/share/GeoIP/GeoIP2-Anonymous-IP.mmdb';
     my $locales = ['en'];
 
     return GeoIP2::Database::Reader->new(
@@ -104,7 +104,8 @@ sub get_anon_data {
     my $log     = $self->env->log;
 
     my $data    = try {
-        my $anon    = $self->anondb->anonymous_ip;
+        my $anon    = $self->anondb->anonymous_ip(ip => $ipaddr);
+        $log->debug("ANON returns: ",{filter=>\&Dumper, value => $anon});
         return {
             is_anonymous        => $anon->is_anonymous,
             is_anonymous_vpn    => $anon->is_anonymous_vpn,
