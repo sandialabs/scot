@@ -83,6 +83,11 @@ sub create {
         my $collection  = $self->get_collection_req($req_href);
         $req_href->{groups} = $self->session('groups');
         $self->pre_create_process($req_href);
+        
+        my $target_entry;
+        if ( ref($collection) eq "Scot::Collection::Entitytype" ) {
+            $target_entry = delete $req_href->{request}->{json}->{entry_id};
+        }
         my @objects     = $collection->api_create($req_href);
         my @returnjson  = ();
 
@@ -101,6 +106,20 @@ sub create {
                     data    => $data,
                 });
             }
+
+            if ( ref($object) eq "Scot::Model::Entitytype" ) {
+                $log->debug("We have a new Entitytype, need to reparse entry");
+                $log->debug("target entry is ".$target_entry);
+                $self->env->mq->send("/queue/flair", {
+                    action  => 'updated',
+                    data    => {
+                        who => $req_href->{user},
+                        type=> 'entry',
+                        id  => $target_entry
+                    }
+                });
+            }
+
             $log->debug("Submitting to topic");
             $self->env->mq->send("/topic/scot",{
                 action  => "created",
