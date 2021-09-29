@@ -1124,6 +1124,10 @@ class EntityBody extends React.Component {
             );
             enrichmentEventKey++;
           } else if (entityData[prop].type === "link") {
+            // look here to replace button creation from entity.data
+            // maybe create a set of buttons in database that match 
+            // this.props.data['type'] and take this.props.data['value']
+            // and sprintf it  to the url and put it a title. --tb
             //added this because we dont need two buttons -2019 bryce
             if (entityData[prop].data.title !== "Lookup in Likaboss") {
               const nopop  = ( entityData[prop].data.nopopup ) ? true : false;
