@@ -163,6 +163,16 @@ export const AddFlair = {
                                     icon.addClass("extras");
                                     $(entity).append(icon);
                                 }
+                                if (entitydata.geoip.data.is_residential_proxy) {
+                                    let icon = $(
+                                        '<img title="is_residential_proxy">'
+                                    ).attr(
+                                        'src',
+                                        '/images/flair/residence.png'
+                                    );
+                                    icon.addClass("extras");
+                                    $(entity).append(icon);
+                                }
 
 
                               }
