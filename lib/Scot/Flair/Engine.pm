@@ -135,13 +135,13 @@ sub extract_from_entry {
 
     if (defined $html) {
         my $tree = $self->build_html_tree($html);
+        $text   = $self->generate_plain_text($tree);
         my $node_count  = $tree->descendents;
         $scotio->update_worker_status($$, 'entry', $entry->id, '0', $node_count, 0);
         # find entities, set edby and alter $tree as side effects
         my $wstat   = { type => 'entry', id => $entry->id, tnc => $node_count};
         $self->walk_tree($tree, $edb, $wstat);
         $flair  = $self->generate_flair_html($tree);
-        $text   = $self->generate_plain_text($tree);
 
         $tree->delete;  # prevent a memory leak that can occur with this library
     }
@@ -669,8 +669,14 @@ sub generate_flair_html {
 sub generate_plain_text {
     my $self    = shift;
     my $tree    = shift;
-    my $format  = HTML::FormatText->new();
-    my $text    = $format->format($tree);
+    my $log     = $self->env->log;
+
+    $log->debug("GENERATING PLAIN TEXT");
+    $log->debug("tree = ".$tree->as_HTML);
+    my $formater = HTML::FormatText->new();
+
+    my $text    = $formater->format($tree);
+    $log->debug("text = $text");
     return $text;
 }
 

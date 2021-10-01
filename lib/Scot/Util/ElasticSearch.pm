@@ -70,7 +70,7 @@ sub _build_es {
         $log->error("Error creating Elasticsearch client: $_");
         return undef;
     };
-    $log->debug("ES is ",{filter=>\&Dumper, value=>$es});
+    $log->trace("ES is ",{filter=>\&Dumper, value=>$es});
     return $es;
 }
 
@@ -182,8 +182,7 @@ sub update {
     my $id      = shift;
     my $body    = shift;
     my $es      = $self->es;
-
-    my $results = $es->update(
+    my %command = (
         index   => $index,
         type    => $type,
         id      => $id,
@@ -191,6 +190,10 @@ sub update {
             doc => $body
         },
     );
+
+    $self->env->log->debug("update es: ",{filter=>\&Dumper, value=>\%command});
+
+    my $results = $es->update(%command);
     return $results;
 }
 
