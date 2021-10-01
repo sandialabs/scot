@@ -332,7 +332,7 @@ sub update_entry {
         body_flair  => $flair,
     };
 
-    $log->trace("update entry with ",{ filter => \&Dumper, value => $update});
+    $log->debug("update entry with ",{ filter => \&Dumper, value => $update});
 
     try { 
         $entry->update({ '$set' => $update });

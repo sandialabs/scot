@@ -1397,6 +1397,8 @@ sub post_update_process {
         $env->mq->send("/queue/flair", $mq_msg);
         $mq_msg->{data} = {
             who     => $self->session('user'),
+            type    => $colname,
+            id      => $object->id,
             target  => { type => $object->target->{type},
                          id   => $object->target->{id}, },
             what    => "Entry update",
