@@ -12,8 +12,7 @@ use Net::Stomp;
 use JSON;
 use DateTime;
 use Scot::Env;
-use Scot::Flair::Regex;
-use Scot::Flair::Extractor;
+use Scot::Flair::Io;
 use Scot::Flair::Engine;
 use Module::Runtime qw(require_module);
 use namespace::autoclean;
@@ -43,49 +42,6 @@ sub _build_stomp {
     });
 }
 
-has regexes   => (
-    is      => 'ro',
-    isa     => 'Scot::Flair::Regex',
-    required=> 1,
-    lazy    => 1,
-    builder => '_build_regexes',
-);
-
-has io      => (
-    is      => 'ro',
-    isa     => 'Scot::Flair::Io',
-    required=> 1,
-    lazy    => 1,
-    builder => '_build_io',
-);
-
-has extractor => (
-    is      => 'ro',
-    isa     => 'Scot::Flair::Extractor',
-    required=> 1,
-    lazy    => 1,
-    builder => '_build_extractor',
-);
-
-sub _build_regexes {
-    my $self = shift;
-    my $env = $self->env;
-    return Scot::Flair::Regex->new(env => $env);
-}
-
-sub _build_io {
-    my $self    = shift;
-    my $env     = $self->env;
-    return Scot::Flair::Io->new(env => $env);
-}
-
-sub _build_extractor {
-    my $self    = shift;
-    my $env     = $self->env;
-    my $regex   = $self->regexes;
-    return Scot::Flair::Extractor->new(env => $env, scot_regex => $regex);
-}
-
 has engine  => (
     is      => 'ro',
     isa     => 'Scot::Flair::Engine',
@@ -97,12 +53,7 @@ has engine  => (
 sub _build_engine {
     my $self    = shift;
     my $env     = $self->env;
-    my $engine  = Scot::Flair::Engine->new(
-        env => $env,
-        regexes => $self->regexes,
-        scotio  => $self->io,
-        extractor => $self->extractor,
-    );
+    my $engine  = Scot::Flair::Engine->new(env => $env);
     return $engine;
 }
 
@@ -128,6 +79,13 @@ has queue   => (
     default     => '/queue/flair',
 );
 
+has topic   => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => '/topic/flair',
+);
+
 has procmgr => (
     is          => 'ro',
     isa         => 'Parallel::Prefork',
@@ -142,28 +100,18 @@ sub _build_procmgr {
     return Parallel::Prefork->new({max_workers => $workers});
 }
 
-#has timelog =>  (
-#    is          => 'ro',
-#    isa         => 'Log::Log4Perl::Logger',
-#    required    => 1,
-#    builder     => '_build_timelog',
-#);
-
-#sub _build_timelog {
-#    my $self    = shift;
-#    my $log     = Log::Log4perl->get_logger('timing');
-#    my $layout  = Log::Log4perl::Layout::PatternLayout->new("%d [%P]  %12F{1}: %m%n");
-#    my $append  = Log::Log4perl::Appender->new(
-#        'Log::Log4perl::Appender::File',
-#        name        => 'flair_time_log',
-#        filename    => '/var/log/scot/times.log',
-#        autoflush   => 1,
-#    );
-#    $append->layout($layout);
-#    $log->add_appender($append);
-#    $log->level('INFO');
-#    return $log;
-#}
+has io  => (
+    is       => 'ro',
+    isa      => 'Scot::Flair::Io',
+    required => 1,
+    lazy     => 1,
+    builder  => '_build_scotio',
+);
+sub _build_scotio {
+    my $self    = shift;
+    my $env     = $self->env;
+    return Scot::Flair::Io->new(env => $env);
+}
 
 sub run {
     my $self    = shift;
@@ -191,6 +139,8 @@ sub connect_to_queue {
     my $self    = shift;
     my $stomp   = $self->stomp;
     my $queue   = $self->queue;
+    my $topic   = $self->topic;
+    my $log     = $self->env->log;
 
     $stomp->connect();
     $stomp->subscribe({
@@ -198,6 +148,13 @@ sub connect_to_queue {
         ack                     => 'client',
         'activemq.prefetchSize' => 1,
     });
+    $log->debug("subscribed to $queue");
+    $stomp->subscribe({
+        destination             => $topic,
+        ack                     => 'client',
+        'activemq.prefetchSize' => 1,
+    });
+    $log->debug("subscribed to $topic");
 }
 
 sub process_frame {
@@ -245,8 +202,24 @@ sub process_message {
     my $json    = $data->{body};
     my $log     = $self->env->log;
 
+    if ( $data->{headers}->{destination} eq $self->topic ) {
+        $self->process_topic_message($data);
+        return;
+    }
     return undef if ($self->invalid_data($json));
     $self->engine->flair($json);
+}
+
+sub process_topic_message {
+    my $self    = shift;
+    my $data    = shift;
+
+    my $body    = $data->{body};
+    my $retypes = $body->{reload};
+
+    $self->engine->reload_regexes($retypes);
+    $self->env->log->debug("processed topic message");
+
 }
 
 sub invalid_data {
@@ -280,23 +253,6 @@ sub invalid_data {
         return 1;
     }
     return undef;
-}
-
-sub get_processor {
-    my $self    = shift;
-    my $json    = shift;
-    my $type    = ucfirst(lc($json->{data}->{type}));
-    my $log     = $self->env->log;
-
-    my $class   = "Scot::Flair::Processor::$type";
-    require_module($class);
-    my $processor = $class->new(
-        env         => $self->env,
-        regexes     => $self->regexes,
-        extractor   => $self->extractor,
-        scotio      => $self->io,
-    );
-    return $processor;
 }
 
 1;

@@ -8,6 +8,9 @@ use lib '../../../lib';
 use Encode;
 use Data::Dumper;
 use Scot::Flair::Imgmunger;
+use Scot::Flair::Regex;
+use Scot::Flair::Io;
+use Scot::Flair::Extractor;
 use HTML::Entities;
 use HTML::TreeBuilder;
 use HTML::FormatText;
@@ -26,20 +29,57 @@ has regexes => (
     is       => 'ro',
     isa      => 'Scot::Flair::Regex',
     required => 1,
+    lazy     => 1,
+    builder  => '_build_regexes',
 );
 
 has scotio  => (
     is       => 'ro',
     isa      => 'Scot::Flair::Io',
     required => 1,
+    lazy     => 1,
+    builder  => '_build_scotio',
 );
+sub _build_scotio {
+    my $self    = shift;
+    my $env     = $self->env;
+    return Scot::Flair::Io->new(env => $env);
+}
+
 
 has extractor => (
     is       => 'ro',
     isa      => 'Scot::Flair::Extractor',
     required => 1,
+    lazy     => 1,
+    builder  => '_build_extractor',
 );
 
+sub _build_regexes {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $io      = $self->scotio;
+    return Scot::Flair::Regex->new(
+        env => $env, 
+        scotio => $io
+    );
+}
+
+sub reload_regexes {
+    my $self    = shift;
+    my $retypes = shift;
+    $self->regexes->reload_types($retypes);
+}
+
+sub _build_extractor {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $regex   = $self->regexes;
+    return Scot::Flair::Extractor->new(
+        env         => $env, 
+        regexes     => $regex
+    );
+}
 
 sub flair {
     my $self    = shift;
@@ -50,6 +90,17 @@ sub flair {
 
     my $timer   = $self->env->get_timer("flair_time");
     my $object  = $self->scotio->retrieve($message);
+
+    # we have two signals to reload regexes
+    # /topic/flair message will cause all workers to reload their regexes
+    # but there could be a race condition, such that one of the workers 
+    # picks up an entry to reflair that a userdef entity was just created
+    # if so, it will have this option set, and cause it to immediately
+    # reload regex instead of waiting to receive /topic message
+    # both are necessary
+    if ( defined $message->{data}->{options}->{reload} ) {
+        $self->reload_regexes($message->{data}->{options}->{reload});
+    }
 
     if ( defined $object ) {
 

@@ -26,24 +26,56 @@ has scotio  => (
     is          => 'ro',
     isa         => 'Scot::Flair::Io',
     required    => 1,
-    lazy        => 1,
-    builder     => '_build_scot_io',
 );
 
-sub _build_scot_io {
-    return Scot::Flair::Io->new({env => shift->env});
-}
+has all => (
+    is          => 'ro',
+    isa         => 'ArrayRef',
+    traits      => [ 'Array' ],
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_all',
+    handles     => {
+        add_regex   => 'push',
+    },
+    clearer     => 'clear_all_regexes',
+);
 
-sub all {
+sub _build_all {
     my $self    = shift;
     my @all     = ();
 
     my @sw = @{$self->single_word_regexes};
     my @mw = @{$self->multi_word_regexes};
+    my @et = @{$self->entity_type_regexes}; # refresh each extraction
 
-    push @all, @mw, @sw;
-
+    push @all, @mw, @sw, @et;
+    $self->env->log->debug("build all regex array");
     return wantarray ? @all : \@all;
+}
+
+has entity_type_regexes => (
+    is          => 'ro',
+    isa         => 'ArrayRef',
+    traits      => [ 'Array' ],
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_entity_type_regexes',
+    handles     => {
+        add_et_regex    => 'push',
+    },
+    clearer     => 'clear_entity_types_regexes',
+);
+
+# note to post interruptions self: make a super group of sw, mw, and et regexes
+
+sub _build_entity_type_regexes {
+    my $self    = shift;
+    my @ets     = ();
+    push @ets, $self->build_entitytype_regexes('single');
+    push @ets, $self->build_entitytype_regexes('multi');
+    $self->env->log->debug("built entity type regex array");
+    return wantarray ? @ets : \@ets;
 }
 
 has single_word_regexes => (
@@ -56,6 +88,7 @@ has single_word_regexes => (
     handles     => {
         add_sw_regex => 'push'
     },
+    clearer     => 'clear_single_word_regexes',
 );
 
 sub _build_single_word_regexes {
@@ -66,7 +99,6 @@ sub _build_single_word_regexes {
 
     push @raw_regex_data, $self->get_built_in_single_word_regexes;
     push @raw_regex_data, $self->get_local_regexes('single');
-    push @regexes, $self->build_entitytype_regexes('single');
 
     foreach my $raw_regex_href (@raw_regex_data) {
         push @regexes, {
@@ -78,6 +110,7 @@ sub _build_single_word_regexes {
     }
     # sort numerically increasing
     my @sorted = sort { $a->{order} <=> $b->{order} } @regexes;
+    $self->env->log->debug("built single word regex array");
     return \@sorted;
 }
 
@@ -91,6 +124,7 @@ has multi_word_regexes => (
     handles     => {
         add_mw_regex => 'push'
     },
+    clearer     => 'clear_multi_word_regexes',
 );
 
 sub _build_multi_word_regexes {
@@ -111,9 +145,8 @@ sub _build_multi_word_regexes {
             options => $raw->{options},
         };
     }
-    my @etype_data = $self->build_entitytype_regexes('multi');
-    push @regexes, @etype_data;
     my @sorted = sort { $a->{order} <=> $b->{order} } @regexes;
+    $self->env->log->debug("built multi word regex array");
     return \@sorted;
 }
 
@@ -208,6 +241,20 @@ sub get_entitytypes {
     my @raw     = $io->get_entity_types($query);
     $log->warn("Adding ".scalar(@raw)." regexes to $type");
     return wantarray ? @raw : \@raw;
+}
+
+sub reload_types {
+    my $self    = shift;
+    my $types   = shift;
+    my $log     = $self->env->log;
+
+    foreach my $type (@$types) {
+        my $cleaner = 'clear_'.$type.'_regexes';
+        $self->$cleaner;
+        $log->debug("cleared $type regexes");
+    }
+    $self->clear_all_regexes;
+    $log->debug("cleared all regexes");
 }
 
 sub build_re {
@@ -699,6 +746,27 @@ sub regex_domain_nope {
     my $options = { multiword => 'no' };
     my $re      = qr{
         (?:(?!-|[^.]+_)[A-Za-z0-9-_]{1,63}(?<!-)(?:\.|$)){2,}
+    }xims;
+    return {
+        regex => $re, type => $type, order => $order, options => $options,
+    };
+}
+
+# failed experiment to detect embedded sparklines within entry body
+sub regex_sparkline {
+    my $self    = shift;
+    my $type    = 'sparkline',
+    my $order   = 100;
+    my $options  = { multiword =>'yes' };
+
+    my $re      = qr{
+        \[
+        (
+            '
+            ##__SPARKLINE__##
+            .*
+        )
+        \]
     }xims;
     return {
         regex => $re, type => $type, order => $order, options => $options,

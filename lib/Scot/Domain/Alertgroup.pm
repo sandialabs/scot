@@ -229,7 +229,8 @@ sub update  ($self, $request){
 }
 
 sub send_update_notices ($self, $agid) {
-    my $mq      = $self-
+    my $mq      = $self->env->mq;
+}
 
 sub update_alertgroup ($self, $request) {
     my $log     = $self->log;

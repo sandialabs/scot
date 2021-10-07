@@ -110,12 +110,20 @@ sub create {
             if ( ref($object) eq "Scot::Model::Entitytype" ) {
                 $log->debug("We have a new Entitytype, need to reparse entry");
                 $log->debug("target entry is ".$target_entry);
+                $self->env->mq->send("/topic/flair", {
+                    data    => {
+                        reload  => ['entity_types'],
+                    }
+                });
                 $self->env->mq->send("/queue/flair", {
                     action  => 'updated',
                     data    => {
                         who => $req_href->{user},
                         type=> 'entry',
-                        id  => $target_entry
+                        id  => $target_entry,
+                        option  => {
+                            reload  => ['entity_types'],
+                        }
                     }
                 });
             }
