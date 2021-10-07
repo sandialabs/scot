@@ -15,7 +15,9 @@ use HTML::Element;
 use HTML::TreeBuilder;
 use HTML::FormatText;
 use Net::IPv6Addr;
+use SVG::Sparkline;
 use Carp qw(confess);
+use Log::Log4perl::Level;
 use Moose;
 
 my @ss = (); # see "mastering regular expressions", 3rd Ed. Chpt. 7
@@ -46,15 +48,8 @@ has regexes => (
     is          => 'ro',
     isa         => 'Scot::Flair::Regex',
     required    => 1,
-    lazy        => 1,
-    builder     => '_build_regexes',
 );
 
-sub _build_regexes {
-    my $self    = shift;
-    my $reobj   = Scot::Flair::Regex->new(env=>$self->env);
-    return $reobj;
-}
 
 #
 # Given an String of data
@@ -194,6 +189,7 @@ sub recursive_parse {
     my $log     = $self->env->log;
     my @new     = ();
 
+
     $log->debug($tracker." "x$level." begin parse of ".length($text)." characters");
 
     if ( $text eq '' ) {
@@ -208,14 +204,14 @@ sub recursive_parse {
         $self->max_level($level);
     }
 
-    my @all_re          = $self->regexes->all;
+    my @all_re          = @{$self->regexes->all};
     my $total_re        = scalar(@all_re);
     my $re_index        = 0;
 
     REGEX:
     foreach my $re_href (@all_re) {
         if ( defined $edb->{core} ) {
-            $log->trace($tracker." - "x$level." Limited to core REs only");
+            $log->debug($tracker." - "x$level." Limited to core REs only");
             next REGEX if ! defined $re_href->{core};
         }
         $re_index++;
@@ -384,6 +380,7 @@ sub post_match_actions {
     my $type    = shift;
     my $edb     = shift;
     my $level   = shift;
+    my $log     = $self->env->log;
 
     if ( $type eq "cidr" ) {
         return $self->cidr_action($match, $edb);
@@ -403,9 +400,43 @@ sub post_match_actions {
     if ( $type eq "message_id" ) {
         return $self->message_id_action($match, $edb);
     }
+    #if ( $type eq "sparkline" ) {
+    #    $log->level($TRACE);
+    #    return $self->create_sparkline_svg($match, $edb);
+    #}
     my $span = $self->create_span($match, $type);
     $self->add_entity($edb, $match, $type);
     return $span;
+}
+
+# this won't work because the <svg> when inserted into tree gets html_encoded
+# if I could extend HTML::Elelement or TreeBuilder to parse <SVG> we might be 
+# able, but who has time?
+sub create_sparkline_svg {
+    my $self    = shift;
+    my $match   = shift;
+    my $edb     = shift;
+    my $log     = $self->env->log;
+
+    $log->warn("FOUND SPARKLINE");
+
+    $match = decode_entities($match);
+    $match =~ s/'//g;
+    my @parts   = split(',', $match);
+    # $log->debug("PARTS = ",{filter=>\&Dumper, value => \@parts});
+    my $head    = shift @parts;
+    my @values  = map { $_+0 } grep {/\S+/} @parts;
+    $log->debug("VALUES = ",{filter=>\&Dumper, value => \@values});
+    my $svg     = SVG::Sparkline->new(
+        Line    => {
+            values  => \@values,
+            color   => 'blue',
+            height  => 12,
+        }
+    );
+    my $div = HTML::Element->new('div');
+    $div->push_content($svg);
+    return $div;
 }
 
 sub create_span {

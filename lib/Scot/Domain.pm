@@ -3,6 +3,7 @@ package Scot::Domain;
 use strict;
 use warnings;
 use experimental 'signatures';
+no warnings 'experimental';
 use Data::Dumper;
 use Moose;
 
@@ -37,6 +38,18 @@ has exactfields => (
     isa         => 'ArrayRef',
     required    => 1,
     default     => sub { [qw(status)] },
+);
+
+has permittables => (
+    is          => 'ro',
+    isa         => 'ArrrayRef',
+    required    => 1,
+    default     => sub { [
+        qw(
+            alertgroup alert checklist entry event file 
+            guide incident intel signature dispatch product
+        )
+    ] },
 );
 
 sub build_mongo_query ($self, $request) {
@@ -176,6 +189,110 @@ sub build_offset ($self, $request) {
     }
     return $skip;
 }
+
+sub get_array_from_request_data ($self, $json, $key) {
+    my @tags    = ();
+    if ( defined $json->{$key} ) {
+        if ( ref($json->{$key}) eq "ARRAY" ) {
+            push @tags, @{$json->{$key}};
+        }
+        else {
+            push @tags, $json->{$key};
+        }
+    }
+    return wantarray ? @tags : \@tags;
+}
+
+sub validate_permissions ($self, $json, $target) {
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $type    = lc((split(/::/, ref($self)))[-1]);
+
+    if ( grep {/$type/} @{$self->permittables} ) {
+        my $default_perms = $self->get_default_perms($target);
+        return $default_perms;
+    }
+    else {
+        $log->trace("type $type does not have permissions, no validation necessary");
+    }
+    return undef;
+}
+
+sub get_default_perms ($self, $target) {
+    my $env = $self->env;
+
+    if ( defined $target) {
+        return $self->get_target_permissions($target);
+    }
+    return $env->default_groups;
+}
+
+sub get_target_permisions ($self, $target) {
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $type    = $target->{type};
+    my $id      = $target->{id};
+
+    my $groups  = $env->default_groups;
+
+    if ( defined $type and defined $id ) {
+        my $object  = $mongo->collection(ucfirst($type))->find_iid($id);
+        if ( defined $object ) {
+            if ( $object->meta->does_role('Scot::Role::Permission') ) {
+                my $targetgroups = $object->groups;
+                if (defined $targetgroups ) {
+                    $groups = $targetgroups;
+                }
+            }
+        }
+    }
+    return $groups;
+}
+
+sub add_tag_source_to_thing ($self, $thing, $type, $aref) {
+    my @results     = ();
+    my $env         = $self->env;
+    my $mongo       = $env->mongo;
+    my $thing_id    = $thing->id + 0;
+    my $thing_type  = lc((split(/::/,ref($thing)))[-1]);
+    if ( ref($aref) ne "ARRAY" ) {
+        $aref   = [$aref];
+    }
+    foreach my $tagsource (@$aref) {
+        my $obj = $mongo->collection(ucfirst($type))->find_one({ value => $tagsource });
+        if ( ! defined $obj ) {
+            $obj = $mongo->collection(ucfirst($type))->create({ value => $tagsource });
+            push @results, { actions => 'create', target => $type, id => $obj->id };
+        }
+        $mongo->collection('Appearance')->create({
+            type    => $type,
+            value   => $tagsource,
+            apid    => $obj->id,
+            when    => $env->now,
+            target  => {
+                type    => $thing_type,
+                id      => $thing_id,
+            },
+        });
+    }
+    return wantarray ? @results : \@results;
+}
+
+sub send_mq ($self, $msgs) {
+    my $mq  = $self->env->mq;
+    if (ref($msgs) ne "ARRAY") {
+        $msgs = [ $msgs ];
+    }
+    foreach my $m (@$msgs) {
+        my $queues = $m->{queues};
+        my $data   = $m->{message};
+        foreach my $q (@$queues) {
+            $mq->send($q, $data);
+        }
+    }
+
+}
+
     
 
 1;

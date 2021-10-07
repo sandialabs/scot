@@ -962,6 +962,9 @@ export const getColumnWidth = (data, accessor, headerText) => {
   const cellLength = Math.max(
     ...data.map(function(row) {
       let newtext = row[headerText];
+      if (newtext === null ) {
+        return 0;
+      }
       if (newtext !== undefined) {
         return calc_width(newtext);
       } else {
