@@ -6,6 +6,7 @@ use warnings;
 use Data::Dumper;
 use Module::Runtime qw(require_module);
 use Try::Tiny;
+use Mojo::JSON qw(encode_json);
 use Moose;
 extends 'Scot::Email::Processor';
 
@@ -19,6 +20,13 @@ extends 'Scot::Email::Processor';
 #   message_id => ,
 #   message_str => ,
 # }
+
+has msvlog => (
+    is      => 'ro',
+    isa     => 'Str',
+    required=> 1,
+    default => '/var/log/scot/msv.log',
+);
 
 sub process_message {
     my $self    = shift;
@@ -117,6 +125,7 @@ sub create_alertgroup {
 
 
     my @agroups = ();
+    $self->filter_msv_alert($json);
     try {
         @agroups = $col->api_create({
             request => { json => $json }
@@ -133,6 +142,80 @@ sub create_alertgroup {
     if ( $created > 0 ) {
         $self->scot_housekeeping(@agroups);
     }
+}
+
+sub filter_msv_alert {
+    my $self    = shift;
+    my $json    = shift;
+    
+    # look for ipaddrs and hostnames from MSV 
+    # if present, write row to logfile
+    # and remove it from $json so it wont' be 
+    # created 
+    my @newdata = ();
+    my $data    = $json->{data};
+
+    foreach my $row (@$data) {
+        if ( $self->scan_for_msv($row) ) {
+            $self->write_row($row);
+        }
+        else {
+            push @newdata, $row;
+        }
+    }
+    $json->{data} = \@newdata;
+}
+
+sub scan_for_msv {
+    my $self    = shift;
+    my $row     = shift;
+    my $filters = $self->env->msv_filters;
+    my $log     = $self->env->log;
+    my $rowcat  = $self->concat_row_cells($row);
+    my $timer   = $self->env->get_timer("msv_scan");
+
+    # concat row values into single string
+    # scan that string for substrings that match items in msv_filters
+
+    foreach my $ftype (keys %$filters) {
+        my $items   = $filters->{$ftype};
+        foreach my $item (@$items) {
+            if ( $rowcat =~ /\b$item\b/i ) {
+                my $elapsed = &$timer;
+                $log->warn("Found $item of type $ftype in $elapsed secs in row $rowcat");
+                return 1;
+            }
+        }
+    }
+    my $elapsed = &$timer;
+    $log->debug("No MSV content detected. scan time = $elapsed seconds.");
+    return undef;
+}
+
+sub concat_row_cells {
+    my $self    = shift;
+    my $row     = shift;
+    my $concat  = '';
+    foreach my $col (keys %$row) {
+        my $cell    = $row->{$col};
+        if (ref($cell) eq 'ARRAY') {
+            $concat .= ' '.join(' ', @$cell);
+        }
+        else {
+            $concat .= ' '.$cell;
+        }
+    }
+    return $concat;
+}
+
+sub write_row {
+    my $self    = shift;
+    my $row     = shift;
+    my $msvlog  = $self->msvlog;
+
+    open my $fh, ">>", $msvlog;
+    print $fh, encode_json($row)."\n";
+    close $fh;
 }
 
 sub scot_housekeeping {

@@ -8,6 +8,7 @@ use Test::More;
 use Test::Deep;
 use Data::Dumper;
 use Scot::Env;
+use Scot::Model::Entry;
 use E2TestSamples;
 use HTML::Element;
 use feature qw(say);
@@ -19,10 +20,10 @@ my $timer       = $env->get_timer("All Test Completed");
 ok (defined $env, "Environment defined");
 ok (ref($env) eq "Scot::Env", "It is a Scot::Env");
 
-require_ok('Scot::Flair::Extractor');
-my $extractor = Scot::Flair::Extractor->new(env => $env);
+require_ok('Scot::Flair::Engine');
+my $engine = Scot::Flair::Engine->new(env => $env);
 
-ok(defined $extractor, "extractor module instantiated");
+ok(defined $engine, "extractor module instantiated");
 
 my $e2samples = E2TestSamples->new();
 
@@ -36,29 +37,28 @@ test_email_action();
 done_testing();
 
 sub test_regex_build {
-    my $r = $extractor->regexes->all;
+    my $r = $engine->regexes->all;
     #foreach my $re (@$r) {
     #    print Dumper($re);
     #}
     print scalar(@$r)." regexes available\n";
 }
 
-
 sub test_samples {
     my @samples    = ();
     push @samples, 
-        $e2samples->build_deep_recursion_problem,
-        $e2samples->build_flair_error_tests,
-        $e2samples->build_local_tests,
-        $e2samples->build_domain_tests,
-        $e2samples->build_ipv4_tests,
-        $e2samples->build_ipv6_tests,
-        $e2samples->build_email_tests,
-        $e2samples->build_cve_tests,
-        $e2samples->build_cidr_tests,
-        $e2samples->build_message_id_tests,
-        $e2samples->build_id_tests,
-        $e2samples->build_file_tests;
+#         $e2samples->build_deep_recursion_problem,
+#        $e2samples->build_flair_error_tests,
+#        $e2samples->build_local_tests,
+#        $e2samples->build_domain_tests,
+#        $e2samples->build_ipv4_tests,
+#        $e2samples->build_ipv6_tests,
+#        $e2samples->build_email_tests,
+#        $e2samples->build_cve_tests,
+#        $e2samples->build_cidr_tests,
+        $e2samples->build_message_id_tests;
+#        $e2samples->build_id_tests,
+#        $e2samples->build_file_tests;
     
 
     foreach my $sample (@samples) {
@@ -67,17 +67,14 @@ sub test_samples {
         my $flair    = $sample->{flair};
         my $edb      = $sample->{entities};
         $env->log->debug("------- Test $testname ------------");
+        my ($gotedb, $gotflair, $gottext) = $engine->extract_from_html($source);
 
-        my $gotedb  = {};
-        my @got     = $extractor->parse($testname,$gotedb, $source);
 
         ok(compare_edb($gotedb->{entities}, $edb), "$testname EDB is correct") || die;
-        ok(compare_new_array(\@got,$flair), "$testname produced correct flair");
 
-        my $flair_text = $extractor->build_html(@got);
-        my $expect_flair_text = $extractor->build_html(@$flair);
+        my $expect_flair_text = $engine->extractor->build_html(@$flair);
 
-        is($flair_text, $expect_flair_text, "$testname HTML Flair matches") or flair_text_mismatch($flair_text, $expect_flair_text);
+        is($gotflair, $expect_flair_text, "$testname HTML Flair matches") or flair_text_mismatch($gotflair, $expect_flair_text);
     }
 }
 
@@ -85,10 +82,22 @@ sub flair_text_mismatch {
     my $g = shift;
     my $e = shift;
 
-    print "g: $g\n";
-    print "e: $e\n";
-    done_testing();
-    exit 1;
+    if (! defined $g) {
+        done_testing();
+        die "Got null back from engine!";
+    }
+
+    for (my $i = 0; $i < length($g); $i++) {
+        my $x = substr($g, $i, 1);
+        my $y = substr($e, $i, 1);
+
+        if ( $x ne $y ) {
+            print "[$x|$y]\n";
+            done_testing();
+            exit 1;
+        }
+        print $x;
+    }
 }
 
 sub compare_edb {
@@ -239,8 +248,8 @@ sub test_external_defined_entity_class {
     my $edb = {
         entities => { 'boombaz' => {'foobar'=> 1 } },
     };
-    ok ($extractor->user_defined_entity_element($good_test_element, $rdb), "user def entity found");
-    ok (!$extractor->user_defined_entity_element($bad_test_element, $rdb), "non user def entity found");
+    ok ($engine->extractor->user_defined_entity_element($good_test_element, $rdb), "user def entity found");
+    ok (!$engine->extractor->user_defined_entity_element($bad_test_element, $rdb), "non user def entity found");
     cmp_deeply($rdb, $edb, "Entity DB is correct") or print Dumper($rdb,$edb);
 }
 
@@ -252,7 +261,7 @@ sub test_add_entity {
         },
     };
 
-    $extractor->add_entity($edb, "bar", "foo");
+    $engine->extractor->add_entity($edb, "bar", "foo");
 
     cmp_deeply($edb, $expected, "add_entity works");
 }
@@ -262,7 +271,7 @@ sub test_ipaddr_action {
     my $ipobs   = '10{.}10{.}10{.}1';
     my $ip      = '192.168.1.1';
 
-    my $span    = $extractor->ipaddr_action($ipobs, $edb);
+    my $span    = $engine->extractor->ipaddr_action($ipobs, $edb);
     my $expected_span = qq|<span class="entity ipaddr" data-entity-type="ipaddr" data-entity-value="10.10.10.1">10.10.10.1</span>|;
     my $expected_edb = {
         entities => {
@@ -274,7 +283,7 @@ sub test_ipaddr_action {
 
     is ($span->as_HTML, $expected_span, "span is correct for $ipobs");
     
-    $span = $extractor->ipaddr_action($ip, $edb);
+    $span = $engine->extractor->ipaddr_action($ip, $edb);
     $expected_span = qq|<span class="entity ipaddr" data-entity-type="ipaddr" data-entity-value="192.168.1.1">192.168.1.1</span>|;
 
     is ($span->as_HTML, $expected_span, "span is correct for $ip");
@@ -290,7 +299,7 @@ sub test_fix_weird_html {
         ]
     );
 
-    $extractor->fix_weird_html($splunk_ip4_node);
+    $engine->extractor->fix_weird_html($splunk_ip4_node);
     my $html = $splunk_ip4_node->as_HTML;
 
     my $expect = '10.10.10.1';
@@ -309,7 +318,7 @@ sub test_fix_weird_html {
                 ['span', 'a5', { class => "t a" } ],
         ]
     );
-    $extractor->fix_weird_html($splunk_ip6_node);
+    $engine->extractor->fix_weird_html($splunk_ip6_node);
     $html   = $splunk_ip6_node->as_HTML;
     $expect = '2600:287:8:f:0:0:0:a5';
     is ($html, $expect, "Fixed Splunk IPv6 weirdness");
@@ -326,7 +335,7 @@ sub test_email_action {
         },
     };
     my $got_db  = {};
-    my $got_span_element = $extractor->email_action($email, $got_db);
+    my $got_span_element = $engine->extractor->email_action($email, $got_db);
     my $got_span = $got_span_element->as_HTML;
 
     is ($got_span, $expect_span, "Email action span is correct");

@@ -140,6 +140,7 @@ sub get_logger {
         name        => $appendername,
         filename    => $logfilename,
         autoflush   => 1,
+        utf8        => 1,
     );
 
     $append->layout($layout);
