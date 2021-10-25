@@ -344,13 +344,14 @@ sub build_html {
                 $log->debug("skipping empty element");
                 next ELEMENT;
            }
-           $log->debug("adding HTML::Element element to html ".$element->as_HTML);
-           push @elements, $element->as_HTML;
+           $log->debug("adding HTML::Element element to html ".$element->as_HTML('<>'));
+           push @elements, $element->as_HTML('<>');
            next ELEMENT;
         }
         $log->debug("Adding text to html");
         push @elements, $element;
     }
+    return join('','<div>',@elements,'</div>');
 }
 
 sub element_is_empty {
@@ -487,12 +488,14 @@ sub message_id_action {
     my $edb     = shift;
 
     if ( $match =~ m/^<.*>$/ ) {
+        $self->add_entity($edb, $match, 'message_id');
         return $self->create_span($match, 'message_id');
     }
 
     $match =~ s/^&lt;/</;
     $match =~ s/&gt;$/>/;
 
+    $self->add_entity($edb, $match, 'message_id');
     return $self->create_span($match, 'message_id');
 }
 
@@ -655,7 +658,7 @@ sub user_defined_entity_element {
 sub external_defined_entity_class {
     my $self    = shift;
     my $class   = shift;
-    return undef if ( ! defined $class);
+    return 0 if ( ! defined $class);
     my @permitted   = (qw(
         userdef
         ghostbuster
