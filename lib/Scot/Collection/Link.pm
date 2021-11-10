@@ -400,7 +400,7 @@ sub get_linked_objects_cursor {
     my $mongo   = $self->meerkat;
     my $log     = $self->env->log;
 
-    $log->debug("get_linked_objects_cursor of object ".
+    $log->trace("get_linked_objects_cursor of object ".
                 ref($object)." and type $type");
 
     my $targetvertex = $self->get_vertex($object);
@@ -419,9 +419,9 @@ sub get_linked_objects_cursor {
         }
     }
     my $match       = { id => { '$in' => \@linked_ids }};
-    $log->debug("matching $type with ",{filter=>\&Dumper, value=>$match});
+    $log->trace("matching $type with ",{filter=>\&Dumper, value=>$match});
     my $lo_cursor   = $mongo->collection(ucfirst($type))->find($match);
-    $log->debug("cursor = ", {filter=>\&Dumper, value => $lo_cursor->info});
+    $log->trace("cursor = ", {filter=>\&Dumper, value => $lo_cursor->info});
     return $lo_cursor;
 }
 

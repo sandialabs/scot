@@ -1,0 +1,154 @@
+ok 1 - require Scot::Flair3::Io;
+ok 2 - io initialized
+ok 3 - require Scot::Flair3::Imgmunger;
+ok 4 - Alertgroup 1699748 OK [core: 0.296951] [udef: 1.153363] [total: 1.450314]
+ok 5 - Alertgroup 1699747 OK [core: 0.390882] [udef: 1.068647] [total: 1.459529]
+ok 6 - Alertgroup 1699746 OK [core: 0.038959] [udef: 0.100548] [total: 0.139507]
+ok 7 - Alertgroup 1699745 OK [core: 0.023001] [udef: 0.060446] [total: 0.083447]
+ok 8 - Alertgroup 1699744 OK [core: 0.083051] [udef: 0.198752] [total: 0.281803]
+ok 9 - Alertgroup 1699743 OK [core: 0.026655] [udef: 0.051174] [total: 0.077829]
+ok 10 - Alertgroup 1699742 OK [core: 0.025525] [udef: 0.069082] [total: 0.094607]
+ok 11 - Alertgroup 1699741 OK [core: 0.080209] [udef: 0.239136] [total: 0.319345]
+ok 12 - Alertgroup 1699740 OK [core: 0.008615] [udef: 0.013492] [total: 0.022107]
+ok 13 - Alertgroup 1699739 OK [core: 0.204601] [udef: 0.975561] [total: 1.180162]
+ok 14 - Alertgroup 1699738 OK [core: 0.050975] [udef: 0.13988] [total: 0.190855]
+------------------ Alertgroup 1699737 --------------
+                    clsid :    6 matching entities
+                   domain :   88 matching entities
+                           New                            Old
+                    sandia.gov                              .
+                             .                              .
+                    email :   50 matching entities
+                           New                            Old
+               spam@sandia.gov                              .
+                             .                              .
+                     file :  104 matching entities
+                           New                            Old
+                     index.php                              .
+                             .                              .
+                  malware :    1 matching entities
+                      md5 :   20 matching entities
+                     sha1 :   12 matching entities
+                 software :    0 matching entities
+                           New                            Old
+                             .                           zoom
+                             .                              .
+                    uuid1 :   26 matching entities
+not ok 15 - Alertgroup 1699737 OK [core: 1.289985] [udef: 3.276722] [total: 4.566707]
+ok 16 - Alertgroup 1699736 OK [core: 0.034144] [udef: 0.14433] [total: 0.178474]
+ok 17 - Alertgroup 1699735 OK [core: 0.020606] [udef: 0.032702] [total: 0.053308]
+ok 18 - Alertgroup 1699734 OK [core: 0.648587] [udef: 1.435657] [total: 2.084244]
+ok 19 - Alertgroup 1699733 OK [core: 0.01506] [udef: 0.034579] [total: 0.049639]{1 extra}
+ok 20 - Alertgroup 1699732 OK [core: 0.023407] [udef: 0.067292] [total: 0.090699]
+ok 21 - Alertgroup 1699731 OK [core: 0.03652] [udef: 0.097893] [total: 0.134413]
+ok 22 - Alertgroup 1699729 OK [core: 0.032553] [udef: 0.093748] [total: 0.126301]
+ok 23 - Alertgroup 1699728 OK [core: 0.015062] [udef: 0.038468] [total: 0.05353]
+ok 24 - Alertgroup 1699727 OK [core: 0.016102] [udef: 0.036816] [total: 0.052918]
+ok 25 - Alertgroup 1699726 OK [core: 0.0192] [udef: 0.05752] [total: 0.07672]
+ok 26 - Alertgroup 1699725 OK [core: 0.04591] [udef: 0.131599] [total: 0.177509]
+ok 27 - Alertgroup 1699724 OK [core: 0.264441] [udef: 0.793574] [total: 1.058015]
+ok 28 - Alertgroup 1699723 OK [core: 0.096949] [udef: 0.395727] [total: 0.492676]
+ok 29 - Alertgroup 1699722 OK [core: 0.037878] [udef: 0.09569] [total: 0.133568]
+ok 30 - Alertgroup 1699721 OK [core: 0.010208] [udef: 0.024064] [total: 0.034272]
+ok 31 - Alertgroup 1699720 OK [core: 0.038884] [udef: 0.147766] [total: 0.18665]
+ok 32 - Alertgroup 1699719 OK [core: 0.030973] [udef: 0.074821] [total: 0.105794]
+ok 33 - Alertgroup 1699718 OK [core: 0.017929] [udef: 0.048046] [total: 0.065975]
+ok 34 - Entry 476063 OK [core: 0.051885] [udef: 0.119929] [total: 0.171814] 
+ok 35 - Entry 476062 OK [core: 0.030814] [udef: 0.086265] [total: 0.117079] {1 extra}
+ok 36 - Entry 476061 OK [core: 0.021993] [udef: 0.060625] [total: 0.082618] 
+------------------ Entry 476060 --------------
+                   domain :   11 matching entities
+                           New                            Old
+                 lb.sandia.gov                              .
+                    sandia.gov                              .
+                             .                              .
+                    email :    4 matching entities
+               iphone_app :    0 matching entities
+                           New                            Old
+                             .                            dji
+                             .                              .
+                     ipv6 :   15 matching entities
+               message_id :   10 matching entities
+                    uuid1 :    5 matching entities
+not ok 37 - Entry 476060 OK [core: 0.199035] [udef: 0.433148] [total: 0.632183] 
+ok 38 - Entry 476059 OK [core: 0.041883] [udef: 0.191956] [total: 0.233839] 
+ok 39 - Entry 476058 OK [core: 0.02179] [udef: 0.027365] [total: 0.049155] 
+ok 40 - Entry 476057 OK [core: 0.031276] [udef: 0.094481] [total: 0.125757] {1 extra}
+ok 41 - Entry 476056 OK [core: 0.021296] [udef: 0.060873] [total: 0.082169] 
+ok 42 - Entry 476055 OK [core: 0.018485] [udef: 0.022577] [total: 0.041062] 
+ok 43 - Entry 476054 OK [core: 0.041153] [udef: 0.091757] [total: 0.13291] {1 extra}
+ok 44 - Entry 476053 OK [core: 0.01553] [udef: 0.025214] [total: 0.040744] 
+ok 45 - Entry 476052 OK [core: 0.014769] [udef: 0.026673] [total: 0.041442] 
+ok 46 - Entry 476051 OK [core: 0.056298] [udef: 0.107523] [total: 0.163821] {1 extra}
+ok 47 - Entry 476050 OK [core: 0.014261] [udef: 0.03257] [total: 0.046831] 
+ok 48 - Entry 476049 OK [core: 0.017102] [udef: 0.04136] [total: 0.058462] 
+ok 49 - Entry 476048 OK [core: 0.048877] [udef: 0.117185] [total: 0.166062] {1 extra}
+ok 50 - Entry 476047 OK [core: 0.011852] [udef: 0.033979] [total: 0.045831] 
+ok 51 - Entry 476046 OK [core: 0.020388] [udef: 0.029003] [total: 0.049391] 
+ok 52 - Entry 476045 OK [core: 0.023917] [udef: 0.028803] [total: 0.05272] 
+ok 53 - Entry 476044 OK [core: 0.440131] [udef: 0.594811] [total: 1.034942] 
+ok 54 - Entry 476043 OK [core: 1.459791] [udef: 2.628902] [total: 4.088693] 
+ok 55 - Entry 476042 OK [core: 0.549135] [udef: 1.217239] [total: 1.766374] 
+ok 56 - Entry 476041 OK [core: 0.090564] [udef: 0.390615] [total: 0.481179] 
+ok 57 - Entry 476040 OK [core: 4.39094] [udef: 15.60969] [total: 20.00063] 
+ok 58 - Entry 476039 OK [core: 2.218533] [udef: 8.072129] [total: 10.290662] 
+ok 59 - Entry 476038 OK [core: 0.04584] [udef: 0.224801] [total: 0.270641] 
+ok 60 - Entry 476037 OK [core: 0.199088] [udef: 0.964803] [total: 1.163891] 
+ok 61 - Entry 476036 OK [core: 0.019526] [udef: 0.073468] [total: 0.092994] 
+ok 62 - Entry 476035 OK [core: 0.023342] [udef: 0.045158] [total: 0.0685] 
+ok 63 - Entry 476034 OK [core: 0.070806] [udef: 0.456029] [total: 0.526835] 
+-----------------------
+REPORT
+   Total Time Flair: 57.140148
+   Total CORE Time : 10.2103
+   Total UDEF Time : 31.908931
+   Missing Entities: 
+        Alertgroup    1699737               software                                      zoom
+             Entry     476060             iphone_app                                       dji
+   Extra   Entities: 
+             Entry     476040                   tool                                  gsecdump
+             Entry     476052                 domain                                sandia.gov
+             Entry     476048                 domain                                sandia.gov
+             Entry     476048                 domain                             lb.sandia.gov
+             Entry     476058                 domain                                sandia.gov
+             Entry     476046                 domain                                sandia.gov
+             Entry     476055                 domain                                sandia.gov
+             Entry     476062                 domain                             lb.sandia.gov
+             Entry     476062                 domain                                sandia.gov
+             Entry     476045                 domain                                sandia.gov
+             Entry     476060                 domain                             lb.sandia.gov
+             Entry     476060                 domain                                sandia.gov
+             Entry     476061                 domain                                sandia.gov
+             Entry     476049                 domain                                sandia.gov
+             Entry     476056                 domain                                sandia.gov
+             Entry     476057                 domain                                sandia.gov
+             Entry     476057                 domain                             lb.sandia.gov
+             Entry     476054                 domain                             lb.sandia.gov
+             Entry     476054                 domain                                sandia.gov
+             Entry     476051                 domain                             lb.sandia.gov
+             Entry     476051                 domain                                sandia.gov
+        Alertgroup    1699731                 domain                                sandia.gov
+        Alertgroup    1699719                 domain                                sandia.gov
+        Alertgroup    1699718                 domain                                sandia.gov
+        Alertgroup    1699744                 domain                                sandia.gov
+        Alertgroup    1699732                 domain                                sandia.gov
+        Alertgroup    1699746                 domain                                sandia.gov
+        Alertgroup    1699736                 domain                                sandia.gov
+        Alertgroup    1699742                 domain                                sandia.gov
+        Alertgroup    1699741                 domain                                sandia.gov
+        Alertgroup    1699727                 domain                                sandia.gov
+        Alertgroup    1699721                  email                           spam@sandia.gov
+        Alertgroup    1699733                 domain                                github.com
+        Alertgroup    1699733                 domain                                sandia.gov
+        Alertgroup    1699729                 domain                                sandia.gov
+        Alertgroup    1699737                  email                           spam@sandia.gov
+        Alertgroup    1699737                   file                                 index.php
+        Alertgroup    1699737                 domain                                sandia.gov
+        Alertgroup    1699725                 domain                                sandia.gov
+        Alertgroup    1699720                 domain                                sandia.gov
+        Alertgroup    1699745                 domain                                sandia.gov
+        Alertgroup    1699726                 domain                                sandia.gov
+        Alertgroup    1699734                 domain                                sandia.gov
+        Alertgroup    1699738                 domain                                sandia.gov
+        Alertgroup    1699722                 domain                                sandia.gov
+1..63

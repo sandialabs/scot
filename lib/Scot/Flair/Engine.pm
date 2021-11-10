@@ -348,7 +348,7 @@ sub is_not_user_defined_entity {
 sub not_external_defined_entity_class {
     my $self    = shift;
     my $class   = shift;
-    my @edec    = (qw(uderdef ghostbuster));
+    my @edec    = (qw(userdef ghostbuster));
     return 1 if ( ! defined $class);
     return ! grep {/$class/} @edec;
 }
@@ -684,8 +684,8 @@ sub has_splunk_ipv6_pattern {
     my @c       = @_;
     my $log     = $self->env->log;
 
-    return undef if ( ! ref($c[$i]) );
     $log->trace("c[$i] = ".$c[$i]->tag);
+    return undef if ( ! ref($c[$i]) );
     return undef if ( $c[$i]->tag   ne 'span');
     return undef if ( $c[$i+1]      ne ':');
     return undef if ( $c[$i+2]->tag ne 'span');

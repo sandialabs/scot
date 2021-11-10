@@ -644,7 +644,7 @@ sub api_subthing {
     my $mongo       = $self->meerkat;
     my $log         = $env->log;
 
-    $log->debug("getting /$thing/$id/$subthing");
+    $log->trace("getting /$thing/$id/$subthing");
 
     if ( $subthing eq "history" ) {
         return $mongo->collection('History')
