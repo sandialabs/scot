@@ -6,7 +6,8 @@ use lib '../lib';
 use lib '../../lib';
 use lib '../../Scot-Internal-Modules/lib';
 use lib '/opt/scot/lib';
-use Scot::Flair::Worker;
+# use Scot::Flair::Worker;
+use Scot::Flair3::Worker;
 use Data::Dumper;
 use utf8::all;
 use Carp qw(cluck longmess shortmess);
@@ -54,10 +55,10 @@ $SIG{'__DIE__'} = sub {
 # say Dumper($env);
 
 $env->log->info("------");
-$env->log->info("------ flair daemon starts");
-$env->log->info("------ flair daemon config file = $config_file");
+$env->log->info("------ core flair daemon starts");
 $env->log->info("------");
 
-my $loop    = Scot::Flair::Worker->new(env => $env);
+# my $loop    = Scot::Flair::Worker->new(env => $env);
+my $loop    = Scot::Flair3::Worker->new();
 $loop->run();
 

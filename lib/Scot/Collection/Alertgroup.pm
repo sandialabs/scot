@@ -253,7 +253,7 @@ sub api_subthing {
     my $subthing    = $req->{subthing};
     my $mongo       = $self->meerkat;
 
-    $self->env->log->debug("api_subthing /$thing/$id/$subthing");
+    $self->env->log->trace("api_subthing /$thing/$id/$subthing");
 
     if ( $subthing eq "alert") {
         return $mongo->collection('Alert')->find({
