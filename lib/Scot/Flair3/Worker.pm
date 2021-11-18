@@ -1,144 +1,114 @@
-package Scot::Flair::Worker;
+package Scot::Flair3::Worker;
 
 use strict;
 use warnings;
 use utf8;
 use lib '../../../lib';
 use Moose;
-use feature qw(signatures);
+
+use feature qw(signatures say);
 no warnings qw(experimental::signatures);
 
+use Scot::Flair3::Engine;
+use Scot::Flair3::Stomp;
+use Parallel::Prefork;
+use Net::Stomp;
+use JSON;
 use Data::Dumper;
 use Try::Tiny;
-use Parallel::Prefork;
-use Scot::Flair3::Io;
-use Scot::Flair3::Engine;
-use namespace::autoclean;
-
-# only required parameter is workertype
-# core | udef
-
-has workertype => (
-    is      => 'ro',
-    isa     => 'Str',
-    required=> 1,
-    default => 'core', # or udef
-);
-
-has io  => (
-    is       => 'ro',
-    isa      => 'Scot::Flair3::Io',
-    required => 1,
-    builder  => '_build_io',
-);
-
-sub _build_io ($self) {
-    return Scot::Flair3::Io->new;
-}
-
-has engine  => (
-    is       => 'ro',
-    isa      => 'Scot::Flair3::Engine',
-    required => 1,
-    lazy     => 1,
-    builder  => '_build_engine',
-);
-
-sub _build_engine ($self) {
-    return Scot::Flair3::Engine->new(
-        selected_regex_set  => $self->workertype
-    );
-}
-
-has imgmunger   => (
-    is          => 'ro',
-    isa         => 'Scot::Flair3::Imgmunger',
-    required    => 1,
-    builder     => '_build_imgmunger',
-);
-
-sub _build_imgmunger ($self) {
-    return Scot::Flair3::Imgmunger->new;
-}
-
-=item workers
-
-maximum number of workers to prefork
-
-=cut
 
 has workers => (
-    is       => 'ro',
-    isa      => 'Int',
-    required => 1,
-    default  => 5,
+    is          => 'ro',
+    isa         => 'Int',
+    required    => 1,
+    default     => 1,
 );
-
-=item queue
-
-Queue to listen to for new things to flair
-
-=cut
 
 has queue   => (
-    is       => 'ro',
-    isa      => 'Str',
-    required => 1,
-    builder  => '_build_queue',
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => '/queue/flair'
 );
-
-sub _build_queue ($self) {
-    my $wt  = $self->workertype;
-    if ( $wt eq "core" ) {
-        return '/queue/flair';
-    }
-    return '/queue/udflair';
-}
-
-=item topic
-
-Topic to listen to for broadcast instructions to all workers
-typically, a call to refresh regexes or similar
-
-=cut
 
 has topic   => (
-    is       => 'ro',
-    isa      => 'Str',
-    required => 1,
-    default  => '/topic/flair',
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => '/queue/topic'
 );
 
-has procmgr     => (
-    is       => 'ro',
-    isa      => 'Parallel::Prefork',
-    required => 1,
-    lazy     => 1,
-    builder  => '_build_procmgr',
+has procmgr => (
+    is          => 'ro',
+    isa         => 'Parallel::Prefork',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_procmgr',
 );
 
 sub _build_procmgr ($self) {
-    my $count   = $self->workers;
-    return Parallel::Prefork->new({max_workers => $count});
+    my $workers = $self->workers;
+    return Parallel::Prefork->new({max_workers => $workers});
 }
 
-sub run ($self) {
-    my $io  = $self->io;
-    my $log = $io->log;
-    my $pm  = $self->procmgr;
-    my $queue = $self->queue;
-    my $topic = $self->topic;
+has stomp   => (
+    is          => 'ro',
+    isa         => 'Scot::Flair3::Stomp',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_stomp',
+);
 
-    $log->info("Starting PreFork Flair Worker");
-    $io->clear_worker_status;
+sub _build_stomp ($self) {
+    return Scot::Flair3::Stomp->new();
+}
+
+has engine  => (
+    is          => 'ro',
+    isa         => 'Scot::Flair3::Engine',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_engine',
+);
+
+sub _build_engine ($self) {
+    my $stomp   = $self->stomp;
+    return Scot::Flair3::Engine->new(stomp => $stomp);
+}
+
+
+sub run ($self, $ovr=undef) {
+    my $pm  = $self->procmgr;
+
+    my $stomp   = $self->stomp;
+    my $engine  = $self->engine;
+    my $log     = $engine->log;
+
+    $log->info("Starting Flair Worker $$...");
 
     while ($pm->signal_received ne "TERM") {
 
+        $stomp->subscribe($self->queue);
+        $stomp->subscribe($self->topic);
+
         $pm->start(sub {
-            $log->debug("[$$] Spawned $queue worker");
-            $io->connect_to_amq($queue, $topic);
             while (1) {
-                $self->process_frame;
+                $log->info("Flair Worker $$ awaiting next frame...");
+                my $frame = $stomp->receive();
+                my $timer   = $engine->get_timer;
+                next unless $frame;
+                my $status = $self->process($frame, $ovr);
+                if ( $status ) {
+                    $log->info("acknowledging frame...");
+                    $stomp->ack($frame);
+                }
+                else {
+                    $log->info("nack frame...");
+                    $stomp->nack($frame);
+                }
+                my $elapsed = &$timer;
+                $log->info("TIME: total frame => $elapsed seconds");
+                $log->info("Flair Worker $$ finishes ~~~~~~~~~~~~");
             }
         });
 
@@ -146,78 +116,87 @@ sub run ($self) {
     $pm->wait_all_children();
 }
 
-sub process_frame ($self) {
-    my $io      = $self->io;
-    my $log     = $io->log;
+sub process ($self,$frame, $ovr=undef) {
+    my $engine  = $self->engine;
+    my $log     = $engine->log;
 
-    my $frame   = $io->receive_frame;
-    my $timer   = $io->get_timer('frame_processing_time');
-    
-    if (! defined $frame) {
-        $log->error("!!! Undefined Frame !!! Skipping...");
-        $io->ack_frame($frame); # remove it from queue
-    }
+    $log->trace("Received frame ",{filter=>\&Dumper, value=>$frame});
 
-    my $message = $io->decode_frame($frame);
-
-    if (! defined $message) {
-        $log->error("!!! Frame Decode Error. skipping...");
-        $io->ack_frame($frame);
-    }
-
-    if ($self->process_message($message)) {
-        my $elapsed = &$timer;
-        $log->info("=== $elapsed seconds frame processing time ===");
-        $io->ack_frame($frame);
-    }
-    else {
-        $log->error("!!! Message Processing Error !!!");
-        $io->nack_frame($frame);
-    }
-}
-
-sub process_message ($self, $message) {
-    
-    my $json    = $message->{body};
-    my $dest    = $message->{headers}->{destination};
-
-    if ( $dest eq $self->topic ) {
-        return $self->process_topic_message($message);
-    }
-    if ( $self->invalid_message_json($json) ) {
+    my $msg = $self->decode_frame($frame);
+    if (! defined $msg) {
+        $log->error("Failed to parse frame!");
         return undef;
     }
-    return $self->engine->flair($json);
+    $log->debug("Received ".$msg->{body}->{action}.
+                "message for ".$msg->{body}->{data}->{type} .
+                ":".$msg->{body}->{data}->{id}.
+                " on ".$msg->{headers}->{destination});
+
+    # allow for testing to send in an override function
+    # to execute instead of main processing
+    return &$ovr($msg) if ( defined $ovr );
+
+    my $result = $engine->process_message($msg);
+    return $result;
 }
 
-sub invalid_message_json ($self, $json) {
-    my $log     = $self->io->log;
-    my $action  = $json->{action};
-    
-    if ( ! defined $action ) {
-        $log->error("Missing Action Key!");
-        $log->debug("JSON = ",{filter => \&Dumper, value => $json});
-        return 1;
+sub decode_frame ($self, $frame) {
+    my $log     = $self->engine->log;
+    my $headers = $frame->headers;
+    my $json    = $frame->body;
+    my $body    = $self->decode_body($json);
+    if ( ! defined $body ) {
+        $log->error("Failed to decode body from json: $json");
+        return undef;
     }
-    if ( $action ne "created" and $action ne "updated" ) {
-        $log->error("Invalid action type: $action.");
-        return 1;
-    }
-    my $id  = $json->{data}->{id};
-    if ( ! defined $id ) {
-        $log->error("Missing integer ID in message!");
-        $log->debug("JSON = ",{filter => \&Dumper, value => $json});
-        return 1;
-    }
-    if ( $id !~ /^\d+$/ ) {
-        $log->error("Invalid id: $id, must be an integer");
-        return 1;
-    }
-    return undef;
+    return {
+        headers => $headers,
+        body    => $body,
+    };
 }
 
+sub decode_body ($self, $json) {
+    my $body = decode_json($json);
+    return $body;
+}
 
+sub decode_body_x ($self, $json) {
+    my $log     = $self->engine->log;
+    my $body    = try {
+        my $d = decode_json($json);
+        if ( ! defined $d->{action} ) {
+            die "Missing Action Key";
+        }
+        if ( $d->{action} ne "created" and 
+             $d->{action} ne "updated" and
+             $d->{action} ne "test" ) {
+            die "Invalid Action type: ".$d->{action};
+        }
+        if ( ! defined $d->{data}->{id} ) {
+            die "Missing Object Integer Id in data block of message";
+        }
+        if ( $d->{data}->{id} !~ /^\d+$/ ) {
+            die "Object Integer Id does not look like an integer: ".$d->{data}->{id};
+        }
+        if ( $d->{data}->{type} ) {
+            if ( $d->{data}->{type} =~ /alertgroup/i and
+                $d->{data}->{type} =~ /entry/i and
+                $d->{data}->{type} =~ /remoteflair/i ) {
+                die "Object Type is not a flairable type". $d->{data}->{type};
+            }
+        }
+        else {
+            die "Missing type from data block of message";
+        }
+        return $d;
+    }
+    catch {
+        $log->error("Decoding AMQ Body for JSON Failed: $_");
+        $log->debug("Body = ",{filter => \&Dumper, value => $json});
+        return undef;
+    };
+    return $body;
+}
 
 __PACKAGE__->meta->make_immutable;
-    
 1;

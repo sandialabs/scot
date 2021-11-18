@@ -146,7 +146,7 @@ sub get_vertex_memo {
         return $thing->name;
     }
 
-    $self->env->log->debug("no memo for type ".ref($thing));
+    $self->env->log->trace("no memo for type ".ref($thing));
     return " ";
 }
 
@@ -197,7 +197,7 @@ sub link_objects {
         $log->trace("Link ".$link->id." exists, returning a pointer");
         return $link;
     }
-    $log->debug("Link does not exist already, creating...");
+    $log->trace("Link does not exist already, creating...");
 
     $link =  $self->create({
         vertices    =>  \@vertices,
@@ -206,7 +206,7 @@ sub link_objects {
         memo        => \@memos,
         context     => $context,
     });
-    $log->debug("Link ".$link->id." created");
+    $log->trace("Link ".$link->id." created");
     return $link;
 }
 

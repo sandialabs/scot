@@ -8,53 +8,68 @@ use lib '../../../../lib';
 use Test::More;
 use Test::Deep;
 use Data::Dumper;
+use Scot::Env;
 
-my $iopackage   = "Scot::Flair3::Io";
-require_ok($iopackage);
-my $io          = Scot::Flair3::Io->new(
-    queue   => '/queue/flair',
-    topic   => '/topic/scot',
+require_ok("Scot::Flair3::Worker");
+my $worker  = Scot::Flair3::Worker->new(
+    workers => 1,
+    queue   => '/queue/flairtest',
+    topic   => '/topic/flairtest',
 );
-ok(defined $io, "io initialized");
-
-my $imgpackage = "Scot::Flair3::Imgmunger";
-require_ok($imgpackage);
-my $imgmunger = Scot::Flair3::Imgmunger->new(io => $io);
+my $stomp   = $worker->stomp;
 
 my $package = "Scot::Flair3::Engine";
 require_ok($package);
 
-my $engine      = Scot::Flair3::Engine->new(io => $io, imgmunger => $imgmunger);
+my $engine      = Scot::Flair3::Engine->new(stomp => $stomp);
 ok(defined $engine, "engine initialized");
-ok(ref($engine) eq $package, "engine is type $package");
-is ($engine->selected_regex_set, "core", "Core Regex Set selected");
 
-print "extractor\n";
+# must create an $env obj otherwise get default singleton
+# because Scot::Collection uses $env.  need to fix that
+my $env = Scot::Env->new({ config_file => './test.cfg.pl'});
+
 my $extractor   = $engine->extractor;
 ok (defined $extractor, "Extractor initialized");
 is (ref($extractor), "Scot::Flair3::Extractor", "and the right type");
 
-my $udefengine  = Scot::Flair3::Engine->new({selected_regex_set => 'udef', io=>$io, imgmunger=>$imgmunger});
-ok(defined $udefengine, "udefengine initialized");
-ok(ref($udefengine) eq $package, "udefengine is type $package");
-is ($udefengine->selected_regex_set, "udef", "Udef Regex Set selected");
+my $io   = $engine->io;
+ok (defined $io, "Io initialized");
+is (ref($io), "Scot::Flair3::Io", "and the right type");
 
-my $reload_message = { data    => { options => { reload => 1 } } };
-my $other_message  = { data => { options => {foo => 1}}};
+my $imgmunger   = $engine->imgmunger;
+ok (defined $imgmunger, "imgmunger initialized");
+is (ref($imgmunger), "Scot::Flair3::Imgmunger", "and the right type");
 
-ok ($engine->reload_message_received($reload_message), "Message is a reload request");
-ok (!$engine->reload_message_received($other_message), "Message is not reload req");
+my $core    = $engine->core_regex;
+ok (defined $core, "Core Regex initialized");
+is (ref($core), "Scot::Flair3::CoreRegex", "and the right type");
+
+my $udef    = $engine->udef_regex;
+ok (defined $udef, "Udef Regex initialized");
+is (ref($udef), "Scot::Flair3::UdefRegex", "and the right type");
+
+
+my $core_reload_message = { data    => { options => { reload => 'core' } } };
+my $udef_reload_message = { data    => { options => { reload => 'udef' } } };
+my $other_message       = { data => { options => {foo => 1}}};
+
+is ($engine->process_topic($core_reload_message), 'success', "Message is a core reload request");
+is ($engine->process_topic($udef_reload_message), 'success', "Message is a udef reload request");
+is ($engine->process_topic($other_message)->{error}, 'topic without reload option', "Message is not reload req");
 
 my $non_html    = "Foo strikes again!";
 my $got         = $engine->clean_html($non_html);
+
 is ($got, '<div>Foo strikes again!</div>', "Cleaned plain texted");
 
 my $non_html_utf8 = "ᚻᛖ ᚳᚹᚫᚦ ᚦᚫᛏ ᚻᛖ ᛒᚢᛞᛖ ᚩᚾ ᚦᚫᛗ ᛚᚪᚾᛞᛖ ᚾᚩᚱᚦᚹᛖᚪᚱᛞᚢᛗ ᚹᛁᚦ ᚦᚪ ᚹᛖᛥᚫ";
 $got              = $engine->clean_html($non_html_utf8);
+
 is ($got, '<div>ᚻᛖ ᚳᚹᚫᚦ ᚦᚫᛏ ᚻᛖ ᛒᚢᛞᛖ ᚩᚾ ᚦᚫᛗ ᛚᚪᚾᛞᛖ ᚾᚩᚱᚦᚹᛖᚪᚱᛞᚢᛗ ᚹᛁᚦ ᚦᚪ ᚹᛖᛥᚫ</div>', "Cleaned utf8 text");
 
 my $sentinel_uri = 'https://sentinel.azure.com';
 $got    = $engine->flair_special_sentinel($sentinel_uri);
+
 is($got, '<a href="https://sentinel.azure.com" target="_blank"><img alt="view in Azure Sentinel" src="/images/azure-sentinel.png" /></a>', "Special flair Sentinal ok");
 
 my @spark   = (
@@ -109,6 +124,8 @@ $html   = $engine->generate_flair_html($tree);
 is ($html, '<div><p><span class="entity ipaddr" data-entity-type="ipaddr" data-entity-value="10.10.10.1">10.10.10.1</span></div>', "Generated correct flair html");
 
 my $entityspan = $extractor->create_span("foobar", "test");
-$engine->is_not_special_class($entityspan);
+is ($engine->is_special_class($entityspan), 1, "Is a special span ".$entityspan->as_HTML);
+
+
 done_testing();
 exit 0;

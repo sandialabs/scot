@@ -14,92 +14,69 @@ use Scot::Env;
 use File::Slurp;
 use Meerkat;
 
-my $env = Scot::Env->new({config_file => './test.cfg.pl'});
+# my $env = Scot::Env->new({config_file => './test.cfg.pl'});
 
 system("killall topic.t");
 system("rm -rf /tmp/test");
-system("mongo scot-test < ./reset.js 2>&1");
+system("mongo scot-test < ./reset.js 2>&1 > /dev/null");
 system("./topic.t&");
 print "Topic watcher spawned \n";
 my $watchfile = "./rcv.txt";
 
-my $log = Log::Log4perl->get_logger('flair_test');
-my $pattern = "%d %7p [%P] %15F{1}: %4L %m%n";
-my $layout  = Log::Log4perl::Layout::PatternLayout->new($pattern);
-my $appender= Log::Log4perl::Appender->new(
-    'Log::Log4perl::Appender::File',
-    name        => 'flair_log',
-    filename    => '/var/log/scot/test.log',
-    autoflush   => 1,
-    utf8        => 1,
-);
-$appender->layout($layout);
-$log->add_appender($appender);
-$log->level("TRACE");
-
-my $mongo   = Meerkat->new(
-    model_namespace         => 'Scot::Model',
-    collection_namespace    => 'Scot::Collection',
-    database_name           => 'scot-test',
-    client_options          => {
-        host        => 'mongodb://localhost',
-        w           => 1,
-        find_master => 1,
-        socket_timeout_ms => 600000,
-    }
-);
-
-ok(defined $mongo, "Meerkat was defined");
-is(ref($mongo), "Meerkat", "correct type");
-
-my $col = $mongo->collection('Entry');
-is (ref($col), "Scot::Collection::Entry", "Got a collection");
-
 my $queue   = "/queue/flairtest";
 my $topic   = "/topic/scottest";
+my $dbname  = "scot-test";
 
 require_ok("Scot::Flair3::Io");
 my $io  = Scot::Flair3::Io->new(
-    log     => $log,
-    mongo   => $mongo,
-    queue   => $queue,
-    topic   => $topic,
+    logfile      => '/var/log/scot/test.log',
+    loglevel     => 'TRACE',
+    dbname       => $dbname,
+    queue        => $queue,
+    topic        => $topic,
 );
 
 ok (defined $io, "IO was defined");
 is (ref($io), "Scot::Flair3::Io", "The correct type");
+is ($io->topic, $topic, "set topic to $topic");
+is ($io->queue, $queue, "set queue to $queue");
+is ($io->dbname, $dbname, "set dbname correctly");
+is ($io->logfile, '/var/log/scot/test.log', "Logile correct");
 
-$io->send_mq($queue, {
-    action  => 'test',
-    data    => {
-        who     => 'the_tester',
-        type    => 'foo',
-        id      => 4,
-    }
-});
 
-$io->connect_to_amq($queue, $topic);
-my $frame   = $io->receive_frame();
-my $msg     = $io->decode_frame($frame);
-$io->ack_frame($frame);
+# move into engine.t
+#$io->send_mq($queue, {
+#    action  => 'test',
+#    data    => {
+#        who     => 'the_tester',
+#        type    => 'foo',
+#        id      => 4,
+#    }
+#});
+#
+#$io->connect_to_amq($queue, $topic);
+#my $frame   = $io->receive_frame();
+# my $msg     = $io->decode_frame($frame);
+#$io->ack_frame($frame);
 
-is ($msg->{headers}->{destination}, $queue, "proper queue received");
-is ($msg->{body}->{pid}, $$, "pid correct");
-is( $msg->{body}->{data}->{type}, "foo", "type correct");
-is( $msg->{body}->{data}->{id}, 4, "id correct");
-is( $msg->{body}->{data}->{who}, "the_tester", "who is correct");
+#is ($msg->{headers}->{destination}, $queue, "proper queue received");
+#is ($msg->{body}->{pid}, $$, "pid correct");
+#is ($msg->{body}->{data}->{type}, "foo", "type correct");
+#is ($msg->{body}->{data}->{id}, 4, "id correct");
+#is ($msg->{body}->{data}->{who}, "the_tester", "who is correct");
 
 # must create an $env obj otherwise get default singleton
 # because Scot::Collection uses $env.  need to fix that
 my $env = Scot::Env->new({ config_file => './test.cfg.pl'});
+my $mongo   = $io->mongo;
 
 my $entity = $mongo->collection('Entity')->create({
     value   => 'foo.com',
     type    => 'domain',
     classes => [ 'domain foodomain' ],
 });
-is(ref($entity), "Scot::Model::Entity", "Entity Created");
-is($entity->id, 1, "First Entity");
+is (ref($entity), "Scot::Model::Entity", "Entity Created");
+is ($entity->id, 1, "First Entity");
 
 my $entity1 = $mongo->collection('Entity')->create({
     value   => 'bar.com',
@@ -229,5 +206,6 @@ $io->move_file($tfn, $newloc);
 ok (-e $newloc, "File moved");
 
 
+END { system("killall topic.t")};
 done_testing();
 exit 0;
