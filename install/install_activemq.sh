@@ -11,11 +11,11 @@ function install_activemq {
     fi
 
     if [[ "$AMQTAR" == "" ]]; then
-        AMQTAR="apache-activemq-5.13.2-bin.tar.gz"
+        AMQTAR="apache-activemq-5.16.3-bin.tar.gz"
     fi
 
     if [[ "$AMQURL" == "" ]]; then
-        AMQURL="https://repository.apache.org/content/repositories/releases/org/apache/activemq/apache-activemq/5.13.2/$AMQTAR"
+        AMQURL="https://repository.apache.org/content/repositories/releases/org/apache/activemq/apache-activemq/5.16.3/$AMQTAR"
     fi
 
     if [[ "$AMQ_CONFIGS" == "" ]]; then
@@ -55,7 +55,7 @@ function install_activemq {
 
             if [[ ! -e /tmp/$AMQTAR ]]; then
                 echo "-- download may have failed! trying packaged tar"
-                cp $DEVDIR/install/src/ActiveMQ/apache-activemq-5.14-20151229.032504-18-bin.tar.gz /tmp
+                cp $DEVDIR/install/src/ActiveMQ/apache-activemq-5.16-3-bin.tar.gz /tmp
             fi
 
             if [[ ! -d $AMQDIR ]]; then

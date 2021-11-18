@@ -122,10 +122,12 @@ sub flair {
         $log->info("TIME == $elapsed secs :: ".ref($object)."(".$object->id.")");
     }
     else {
-        $log->error("Failed to retriev object from ", 
+        $log->error("Failed to retrieve object from ", 
                     { filter => \&Dumper, value => $message });
+        return undef;
     }
     $log->info("--- END --- FLAIR --- ENGINE ---");
+    return 1;
 }
 
 sub flair_entry {

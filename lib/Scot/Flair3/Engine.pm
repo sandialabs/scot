@@ -1,88 +1,66 @@
 package Scot::Flair3::Engine;
 
-=pod
-
-Engine takes a target (type/id) of either entry, remoteflair or alertgroup
-and generates "flair" html, plain text, and a hash of entities found and 
-submits those to the SCOT database via the Io package.
-
-Engine is designed to be called by two different workers.  The first watches 
-/queue/flair and performs flairing against "core" regexes.  At the completion
-of core flair, a message is placed on /queue/udflair.  The second worker
-takes that message and parses the thing->flair for user defined flair.
-
-=cut
-
 use strict;
 use warnings;
 use utf8;
 use lib '../../../lib';
+use Scot::Flair3::Timer;
 use Moose;
-use feature qw(signatures);
+use feature qw(signatures say);
 no warnings qw(experimental::signatures);
 
 use Data::Dumper;
+use Encode;
 use HTML::Element;
 use HTML::TreeBuilder;
 use HTML::FormatText;
-use Encode;
+use JSON;
 use SVG::Sparkline;
-use Scot::Flair3::Io;
-use Scot::Flair3::Regex;
-use Scot::Flair3::UdefRegex;
 use Scot::Flair3::Extractor;
+use Scot::Flair3::Io;
+use Scot::Flair3::Imgmunger;
+use Scot::Flair3::CoreRegex;
+use Scot::Flair3::UdefRegex;
+use Scot::Flair3::Stomp;
+use Time::HiRes qw(gettimeofday tv_interval);
+
+has stomp   => ( 
+    is          => 'ro',
+    isa         => 'Scot::Flair3::Stomp',
+    required    => 1,
+);
+
+has io      => (
+    is          => 'ro',
+    isa         => 'Scot::Flair3::Io',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_io',
+);
+
+sub _build_io ($self) {
+    return Scot::Flair3::Io->new(stomp => $self->stomp);
+}
 
 has imgmunger   => (
     is          => 'ro',
     isa         => 'Scot::Flair3::Imgmunger',
     required    => 1,
-);
-
-has workertype => (
-    is              => 'ro',
-    isa             => 'Str',
-    required        => 1,
-    default         => 'core',
-);
-
-has io  => (
-    is          => 'ro',
-    isa         => 'Scot::Flair3::Io',
-    required    => 1,
-);
-
-has regexes => (
-    is          => 'ro',
-    isa         => 'Scot::Flair3::Regex',
-    required    => 1,
     lazy        => 1,
-    builder     => '_build_regexes',
+    builder     => '_build_imgmunger',
 );
 
-sub _build_regexes ($self) {
-    return Scot::Flair3::Regex->new();
-}
-
-has udef_regexes    => (
-    is          => 'ro',
-    isa         => 'Scot::Flair3::UdefRegex',
-    required    => 1,
-    lazy        => 1,
-    builder     => '_build_udef_regexes',
-);
-
-sub _build_udef_regexes ($self) {
-    return Scot::Flair3::UdefRegex->new({
-        io  => $self->io,
-    });
+sub _build_imgmunger ($self) {
+    my $io = $self->io;
+    return Scot::Flair3::Imgmunger->new(io => $io);
 }
 
 has extractor   => (
-    is              => 'ro',
-    isa             => 'Scot::Flair3::Extractor',
-    required        => 1,
-    lazy            => 1,
-    builder         => '_build_extractor',
+    is          => 'ro',
+    isa         => 'Scot::Flair3::Extractor',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_extractor',
 );
 
 sub _build_extractor ($self) {
@@ -91,101 +69,123 @@ sub _build_extractor ($self) {
     return Scot::Flair3::Extractor->new(log => $log);
 }
 
-sub flair ($self, $message) {
+has core_regex  => (
+    is          => 'ro',
+    isa         => 'Scot::Flair3::CoreRegex',
+    required    => 1,
+    builder     => '_build_core_regex',
+);
+
+sub _build_core_regex ($self) {
+    return Scot::Flair3::CoreRegex->new();
+}
+
+has udef_regex  => (
+    is          => 'ro',
+    isa         => 'Scot::Flair3::UdefRegex',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_udef_regex',
+);
+
+sub _build_udef_regex ($self) {
     my $io  = $self->io;
-    my $log = $io->log;
+    return Scot::Flair3::UdefRegex->new(io => $io);
+}
 
+has log     => (
+    is          => 'ro',
+    isa         => 'Log::Log4perl::Logger',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_log',
+);
 
-    if ( $self->reload_message_received($message) ) {
-        $self->reload_regexes($message);
+sub _build_log ($self) {
+    my $io  = $self->io;
+    return $io->log;
+}
+
+sub process_message ($self, $message) {
+    my $io      = $self->io;
+    my $log     = $self->log;
+
+    $log->trace("Processing Message: ",{filter => \&Dumper, value => $message});
+
+    if ( $message->{headers}->{destination} eq "/topic/flair" ) {
+        return $self->process_topic($message);
     }
 
     my $object  = $io->retrieve($message);
 
     if ( ! defined $object ) {
-        $log->error("Object NOT FOUND!");
-        $log->trace({filter =>\&Dumper, value=>$message});
-        return undef;
+        $log->error("Object not found!");
+        return { error => "Object NOT Found" };
     }
-
-    # we flair in 2 steps: 1. core and then 2. user defined 
-    # after each step we update everything including the remote browses
-    # this should allow the analysts to see some results faster
-
-    if ( ref($object) eq "Scot::Model::Entry" ) {
-        $self->do_flair_entry($object, "core");
-        $self->do_flair_entry($object, "udef");
-    }
-
-    if ( ref($object) eq "Scot::Model::Alertgroup" ) {
-        $self->do_flair_alertgroup($object, "core");
-        $self->do_flair_alertgroup($object, "udef");
-    }
-
-    if ( ref($object) eq "Scot::Model::RemoteFlair" ) {
-        $self->do_flair_remote_flair($object, "core");
-        $self->do_flair_remote_flair($object, "udef");
-    }
+    $log->trace("retrieved ".ref($object)." ".$object->id);
+    my $type    = lc($message->{body}->{data}->{type});
+    $log->trace("type is $type");
+    my $status;
+    $status = $self->process_entry($object)           if ( $type eq "entry" );
+    $status = $self->process_alertgroup($object)      if ( $type eq "alertgroup" );
+    $status = $self->process_remoteflair($object)     if ( $type eq "remoteflair" );
+    return $status;
 }
 
-sub do_flair_entry ($self, $object, $ftype) {
-    my $io      = $self->io;
-    my $update  = $self->flair_entry($object,$ftype);
-    $io->update_entry($update);
-}
-
-sub do_flair_alertgroup ($self, $object, $ftype) {
-    my $io      = $self->io;
-    my $updates = $self->flair_alertgroup($object, $ftype);
-    foreach my $alert_update(@{$updates->{alertupdates}} ) {
-        $io->update_alert($alert_update);
+sub process_topic ($self, $message) {
+    my $log = $self->log;
+    if ( defined $message->{data}->{options}->{reload} ) {
+        my $type = $message->{data}->{options}->{reload};
+        if ( $type eq "core" ) {
+            $self->core_regex->reload;
+        }
+        else {
+            $self->udef_regex->reload;
+        }
+        $log->debug("Reloaded $type regular expressions");
+        return 'success';
     }
-    $io->update_alertgroup($object, $updates->{agupdate});
+    $log->warn("Topic without a reload option received, ignoring...");
+    return { error => 'topic without reload option',
+             message => $message };
 }
 
-sub do_flair_remote_flair ($self, $object, $ftype) {
-    my $io      = $self->io;
-    my $update  = $self->flair_remote_flair($object, $ftype);
-    $io->update_remote_flair($update);
-}
+sub process_entry ($self, $entry) {
 
-sub udef_flair_remote_flair ($self, $object) {
-    my $io      = $self->io;
-    my $update  = $self->udflair_remote_flair($object, "udef");
-    $io->update_remote_flair($update);
-}
+    my $core_timer  = get_timer("core process entry", $self->log);
+    my $core_update = $self->flair_entry($entry, "core");
+    $self->io->update_entry($core_update);
+    $self->log->debug("finished core flair of entry ".$entry->id);
+    &$core_timer;
 
-sub reload_message_received ($self, $message) {
-    return defined $message->{data}->{options}->{reload};
-}
 
-sub reload_regexes ($self, $message) {
-    my $type    = $message->{data}->{options}->{reload};
-    if ( $type eq "core" ) {
-        $self->regexes->reload;
-    }
-    else {
-        $self->udef_regexes->reload;
-    }
+    my $udef_timer  = get_timer("udef process entry", $self->log);
+    my $udef_update = $self->flair_entry($entry, "udef");
+    $self->io->update_entry($udef_update);
+    $self->log->debug("finished udef flair of entry ".$entry->id);
+    &$udef_timer;
+    return "success";
 }
 
 sub flair_entry ($self, $entry, $ftype) {
     my $io  = $self->io;
-    my $log = $io->log;
-    $log->trace("--- Begin $ftype Flair Entry ".$entry->id." ---");
+    my $log = $self->log;
+    my $id  = $entry->id;
 
-    my $html                 = $self->get_entry_html($entry, $ftype);
-    my ($edb, $flair, $text) = $self->extract_from_html($html, $ftype);
-    
-    my $update = {
+    $log->info("- Begin $ftype Flair Entry $id -");
+
+    my $html                    = $self->get_entry_html($entry, $ftype);
+    my ($edb, $flair, $text)    = $self->extract_from_html($html, $ftype);
+    my $update  = {
         entry   => $entry,
         edb     => $edb,
         flair   => $flair,
         text    => $text,
     };
-    $log->trace("--- End $ftype  Flair Entry ".$entry->id." ---");
-    $log->trace({filter => \&Dumper, value => $update});
-    return $update
+
+    $log->info("- End   $ftype Flair Entry $id -");
+    $log->debug("update = ",{filter=>\&Dumper, value => $update});
+    return $update;
 }
 
 sub get_entry_html ($self, $entry, $ftype) {
@@ -203,194 +203,183 @@ sub get_entry_html ($self, $entry, $ftype) {
     return $body;
 }
 
-sub flair_remote_flair ($self, $remoteflair, $ftype) {
-    my $io  = $self->io;
-    my $log = $io->log;
-    $log->trace("--- Begin Flair RemoteFlair ".$remoteflair->id." ---");
+sub process_alertgroup ($self, $alertgroup) {
+    # quickly process core flair and update so users "see" something
+    my $core_timer = get_timer('core process alertgroup', $self->log);
+    my $core_update = $self->flair_alertgroup($alertgroup, "core");
+    $self->apply_alert_updates($core_update);
+    $self->update_alertgroup($alertgroup, $core_update);
+    $self->log->debug("finished core flair of alertgroup");
+    &$core_timer;
 
-    my $html    = $self->get_remoteflair_html($remoteflair);
-    my $clean   = $self->clean_html($html);
+    # now "leisurely" process userdefined, 
+    my $udef_timer = get_timer("udef process alertgroup", $self->log);
+    my $udef_update = $self->flair_alertgroup($alertgroup, "udef");
+    $self->apply_alert_updates($udef_update);
+    $self->update_alertgroup($alertgroup, $udef_update);
+    $self->log->debug("finished udef flair of alertgroup");
+    &$udef_timer;
+    return "success";
+}
 
-    my ($edb, $flair, $text) = $self->extract_from_html($clean, $ftype);
+sub compare_updates ($self, $core, $udef) {
+    my $log = $self->log;
 
-    $log->trace("--- End   Flair RemoteFlair ".$remoteflair->id." ---");
-    return {
-        remoteflair => $remoteflair,
-        edb         => $edb,
-        flair       => $flair,
-        text        => $text,
-    };
+    $log->debug("==================");
+    for (my $i = 0; $i < scalar(@{$core->{alertupdates}}); $i++) {
+        my $aup = $core->{alertupdates}->[$i];
+        foreach my $col (keys %{$aup->{flair}}) {
+            $log->debug("Col $col =>");
+            $log->debug("Core ",{filter=>\&Dumper, value => $aup->{flair}->{$col}});
+            my $uup = $udef->{alertupdates}->[$i];
+            $log->debug("Udef ",{filter=>\&Dumper, value => $uup->{flair}->{$col}});
+        }
+    }
+    $log->debug("==================");
 }
 
 sub flair_alertgroup ($self, $alertgroup, $ftype) {
     my $io  = $self->io;
-    my $log = $io->log;
-    $log->trace("--- Begin $ftype Flair Alertgroup ".$alertgroup->id." ---");
+    my $log = $self->log;
+    my $id  = $alertgroup->id;
 
-    my $edb = {};
-    my @alertupdates    = ();
+    $log->info("- Begin $ftype Flair Alertgroup $id -");
 
-    foreach my $alert ($io->get_alerts($alertgroup)) {
-        my $alert_update = $self->flair_alert($alert, $ftype);
-        my $alert_edb    = $alert_update->{edb};
-        push @alertupdates, $alert_update;
+    my $edb         = {};
+    my @alertupdates= ();
+    my @alerts      = $io->get_alerts($alertgroup);
+
+    foreach my $alert (@alerts) {
+
+        my $alert_update    = $self->flair_alert($alert, $ftype);
+        my $alert_edb       = $alert_update->{edb};
+        push @alertupdates,   $alert_update;
         $self->merge_edb($edb, $alert_edb);
     }
-    
-    my $update = {
+
+    my $update  = {
         alertupdates    => \@alertupdates,
         agupdate        => $edb,
     };
 
-    $log->trace("--- End   Flair Alertgroup ".$alertgroup->id." ---");
-    $log->trace({filter=>\&Dumper, value => $edb});
+
+    $log->info("- End   $ftype Flair Alertgroup $id -");
+    $log->trace("alertgroup update: ",{filter=>\&Dumper, value=>$update});
+    return $update;
+}
+
+sub flair_alert ($self, $alert, $ftype) {
+    my $io      = $self->io;
+    my $log     = $self->log;
+    my $id      = $alert->id;
+    my $agid    = $alert->alertgroup;
+
+    $log->info("___ Begin $ftype Flair Alert $id [$agid] ___");
+    my $data    = ($ftype eq "core") ? $alert->data : $alert->data_with_flair;
+    my $flair   = {};
+    my $text    = {};
+    my $edb     = {};
+    $log->trace("ALERT DATA is ",{filter=>\&Dumper, value=>$data});
+
+    foreach my $column (keys %$data) {
+
+        next if $self->skippable_column($column);
+
+        my $celldata = $data->{$column};
+
+        if ( $self->contains_sparkline($celldata) ) {
+            my $svg = $self->process_sparkline($celldata);
+            $flair->{$column} = $svg;
+        }
+        else {
+            my $coltype       = $self->get_column_type($column);
+            my $cellupdate    = $self->flair_cell($alert, $coltype, $column, $celldata, $ftype);
+            $flair->{$column} = $cellupdate->{flair};
+            $text->{$column}  = $cellupdate->{text};
+            $self->merge_edb($edb, $cellupdate->{edb});
+        }
+    }
+
+    my $update  = {
+        alert   => $alert,
+        flair   => $flair,
+        text    => $text,
+        edb     => $edb,
+    };
+
+    $log->info("___ End   $ftype Flair Alert $id [$agid] ___");
+    $log->trace("alert update: ",
+        {filter=>\&Dumper, value=>[$update->{flair}, $update->{edb}]});
+    return $update;
+}
+
+sub flair_cell ($self, $alert, $ctype, $column, $celldata, $ftype) {
+    my $io      = $self->io;
+    my $log     = $self->log;
+    my $id      = $alert->id;
+    my $agid    = $alert->alertgroup;
+
+    $log->info("_____ Begin $ftype Flair Alert $id [$agid] Cell $column $ctype _____");
+
+    my @items = $self->ensure_array($celldata); 
+    my @flair = ();
+    my @text  = ();
+    my $edb   = {};
+
+    foreach my $item (@items) {
+
+        next if $self->item_is_empty($item);
+
+        $log->trace("item = $item");
+
+        if ( $ctype eq "normal" ) {
+            my $clean                   = $self->clean_html($item);
+            my ($iedb, $iflair, $itext) = $self->extract_from_html($clean, $ftype);
+            push @flair, $iflair;
+            push @text, $itext;
+            $self->merge_edb($edb, $iedb);
+        }
+        else {
+            my $spupdate = $self->flair_special_column($alert, $ctype, $column, $item);
+            push @flair, $spupdate->{flair};
+            push @text,  $spupdate->{text};
+            $self->merge_edb($edb, $spupdate->{edb});
+        }
+    }
+    my $update  = { flair => \@flair, text => \@text, edb => $edb };
+
+
+    $log->info("_____ End   $ftype Flair Alert $id [$agid] Cell $column $ctype _____");
+    $log->trace("cell update: ",{filter => \&Dumper, value => $update});
     return $update;
 }
 
 
-sub flair_alert ($self, $alert, $ftype) {
-    my $io  = $self->io;
-    my $log = $io->log;
-
-    $log->trace("--- Begin $ftype Flair Alert".$alert->id.
-                " [".$alert->alertgroup."] ---");
-
-    my $data        = $alert->data;
-    if ( $ftype ne "core" ) {
-        # udef worker starts on core flaired data
-        $data       = $alert->data_with_flair;
+sub apply_alert_updates($self, $update) {
+    $self->log->trace("Applying Alert Updates");
+    my $timer   = get_timer("apply alert updates", $self->log);
+    my @updates = @{$update->{alertupdates}};
+    foreach my $alertup (@updates) {
+        $self->io->update_alert($alertup);
     }
-    my $flairdata   = {};
-    my $textdata    = {};
-    my $alert_edb   = {};
-    
-    foreach my $column (keys %$data) {
-        next if $self->skippable_column($column);
-
-        if ( $self->contains_sparkline($data->{$column}) ) {
-            my $sparkline_svg = $self->process_sparkline($data->{$column});
-            $flairdata->{$column} = $sparkline_svg;
-        }
-        else {
-            my $coltype     = $self->get_column_type($column);
-            my $cellupdate  = $self->flair_cell($alert, 
-                                                $coltype,
-                                                $column, 
-                                                $data->{$column},
-                                                $ftype);
-
-            $flairdata->{$column} = $cellupdate->{flair};
-            $textdata->{$column}  = $cellupdate->{text};
-            $self->merge_edb($alert_edb, $cellupdate->{edb});
-        }
-    }
-
-    my $alert_update = {
-        alert   => $alert,
-        flair   => $flairdata,
-        text    => $textdata,
-        edb     => $alert_edb,
-    };
-
-    $log->trace("--- End $ftype Flair Alert".$alert->id.
-                " [".$alert->alertgroup."] ---");
-    $log->trace({filter=>\&Dumper, value=>$alert_update->{edb}});
-    return $alert_update;
+    &$timer;
 }
 
-sub flair_cell ($self, $alert, $type, $column, $cell, $ftype) {
-    my $io  = $self->io;
-    my $log = $io->log;
-    $log->trace("--- Begin $ftype Flair Cell $column ".$alert->id.
-                " [".$alert->alertgroup."] ---");
-
-    my @items       = $self->ensure_array($cell);
-    my @flairitems  = ();
-    my @textitems   = ();
-    my $cell_edb    = {};
-
-    foreach my $item (@items) {
-        next if $self->item_is_empty($item);
-
-        $log->trace("cell item: ",{filter=>\&Dumper, value=>$item});
-
-        if ( $type eq 'normal' ) {
-            my $clean   = $self->clean_html($item);
-            my ($edb, $flair, $text) = $self->extract_from_html($clean, $ftype);
-            $log->trace("edb : ",{filter=>\&Dumper, value=>$edb});
-            push @flairitems, $flair;
-            push @textitems, $text;
-            $self->merge_edb($cell_edb, $edb);
-        }
-        else {
-            my $specup = $self->flair_special_column($alert, 
-                                                     $type, 
-                                                     $column, 
-                                                     $item);
-            push @flairitems, $specup->{flair};
-            push @textitems, $specup->{text};
-            $self->merge_edb($cell_edb, $specup->{edb});
-        }
-    }
-
-    # return \@flairitems, \@textitems, $cell_edb;
-    my $updates = {
-        flair   => \@flairitems,
-        text    => \@textitems,
-        edb     => $cell_edb,
-    };
-    $log->trace("--- End   Flair Cell $column ".$alert->id." [".$alert->alertgroup."] ---", );
-    $log->trace({filter=>\&Dumper, value=>$updates});
-    return $updates;
+sub update_alertgroup ($self, $alertgroup, $update) {
+    my $timer   = get_timer("update alertgroup", $self->log);
+    my $agedb = $update->{agupdate};
+    $self->log->trace("AGEDB ===> ",{filter=>\&Dumper, value=>$agedb});
+    $self->io->update_alertgroup($alertgroup, $agedb);
+    &$timer;
 }
 
-sub skippable_column ($self, $column) {
-    return 1 if $column eq 'columns';
-    return 1 if $column eq '_raw';
-    return 1 if $column eq 'search';
-    return undef;
-}
+sub process_remoteflair ($self, $remoteflair) {
+    my $core_update = $self->flair_remoteflair($remoteflair, "core");
+    $self->update_remoteflair($core_update);
 
-sub item_is_empty ($self, $item) {
-    return 1 if ! defined $item;
-    return 1 if $item eq '';
-    return 1 if $item eq ' ';
-    return undef;
-}
-
-sub get_column_type ($self, $column) {
-    return 'message_id'  if $column =~ /message[_-]id/i;
-    return 'uuid1'       if $column =~ /^(lb){0,1}scanid$/i;
-    return 'filename'    if $column =~ /^attachment[_-]name/i;
-    return 'filename'    if $column =~ /^attachments$/i;
-    return 'sentinel'    if $column =~ /^sentinel_incident_url$/i;
-    return 'normal';
-}
-
-sub contains_sparkline ($self, $data) {
-    if (ref($data) eq "ARRAY") {
-        return 1 if $data->[0] =~ /^##__SPARKLINE__##/;
-    }
-    return 1 if $data =~ /^##__SPARKLINE__##/;
-    return undef;
-}
-
-sub merge_edb ($self, $existing, $new) {
-    # $existing is ref, so we are updating the hash as a side effect
-    # edb structure:
-    # { entities => { 
-    #       type => {
-    #            "value" => count }}
-    #   cache    => {}
-    # }
-    $self->io->log->trace("existing => ",{filter => \&Dumper, value=>$existing});
-    $self->io->log->trace("new      => ",{filter => \&Dumper, value=>$new});
-    foreach my $type (keys %{$new->{entities}}) {
-        foreach my $value (keys %{$new->{entities}->{$type}}) {
-            my $count = $new->{entities}->{$type}->{$value};
-            $existing->{entities}->{$type}->{$value} += $count;
-        }
-    }
+    my $udef_update = $self->flair_remoteflair($remoteflair, "udef");
+    $self->update_remoteflair($udef_update);
+    return "success";
 }
 
 sub extract_from_html ($self, $htmltext, $ftype) {
@@ -398,8 +387,8 @@ sub extract_from_html ($self, $htmltext, $ftype) {
     my $log = $io->log;
 
     my $regexes = ($ftype eq "core") ?
-        $self->regexes->regex_set :
-        $self->udef_regexes->regex_set;
+        $self->core_regex->regex_set :
+        $self->udef_regex->regex_set;
 
     my $tree    = $self->build_html_tree($htmltext);
     my $text    = $self->generate_plain_text($tree);
@@ -412,6 +401,7 @@ sub extract_from_html ($self, $htmltext, $ftype) {
     
     return $edb, $flair, $text;
 }
+
 
 sub walk_tree ($self, $element, $edb, $regexes, $level) {
     my $log         = $self->io->log;
@@ -428,25 +418,24 @@ sub walk_tree ($self, $element, $edb, $regexes, $level) {
 
     for (my $index = 0; $index < scalar(@content); $index++) {
         my $child   = $content[$index];
-
-
-        if ( $self->is_not_leaf_node($child) ) {
-            $log->trace("-"x$level."Looking at child: ".$child->as_HTML);
-            $self->fix_weird_html($child);
-            if ( $self->is_not_predefined_entity($child, $edb) ) {
-                $self->walk_tree($child, $edb, $regexes, $level++);
-            }
+        if ( $self->is_leaf_node($child) ) {
+            $log->trace("-"x$level."is leaf node: $child");
+            push @new, $extractor->extract($child, $edb, $regexes, $log);
+        }
+        elsif ( $self->is_predefined_entity($child, $edb) ) {
             push @new, $child;
         }
         else {
-            $log->trace("-"x$level."is leaf node: $child");
-            push @new, $extractor->extract($child, $edb, $regexes, $log);
+            $log->trace("-"x$level."Looking at child: ".$child->as_HTML);
+            $self->fix_weird_html($child);
+            $self->walk_tree($child, $edb, $regexes, $level++);
+            push @new, $child;
         }
     }
     $element->splice_content(0, scalar(@content), @new);
 }
 
-sub is_not_predefined_entity ($self, $child, $edb) {
+sub is_predefined_entity ($self, $child, $edb) {
     
     # couple of things to check here:
     # Flair is a 2 pass operation, 1st core, then user defined
@@ -456,27 +445,33 @@ sub is_not_predefined_entity ($self, $child, $edb) {
     # but other services might "pre-identify" flairable tags for 
     # us, so we should capture those and convert them to real
     # "entities"
-
+    my $log = $self->log;
+    $log->trace("checking for predefined entity");
     my $tag = $child->tag;
-    return 1 if $tag ne "span"; # only in span objects
-    return 1 if $self->is_not_special_class($child);
-    # child is a special class 
-    # nothing to do yet, but when we define it put it here
-    return 0;
-}
+    $log->trace("tag is $tag");
+    # predefined entities must be in spans
+    return undef if ($tag ne "span");
+    $log->trace("child is a span");
 
-sub is_not_special_class ($self, $child) {
     my $class   = $child->attr('class');
-    return 1 if ! defined $class;
-    return 1 if $class eq '' or $class eq ' ';
-    return 0 if $class eq 'userdef';
-    return 0 if $class eq 'ghostbuster';
-    return 0 if $class =~ /^entity /;
+    # must have class of entity
+    return undef if (! defined $class);
+    return undef if ($class !~ /entity/);
+    $log->trace("child is an entity");
+
+    my $type    = $child->attr('data-entity-type');
+    my $value   = $child->attr('data-entity-value');
+    # must have data-entity-type and data-entity-value attributes
+    return undef if ( ! defined $type or ! defined $value ); 
+    $log->trace("child is entity of type $type and value $value");
+
+    # add this to the edb
+    $edb->{$type}->{$value}++;
     return 1;
 }
 
-sub is_not_leaf_node ($self, $child) {
-    return ref($child);
+sub is_leaf_node ($self, $child) {
+    return ref($child) eq '';
 }
 
 sub build_html_tree ($self, $htmltext) {
@@ -533,14 +528,11 @@ sub ensure_array ($self, $data) {
 
 sub flair_special_column ($self, $alert, $type, $column, $data) {
 
-    my ($cell_flair,
-        $cell_text,
-        $cell_edb)  = $self->flair_special($data, $type);
-
-    return {
-        flair => $cell_flair, 
-        text  => $cell_text, 
-        edb   => $cell_edb};
+    my $update  = {};
+    ($update->{flair}, 
+     $update->{text}, 
+     $update->{edby}) = $self->flair_special($data, $type);
+    return $update;
 }
 
 sub process_sparkline ($self, $data) {
@@ -690,6 +682,107 @@ sub has_splunk_ipv6_pattern ($self, $i, @c) {
                       $c[$i+7]      !~ /([0-9a-f]{1,4}:){3}/i );
     return undef if ( $c[$i+8]->tag ne 'span');
     return 1;
+}
+
+sub skippable_column ($self, $column) {
+    return 1 if $column eq 'columns';
+    return 1 if $column eq '_raw';
+    return 1 if $column eq 'search';
+    return undef;
+}
+
+sub item_is_empty ($self, $item) {
+    return 1 if ! defined $item;
+    return 1 if $item eq '';
+    return 1 if $item eq ' ';
+    return undef;
+}
+
+sub item_is_entity ($self, $item) {
+    return $item =~ /<span class="entity/;
+}
+
+sub get_column_type ($self, $column) {
+    return 'message_id'  if $column =~ /message[_-]id/i;
+    return 'uuid1'       if $column =~ /^(lb){0,1}scanid$/i;
+    return 'filename'    if $column =~ /^attachment[_-]name/i;
+    return 'filename'    if $column =~ /^attachments$/i;
+    return 'sentinel'    if $column =~ /^sentinel_incident_url$/i;
+    return 'normal';
+}
+
+sub contains_sparkline ($self, $data) {
+    if (ref($data) eq "ARRAY") {
+        if ( defined $data->[0] ) {
+            return 1 if $data->[0] =~ /^##__SPARKLINE__##/;
+        }
+    }
+    return 1 if $data =~ /^##__SPARKLINE__##/;
+    return undef;
+}
+
+sub flair_remoteflair ($self, $remoteflair, $ftype) {
+    my $io  = $self->io;
+    my $log = $self->log;
+    my $id  = $remoteflair->id;
+
+    $log->info("_ Begin $ftype Flair RemoteFlair $id _");
+
+    my $html                    = $self->get_remoteflair_html($remoteflair, $ftype);
+    my $clean                   = $self->clean_html($html);
+    my ($edb, $flair, $text)    = $self->extract_from_html($clean, $ftype);
+
+    if ($ftype ne "core") {
+        $self->merge_remoteflair_edb($remoteflair, $edb);
+    }
+
+    my $update  = {
+        remoteflair => $remoteflair,
+        edb         => $edb,
+        flair       => $flair,
+        text        => $text,
+    };
+    
+    $log->info("... End   $ftype Flair RemoteFlair $id ...");
+    $log->trace("Remoteflair update: ",{filter=>\&Dumper, value=>$update});
+    return $update;
+}
+
+sub get_remoteflair_html ($self, $remoteflair, $ftype) {
+    return ($ftype ne "core") ? $remoteflair->results->{flair} : $remoteflair->html;
+}
+
+sub merge_remoteflair_edb ($self, $remoteflair, $edb) {
+    my $oldedb  = $self->convert_rf_entites($remoteflair);
+    $self->merge_edb($edb, $oldedb);
+}
+
+sub convert_rf_entities ($self, $remoteflair) {
+    my $entities = $remoteflair->results->{entities};
+    my $edb      = {};
+    foreach my $h (@$entities) {
+        $edb->{ $h->{type} }->{ $h->{value} }++;
+    }
+    return $edb;
+}
+
+sub merge_edb ($self, $existing, $new) {
+    # $existing is ref, so we are updating the hash as a side effect
+    # edb structure:
+    # { entities => { 
+    #       type => {
+    #            "value" => count }}
+    #   cache    => {}
+    # }
+    $self->io->log->trace("existing => ",{filter => \&Dumper, value=>$existing});
+    $self->io->log->trace("new      => ",{filter => \&Dumper, value=>$new});
+    foreach my $type (keys %{$new->{entities}}) {
+        foreach my $value (keys %{$new->{entities}->{$type}}) {
+            my $count = $new->{entities}->{$type}->{$value};
+            $existing->{entities}->{$type}->{$value} += $count;
+        }
+    }
+    $self->log->trace("Merged   => ",{filter=>\&Dumper, value=>$existing});
 }
 
 __PACKAGE__->meta->make_immutable;    

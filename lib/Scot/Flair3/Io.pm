@@ -33,36 +33,55 @@ has queue   => (
     is      => 'ro',
     isa     => 'Str',
     required=> 1,
+    default => '/queue/flair',
 );
 
 has topic   => (
     is      => 'ro',
     isa     => 'Str',
     required=> 1,
+    default => '/topic/flair',
+);
+
+has logfile => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => '/var/log/scot/flair.log',
+);
+
+has loglevel => ( 
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => 'DEBUG',
 );
 
 has log => (
     is      => 'ro',
     isa     => 'Log::Log4perl::Logger',
     required=> 1,
+    lazy    => 1,
     builder => '_build_log',
 );
 
 sub _build_log ($self) {
     my $logname = "FlairLog";
+    my $logfile = $self->logfile;
+    my $level   = $self->loglevel;
     my $log     = Log::Log4perl->get_logger($logname);
     my $pattern = "%d %7p [%P] %15F{1}: %4L %m%n";
     my $layout  = Log::Log4perl::Layout::PatternLayout->new($pattern);
     my $appender= Log::Log4perl::Appender->new(
         'Log::Log4perl::Appender::File',
         name        => 'flair_log',
-        filename    => '/var/log/scot/flair.log',
+        filename    => $logfile,
         autoflush   => 1,
         utf8        => 1,
     );
     $appender->layout($layout);
     $log->add_appender($appender);
-    $log->level("DEBUG");
+    $log->level($level);
     return $log;
 }
 
@@ -73,13 +92,20 @@ has mongo   => (
     builder => '_build_mongo',
 );
 
+has dbname  => (
+    is      => 'ro',
+    isa     => 'Str',
+    required=> 1,
+    default => 'scot-prod',
+);
+
 sub _build_mongo ($self) {
     return Meerkat->new(
         model_namespace         => 'Scot::Model',
         collection_namespace    => 'Scot::Collection',
-        database_name           => 'scot-prod',
+        database_name           => $self->dbname,
         client_options          => {
-            host        => 'localhost',
+            host        => 'mongodb://localhost',
             w           => 1,
             find_master => 1,
             socket_timeout_ms => 600000,
@@ -89,26 +115,9 @@ sub _build_mongo ($self) {
 
 has stomp  => (
     is      => 'ro',
-    isa     => 'Net::Stomp',
+    isa     => 'Scot::Flair3::Stomp',
     required=> 1,
-    builder => '_build_stomp',
 );
-
-sub _build_stomp ($self) {
-    my $stomp_host  = "localhost";
-    my $stomp_port  = 61613;
-
-    my $stomp   = Net::Stomp->new({
-        hostname    => $stomp_host,
-        port        => $stomp_port,
-        # ssl       => 1,
-        # ssl_options=> {}
-    });
-
-    die "Failed to initialize Net::Stomp!" if (! defined $stomp );
-    $stomp->connect();
-    return $stomp;
-}
 
 has ua  => (
     is          => 'ro',
@@ -132,7 +141,7 @@ sub _build_ua ($self) {
     return $agent;
 }
 
-sub get_timer ($self, $title) {
+sub get_timer ($self)  {
     my $start   = [ gettimeofday ];
     return sub {
         my $begin   = $start;
@@ -141,76 +150,12 @@ sub get_timer ($self, $title) {
     };
 }
 
+sub clear_worker_status {
+    return;
+}
+
 sub send_mq ($self, $dest, $href) {
-    my $stomp = $self->stomp;
-    $self->_clear_stomp if ! $stomp;
-    
-    $href->{pid}        = $$;
-    $href->{hostname}   = hostname;
-    my $guid            = Data::GUID->new;
-    my $gstring         = $guid->as_string;
-    $href->{guid}       = $gstring;
-    my $body            = encode_json($href);
-    my $length          = length($body);
-    my $rcvframe;
-
-    try {
-        $stomp->send_transactional({
-            destination     => $dest,
-            body            => $body,
-            'amq-msg-type'  => 'text',
-            'content-length'=> $length,
-            persistent      => 'true',
-        }, $rcvframe);
-    }
-    catch {
-        $self->log->error("Error Sending STOMP message: $_");
-        $self->log->error($rcvframe->as_string);
-    };
-}
-
-
-sub receive_frame ($self) {
-    return $self->stomp->receive_frame;
-}
-
-sub ack_frame ($self, $frame) {
-    $self->stomp->ack({frame => $frame});
-}
-
-sub decode_frame ($self, $frame) {
-    my $body    = $frame->body;
-    my $headers = $frame->headers;
-    my $json    = decode_json($body);
-    my $message = {
-        headers => $headers,
-        body    => $json,
-    };
-    return $message;
-}
-
-sub nack_frame ($self, $frame) {
-    $self->stomp->nack({frame => $frame});
-}
-
-sub connect_to_amq ($self, $queue, $topic) {
-    my $log     = $self->log;
-    my $stomp   = $self->stomp;
-
-    $stomp->connect();
-    $stomp->subscribe({
-        destination             => $queue,
-        ack                     => 'client',
-        'activemq.prefetchSize' => 1,
-    });
-    $log->debug("Subscribed to $queue");
-
-    $stomp->subscribe({
-        destination             => $topic,
-        ack                     => 'client',
-        'activemq.prefetchSize' => 1,
-    });
-    $log->debug("Subscribed to $topic");
+    $self->stomp->send($dest, $href);
 }
 
 sub update_entry ($self, $update) {
@@ -237,6 +182,25 @@ sub update_entry ($self, $update) {
     $self->link_entities($entry, $edb);
 }
 
+sub update_remote_flair ($self, $update) {
+    my $rf      = $update->{remoteflair};
+    my $edb     = $update->{edb};
+    my $flair   = $update->{flair};
+    my $text    = $update->{text};
+
+    my $mongo_update    = {
+        '$set'  => {
+            status      => 'ready',
+            results     => {
+                edb     => $edb,
+            }
+        }
+    };
+    try { $rf->update($mongo_update) }
+    catch {
+        $self->log->error("Failed to update RF ".$rf->id.": $_");
+    };
+}
 
 sub alter_entry_body ($self, $entry, $html) {
     try {
@@ -248,10 +212,12 @@ sub alter_entry_body ($self, $entry, $html) {
 }
 
 sub retrieve ($self, $message) {
-    my $type    = $message->{type};
-    my $id      = $message->{id}+0;
+    my $data    = $message->{body}->{data};
+    my $type    = $data->{type};
+    my $id      = $data->{id} + 0;
     my $col     = $self->mongo->collection(ucfirst($type));
     my $obj     = $col->find_iid($id);
+    $self->log->debug("Retrieved $type $id");
     return $obj;
 }
 
@@ -268,7 +234,7 @@ sub get_alerts ($self, $alertgroup) {
     return wantarray ? @alerts : \@alerts;
 }
 
-sub update_alertgroup ($self, $alertgroup, $edb, $workertype) {
+sub update_alertgroup ($self, $alertgroup, $edb,) {
     my $update  = {
         '$set'  => { parsed => 1 }
     };
@@ -290,26 +256,39 @@ sub send_alertgroup_updated_message ($self, $alertgroup) {
 }
 
 sub update_alert ($self, $update) {
-
+    my $log     = $self->log;
     my $alert   = $update->{alert};
     my $flair   = $update->{flair};
     my $text    = $update->{text};
     my $edb     = $update->{edb};
+    my $id      = $alert->id;
+    my $dflair  = {};
+    my $timer   = $self->get_timer;
+
+    foreach my $key (keys %$flair) {
+        $dflair->{$key} = $flair->{$key};
+    }
 
     my $mongo_update  = { 
         '$set'  => {
-            parsed => 1, data_with_flair => {} 
+            parsed => 1, 
+            data_with_flair => $dflair,
         }
     };
-    foreach my $key (keys %$flair) {
-        $mongo_update->{'$set'}->{data_with_flair}->{$key} = $flair->{$key};
-    }
+    $log->trace("Attempting update of alert $id with ",{filter=>\&Dumper, value=> $mongo_update});
+
     $alert->update($mongo_update);
+    $log->debug("TIME: mongo update of alert => ".&$timer." seconds");
+    $timer  = $self->get_timer;
     $self->link_entities($alert, $edb);
+    $log->debug("TIME: link_entities => ".&$timer." seconds");
+    $timer  = $self->get_timer;
     $self->send_alert_update_message($alert);
+    $log->debug("TIME: send_alert_update_message => ".&$timer." seconds");
 }
 
 sub send_alert_update_message ($self, $alert) {
+    my $log = $self->log;
     my $id  = $alert->id;
     $self->send_mq('/topic/scot', {
         action  => 'updated',
@@ -319,6 +298,7 @@ sub send_alert_update_message ($self, $alert) {
             id      => $id,
         }
     });
+    $log->trace("Sent Alert $id updated message to /topic/scot");
 }
 
 sub send_entities_to_enricher ($self, $edb) {
@@ -330,22 +310,29 @@ sub send_entities_to_enricher ($self, $edb) {
             type    => 'entity',
         }
     };
+    my $count   = 0;
     foreach my $type (keys %$entities) {
         foreach my $value (keys %{$entities->{$type}}) {
             my $entity = $self->get_entity($type,$value);
             $msg->{data}->{id} = $entity->id;
             $self->send_mq('/queue/enricher', $msg);
+            $count++;
         }
     }
+    $self->log->debug("Sent $count entities to /queue/enricher");
 }
 
 sub get_entity ($self, $type, $value) {
     my $col     = $self->mongo->collection('Entity');
     my $obj     = $col->find_one({type => $type, value => $value});
+    if ( ! defined $obj ) {
+        $self->log->trace("Entity $type $value not found, creating...");
+        $obj = $col->create({ type => $type, value=> $value});
+    }
     return $obj;
 }
 
-sub send_entry_updated_messages ($self, $entry, $workertype) {
+sub send_entry_updated_messages ($self, $entry) {
     my $id      = $entry->id;
     my $target  = $entry->target;
     my $msg     = {
@@ -357,24 +344,19 @@ sub send_entry_updated_messages ($self, $entry, $workertype) {
         }
     };
     $self->send_mq('/topic/scot', $msg);
-    $msg->{data}->{type}    = $target->{type};
-    $msg->{data}->{id}      = $target->{id};
-    $self->send_mq('/topic/scot', $msg);
+    $self->log->debug("Sent Entry $id update message to /topic/scot");
 
-    if ( $workertype eq "core" ) {
-        $self->log->trace("Sending Core Flaired Entry $id to Udef flair queue");
-        $self->send_mq('/queue/udflair', {
-            action  => 'updated',
-            data    => {
-                who     => 'scot-flair',
-                type    => 'entry',
-                id      => $id,
-            }
-        });
-    }
+    my $type    = $target->{type};
+    my $tid      = $target->{id};
+
+    $msg->{data}->{type}    = $type;
+    $msg->{data}->{id}      = $tid;
+    $self->send_mq('/topic/scot', $msg);
+    $self->log->debug("Sent $type $tid update message to /topic/scot");
 }
 
 sub link_entities ($self, $obj, $edb) {
+    my $log         = $self->log;
     my $obj_type    = $self->get_object_type($obj);
     my $target;
     if ( $obj_type eq "Entry") {
@@ -382,33 +364,66 @@ sub link_entities ($self, $obj, $edb) {
     }
 
     my $entities    = $edb->{entities};
+
+    $log->trace("EDB = ",{filter=>\&Dumper, value => $entities});
+
     TYPE:
     foreach my $type (keys %$entities) {
-        my $bytype = $edb->{$type};
         ENTITY:
-        foreach my $value (keys %$bytype) {
+        foreach my $value (keys %{$entities->{$type}}) {
             my $entity = $self->get_entity($type, $value);
+
+            if ( ! defined $entity ) {
+                $entity = $self->create_entity($type, $value);
+            }
+
             my $status = $entity->status;
+
+            $log->trace("LINK: Entity $type $value (".$entity->id.") status $status");
 
             next ENTITY if (defined $status and $status eq "untracked");
 
             my $link   = $self->link_objects($obj, $entity);
             if ( defined $target ) {
-                my $slink = $self->link_objects($entity, $target);
+                my $tobj    = $self->get_target_obj($target);
+                if ( defined $tobj ) {
+                    my $slink = $self->link_objects($entity, $tobj);
+                }
             }
         }
     }
 }
 
+sub get_target_obj ($self, $target) {
+    my $type    = $target->{type};
+    my $id      = $target->{id};
+    my $col     = $self->mongo->collection(ucfirst($type));
+    my $obj     = $col->find_iid($id);
+    return $obj;
+}
+
+sub create_entity ($self, $type, $value) {
+    my $log     = $self->log;
+    my $data    = { type => $type, value => $value };
+    my $col     = $self->mongo->collection('Entity');
+    $log->debug("creating entity ",{filter=>\&Dumper, value=>$data});
+    my $entity  = $col->create($data);
+    if (! defined $entity and ref($entity) ne 'Scot::Model::Entity') {
+        $log->error("FAILED TO CREATE ENTITY!");
+    }
+    return $entity;
+}
+
 sub link_objects ($self, $o1, $o2) {
+    my $log     = $self->log;
+    my $dm      = sprintf("%s[%d] to %s[%d]",ref($o1),$o1->id,ref($o2),$o2->id);
     my $col     = $self->mongo->collection('Link');
     my $link    = try {
         $col->link_objects($o1, $o2);
+        $self->log->trace("Linked $dm");
     }
     catch {
-        $self->log->error("Failed to create Link between: ".
-            ref($o1)."[".$o1->id."] and ".
-            ref($o2)."[".$o2->id."]");
+        $self->log->error("Failed to create Link $dm");
     };
     return $link;
 }
@@ -426,6 +441,7 @@ sub get_active_entitytypes ($self) {
 }
 
 sub create_file_from_uri ($self, $uri) {
+    my $log     = $self->log;
     my $newuri  = '';
     my $tmpfile; 
 
@@ -433,9 +449,11 @@ sub create_file_from_uri ($self, $uri) {
         my ($mime, $enc, $data) = $self->parse_data_uri($uri);
         my $decoded_img         = decode_base64($data);
         $tmpfile                = $self->write_data_uri_file($mime,$data);
+        $log->debug("wrote data uri to $tmpfile");
     }
     else {
         $tmpfile     = $self->download_img_uri($uri);
+        $log->debug("downloaded uri to $tmpfile");
     }
     
     if (! defined $tmpfile ) {
@@ -488,7 +506,8 @@ sub create_file ($self, $filename, $data) {
     };
 }
 
-sub download_img_uri ($self, $uri) {
+
+sub download_img_uri_lwp ($self, $uri) {
     my $request = HTTP::Request->new('GET', $uri);
     my $response= $self->ua->request($request);
 

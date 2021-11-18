@@ -68,11 +68,11 @@ sub clean_input ($self, $input) {
     return $clean;
 }
 
-
 sub parse ($self, $regexes, $edb, $input, $log = undef) {
-
+    no warnings 'recursion';
     return if $input eq '';     # nothing to parse
     my @new     = ();
+    my $comparisons = 0;
 
     REGEX:
     foreach my $re_href (@$regexes) {
@@ -85,14 +85,18 @@ sub parse ($self, $regexes, $edb, $input, $log = undef) {
                                             $re,
                                             $rt,
                                             $edb);
+        $comparisons++;
 
         if ( ! defined $flair ) {
             next REGEX;
         }
         $log->trace("found $rt => ".$flair->as_HTML) if defined $log;
 
+        $log->trace("pre = $pre");
         push @new, $self->parse($regexes, $edb, $pre, $log);
+        $log->trace("flair = $flair");
         push @new, $flair;
+        $log->trace("post = $post");
         push @new, $self->parse($regexes, $edb, $post, $log);
         
         # we have a match, so stop
@@ -102,6 +106,7 @@ sub parse ($self, $regexes, $edb, $input, $log = undef) {
     if ( scalar(@new) < 1 ) {
         push @new, $input;
     }
+    $log->debug("     $comparisons Comparisons performed");
     return wantarray ? @new :\@new;
 }
 
@@ -116,6 +121,8 @@ sub find_flairable ($self, $text, $re, $rt, $edb) {
         my $pre     = substr($text, 0, $-[0]);
         my $match   = substr($text, $-[0], $+[0] - $-[0]);
         my $post    = substr($text, $+[0]);
+
+        
 
         my $flairable   = $self->post_match_actions($match, $rt, $edb);
 
