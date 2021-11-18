@@ -38,7 +38,7 @@ sub split_alertgroups {
     my $self    = shift;
     my $href    = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $log->debug("splitting alertgroup");
 
@@ -47,7 +47,8 @@ sub split_alertgroups {
     push @$data, $data if ( ref($data) ne "ARRAY" );
         
     my $alert_rows  = scalar(@$data);
-    my $row_limit   = $env->get_config_item("row_limit") // 100;
+    #my $row_limit   = $env->get_config_item("row_limit") // 100;
+    my $row_limit   = $self->defaults->{row_limit};
     $log->debug("row limit is $row_limit");
     my @ag_requests = ();
     my $parts       = int($alert_rows/$row_limit);
@@ -94,7 +95,7 @@ override api_create => sub {
     my $href    = shift;
     my $env     = $self->env;
     my $mongo   = $self->meerkat;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     my @mq_msgs     = ();
     my @audit_msgs  = ();
@@ -173,8 +174,8 @@ sub refresh_data {
     my $id      = shift;
     my $user    = shift // "api";
     my $env     = $self->env;
-    my $mq      = $env->mq;
-    my $log     = $env->log;
+    # my $mq      = $env->mq;
+    my $log     = $self->log;
 
     ## TODO: see if we can move the mq stuff 
     ## recent bug:  flairer didn't have an mq stanza on a demo box
@@ -223,7 +224,7 @@ sub refresh_data {
             promoted_count  => $count{promoted} // 0,
             alert_count     => $count{total},
             status          => $status,
-            updated         => $env->now,
+            updated         => $self->now,
         }
     });
 
@@ -253,7 +254,7 @@ sub api_subthing {
     my $subthing    = $req->{subthing};
     my $mongo       = $self->meerkat;
 
-    $self->env->log->trace("api_subthing /$thing/$id/$subthing");
+    $self->log->trace("api_subthing /$thing/$id/$subthing");
 
     if ( $subthing eq "alert") {
         return $mongo->collection('Alert')->find({
@@ -334,8 +335,8 @@ sub update_alerts_in_alertgroup {
     my $href     = shift;
     my $env      = $self->env;
     my $mongo    = $self->meerkat;
-    my $log      = $env->log;
-    my $mq       = $env->mq;
+    my $log      = $self->log;
+    # my $mq       = $env->mq;
     my $status   = { updated => [] };
     my $alertcol = $mongo->collection('Alert');
         
@@ -404,7 +405,7 @@ sub update_alerts_in_alertgroup {
             my $hist = {
                 who     => $href->{user},
                 what    => "Alert status changed to ".$alert_href->{status},
-                when    => $env->now(),
+                when    => $self->now(),
                 target  => { id => $alertobj->id, type => "alert" },
             };
             $mongo->collection("History")->add_history_entry($hist);
@@ -417,7 +418,7 @@ sub update_alerts_in_alertgroup {
 sub get_bundled_alertgroup {
     my $self    = shift;
     my $id      = shift;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
     my $mongo   = $self->meerkat;
     my $agobj   = $self->find_iid($id);
     my $href    = $agobj->as_hash;
@@ -454,7 +455,7 @@ sub get_alerts_in_alertgroup {
     my $cursor  = $col->find({alertgroup => $id});
     my @alerts  = ();
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $log->debug("GET ALERTS in ALERTGROUP $id");
 
@@ -474,7 +475,7 @@ sub update_alertgroup_with_bundled_alert {
     my $self    = shift;
     my $putdata = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
     my $mongo   = $self->meerkat;
     my $alertcol    = $mongo->collection('Alert');
     my $entitycol   = $mongo->collection('Entity');
@@ -540,7 +541,7 @@ sub update_alertgroup_with_bundled_alert_old {
     my $putdata = shift;
     my $env      = $self->env;
     my $mongo    = $self->meerkat;
-    my $log      = $env->log;
+    my $log      = $self->log;
 
     my $alertgroup_id = delete $putdata->{id};
     my $alertgroup    = $self->find_iid($alertgroup_id);

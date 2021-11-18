@@ -32,7 +32,7 @@ override api_create => sub {
     my $self    = shift;
     my $request = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
     my $mongo   = $self->meerkat;
 
     $log->trace("Custom create in Scot::Collection::Intel");
@@ -150,7 +150,7 @@ sub get_promotion_obj {
     my $object  = shift; # a dispatch
     my $req     = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
     my $request = $req->{request};
 
     # if given a promo_id, promote into an existing

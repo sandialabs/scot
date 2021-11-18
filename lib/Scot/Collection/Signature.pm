@@ -27,7 +27,7 @@ override api_create => sub {
     my $self    = shift;
     my $request = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $log->debug("Creating Signature from POST to API");
     $log->debug(Dumper($request));
@@ -103,7 +103,7 @@ sub api_subthing {
     my $subthing= $req->{subthing};
     my $mongo   = $self->meerkat;
 
-    $self->env->log->debug("api_subthing /$thing/$id/$subthing");
+    $self->log->debug("api_subthing /$thing/$id/$subthing");
 
     if ($subthing eq "entry") {
         return $mongo->collection('Entry')->get_entries_by_target({

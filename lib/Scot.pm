@@ -7,6 +7,7 @@ use Carp qw(cluck longmess shortmess);
 use Mojo::Base 'Mojolicious';
 use Mojo::Cache;
 use Scot::Env;
+use MojoX::Log::Log4perl;
 use Scot::Util::CSRFProtection;
 use Data::Dumper;
 
@@ -20,14 +21,20 @@ It is a child of Mojo::Base and therefore is a Mojolicious based app.
 
 =cut
 
-
 sub startup {
     my $self    = shift;
     $ENV{MOJO_MAX_MESSAGE_SIZE} = 67108864; # 64 MB
     $self->mode('development'); # remove when in prod
 
-    my $config_file  = $ENV{'scot_config_file'} // "/opt/scot/etc/scot.cfg.pl";
+    # mojo 8 changed the logging.  trying to go around it.
+    my $logconfig   = $ENV{'scot_log_conf_file'} // '/opt/scot/etc/log.conf';
+    #Log::Log4perl::init($logconfig);
+    #my $slog = Log::Log4perl->get_logger('Scot');
+    #$self->attr     ( slog => sub {$slog} );
+    #$self->helper   ( slog => sub { shift->app->env } );
+    $self->log( MojoX::Log::Log4perl->new($logconfig));
 
+    my $config_file  = $ENV{'scot_config_file'} // "/opt/scot/etc/scot.cfg.pl";
     my $env     = Scot::Env->new(
         config_file => $config_file,
     );
@@ -37,11 +44,6 @@ sub startup {
 
     my $cache   = Mojo::Cache->new(max_keys => 100);
     $self->helper   ('cache'  => sub { $cache } );
-
-    # mojo 8 changed the logging.  trying to go around it.
-    my $slog = $env->log;
-    $self->attr     ( slog => sub {$slog} );
-    $self->helper   ( slog => sub { shift->app->env } );
 
 
     $self->secrets( $env->mojo_defaults->{secrets} );
@@ -84,9 +86,9 @@ sub startup {
         do {
             $Log::Log4perl::caller_depth++;
             no warnings 'uninitialized';
-            $slog->warn(@_);
+            $self->app->log->warn(@_);
             unless ( grep { /uninitialized/ } @_ ) {
-                $slog->warn(longmess());
+                $self->app->log->warn(longmess());
             }
             $Log::Log4perl::caller_depth--;
         }
@@ -97,7 +99,7 @@ sub startup {
             return;
         }
         $Log::Log4perl::caller_depth++;
-        $slog->fatal(@_);
+        $self->app->log->fatal(@_);
         die @_;
     };
 
@@ -186,7 +188,7 @@ relies on the browser BasicAuth popup.
     $r   ->get('/')
             ->to( cb => sub {
                 my $c = shift;
-                $slog->trace("Hitting Static /");
+                $self->app->log->trace("Hitting Static /");
                 $c->reply->static('index.html');
             });
 
@@ -711,7 +713,7 @@ other events.
             ->to    ('controller-api#delete')
             ->name  ('delete');
 
-    $self->log_startup($slog);
+    $self->log_startup($self->app->log);
 
 }
 

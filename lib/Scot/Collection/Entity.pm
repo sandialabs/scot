@@ -27,7 +27,7 @@ sub update_entity {
     my $target  = shift;
     my $href    = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
     my $mongo   = $self->meerkat;
 
     $log->trace("updatiing entity",{filter=>\&Dumper, value=>$href});
@@ -59,13 +59,13 @@ sub update_entities {
     my $earef   = shift;    # array of hrefs that hold entityinfo
 
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
     my $mongo   = $self->meerkat;   
     # no done async
     # my $enrichments = $env->enrichments;
 
     my $thash = $target->as_hash;
-    $self->env->log->debug("updating entities on target ",
+    $self->log->debug("updating entities on target ",
                             { filter =>\&Dumper, value => $thash});
 
     $log->debug("earef is ",{filter=>\&Dumper, value=>$earef});
@@ -80,7 +80,7 @@ sub update_entities {
     my @created_ids = ();
     my @updated_ids = ();
     my %seen        = ();
-
+    my @entity_ids  = ();
     ENTITY:
     foreach my $entity (@$earef) {
 
@@ -115,23 +115,9 @@ sub update_entities {
             push @created_ids, $entity->id;
         }
         $self->create_entity_links($entity, $target);
-        # async now
-        #my ($updated,$data) = $enrichments->enrich($entity);
-        #if ( $updated > 0 ) {
-        #    my $merged = $self->merge_entity_data($entity->data, $data);
-        #    $entity->update_set(data => $merged);
-        #}
-        $self->env->mq->send('/queue/enricher',{
-            action  => 'updated',
-            data    => {
-                who => 'scot-api',
-                type=> 'entity',
-                id  => $entity->id,
-            }
-        });
-
+        push @entity_ids, $entity->id; 
     }
-    return \@created_ids, \@updated_ids;
+    return \@created_ids, \@updated_ids, \@entity_ids;
 }
 
 sub merge_entity_data {
@@ -160,7 +146,7 @@ sub upsert_link {
     my $entity  = shift; # object
     my $target  = shift; # href
 
-    $self->env->log->trace("upsert link: Entity ".$entity->id." to ".
+    $self->log->trace("upsert link: Entity ".$entity->id." to ".
         $target->{type}." ".$target->{id});
 
     my $linkcol = $self->meerkat->collection('Link');
@@ -170,11 +156,11 @@ sub upsert_link {
     };
 
     if ( $linkcol->link_exists($entity,$v1) ) {
-        $self->env->log->debug("Entity already linked to target");
+        $self->log->debug("Entity already linked to target");
         return;
     }
 
-    $self->env->log->trace("Link does not exist, creating...");
+    $self->log->trace("Link does not exist, creating...");
 
     my $linkobj    = $linkcol->link_objects(
         $entity, { 
@@ -189,7 +175,7 @@ sub create_entity_links {
     my $self    = shift;
     my $entity  = shift; # object
     my $target  = shift; # object
-    my $log = $self->env->log;
+    my $log = $self->log;
 
     $log->trace("collection: create_entity_links");
     $log->trace("Entity ".$entity->id." to Target ".$target->id);
@@ -254,7 +240,7 @@ sub api_subthing {
     my $subthing= $req->{subthing};
     my $env     = $self->env;
     my $mongo   = $self->meerkat;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     if ( $subthing  eq "alert" or
          $subthing  eq "event" or
@@ -363,7 +349,7 @@ sub api_create {
     my $self    = shift;
     my $req     = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
     my $mongo   = $self->meerkat;
     my $user    = $req->{user};
     my $json    = $req->{request}->{json};
