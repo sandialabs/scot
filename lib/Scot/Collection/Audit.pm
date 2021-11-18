@@ -20,11 +20,11 @@ sub get_history {
 sub create_audit_rec {
     my $self        = shift;
     my $href        = shift;
-    my $log         = $self->env->log;
+    my $log         = $self->log;
 
     my $data    = {
         who     => $href->{who},
-        when    => $self->env->now,
+        when    => $self->now,
         what    => $href->{what},
         data    => $href->{data},
     };

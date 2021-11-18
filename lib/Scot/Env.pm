@@ -13,6 +13,7 @@ use DateTime;
 use Data::Dumper;
 use namespace::autoclean;
 use Scot::Util::Date;
+use Log::Log4perl qw(get_logger);
 
 use Moose;
 use MooseX::Singleton;
@@ -203,29 +204,30 @@ sub build_modules {
         $self->$name($instance);
     }
 }
-        
-sub instantiate_logger {
-    my $self    = shift;
-    my $meta    = shift;
-    my $log;
 
-    print "Building Logger\n" if $self->debug;
+has log => (
+    is      => 'ro',
+    isa     => 'Log::Log4perl::Logger',
+    required=> 1,
+     lazy    => 1,
+    builder => '_build_logger',
+);
 
-    if ( $self->meta->has_attribute('logger_factory') ) {
-        $log = $self->logger_factory->make;
-    }
-    else {
-        print "Old style config...Instantiating Logger...\n" if $self->debug;
-        require_module("Scot::Util::LoggerFactory");
-        my $logconf = $self->log_config;
-        my $factory = Scot::Util::LoggerFactory->new(config => $logconf);
-        $log     = $factory->get_logger;
-    }
-    $meta->add_attribute( log => ( is => 'rw', isa => 'Log::Log4perl::Logger'));
-    $self->log($log);
-    # $log->debug("\@INC = ",{filter=>\&Dumper, value => \@INC});
+has logcat  => (
+    is      => 'ro',
+    isa     => 'Str',
+    required=> 1,
+    default => 'Scot',
+);
+
+sub _build_logger {
+    my $self        = shift;
+    my $cat         = $self->logcat;
+    my $log         =  get_logger($cat);
+    $log->info("logger $cat instance retrieved");
+    return $log;
 }
-
+        
 sub BUILD {
     my $self    = shift;
     my $meta    = $self->meta;
@@ -243,9 +245,6 @@ sub BUILD {
 
     # set up factories
     $self->build_factories($meta, $factories);
-
-    # now a log factory attribute should be loaded, so let's build 
-    $self->instantiate_logger($meta);
 
     # build modules
     $self->build_modules($meta,$modules);

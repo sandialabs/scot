@@ -32,7 +32,7 @@ override api_create => sub {
     my $self    = shift;
     my $request = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
     my $mongo   = $self->meerkat;
 
     $log->debug("Custom create in Scot::Collection::Dispatch");
@@ -80,7 +80,7 @@ sub create_dispatch_entry {
     my $entry       = shift;
     my $mongo       = $self->meerkat;
     my $col         = $mongo->collection('Entry');
-    my $log         = $self->env->log;
+    my $log         = $self->log;
     my $data        = {
         target      => {
             type    => 'dispatch',

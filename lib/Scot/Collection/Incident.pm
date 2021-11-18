@@ -31,7 +31,7 @@ override api_create => sub {
     my $self    = shift;
     my $request = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
     my $mongo   = $self->meerkat;
 
     $log->trace("Custom create in Scot::Collection::Incident");
@@ -67,7 +67,7 @@ sub create_incident_summary {
     my $request     = shift;
     my $incident    = shift;
     my $env         = $self->env;
-    my $log         = $env->log;
+    my $log         = $self->log;
     my $mongo       = $self->meerkat;
 
     $log->debug("creating incident summary entry");
@@ -148,7 +148,7 @@ sub api_subthing {
     my $self    = shift;
     my $req     = shift;
     my $mongo   = $self->meerkat;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
 
     my $thing       = $req->{collection};
     my $subthing    = $req->{subthing};

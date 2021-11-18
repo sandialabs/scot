@@ -15,7 +15,7 @@ sub create_from_handler {
     my $self    = shift;
     my $handler = shift;
     my $env     = $handler->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $log->trace("create in API Scot::Collection::History not supported");
     return undef;
@@ -25,7 +25,7 @@ sub add_history_entry {
     my $self    = shift;
     my $href    = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     my $target  = $href->{target}; # { id => x, type => y }
 

@@ -16,7 +16,7 @@ override api_create => sub {
     my $self    = shift;
     my $request = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     my $json    = $request->{request}->{json};
     my $value   = lc($json->{value});
@@ -89,7 +89,7 @@ sub api_subthing {
     my $subthing= $req->{subthing};
     my $env     = $self->env;
     my $mongo   = $self->meerkat;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     if ( $subthing eq "entity" ) {
         my $et  = $self->find_one({id => $id});
@@ -103,7 +103,7 @@ sub api_subthing {
 sub autocomplete {
     my $self    = shift;
     my $frag    = shift;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
     my @records = ();
 
     my $mm = quotemeta($frag);

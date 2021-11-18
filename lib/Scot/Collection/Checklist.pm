@@ -10,7 +10,7 @@ override api_create => sub {
     my $href    = shift;
     my $env     = $self->env;
     my $mongo   = $self->meerkat;
-    my $log     = $env->log;
+    my $log     = $self->log;
     my $json    = $href->{request}->{json};
 
     my @entries = @{delete $json->{entry}};
@@ -22,7 +22,7 @@ override api_create => sub {
         foreach my $entry (@entries) {
             $entry->{owner} = $entry->{owner} // $href->{user};
             $entry->{task}  = {
-                when    => $env->now,
+                when    => $self->now,
                 who     => $href->{user},
                 status  => 'open',
             };
@@ -44,7 +44,7 @@ sub api_subthing {
     my $id          = $req->{id} + 0;
     my $subthing    = $req->{subthing};
     my $mongo       = $self->meerkat;
-    my $log         = $self->env->log;
+    my $log         = $self->log;
 
     $log->debug("api_subthing /$thing/$id/$subthing");
 
