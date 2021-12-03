@@ -2,21 +2,48 @@ package Scot::Domain;
 
 use strict;
 use warnings;
+use Moose;
 use experimental 'signatures';
 no warnings 'experimental';
 use Data::Dumper;
-use Moose;
+use Module::Runtime qw(require_module);
+use Log::Log4perl qw(get_logger);
+use lib '../../lib';
+use Scot::Client::Messageq;
+use Scot::Types;
 
 has log => (
     is      => 'ro',
     isa     => 'Log::Log4perl::Logger',
     required=> 1,
+    builder => '_build_log',
 );
+
+sub _build_log ($self) {
+    my $log = get_logger('Scot');
+    return $log;
+}
 
 has mongo   => (
     is      => 'ro',
     isa     => 'Meerkat',
     required=> 1,
+);
+
+has collection  => (
+    is          => 'ro',
+    isa         => 'ScotCollection',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_collection', # implemented in subclasses
+);
+
+has mq      => (
+    is      => 'ro',
+    isa     => 'Scot::Client::Messageq',
+    lazy    => 1,
+    required=> 1,
+    default => sub { Scot::Client::Messageq->new },
 );
 
 has skipfields  => (
@@ -42,7 +69,7 @@ has exactfields => (
 
 has permittables => (
     is          => 'ro',
-    isa         => 'ArrrayRef',
+    isa         => 'ArrayRef',
     required    => 1,
     default     => sub { [
         qw(
@@ -51,6 +78,13 @@ has permittables => (
         )
     ] },
 );
+
+sub get_related_domain ($self, $name) {
+    my $class = "Scot::Domain::".ucfirst($name);
+    require_module($class);
+    return $class->new({mongo => $self->mongo});
+}
+
 
 sub build_mongo_query ($self, $request) {
     my $query   = {};
@@ -249,33 +283,25 @@ sub get_target_permisions ($self, $target) {
     return $groups;
 }
 
-sub add_tag_source_to_thing ($self, $thing, $type, $aref) {
+sub tag_source_bookkeep ($self, $object) {
     my @results     = ();
-    my $env         = $self->env;
-    my $mongo       = $env->mongo;
-    my $thing_id    = $thing->id + 0;
-    my $thing_type  = lc((split(/::/,ref($thing)))[-1]);
-    if ( ref($aref) ne "ARRAY" ) {
-        $aref   = [$aref];
-    }
-    foreach my $tagsource (@$aref) {
-        my $obj = $mongo->collection(ucfirst($type))->find_one({ value => $tagsource });
-        if ( ! defined $obj ) {
-            $obj = $mongo->collection(ucfirst($type))->create({ value => $tagsource });
-            push @results, { actions => 'create', target => $type, id => $obj->id };
+    my $appearance  = $self->get_related_domain('appearance');
+
+    foreach my $type (qw(tag source)) {
+        my $domain  = $self->get_related_domain($type);
+        my $aref    = $object->$type;
+        $aref = [$aref] if (ref($aref) ne "ARRAY");
+        foreach my $ts (@$aref) {
+            my $tsobj = $domain->upsert($ts);
+            my $apobj = $appearance->create_ts_appearance(
+                $type, $ts, $tsobj, $object
+            );
         }
-        $mongo->collection('Appearance')->create({
-            type    => $type,
-            value   => $tagsource,
-            apid    => $obj->id,
-            when    => $env->now,
-            target  => {
-                type    => $thing_type,
-                id      => $thing_id,
-            },
-        });
     }
-    return wantarray ? @results : \@results;
+}
+
+sub get_object_type ($self, $object) {
+    return lc((split(/::/,ref($object)))[-1]);
 }
 
 sub send_mq ($self, $msgs) {
@@ -293,6 +319,27 @@ sub send_mq ($self, $msgs) {
 
 }
 
+sub extract_owner ($self, $request, $default=undef) {
+    my $owner   = $request->{owner};
+    if ( ! defined $owner ) {
+        if ( defined $default ) {
+            return $default;
+        }
+        return 'unknown';
+    }
+    return $owner;
+}
+
+sub amq_send_create ($self, $collection, $id, $who) {
+    $self->mq->send('/topic/scot', {
+        action  => 'created',
+        data    => {
+            type    => $collection,
+            id      => $id,
+            who     => $who,
+        }
+    });
+}
     
 
 1;

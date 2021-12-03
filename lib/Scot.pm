@@ -465,6 +465,10 @@ relies on the browser BasicAuth popup.
             ->to    ('controller-api#create')
             ->name  ('create');
 
+    $scot   ->post  ('/api/v3/:thing')
+            ->to    ('controller-api2#create')
+            ->name  ('create3');
+
     $scot   ->get   ('/api/v2/whoami')
             ->to    ('controller-api#whoami')
             ->name  ('whoami');
@@ -501,6 +505,9 @@ relies on the browser BasicAuth popup.
     $scot   ->get   ('/api/v2/:thing/#id')
             ->to    ('controller-api#get_one')
             ->name  ('get_one');
+    $scot   ->get   ('/api/v3/:thing/#id')
+            ->to    ('controller-api2#get_one')
+            ->name  ('get_one3');
 
 =pod
 
@@ -558,6 +565,9 @@ The params passed to this route allow you to filter the list returned to you.
     $scot   ->get   ('/api/v2/:thing')
             ->to    ('controller-api#list')
             ->name  ('list');
+    $scot   ->get   ('/api/v3/:thing')
+            ->to    ('controller-api2#list')
+            ->name  ('list3');
 
 =pod
 
@@ -622,6 +632,9 @@ Incident subthings
     $scot   ->get   ('/api/v2/:thing/:id/:subthing')
             ->to    ('controller-api#get_subthing')
             ->name  ('get_subthing');
+    $scot   ->get   ('/api/v3/:thing/:id/:subthing')
+            ->to    ('controller-api2#get_related')
+            ->name  ('get_subthing3');
 
 =pod
 
@@ -647,6 +660,9 @@ Incident subthings
     $scot   ->put   ('/api/v2/:thing/:id')
             ->to    ('controller-api#update')
             ->name  ('update');
+    $scot   ->put   ('/api/v3/:thing/:id')
+            ->to    ('controller-api2#update')
+            ->name  ('update3');
 
 =pod
 
@@ -712,6 +728,10 @@ other events.
     $scot   ->delete ('/api/v2/:thing/:id')
             ->to    ('controller-api#delete')
             ->name  ('delete');
+    $scot   ->delete ('/api/v3/:thing/:id')
+            ->to    ('controller-api2#delete')
+            ->name  ('delete3');
+
 
     $self->log_startup($self->app->log);
 
