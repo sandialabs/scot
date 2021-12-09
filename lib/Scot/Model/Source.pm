@@ -57,6 +57,10 @@ has notes => (
     default    => 'none',
 );
 
+sub get_memo {
+    my $self    = shift;
+    return $self->value;
+}
 
 __PACKAGE__->meta->make_immutable;
 1;

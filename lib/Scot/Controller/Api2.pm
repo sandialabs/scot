@@ -67,6 +67,7 @@ sub get_related ($self) {
         $log->debug("request = ",{filter=>\&Dumper, value=>$request->as_hash});
         my $domain  = $self->get_domain($request);
         my $result  = $domain->get_related($request);
+        $log->debug("get_related result ",{filter=>\&Dumper, value => $result});
         my $return  = $domain->process_get_related($result);
         $self->perform_render($return);
         $self->write_audit_record('get_related', $request, $result);
@@ -346,6 +347,7 @@ sub write_audit_record ($self, $type, $request, $result) {
     }
 
     $audit->create($record);
+
 
 }
 

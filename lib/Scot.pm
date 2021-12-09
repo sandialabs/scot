@@ -122,6 +122,10 @@ get JSON that was submitted with the web request
         return $req->json;
     });
 
+    # my $domain_map  = $self->build_domain_map;
+    # $self->attr     ( domain_map => sub { $domain_map } );
+    # $self->helper   ( domain_map => sub { shift->app->domain_map } );
+
 =pod
 
 @apiDefine SearchRecord
@@ -752,6 +756,7 @@ sub log_startup {
     );
     # $self->env->dump_env;
 }
+
 
 1;   
 

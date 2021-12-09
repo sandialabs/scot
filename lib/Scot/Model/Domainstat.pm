@@ -98,6 +98,10 @@ has blocklist    => (
 
 =cut
 
+sub get_memo {
+    my $self    = shift;
+    return '';
+}
 
 __PACKAGE__->meta->make_immutable;
 

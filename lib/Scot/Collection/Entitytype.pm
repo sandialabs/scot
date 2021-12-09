@@ -15,7 +15,6 @@ with    qw(
 override api_create => sub {
     my $self    = shift;
     my $request = shift;
-    my $env     = $self->env;
     my $log     = $self->log;
 
     my $json    = $request->{request}->{json};
@@ -87,7 +86,6 @@ sub api_subthing {
     my $thing   = $req->{collection};
     my $id      = $req->{id} + 0;
     my $subthing= $req->{subthing};
-    my $env     = $self->env;
     my $mongo   = $self->meerkat;
     my $log     = $self->log;
 

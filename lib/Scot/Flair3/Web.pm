@@ -92,17 +92,12 @@ sub get_image ($self, $uri, $destdir) {
 sub build_new_name ($self, $uri, $asset) {
     my $hash    = md5_hex($asset->slurp);
     my $imgname = (split('/', $uri))[-1];       # get last part of uri
-    $self->log->debug("imgname = $imgname");
     my $name    = (split('\?', $imgname))[0];   # throw away any params ?foo=bar
-    $self->log->debug("name = $name");
     my $ext     = (split('.', $name))[-1];      # get jpg from foo.jpg if it exists
-    $self->log->debug("ext = $ext");
     my $new     = join('.', $hash, $ext);
+    $self->log->trace(join(',',"imgname = $imgname","name = $name","ext = $ext"));
     return $new;
 }
-
-    
-    
 
 __PACKAGE__->meta->make_immutable;
 1;

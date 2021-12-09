@@ -19,16 +19,21 @@ use SVG::Sparkline;
 use Scot::Flair3::Extractor;
 use Scot::Flair3::Io;
 use Scot::Flair3::Imgmunger;
-use Scot::Flair3::CoreRegex;
-use Scot::Flair3::UdefRegex;
+use Scot::Flair3::Regex;
 use Scot::Flair3::Stomp;
 use Time::HiRes qw(gettimeofday tv_interval);
 
 has stomp   => ( 
     is          => 'ro',
     isa         => 'Scot::Flair3::Stomp',
+    lazy        => 1,
     required    => 1,
+    builder     => '_build_stomp',
 );
+
+sub _build_stomp ($self) {
+    return Scot::Flair3::Stomp->new();
+}
 
 has io      => (
     is          => 'ro',
@@ -39,7 +44,10 @@ has io      => (
 );
 
 sub _build_io ($self) {
-    return Scot::Flair3::Io->new(stomp => $self->stomp);
+    my $stomp   = $self->stomp;
+    say "build_io";
+    say Dumper($stomp);
+    return Scot::Flair3::Io->new(stomp => $stomp);
 }
 
 has imgmunger   => (
@@ -69,28 +77,16 @@ sub _build_extractor ($self) {
     return Scot::Flair3::Extractor->new(log => $log);
 }
 
-has core_regex  => (
+has regex  => (
     is          => 'ro',
-    isa         => 'Scot::Flair3::CoreRegex',
+    isa         => 'Scot::Flair3::Regex',
     required    => 1,
     builder     => '_build_core_regex',
 );
 
 sub _build_core_regex ($self) {
-    return Scot::Flair3::CoreRegex->new();
-}
-
-has udef_regex  => (
-    is          => 'ro',
-    isa         => 'Scot::Flair3::UdefRegex',
-    required    => 1,
-    lazy        => 1,
-    builder     => '_build_udef_regex',
-);
-
-sub _build_udef_regex ($self) {
     my $io  = $self->io;
-    return Scot::Flair3::UdefRegex->new(io => $io);
+    return Scot::Flair3::Regex->new(io => $io);
 }
 
 has log     => (
@@ -135,47 +131,31 @@ sub process_message ($self, $message) {
 sub process_topic ($self, $message) {
     my $log = $self->log;
     if ( defined $message->{data}->{options}->{reload} ) {
-        my $type = $message->{data}->{options}->{reload};
-        if ( $type eq "core" ) {
-            $self->core_regex->reload;
-        }
-        else {
-            $self->udef_regex->reload;
-        }
-        $log->debug("Reloaded $type regular expressions");
+        $self->regex->reload;
+        $log->debug("Reloaded regular expressions");
         return 'success';
     }
-    $log->warn("Topic without a reload option received, ignoring...");
-    return { error => 'topic without reload option',
-             message => $message };
 }
 
 sub process_entry ($self, $entry) {
 
-    my $core_timer  = get_timer("core process entry", $self->log);
-    my $core_update = $self->flair_entry($entry, "core");
-    $self->io->update_entry($core_update);
-    $self->log->debug("finished core flair of entry ".$entry->id);
-    &$core_timer;
-
-
-    my $udef_timer  = get_timer("udef process entry", $self->log);
-    my $udef_update = $self->flair_entry($entry, "udef");
-    $self->io->update_entry($udef_update);
-    $self->log->debug("finished udef flair of entry ".$entry->id);
-    &$udef_timer;
+    my $timer  = get_timer("process entry", $self->log);
+    my $update = $self->flair_entry($entry);
+    $self->io->update_entry($update);
+    $self->log->debug("finished flair of entry ".$entry->id);
+    &$timer;
     return "success";
 }
 
-sub flair_entry ($self, $entry, $ftype) {
+sub flair_entry ($self, $entry) {
     my $io  = $self->io;
     my $log = $self->log;
     my $id  = $entry->id;
 
-    $log->info("- Begin $ftype Flair Entry $id -");
+    $log->info("- Begin Flair Entry $id -");
 
-    my $html                    = $self->get_entry_html($entry, $ftype);
-    my ($edb, $flair, $text)    = $self->extract_from_html($html, $ftype);
+    my $html                    = $self->get_entry_html($entry);
+    my ($edb, $flair, $text)    = $self->extract_from_html($html);
     my $update  = {
         entry   => $entry,
         edb     => $edb,
@@ -183,67 +163,35 @@ sub flair_entry ($self, $entry, $ftype) {
         text    => $text,
     };
 
-    $log->info("- End   $ftype Flair Entry $id -");
+    $log->info("- End   Flair Entry $id -");
     $log->debug("update = ",{filter=>\&Dumper, value => $update});
     return $update;
 }
 
-sub get_entry_html ($self, $entry, $ftype) {
-    if ( $ftype eq "core" ) {
-        my $body        = $entry->body;
-        my $munger      = $self->imgmunger;
-        my $munged_html = $munger->process_body($entry->id, $body);
-        my $html        = $self->clean_html($munged_html);
-        $self->io->alter_entry_body($entry, $html);
-        return $html;
-    }
-    # has passed through core, no need to imagemunge and instead of body
-    # we need to send the already core flaired
-    my $body    = $entry->body_flair;
-    return $body;
+sub get_entry_html ($self, $entry) {
+    my $body        = $entry->body;
+    my $munger      = $self->imgmunger;
+    my $munged_html = $munger->process_body($entry->id, $body);
+    my $html        = $self->clean_html($munged_html);
+    $self->io->alter_entry_body($entry, $html);
+    return $html;
 }
 
 sub process_alertgroup ($self, $alertgroup) {
-    # quickly process core flair and update so users "see" something
-    my $core_timer = get_timer('core process alertgroup', $self->log);
-    my $core_update = $self->flair_alertgroup($alertgroup, "core");
-    $self->apply_alert_updates($core_update);
-    $self->update_alertgroup($alertgroup, $core_update);
-    $self->log->debug("finished core flair of alertgroup");
-    &$core_timer;
-
-    # now "leisurely" process userdefined, 
-    my $udef_timer = get_timer("udef process alertgroup", $self->log);
-    my $udef_update = $self->flair_alertgroup($alertgroup, "udef");
-    $self->apply_alert_updates($udef_update);
-    $self->update_alertgroup($alertgroup, $udef_update);
-    $self->log->debug("finished udef flair of alertgroup");
-    &$udef_timer;
-    return "success";
+    my $timer = get_timer('process alertgroup', $self->log);
+    my $update = $self->flair_alertgroup($alertgroup);
+    $self->apply_alert_updates($update);
+    $self->update_alertgroup($alertgroup, $update);
+    $self->log->debug("finished flair of alertgroup");
+    &$timer;
 }
 
-sub compare_updates ($self, $core, $udef) {
-    my $log = $self->log;
-
-    $log->debug("==================");
-    for (my $i = 0; $i < scalar(@{$core->{alertupdates}}); $i++) {
-        my $aup = $core->{alertupdates}->[$i];
-        foreach my $col (keys %{$aup->{flair}}) {
-            $log->debug("Col $col =>");
-            $log->debug("Core ",{filter=>\&Dumper, value => $aup->{flair}->{$col}});
-            my $uup = $udef->{alertupdates}->[$i];
-            $log->debug("Udef ",{filter=>\&Dumper, value => $uup->{flair}->{$col}});
-        }
-    }
-    $log->debug("==================");
-}
-
-sub flair_alertgroup ($self, $alertgroup, $ftype) {
+sub flair_alertgroup ($self, $alertgroup) {
     my $io  = $self->io;
     my $log = $self->log;
     my $id  = $alertgroup->id;
 
-    $log->info("- Begin $ftype Flair Alertgroup $id -");
+    $log->info("- Begin Flair Alertgroup $id -");
 
     my $edb         = {};
     my @alertupdates= ();
@@ -251,7 +199,7 @@ sub flair_alertgroup ($self, $alertgroup, $ftype) {
 
     foreach my $alert (@alerts) {
 
-        my $alert_update    = $self->flair_alert($alert, $ftype);
+        my $alert_update    = $self->flair_alert($alert);
         my $alert_edb       = $alert_update->{edb};
         push @alertupdates,   $alert_update;
         $self->merge_edb($edb, $alert_edb);
@@ -263,19 +211,19 @@ sub flair_alertgroup ($self, $alertgroup, $ftype) {
     };
 
 
-    $log->info("- End   $ftype Flair Alertgroup $id -");
+    $log->info("- End   Flair Alertgroup $id -");
     $log->trace("alertgroup update: ",{filter=>\&Dumper, value=>$update});
     return $update;
 }
 
-sub flair_alert ($self, $alert, $ftype) {
+sub flair_alert ($self, $alert) {
     my $io      = $self->io;
     my $log     = $self->log;
     my $id      = $alert->id;
     my $agid    = $alert->alertgroup;
 
-    $log->info("___ Begin $ftype Flair Alert $id [$agid] ___");
-    my $data    = ($ftype eq "core") ? $alert->data : $alert->data_with_flair;
+    $log->info("___ Begin Flair Alert $id [$agid] ___");
+    my $data    = $alert->data;
     my $flair   = {};
     my $text    = {};
     my $edb     = {};
@@ -293,7 +241,7 @@ sub flair_alert ($self, $alert, $ftype) {
         }
         else {
             my $coltype       = $self->get_column_type($column);
-            my $cellupdate    = $self->flair_cell($alert, $coltype, $column, $celldata, $ftype);
+            my $cellupdate    = $self->flair_cell($alert, $coltype, $column, $celldata);
             $flair->{$column} = $cellupdate->{flair};
             $text->{$column}  = $cellupdate->{text};
             $self->merge_edb($edb, $cellupdate->{edb});
@@ -307,19 +255,19 @@ sub flair_alert ($self, $alert, $ftype) {
         edb     => $edb,
     };
 
-    $log->info("___ End   $ftype Flair Alert $id [$agid] ___");
+    $log->info("___ End   Flair Alert $id [$agid] ___");
     $log->trace("alert update: ",
         {filter=>\&Dumper, value=>[$update->{flair}, $update->{edb}]});
     return $update;
 }
 
-sub flair_cell ($self, $alert, $ctype, $column, $celldata, $ftype) {
+sub flair_cell ($self, $alert, $ctype, $column, $celldata) {
     my $io      = $self->io;
     my $log     = $self->log;
     my $id      = $alert->id;
     my $agid    = $alert->alertgroup;
 
-    $log->info("_____ Begin $ftype Flair Alert $id [$agid] Cell $column $ctype _____");
+    $log->info("_____ Begin Flair Alert $id [$agid] Cell $column $ctype _____");
 
     my @items = $self->ensure_array($celldata); 
     my @flair = ();
@@ -334,7 +282,7 @@ sub flair_cell ($self, $alert, $ctype, $column, $celldata, $ftype) {
 
         if ( $ctype eq "normal" ) {
             my $clean                   = $self->clean_html($item);
-            my ($iedb, $iflair, $itext) = $self->extract_from_html($clean, $ftype);
+            my ($iedb, $iflair, $itext) = $self->extract_from_html($clean);
             push @flair, $iflair;
             push @text, $itext;
             $self->merge_edb($edb, $iedb);
@@ -349,7 +297,7 @@ sub flair_cell ($self, $alert, $ctype, $column, $celldata, $ftype) {
     my $update  = { flair => \@flair, text => \@text, edb => $edb };
 
 
-    $log->info("_____ End   $ftype Flair Alert $id [$agid] Cell $column $ctype _____");
+    $log->info("_____ End   Flair Alert $id [$agid] Cell $column $ctype _____");
     $log->trace("cell update: ",{filter => \&Dumper, value => $update});
     return $update;
 }
@@ -382,14 +330,11 @@ sub process_remoteflair ($self, $remoteflair) {
     return "success";
 }
 
-sub extract_from_html ($self, $htmltext, $ftype) {
+sub extract_from_html ($self, $htmltext) {
     my $io  = $self->io;
     my $log = $io->log;
 
-    my $regexes = ($ftype eq "core") ?
-        $self->core_regex->regex_set :
-        $self->udef_regex->regex_set;
-
+    my $regexes = $self->regex->regex_set;
     my $tree    = $self->build_html_tree($htmltext);
     my $text    = $self->generate_plain_text($tree);
     my $edb     = {};
@@ -437,12 +382,7 @@ sub walk_tree ($self, $element, $edb, $regexes, $level) {
 
 sub is_predefined_entity ($self, $child, $edb) {
     
-    # couple of things to check here:
-    # Flair is a 2 pass operation, 1st core, then user defined
-    # so if we detect a <span class="entity... we probably 
-    # have already flaired it and added it to entities, so let's 
-    # skip it.
-    # but other services might "pre-identify" flairable tags for 
+    # other services might "pre-identify" flairable tags for 
     # us, so we should capture those and convert them to real
     # "entities"
     my $log = $self->log;
@@ -721,20 +661,16 @@ sub contains_sparkline ($self, $data) {
     return undef;
 }
 
-sub flair_remoteflair ($self, $remoteflair, $ftype) {
+sub flair_remoteflair ($self, $remoteflair) {
     my $io  = $self->io;
     my $log = $self->log;
     my $id  = $remoteflair->id;
 
-    $log->info("_ Begin $ftype Flair RemoteFlair $id _");
+    $log->info("_ Begin Flair RemoteFlair $id _");
 
-    my $html                    = $self->get_remoteflair_html($remoteflair, $ftype);
+    my $html                    = $self->get_remoteflair_html($remoteflair);
     my $clean                   = $self->clean_html($html);
-    my ($edb, $flair, $text)    = $self->extract_from_html($clean, $ftype);
-
-    if ($ftype ne "core") {
-        $self->merge_remoteflair_edb($remoteflair, $edb);
-    }
+    my ($edb, $flair, $text)    = $self->extract_from_html($clean);
 
     my $update  = {
         remoteflair => $remoteflair,
@@ -743,18 +679,13 @@ sub flair_remoteflair ($self, $remoteflair, $ftype) {
         text        => $text,
     };
     
-    $log->info("... End   $ftype Flair RemoteFlair $id ...");
+    $log->info("... End   Flair RemoteFlair $id ...");
     $log->trace("Remoteflair update: ",{filter=>\&Dumper, value=>$update});
     return $update;
 }
 
-sub get_remoteflair_html ($self, $remoteflair, $ftype) {
-    return ($ftype ne "core") ? $remoteflair->results->{flair} : $remoteflair->html;
-}
-
-sub merge_remoteflair_edb ($self, $remoteflair, $edb) {
-    my $oldedb  = $self->convert_rf_entites($remoteflair);
-    $self->merge_edb($edb, $oldedb);
+sub get_remoteflair_html ($self, $remoteflair) {
+    return $remoteflair->html;
 }
 
 sub convert_rf_entities ($self, $remoteflair) {

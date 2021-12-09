@@ -6,9 +6,16 @@ use strict;
 use warnings;
 no warnings qw(experimental::signatures);
 use Data::Dumper;
+use Module::Runtime qw(require_module);
 use Array::Utils qw(:all);
-use lib '../../lib';
+use lib '../../../lib';
 use Scot::Mquery;
+
+has controller  => (
+    is          => 'ro',
+    isa         => 'Mojolicious::Controller',
+    required    => 1,
+);
 
 has mqm => (
     is          => 'ro',
@@ -88,16 +95,21 @@ around BUILDARGS => sub {
         my $params  = $req->params->to_hash // {};
         my $user    = $c->session('user') // 'unknown';
         my $groups  = $c->session('groups') // [];
+        my $collection  = $c->stash('thing');
+        my $id          = $c->stash('id') + 0;
+        my $subthing    = $c->stash('subthing') // '';
+        my $subid       = (defined $c->stash('subid')) ? $c->stash('subid')+0 : 0;
         my %args    = (
             params          => $params,
             json            => $json,
-            collection      => $c->stash('thing'),
-            id              => $c->stash('id') + 0,
-            subcollection   => $c->stash('subthing') // '',
-            subid           => $c->stash('subid') + 0,
+            collection      => $collection,
+            id              => $id,
+            subcollection   => $subthing,
+            subid           => $subid,
             user            => $user,
             groups          => $groups,
             ipaddr          => $c->tx->remote_address,
+            controller      => $c,
         );
         return $class->$orig(\%args);
     }
@@ -247,6 +259,12 @@ sub build_groups_to_assign ($self) {
     };
 }
 
+
+sub get_related_domain ($self, $name) {
+    my $class = "Scot::Domain::".ucfirst($name);
+    require_module($class);
+    return $class->new({mongo => $self->mongo});
+}
 
 
 1;

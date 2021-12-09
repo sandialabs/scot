@@ -82,6 +82,10 @@ has results => (
     required    => 1,
 );
 
+sub get_memo {
+    my $self    = shift;
+    return $self->game_name;
+}
 __PACKAGE__->meta->make_immutable;
 1;
 

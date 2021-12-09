@@ -25,4 +25,18 @@ sub upsert ($self, $value) {
     return $tag;
 }
 
+sub find_related ($self, $request, $type, $id) {
+    my @return  = ();
+    # find all tags linked to an alertgroup
+    if ( $type eq "alertgroup" ) {
+        my $target  = { id => $id, type => $type};
+        my @results = $self->get_related_domain('link')->find_linked_by_type('tag',$target);
+        return {
+            queryRecordCount    => scalar(@results),
+            totalRecordCount    => scalar(@results),
+            records             => \@results,
+        };
+    }
+}
+
 1;
