@@ -17,6 +17,33 @@ sub _build_collection ($self) {
 # to create an alert, you must provide an alertgroup
 # to attach the alert to.
 sub create ($self, $request) {
+    if ( ! $request->is_valid_create_request ) {
+        die "Invalid Create Request Data";
+    }
+
+    my $create_href = $request->get_create_href;
+    my $entry       = $self->collection->create($create_href);
+    my $ehref       = $entry->as_hash;
+    return $ehref;
+}
+
+sub process_create_result ($self, $result, $request) {
+    my $return  = {
+        code    => 200,
+        json    => {
+            id      => $result->{id},
+            action  => 'post',
+            thing   => 'entry',
+            status  => 'ok',
+        }
+    };
+    return $return;
+}
+
+sub find_related ($self, $type, $id) {
+    if ($type eq "Alertgroup") {
+        return $self->get_threaded();
+    }
 }
 
 sub get_threaded ($self, $request, $target) {

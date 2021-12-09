@@ -56,6 +56,10 @@ sub create ($self, $request) {
     my $agcol       = $self->collection;
     my @results;
 
+    # other domains used in creation
+    my $histdomain = $self->get_related_domain('history');
+    my $alertdom   = $self->get_related_domain('alert');
+
     $self->log->debug("create_href => ", {filter=>\&Dumper, value => $create_href});
 
     while ( my @subset = splice(@$data, 0, $limit) ) {
@@ -68,10 +72,12 @@ sub create ($self, $request) {
         $create_href->{open_count}      = scalar(@subset);
         $create_href->{closed_count}    = 0;
         $create_href->{promoted_count}  = 0;
+        my $histrec = {who => $request->user, what => "created"};
 
         my $alertgroup = $agcol->create($create_href);
+        $histdomain->add_history($alertgroup,  $histrec);
+
         my @ts         = $self->tag_source_bookkeep($alertgroup);
-        my $alertdom   = $self->get_related_domain('alert');
         my $alert_ids  = $alertdom->create_linked($alertgroup, \@subset);
 
         push @results, { 
@@ -178,11 +184,8 @@ sub process_get_one ($self, $request, $obj) {
 }
 
 sub update  ($self, $request){
-    my $log     = $self->log;
-    my $mongo   = $self->mongo;
     my $id      = $request->{id} + 0;
     my @results = $self->update_alertgroup($request);
-    $self->send_update_notices($id);
     my $render_results  = $self->process_update_results(\@results);
     return $render_results;
 }

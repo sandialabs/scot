@@ -6,7 +6,6 @@ use Moose;
 use experimental 'signatures';
 no warnings 'experimental';
 use Data::Dumper;
-use Module::Runtime qw(require_module);
 use Log::Log4perl qw(get_logger);
 use lib '../../lib';
 use Scot::Client::Messageq;
@@ -79,7 +78,7 @@ has permittables => (
     ] },
 );
 
-sub get_related_domain ($self, $name) {
+sub get_domain ($self, $name) {
     my $class = "Scot::Domain::".ucfirst($name);
     require_module($class);
     return $class->new({mongo => $self->mongo});
@@ -286,6 +285,7 @@ sub get_target_permisions ($self, $target) {
 sub tag_source_bookkeep ($self, $object) {
     my @results     = ();
     my $appearance  = $self->get_related_domain('appearance');
+    my $linkdomain  = $self->get_related_domain('link');
 
     foreach my $type (qw(tag source)) {
         my $domain  = $self->get_related_domain($type);
@@ -293,6 +293,7 @@ sub tag_source_bookkeep ($self, $object) {
         $aref = [$aref] if (ref($aref) ne "ARRAY");
         foreach my $ts (@$aref) {
             my $tsobj = $domain->upsert($ts);
+            my $link  = $linkdomain->link_objects($tsobj, $object);
             my $apobj = $appearance->create_ts_appearance(
                 $type, $ts, $tsobj, $object
             );

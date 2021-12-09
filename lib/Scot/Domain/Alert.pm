@@ -69,6 +69,38 @@ sub find_related ($self, $request, $type, $id) {
     return $return;
 }
 
+sub update ($self, $request) {
+    my $id  = $request->id + 0;
+    my $obj = $self->collection->find_iid($id);
+    
+    if ( ! defined $obj ) {
+        return { error => "alert $id not found" };
+    }
+    if ( ! $obj->is_permitted("modify", $request->{groups}) ) {
+        return { error => "insufficent priviledge to modify" };
+    }
 
+    my $update  = $request->get_update_href();
+    $self->log->debug("alert update is ",{filter=>\&Dumper, value => $update});
+    my $result  = try {
+        $obj->update({'$set' => $update});
+        return { updated => $id };
+    }
+    catch {
+        return { error => "failed updated of alert $id: $_" };
+    };
+    return $result;
+}
+
+sub get_related ($self, $request) {
+    my $relname = $request->{subcollection};
+    my $id      = $request->{id};
+    my $reldom  = $self->get_related_domain($relname);
+
+    if ( ! defined $reldom ) {
+        return { error => "unsupported related ite type $relname"};
+    }
+    return $reldom->find_related($request, 'alert', $id);
+}
 
 1;

@@ -2,13 +2,18 @@
 
 use strict;
 use warnings;
-use feature qw(signatures);
+use feature qw(signatures say);
 no warnings qw(experimental::signatures);
 use lib '../../../../lib';
 use Test::More;
 use Test::Deep;
 use Data::Dumper;
-use Scot::Env;
+use Log::Log4perl;
+# use Scot::Env;
+
+Log::Log4perl::init('../../../../etc/log.conf');
+
+
 
 require_ok("Scot::Flair3::Worker");
 my $worker  = Scot::Flair3::Worker->new(
@@ -16,17 +21,22 @@ my $worker  = Scot::Flair3::Worker->new(
     queue   => '/queue/flairtest',
     topic   => '/topic/flairtest',
 );
+
 my $stomp   = $worker->stomp;
+ok (defined $stomp, "stomp defined in worker");
+is (ref($stomp), 'Scot::Flair3::Stomp', "stomp is correct type");
 
 my $package = "Scot::Flair3::Engine";
 require_ok($package);
 
-my $engine      = Scot::Flair3::Engine->new(stomp => $stomp);
+say Dumper($stomp);
+
+my $engine      = Scot::Flair3::Engine->new({stomp => $stomp});
 ok(defined $engine, "engine initialized");
 
 # must create an $env obj otherwise get default singleton
 # because Scot::Collection uses $env.  need to fix that
-my $env = Scot::Env->new({ config_file => './test.cfg.pl'});
+# my $env = Scot::Env->new({ config_file => './test.cfg.pl'});
 
 my $extractor   = $engine->extractor;
 ok (defined $extractor, "Extractor initialized");
@@ -40,22 +50,13 @@ my $imgmunger   = $engine->imgmunger;
 ok (defined $imgmunger, "imgmunger initialized");
 is (ref($imgmunger), "Scot::Flair3::Imgmunger", "and the right type");
 
-my $core    = $engine->core_regex;
-ok (defined $core, "Core Regex initialized");
-is (ref($core), "Scot::Flair3::CoreRegex", "and the right type");
+my $regex    = $engine->regex;
+ok (defined $regex, "Core Regex initialized");
+is (ref($regex), "Scot::Flair3::Regex", "and the right type");
 
-my $udef    = $engine->udef_regex;
-ok (defined $udef, "Udef Regex initialized");
-is (ref($udef), "Scot::Flair3::UdefRegex", "and the right type");
+my $reload_message = { data    => { options => { reload => 1 } } };
 
-
-my $core_reload_message = { data    => { options => { reload => 'core' } } };
-my $udef_reload_message = { data    => { options => { reload => 'udef' } } };
-my $other_message       = { data => { options => {foo => 1}}};
-
-is ($engine->process_topic($core_reload_message), 'success', "Message is a core reload request");
-is ($engine->process_topic($udef_reload_message), 'success', "Message is a udef reload request");
-is ($engine->process_topic($other_message)->{error}, 'topic without reload option', "Message is not reload req");
+is ($engine->process_topic($reload_message), 'success', "Message is a reload request");
 
 my $non_html    = "Foo strikes again!";
 my $got         = $engine->clean_html($non_html);

@@ -27,6 +27,7 @@ use File::Path qw(make_path);
 use HTTP::Request;
 use LWP::UserAgent;
 use LWP::Protocol::https;
+use Log::Log4perl;
 use Meerkat;
 
 has queue   => (
@@ -66,23 +67,7 @@ has log => (
 );
 
 sub _build_log ($self) {
-    my $logname = "FlairLog";
-    my $logfile = $self->logfile;
-    my $level   = $self->loglevel;
-    my $log     = Log::Log4perl->get_logger($logname);
-    my $pattern = "%d %7p [%P] %15F{1}: %4L %m%n";
-    my $layout  = Log::Log4perl::Layout::PatternLayout->new($pattern);
-    my $appender= Log::Log4perl::Appender->new(
-        'Log::Log4perl::Appender::File',
-        name        => 'flair_log',
-        filename    => $logfile,
-        autoflush   => 1,
-        utf8        => 1,
-    );
-    $appender->layout($layout);
-    $log->add_appender($appender);
-    $log->level($level);
-    return $log;
+    return Log::Log4perl->get_logger('FlairLog');
 }
 
 has mongo   => (

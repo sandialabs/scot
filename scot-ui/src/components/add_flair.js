@@ -14,6 +14,8 @@ export const AddFlair = {
     setTimeout(
       function () {
         let entityResult = {};
+        console.log("Received Entity Data!");
+        console.log(entityData);
         for (let key in entityData) {
           entityResult[$("<span />", { html: key }).html()] = entityData[key];
         }

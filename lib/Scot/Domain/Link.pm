@@ -50,5 +50,64 @@ sub get_link_cursor_by_target ($self, $target, $filter=undef) {
     return $cursor;
 }
 
+sub find_linked_by_type ($self, $type_to_return, $target) {
+    my $query   = {
+        '$and'  => [
+            { vertices  => { '$elemMatch' => $target } },
+            { 'vertices.type' => $type_to_return },
+        ],
+    };
+    $self->log->debug("find_linked_by_type query ", {filter=>\&Dumper, value=>$query});
+    my $cursor  = $self->collection->find($query);
+    my @result  = ();
+    while ( my $link = $cursor->next ) {
+        my $href    = $link->as_hash;
+        push @result, $href;
+    }
+    return wantarray ? @result : \@result;
+}
+
+sub link_objects ($self, $obj1, $obj2, $options=undef) {
+    my $weight  = $options->{weight} // 1;
+    my $when    = $options->{when} // time();
+    my $context = $options->{context} // '';
+
+    my $vertex1 = $self->get_vertex($obj1);
+    my $memo1   = $obj1->get_memo();
+    my $vertex2 = $self->get_vertex($obj2);
+    my $memo2   = $obj2->get_memo();
+
+    my $query   = {
+        vertices    => {
+            '$all'  => [
+                { '$elemMatch'  => $vertex1 },
+                { '$elemMatch'  => $vertex2 },
+            ]
+        }
+    };
+    my $link    = $self->collection->find_one($query);
+
+    if (defined $link) {
+        # maybe increase weight?
+        return $link;   # link already exists;
+    }
+
+    my $data    = {
+        vertices    => [ $vertex1, $vertex2 ],
+        weight      => $weight,
+        when        => $when,
+        memo        => [ $memo1, $memo2 ],
+        context     => $context,
+    };
+    $link   = $self->collection->create($data);
+    return $link;
+}
+
+sub get_vertex ($self, $object) {
+    my $id      = $object->id + 0;
+    my $type    = $object->get_collection_name;
+    return { type => $type, id => $id };
+}
+
 
 1;

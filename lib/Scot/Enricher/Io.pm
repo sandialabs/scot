@@ -79,7 +79,9 @@ sub apply_enrichment_data {
             id      => $id,
         }
     };
-    $self->send_mq('/topic/scot', $msg);
+    # not sure we need to do this since this information is only 
+    # viewable on click
+    # $self->send_mq('/topic/scot', $msg);
 }
 
 sub send_mq {

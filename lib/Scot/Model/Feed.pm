@@ -152,6 +152,12 @@ has promotions   => (
 );
 
 
+sub get_memo {
+    my $self    = shift;
+    return $self->name;
+}
+
+
 __PACKAGE__->meta->make_immutable;
 1;
 

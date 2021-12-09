@@ -236,6 +236,10 @@ has ahrefs  => (
     traits      => [qw(Array)],
 );
 
+sub get_memo {
+    my $self    = shift;
+    return $self->subject;
+}
 
 =back
 

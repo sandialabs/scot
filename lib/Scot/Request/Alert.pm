@@ -15,6 +15,8 @@ has disallowed_update_fields => (
     isa         => 'ArrayRef',
     required    => 1,
     default     => sub {[qw(
+        created
+        data_with_flair
     )]},
 );
 
@@ -36,7 +38,6 @@ sub get_create_href ($self) {
 
     $create->{subject}      = $json->{subject} // 'unknown';
     $create->{groups}       = $self->build_groups_to_assign();
-    $create->{message_id}   = $self->build_message_id($json);
     $create->{columns}      = $self->build_columns($json);
     $create->{tag}          = $json->{tag};
     $create->{source}       = $json->{source};
@@ -49,36 +50,13 @@ sub get_update_href ($self) {
     my $update  = {};
 
     foreach my $field (keys %$json) {
-        if (! grep {/$field/} @{$self->disallowed_update_fields} ) {
+        if (! grep {/^$field$/} @{$self->disallowed_update_fields} ) {
             $update->{$field} = $json->{$field};
         }
     }
-    
     return $update;
 }
 
-sub build_message_id ($self, $json) {
-    my $msgid = $json->{message_id};
-    if (defined $msgid) {
-        return $msgid;
-    }
-    # create a probably unique message id
-    # based on strigified version of alerts passed it
-    return md5_hex(Dumper($json->{data}));
-}
-
-sub build_columns ($self, $json) {
-    my @columns  = ();
-    if ( defined $json->{columns} ) {
-        if ( scalar(@{$json->{columns}}) ) {
-            return $json->{columns};
-        }
-    }
-    foreach my $key (keys %{$json->{data}->[0]}) {
-        push @columns, $key;
-    }
-    return \@columns;
-}
 
 1;
 
