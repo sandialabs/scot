@@ -5,6 +5,7 @@ use strict;
 use warnings;
 
 use Data::Dumper;
+use String::Clean::XSS;
 use Moose;
 extends 'Scot::Email::Parser';
 
@@ -189,7 +190,7 @@ sub parse_rows {
             }
             my $cell    = $values[$i];
             my @children = map {
-                ref($_) eq "HTML::Element" ? $_->as_text : $_
+                ref($_) eq "HTML::Element" ? convert_XSS($_->as_text) : $_
             } $cell->content_list;
             $rowresult{$col_name} = \@children;
         }

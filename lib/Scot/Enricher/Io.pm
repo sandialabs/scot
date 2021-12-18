@@ -79,7 +79,7 @@ sub apply_enrichment_data {
             id      => $id,
         }
     };
-    $self->send_mq('/topic/scot', $msg);
+    # $self->send_mq('/topic/scot', $msg);
 }
 
 sub send_mq {

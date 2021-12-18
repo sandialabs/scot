@@ -224,7 +224,7 @@ sub invalid_data {
     }
 
     if ( $action ne "created" and $action ne "updated" ) {
-        $log->error("Invalid action for flair.  Dropping message");
+        $log->error("Invalid action for enricher.  Dropping message");
         return 1;
     }
 
