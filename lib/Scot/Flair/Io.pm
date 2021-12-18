@@ -159,7 +159,8 @@ sub update_alert {
     $self->link_entities($alert, $entities);
     $self->link_entities($agroup, $entities);
     $self->send_entities_to_enricher($entities);
-    $self->send_alert_updated_message($alert->id);
+    # not needed : causing double reflair
+    # $self->send_alert_updated_message($alert->id);
 
 }
 

@@ -460,7 +460,7 @@ sub get_alerts_in_alertgroup {
 
     while ( my $alert = $cursor->next ) {
         my $alert_href  = $alert->as_hash;
-        $log->debug({filter=>\&Dumper, value=>$alert_href});
+        $log->trace({filter=>\&Dumper, value=>$alert_href});
         push @alerts, $alert_href;
     }
     return wantarray ? @alerts : \@alerts;
@@ -480,7 +480,7 @@ sub update_alertgroup_with_bundled_alert {
     my $entitycol   = $mongo->collection('Entity');
 
     $log->debug("updating alertgroup with bundled alerts");
-    $log->debug("putdata = ",{filter=>\&Dumper, value=>$putdata});
+    $log->trace("putdata = ",{filter=>\&Dumper, value=>$putdata});
 
     my $alertgroup_id   = delete $putdata->{id};
     my $alerts_aref     = delete $putdata->{alerts};
@@ -497,7 +497,7 @@ sub update_alertgroup_with_bundled_alert {
 
         my $entity_aref = delete $alert->{entities};
 
-        $log->debug("Entities in alert: ",
+        $log->trace("Entities in alert: ",
                     {filter=>\&Dumper, value=>$entity_aref});
 
         my $alert_obj   = $alertcol->find_iid($alert_id);
@@ -523,7 +523,7 @@ sub update_alertgroup_with_bundled_alert {
     }
 
     my $cmd = { '$set'  => $putdata };
-    $log->debug("updating alertgroup with :",
+    $log->trace("updating alertgroup with :",
                 {filter=>\&Dumper,value=>$putdata});
     my $alertgroup  = $self->find_iid($alertgroup_id);
 
@@ -582,7 +582,7 @@ sub update_alertgroup_with_bundled_alert_old {
     }
 
     my $cmd = { '$set' => $putdata };
-    $log->debug("updating alertgroup with : ",{filter=>\&Dumper, value=>$cmd});
+    $log->trace("updating alertgroup with : ",{filter=>\&Dumper, value=>$cmd});
     if ( $alertgroup->update($cmd) ) {
         $log->debug("updated alertgroup");
     }
