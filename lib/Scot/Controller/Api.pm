@@ -166,7 +166,24 @@ sub pre_create_process {
     # hacky way to check for permissions being set explicitly, or if not
     # set them to the permissions of the user and as a last resort
     # env->default_groups
-    my @permissions = (qw(Alert Alertgroup Checklist Entry Event File Guide
+    $log->warn("PERM CHECK $collection");
+
+    if ( $collection eq "entry" ) {
+        my $mongo   = $env->mongo;
+        $log->debug("Entry Perm Check");
+        # entries should inherit from target
+        my $type    = $json->{target_type};
+        my $id      = $json->{target_id}+0;
+        my $tobj   = $mongo->collection(ucfirst($type))->find_iid($id);
+        my $target_groups   = $tobj->groups;
+        $log->debug("target_groups= ",{filter=>\&Dumper, value=>$target_groups});
+        if ( ! defined $json->{groups} and defined $target_groups) {
+            $json->{groups} = $target_groups;
+        }
+        return;
+    }
+
+    my @permissions = (qw(Alert Alertgroup Checklist Event File Guide
                           Incident Intel Signature));
     if ( grep {/$collection/i} @permissions ) {
         $log->debug("We have thing that should have permissions");
@@ -825,8 +842,42 @@ sub post_subthing_process {
 
     foreach my $href (@records) {
         $collection->filter_fields($req_href, $href);
+        if ($subthing eq "alert") {
+            # aggressively filter html from cells
+            $self->scrub_alert_html($href);
+        }
     }
     return \@records;
+}
+
+sub scrub_alert_html {
+    my $self        = shift;
+    my $href        = shift;
+    my $restricter  = $self->restricter;
+    my $log         = $self->env->log;
+
+    my $dwf = $href->{data_with_flair};
+
+    $log->debug("Attempting to cleanse ",{filter=>\&Dumper, value=>$dwf});
+
+    foreach my $col (keys %$dwf) {
+        my $data    = $dwf->{$col};
+        if ( ref($data) eq "ARRAY" ) {
+            for ( my $i = 0; $i < scalar(@$data); $i++ ) {
+                my $item  = $data->[$i];
+                $log->debug("cleaning: $item");
+                my $clean = $restricter->clean($item);
+                $data->[$i] = $clean;
+                $log->debug("cleaned as: ".$data->[$i]);
+            }
+        }
+        else {
+            my $clean   = $restricter->clean($data);
+            $dwf->{$col} = $clean;
+        }
+    }
+
+    $log->debug("Cleaned Row = ",{filter=>\&Dumper, value=>$href});
 }
 
 
