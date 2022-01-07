@@ -122,10 +122,12 @@ sub flair {
         $log->info("TIME == $elapsed secs :: ".ref($object)."(".$object->id.")");
     }
     else {
-        $log->error("Failed to retriev object from ", 
+        $log->error("Failed to retrieve object from ", 
                     { filter => \&Dumper, value => $message });
+        return undef;
     }
     $log->info("--- END --- FLAIR --- ENGINE ---");
+    return 1;
 }
 
 sub flair_entry {
@@ -177,28 +179,39 @@ sub extract_from_entry {
     my $self    = shift;
     my $entry   = shift;
     my $log     = $self->env->log;
-    my $scotio  = $self->scotio;
     my $html    = $self->get_entry_html($entry);
-
-    my $edb     = {};   # extracted entities
-    my $flair   = '';   # HTML with wrapped entities
-    my $text    = '';   # plain text representation of entry
-
     if (defined $html) {
-        my $tree = $self->build_html_tree($html);
-        $text   = $self->generate_plain_text($tree);
-        my $node_count  = $tree->descendents;
-        $scotio->update_worker_status($$, 'entry', $entry->id, '0', $node_count, 0);
-        # find entities, set edby and alter $tree as side effects
-        my $wstat   = { type => 'entry', id => $entry->id, tnc => $node_count};
-        $self->walk_tree($tree, $edb, $wstat);
-        $flair  = $self->generate_flair_html($tree);
-
-        $tree->delete;  # prevent a memory leak that can occur with this library
+        return $self->extract_from_html($html, $entry->id);
     }
     else {
         $log->error("Entry ".$entry->id." did not contain HTML!");
     }
+    return {}, '', '';
+}
+
+
+sub extract_from_html {
+    my $self    = shift;
+    my $html    = shift;
+    my $entry_id    = shift // 0;
+    my $scotio  = $self->scotio;
+    my $log     = $self->env->log;
+    my $edb     = {};   # extracted entities
+    my $flair   = '';   # HTML with wrapped entities
+    my $text    = '';   # plain text representation of entry
+
+    my $tree = $self->build_html_tree($html);
+    $text   = $self->generate_plain_text($tree);
+    my $node_count  = $tree->descendents;
+    $scotio->update_worker_status($$, 'entry', $entry_id, '0', $node_count, 0);
+    # find entities, set edby and alter $tree as side effects
+    my $wstat   = { type => 'entry', id => $entry_id, tnc => $node_count};
+    $self->walk_tree($tree, $edb, $wstat);
+    $log->debug("tree is = ",{filter=>\&Dumper, value=>$tree});
+    $flair  = $self->generate_flair_html($tree);
+    $log->debug("flair is now = ",{filter=>\&Dumper, value=>$flair});
+
+    $tree->delete;  # prevent a memory leak that can occur with this library
     return $edb, $flair, $text;
 }
 
@@ -280,6 +293,8 @@ sub walk_tree {
 
         my $child   = $content[$index];
 
+        $log->trace("child = ",{filter=>\&Dumper, value=>$child});
+
         if ( $self->is_not_leaf_node($child) ) {
 
             $self->fix_weird_html($child); # splunk messes up ipaddr, this fixes
@@ -291,13 +306,16 @@ sub walk_tree {
             push @new, $child;
         }
         else {
-            my $clean = (utf8::is_utf8($child)) ? encode("UTF-8",$child) : $child;
+            # my $clean = (utf8::is_utf8($child)) ? encode("UTF-8",$child) : $child;
+            my $clean = $child;
+            $log->debug("clean = ",{filter=>\&Dumper, value=>$clean});
             $log->debug($address." "x$spaces." parsing leaf node");
             $log->debug("child text = ".$clean);
             push @new, $extractor->parse($address, $edb, $clean);
         }
     }
     $log->debug($address." "x$spaces." replacing element with new content");
+    $log->trace("new = ",{filter=>\&Dumper, value => \@new});
     $element->splice_content(0, scalar(@content), @new);
 }
 
@@ -332,7 +350,7 @@ sub is_not_user_defined_entity {
 sub not_external_defined_entity_class {
     my $self    = shift;
     my $class   = shift;
-    my @edec    = (qw(uderdef ghostbuster));
+    my @edec    = (qw(userdef ghostbuster));
     return 1 if ( ! defined $class);
     return ! grep {/$class/} @edec;
 }
@@ -556,7 +574,7 @@ sub process_sentinel {
             'target', '_blank',
         );
         $anchor->push_content($image);
-        push @new, $anchor->as_HTML;
+        push @new, $anchor->as_HTML('');
     }
     return wantarray ? @new : \@new;
 }
@@ -668,8 +686,8 @@ sub has_splunk_ipv6_pattern {
     my @c       = @_;
     my $log     = $self->env->log;
 
-    return undef if ( ! ref($c[$i]) );
     $log->trace("c[$i] = ".$c[$i]->tag);
+    return undef if ( ! ref($c[$i]) );
     return undef if ( $c[$i]->tag   ne 'span');
     return undef if ( $c[$i+1]      ne ':');
     return undef if ( $c[$i+2]->tag ne 'span');
@@ -707,14 +725,16 @@ sub generate_flair_html {
 
     if ( scalar(@content) == 1 and ref($content[0]) and $content[0]->tag eq "div" ) {
         $log->info("content was a single div, returning that element");
-        return $content[0]->as_HTML;
+        $log->debug("content = ".$content[0]->as_HTML('<>'));
+        return $content[0]->as_HTML('<>');
     }
 
     $log->debug("creating holder div");
+    $log->trace("content = ",{filter =>\&Dumper, value => \@content});
 
     my $div = HTML::Element->new('div');
     $div->push_content(@content);
-    return $div->as_HTML;
+    return $div->as_HTML('');
 }
 
 sub generate_plain_text {

@@ -29,7 +29,7 @@ override api_create => sub {
     my $self    = shift;
     my $href    = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
     my $mongo   = $self->meerkat;
 
     $log->trace("Custom create in Scot::Collection::Handler");
@@ -61,7 +61,7 @@ override api_list => sub {
         return ($cursor, $count);
     }
 
-    $self->env->log->debug("match is ",{filter=>\&Dumper, value=>$match});
+    $self->log->debug("match is ",{filter=>\&Dumper, value=>$match});
 
     my $cursor  = $self->find($match);
     my $total   = $self->count($match);
@@ -93,9 +93,9 @@ override api_list => sub {
 sub get_handler {
     my $self    = shift;
     my $env     = $self->env;
-    my $when    = shift // $env->now();
+    my $when    = shift // $self->now();
     
-    $when = $env->now() if ($when == 1);
+    $when = $self->now() if ($when == 1);
 
     my $match   = {
         start   => { '$lte' => $when },

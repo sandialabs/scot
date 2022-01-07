@@ -84,6 +84,11 @@ has when  => (
     default     => sub { time(); },
 );
 
+sub get_memo {
+    my $self    = shift;
+    return '';
+}
+
 __PACKAGE__->meta->make_immutable;
 1;
 

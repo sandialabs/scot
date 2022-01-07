@@ -32,7 +32,7 @@ override api_create => sub {
     my $self    = shift;
     my $request = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $log->trace("Custom create in Scot::Collection::Product");
 
@@ -149,7 +149,7 @@ sub get_promotion_obj {
     my $object  = shift; # an Intel
     my $req     = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
     my $request = $req->{request};
 
     my $promo_id = $request->{json}->{promote} //

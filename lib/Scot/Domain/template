@@ -1,0 +1,13 @@
+package Scot::Domain::Foo;
+
+use strict;
+use warnings;
+use Moose;
+use experimental qw(signatures);
+no warnings qw(experimental::signatures);
+
+use Data::Dumper;
+
+extends 'Scot::Domain';
+
+1;

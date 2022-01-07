@@ -95,6 +95,10 @@ sub _build_bodyb64 {
     return encode_base64($body);
 }
 
+sub get_memo {
+    my $self    = shift;
+    return '';
+}
 
 __PACKAGE__->meta->make_immutable;
 1;

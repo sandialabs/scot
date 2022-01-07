@@ -13,7 +13,7 @@ override api_create => sub {
     my $self    = shift;
     my $request = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $log->trace("Create Source from API");
 
@@ -38,7 +38,7 @@ override api_create => sub {
         $self->meerkat->collection("History")->add_history_entry({
             who     => "api",
             what    => "source $value created",
-            when    => $env->now,
+            when    => $self->now,
             target => { id => $source_obj->id, type => "source" } ,
         });
     }
@@ -76,7 +76,7 @@ sub add_source_to {
     my $sources = shift;
 
     my $env = $self->env;
-    my $log = $env->log;
+    my $log = $self->log;
     my $mongo   = $self->meerkat;
 
     if ( ref($sources) ne "ARRAY" ) {
@@ -99,7 +99,7 @@ sub add_source_to {
             type    => "source",
             value   => $source,
             apid    => $source_obj->id,
-            when    => $env->now,
+            when    => $self->now,
             target  => {
                 type    => $thing,
                 id      => $id,

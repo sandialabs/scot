@@ -410,7 +410,8 @@ sub post_list_process {
     my $self        = shift;
     my $cursor      = shift;
     my $req_href    = shift;
-    my $log         = $self->env->log;
+    my $env         = $self->env;
+    my $log         = $env->log;
     my @records     = ();
     my $thing       = $req_href->{collection};
     my $entrycol    = $self->env->mongo->collection('Entry');
@@ -540,11 +541,10 @@ This function creates a stat record for view count.
 
 =cut
 
-
 sub get_one {
     my $self    = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $log->debug("GET ONE");
 
@@ -702,14 +702,14 @@ sub refresh_entity_enrichments {
         }
     }
     else {
-        $self->env->log->debug('No entity updates');
+        $self->log->debug('No entity updates');
     }
 }
 
 sub download_file {
     my $self    = shift;
     my $object  = shift;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
 
     $log->debug("Downloading ".$object->filename);
     $log->debug("from ".$object->directory);
@@ -780,7 +780,7 @@ This function does not create any record to the audit collection
 sub get_subthing {
     my $self    = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
     my $mongo   = $env->mongo;
 
     $log->debug("GET SUBTHING");
@@ -824,7 +824,7 @@ sub post_subthing_process {
     my $req_href    = shift;
     my $cursor      = shift;
     my $subthing    = $req_href->{subthing};
-    my $log         = $self->env->log;
+    my $log         = $self->log;
 
     if ( $subthing eq "entry" ) {
         my @records    = $self->thread_entries($cursor);
@@ -921,7 +921,7 @@ This function creates a stat record for "$collection updated"
 sub update {
     my $self    = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $log->debug("UPDATE");
 
@@ -1057,7 +1057,17 @@ sub pre_update_process {
         my $entity_aref = delete $req->{request}->{json}->{entities};
         $log->trace("entities aref is ",{filter=>\&Dumper, value=>$entity_aref});
         my $collection  = $self->env->mongo->collection('Entity');
-        $collection->update_entities($object, $entity_aref);
+        my ($caref, $uaref, $earef) = $collection->update_entities($object, $entity_aref);
+        foreach my $eid (@$earef) {
+            $self->env->mq->send('/queue/enricher', {
+                action  => 'updated',
+                data    => {
+                    who     => 'scot-api',
+                    type    => 'entity',
+                    id      => $eid,
+                }
+            });
+        }
     }
     
     # if the object does tags or source, we need to adjust the appearances collection

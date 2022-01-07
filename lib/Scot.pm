@@ -8,6 +8,7 @@ use Mojo::Base 'Mojolicious';
 use Mojo::Cache;
 use Scot::Env;
 use Scot::HtmlRestricter;
+use MojoX::Log::Log4perl;
 use Scot::Util::CSRFProtection;
 use Data::Dumper;
 
@@ -21,14 +22,20 @@ It is a child of Mojo::Base and therefore is a Mojolicious based app.
 
 =cut
 
-
 sub startup {
     my $self    = shift;
     $ENV{MOJO_MAX_MESSAGE_SIZE} = 67108864; # 64 MB
     $self->mode('development'); # remove when in prod
 
-    my $config_file  = $ENV{'scot_config_file'} // "/opt/scot/etc/scot.cfg.pl";
+    # mojo 8 changed the logging.  trying to go around it.
+    my $logconfig   = $ENV{'scot_log_conf_file'} // '/opt/scot/etc/log.conf';
+    #Log::Log4perl::init($logconfig);
+    #my $slog = Log::Log4perl->get_logger('Scot');
+    #$self->attr     ( slog => sub {$slog} );
+    #$self->helper   ( slog => sub { shift->app->env } );
+    $self->log( MojoX::Log::Log4perl->new($logconfig));
 
+    my $config_file  = $ENV{'scot_config_file'} // "/opt/scot/etc/scot.cfg.pl";
     my $env     = Scot::Env->new(
         config_file => $config_file,
     );
@@ -42,11 +49,6 @@ sub startup {
 
     my $cache   = Mojo::Cache->new(max_keys => 100);
     $self->helper   ('cache'  => sub { $cache } );
-
-    # mojo 8 changed the logging.  trying to go around it.
-    my $slog = $env->log;
-    $self->attr     ( slog => sub {$slog} );
-    $self->helper   ( slog => sub { shift->app->env } );
 
 
     $self->secrets( $env->mojo_defaults->{secrets} );
@@ -89,9 +91,9 @@ sub startup {
         do {
             $Log::Log4perl::caller_depth++;
             no warnings 'uninitialized';
-            $slog->warn(@_);
+            $self->app->log->warn(@_);
             unless ( grep { /uninitialized/ } @_ ) {
-                $slog->warn(longmess());
+                $self->app->log->warn(longmess());
             }
             $Log::Log4perl::caller_depth--;
         }
@@ -102,7 +104,7 @@ sub startup {
             return;
         }
         $Log::Log4perl::caller_depth++;
-        $slog->fatal(@_);
+        $self->app->log->fatal(@_);
         die @_;
     };
 
@@ -124,6 +126,10 @@ get JSON that was submitted with the web request
         my $req     = $self->req;
         return $req->json;
     });
+
+    # my $domain_map  = $self->build_domain_map;
+    # $self->attr     ( domain_map => sub { $domain_map } );
+    # $self->helper   ( domain_map => sub { shift->app->domain_map } );
 
 =pod
 
@@ -191,7 +197,7 @@ relies on the browser BasicAuth popup.
     $r   ->get('/')
             ->to( cb => sub {
                 my $c = shift;
-                $slog->trace("Hitting Static /");
+                $self->app->log->trace("Hitting Static /");
                 $c->reply->static('index.html');
             });
 
@@ -468,6 +474,10 @@ relies on the browser BasicAuth popup.
             ->to    ('controller-api#create')
             ->name  ('create');
 
+    $scot   ->post  ('/api/v3/:thing')
+            ->to    ('controller-api2#create')
+            ->name  ('create3');
+
     $scot   ->get   ('/api/v2/whoami')
             ->to    ('controller-api#whoami')
             ->name  ('whoami');
@@ -504,6 +514,9 @@ relies on the browser BasicAuth popup.
     $scot   ->get   ('/api/v2/:thing/#id')
             ->to    ('controller-api#get_one')
             ->name  ('get_one');
+    $scot   ->get   ('/api/v3/:thing/#id')
+            ->to    ('controller-api2#get_one')
+            ->name  ('get_one3');
 
 =pod
 
@@ -561,6 +574,9 @@ The params passed to this route allow you to filter the list returned to you.
     $scot   ->get   ('/api/v2/:thing')
             ->to    ('controller-api#list')
             ->name  ('list');
+    $scot   ->get   ('/api/v3/:thing')
+            ->to    ('controller-api2#list')
+            ->name  ('list3');
 
 =pod
 
@@ -625,6 +641,9 @@ Incident subthings
     $scot   ->get   ('/api/v2/:thing/:id/:subthing')
             ->to    ('controller-api#get_subthing')
             ->name  ('get_subthing');
+    $scot   ->get   ('/api/v3/:thing/:id/:subthing')
+            ->to    ('controller-api2#get_related')
+            ->name  ('get_subthing3');
 
 =pod
 
@@ -650,6 +669,9 @@ Incident subthings
     $scot   ->put   ('/api/v2/:thing/:id')
             ->to    ('controller-api#update')
             ->name  ('update');
+    $scot   ->put   ('/api/v3/:thing/:id')
+            ->to    ('controller-api2#update')
+            ->name  ('update3');
 
 =pod
 
@@ -715,8 +737,12 @@ other events.
     $scot   ->delete ('/api/v2/:thing/:id')
             ->to    ('controller-api#delete')
             ->name  ('delete');
+    $scot   ->delete ('/api/v3/:thing/:id')
+            ->to    ('controller-api2#delete')
+            ->name  ('delete3');
 
-    $self->log_startup($slog);
+
+    $self->log_startup($self->app->log);
 
 }
 
@@ -735,6 +761,7 @@ sub log_startup {
     );
     # $self->env->dump_env;
 }
+
 
 1;   
 

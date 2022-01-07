@@ -47,7 +47,7 @@ override api_create => sub {
     my $self        = shift;
     my $req_href    = shift;
     my $env         = $self->env;
-    my $log         = $env->log;
+    my $log         = $self->log;
 
     $log->debug("creating alert from api");
 
@@ -69,7 +69,7 @@ sub linked_create {
     my $self    = shift;
     my $href    = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $log->debug("in linked_create for alert");
 
@@ -193,7 +193,7 @@ sub api_subthing {
     my $id          = $req->{id}+0;
     my $subthing    = $req->{subthing};
 
-    $self->env->log->debug("api_subthing: /$thing/$id/$subthing");
+    $self->log->debug("api_subthing: /$thing/$id/$subthing");
 
     if ( $subthing eq "entry" ) {
         return $mongo->collection('Entry')->get_entries_by_target({
@@ -265,7 +265,7 @@ sub update_alert_status {
     my $status  = shift;
     my $targets = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
     my @ids     = ();
 
     $log->debug("attempting updating alert status");
@@ -308,7 +308,7 @@ sub update_alert_parsed {
     my $status  = shift;
     my $targets = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
     $status     += 0;
     my @ids     = ();
 
@@ -355,7 +355,7 @@ sub update_alert_parsed {
 #     my $subthing    = shift;
 #     my $env     = $self->env;
 #     my $mongo   = $self->meerkat;
-#     my $log     = $env->log;
+#     my $log     = $self->log;
 # 
 #     $id += 0;
 # 

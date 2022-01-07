@@ -1,17 +1,17 @@
 package Scot::Domain::Event;
 
-use Data::Dumper;
-use Tie::IxHash;
+use Moose;
 use experimental 'signatures';
 use strict;
 use warnings;
-use Moose;
+no warnings qw(experimental::signatures);
+use Data::Dumper;
+use Tie::IxHash;
 
 extends 'Scot::Domain';
 
 sub create_from_post ($self, $request) {
     my $log     = $self->env->log;
-    my @results = ();
 
     $log->trace(__PACKAGE__." create : ", {filter => \&Dumper, value => $request});
 

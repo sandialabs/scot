@@ -79,6 +79,11 @@ sub apply_enrichment_data {
             id      => $id,
         }
     };
+<<<<<<< HEAD
+=======
+    # not sure we need to do this since this information is only 
+    # viewable on click
+>>>>>>> d22accfc26acd0c697113eedfebcef81df799e43
     # $self->send_mq('/topic/scot', $msg);
 }
 

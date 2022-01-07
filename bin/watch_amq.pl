@@ -6,50 +6,38 @@ use v5.16;
 use strict;
 use warnings;
 
-use AnyEvent::STOMP::Client;
+use Net::Stomp;
 use Scot::Env;
 use JSON;
 use Data::Dumper;
 use DateTime;
 
-my $stomp   = AnyEvent::STOMP::Client->new("54.213.102.224",80);
+my $stomp   = Net::Stomp->new({
+    hostname    => 'localhost',
+    port        => 61613,
+    ack         => 'client',
+});
 
 $stomp->connect();
-$stomp->on_connected(
-    sub { 
-        my $stomp   = shift;
-        $stomp->subscribe('/topic/scot');
-
-    }
-);
-
-$stomp->on_error(
-    sub {
-        say "ERROR";
-        say Dumper(\@_);
-    }
-);
-
-$stomp->on_message(
-    sub {
-        my ( $stomp, $header, $body ) = @_;
-
-        my $json = decode_json $body;
-
-        my $dt  = DateTime->now();
-       
-        my $date    = $dt->ymd . " ". $dt->hms;
-        my $dl  = length($date);
-
-        my $nd = 80 - $dl - 10;
-
-        say "-"x10 . $dt->ymd . " ". $dt->hms. "-"x$nd;
-        say Dumper($json);
-        say "-"x80;
-    }
-);
-say "===== Watching ActiveMQ =========";
-AnyEvent->condvar->recv;
+$stomp->subscribe({
+    destination => '/topic/scot',
+    ack         => 'client',
+    'activemq.prefetchSize' => 1,
+});
 
 
+while (1) {
+    say "waiting...";
+    my $frame   = $stomp->receive_frame;
+    say "------------------- FRAME START ------------------";
+    my $headers = $frame->headers;
+    my $body    = $frame->body;
+    my $json    = decode_json($body);
+
+    say Dumper($headers);
+    say Dumper($json);
+
+    $stomp->ack({frame => $frame});
+    say "------------------- FRAME END   ------------------";
+}
 

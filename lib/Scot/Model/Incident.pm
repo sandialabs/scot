@@ -139,6 +139,10 @@ has data    => (
     default     => sub { {} },
 );
 
+sub get_memo {
+    my $self    = shift;
+    return $self->subject;
+}
 __PACKAGE__->meta->make_immutable;
 1;
 

@@ -134,6 +134,10 @@ has [qw(md5 sha1 sha256)] => (
     default     => 'not calculated',
 );
 
+sub get_memo {
+    my $self    = shift;
+    return $self->filename;
+}
 __PACKAGE__->meta->make_immutable;
 1;
 

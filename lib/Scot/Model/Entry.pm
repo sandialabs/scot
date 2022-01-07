@@ -105,6 +105,10 @@ has parent  => (
     default     => 0,
 );
 
+sub get_memo {
+    my $self    = shift;
+    return '';
+}
 
 __PACKAGE__->meta->make_immutable;
 1;

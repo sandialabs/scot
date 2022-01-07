@@ -79,6 +79,10 @@ has type => (
     default     => 'handler',
 );
 
+sub get_memo {
+    my $self    = shift;
+    return $self->username;
+}
 __PACKAGE__->meta->make_immutable;
 1;
 
