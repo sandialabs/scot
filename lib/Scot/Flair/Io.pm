@@ -164,36 +164,6 @@ sub update_alert {
 
 }
 
-# sub update_alert_x {
-#     my $self    = shift;
-#     my $alertid = shift;
-#     my $results = shift;
-#     my $edb     = $results->{$alertid}->{entities};
-#     my $env     = $self->env;
-#     my $mongo   = $env->mongo;
-#     my $log     = $env->log;
-# 
-#     $log->debug("updating alert $alertid");
-#     $log->trace("EDB = ",{filter=>\&Dumper, value=>$edb});
-# 
-#     my $data  = { parsed => 1 };
-# 
-#     foreach my $column (keys %{$results->{$alertid}}) {
-#         next if $column eq "entities";
-#         $data->{data_with_flair}->{$column} = $results->{$alertid}->{$column}->{flair};
-#     }
-# 
-#     my $update  = { '$set' => $data };
-#     my $alert   = $self->get_object('alert', $alertid);
-# 
-#     try { $alert->update($update) }
-#     catch { $log->error("Failed to update Alert $alertid"); };
-# 
-#     $self->link_entities($alert, $edb);
-#     $self->send_entities_to_enricher($edb);
-#     $self->send_alert_updated_message($alertid);
-# }
-
 sub send_entities_to_enricher {
     my $self    = shift;
     my $edb     = shift;

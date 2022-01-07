@@ -112,6 +112,12 @@ has memo => (
 );
 
 
+
+sub get_memo {
+    my $self    = shift;
+    return $self->context;
+}
+
 __PACKAGE__->meta->make_immutable;
 1;
 

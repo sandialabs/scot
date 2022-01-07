@@ -178,11 +178,38 @@ sub process_frame {
         $stomp->ack({frame => $frame});
     }
     catch {
-        $stomp->nack({frame => $frame});
+        $log->error("!!!! ");
         $log->error("!!!! Error Caught: $_ ");
         $log->error("!!!! Frame = ",{filter=>\&Dumper, value=>$frame});
-        die "Error: $_";
+        $log->error("!!!! ");
+        # die "Error: $_";
+        # $stomp->nack({frame => $frame});
+        # when we have an error, clone data of message, add error field/count
+        $self->handle_error($frame, $_);
     };
+}
+
+sub handle_error {
+    my $self    = shift;
+    my $frame   = shift;
+    my $error   = shift;
+    my $log     = $self->env->log;
+    my $data    = $self->decode_frame($frame);
+    my $stomp   = $self->stomp;
+    $data->{body}->{errors}->{$error}++;
+
+    if ($data->{body}->{errors}->{$error} > 5) {
+        $log->error("--------");
+        $log->error(" Error: $error ");
+        $log->error(" exceeded retry threshold.");
+        $log->error(" Frame = ",{filter=>\&Dumper, value=>$frame});
+        $log->error("--------");
+        $stomp->ack({frame => $frame});
+        return;
+    }
+    $stomp->ack({frame => $frame});
+    $log->error("Resubmitting to ".$self->queue);
+    $self->io->send_mq($self->queue, $data->{body});
 }
 
 sub decode_frame {

@@ -1,15 +1,22 @@
 package Scot::Domain::Alertgroup;
 
-use Data::Dumper;
-use experimental 'signatures';
 use strict;
 use warnings;
-use Storable qw(dclone);
 use Moose;
+use experimental 'signatures';
+no warnings qw(experimental::signatures);
+use Storable qw(dclone);
+use Data::Dumper;
+use lib '../../../lib';
+use Scot::Domain::Alert;
 
 extends 'Scot::Domain';
 
-has max_alerts_per_alergroup => (
+sub _build_collection ($self) {
+    return $self->mongo->collection('Alertgroup');
+}
+
+has max_alerts_per_alertgroup => (
     is      => 'ro',
     isa     => 'Int',
     required=> 1,
@@ -30,131 +37,72 @@ has numfields   => (
     default     => sub { [ qw(id views alert_count) ] },
 );
 
-sub create_from_post ($self, $request) {
-    my $log     = $self->log;
-    my @results = ();
 
-    $log->trace(__PACKAGE__." create : ",{filter=>\&Dumper, value => $request});
 
-    my @alertgroups = $self->validate_alertgroup_request($request);
-
-    foreach my $ag_request (@alertgroups) {
-        push @results, $self->create_alertgroup($ag_request);
+sub create ($self, $request) {
+    if ( ! $request->is_valid_create_request ) {
+        die "Invalid Create Request Data";
     }
+    my $create_href = $request->get_create_href;
+    my $subject     = delete $create_href->{subject};
 
-    my $render_result   = $self->process_create_results(\@results);
-    return $render_result;
+    my $data        = $request->json->{data};
+    my $alert_count = scalar(@$data);
+    my $limit       = $self->max_alerts_per_alertgroup;
+    my $parts       = int($alert_count/$limit);
+    my $remainder   = $alert_count % $limit;
+    $parts++ if ($remainder != 0);
+    my $page        = 1;
+    my $agcol       = $self->collection;
+    my @results;
+
+    # other domains used in creation
+    my $histdomain = $self->get_related_domain('history');
+    my $alertdom   = $self->get_related_domain('alert');
+
+    $self->log->debug("create_href => ", {filter=>\&Dumper, value => $create_href});
+
+    while ( my @subset = splice(@$data, 0, $limit) ) {
+
+        $create_href->{subject} = ($parts > 1) ? 
+            "$subject (part $page of $parts)" :
+            $subject;
+
+        $create_href->{alert_count}     = scalar(@subset);
+        $create_href->{open_count}      = scalar(@subset);
+        $create_href->{closed_count}    = 0;
+        $create_href->{promoted_count}  = 0;
+        my $histrec = {who => $request->user, what => "created"};
+
+        my $alertgroup = $agcol->create($create_href);
+        $histdomain->add_history($alertgroup,  $histrec);
+
+        my @ts         = $self->tag_source_bookkeep($alertgroup);
+        my $alert_ids  = $alertdom->create_linked($alertgroup, \@subset);
+
+        push @results, { 
+            alertgroup  => $alertgroup->id,
+            alerts      => $alert_ids,
+        };
+    }
+    return wantarray ? @results : \@results;
 }
 
-=item <process_create_results($result_href)>
-
-Take the results from create_alertgroup($ag_request_href) and 
-format them into an href that is sent to the client
-
-=cut
-
-sub process_create_results ($self, $results) {
-    my $mongo       = $self->env->mongo;
-    my $log         = $self->env->log;
-    my $mq          = $self->env->mq;
-    my $statcol     = $mongo->collection('Stat');
-    my $renderdata  = {
-        thing   => 'alertgroup',
-        action  => 'post',
+sub process_create_result ($self, $result, $request) {
+    # 1. send notifications
+    foreach my $agresult (@$result) {
+        $self->amq_send_create(
+            'alertgroup', $agresult->{alertgroup}, $request->user
+        );
+    }
+    # 2. build return
+    my $return  = {
+        code    => 202,
+        json    => $result,
     };
-
-    my $error_count = 0;
-
-    foreach my $res (@$results) {
-        if ( defined $res->{error} ) {
-            $error_count++;
-            push @{$renderdata->{errors}}, $res->{error};
-            next;
-        }
-        push @{$renderdata->{id}}, $res->{alertgroup};
-        push @{$renderdata->{alerts}}, @{$res->{alerts}};
-    }
-    if ( $error_count == 0 ) {
-        $renderdata->{status} = 'ok';
-    }
-    elsif ( $error_count eq scalar(@$results) ) {
-        $renderdata->{status} = 'failed';
-    }
-    else {
-        $renderdata->{status} = 'partial_success';
-    }
-    return $renderdata;
+    return $return;
 }
 
-sub create_alertgroup ($self, $ag_request) {
-    my $mongo       = $self->mongo;
-    my $log         = $self->log;
-    my $mq          = $self->env->mq;
-    my @results     = ();
-    my $agcol       = $mongo->collection('Alertgroup');
-    my $alertcol    = $mongo->collection('Alert');
-    my $alertscreated   = 0;
-
-    if ( ! defined $ag_request->{owner} ) {
-        $ag_request->{owner} = 'unknown';
-    }
-
-    my $alertgroup  = $agcol->create($ag_request);
-    if ( ! defined $alertgroup ) {
-        $log->error("Failed to create alertgoup with data: ",
-                    { filter => \&Dumper, value => $ag_request });
-        return { error => 'Failed to create Alertgroup' };
-    }
-
-    my $agid    = $alertgroup->id;
-    my $data    = $alertgroup->data;
-    my $result  = {
-        alertgroup  => $agid,
-    };
-
-    foreach my $datum (@$data) {
-
-        my $alert   = $alertcol->create({
-            data        => $datum,
-            subject     => $alertgroup->subject,
-            alertgroup  => $agid,
-            columns     => $alertgroup->columns,
-            owner       => $alertgroup->owner,
-            groups      => $alertgroup->groups,
-            status      => 'open',
-        });
-        if ( defined $alert ) {
-            $alertscreated++;
-        }
-        push @{$result->{alerts}}, $alert->id;
-    }
-
-    $alertgroup->update({
-        '$set'  => {
-            open_count      => $alertscreated,
-            closed_count    => 0,
-            promoted_count  => 0,
-            alert_count     => $alertscreated,
-        }
-    });
-    $result->{stats} = [
-        'alertgroup created' => 1,
-        'alert created'      => $alertscreated,
-    ];
-    $result->{mq_message}   = [{
-        queues  => ["/topic/scot", "/queue/flair" ],
-        message => {
-            action  => 'updated',
-            data    => {
-                who     => $ag_request->{user},
-                type    => 'alertgroup',
-                id      => $agid,
-            },
-        }
-    }];
-
-    return $result;
-}
 
 sub list  ($self, $request){
     my $log     = $self->log;
@@ -163,67 +111,81 @@ sub list  ($self, $request){
 
     my ($query, $options)   = $self->build_mongo_query($request);
     
-    $query->{'data.groups.read'} = { '$in' => $request->{groups} };
+    $query->{'groups.read'} = { '$in' => $request->{groups} };
 
-    ($results, $totalrecs)  = $self->list_alertgroups($request, $query, $options);
-    my $render_result       = $self->process_list_results($results, $totalrecs);
-    return $render_result;
+    $results  = $self->list_alertgroups($request, $query, $options);
+    return $results;
+
 }
 
 
 sub list_alertgroups ($self, $request, $query, $options) {
     my $mongo   = $self->mongo;
     my $log     = $self->log;
-    my $col     = $mongo->collection('Alertgroup');
-
-    $log->trace("Listing Alertgroups with ", 
-                {filter=>\&Dumper, value => [ $query, $options ] });
+    my $col     = $self->collection;
 
     my $count   = $col->count($query);
     my $cursor  = $col->find($query, $options);
     my @results = ();
 
     while ( my $alertgroup = $cursor->next ) {
-        push @results, $alertgroup->as_hash;
+        my $href    = $alertgroup->as_hash;
+        push @results, $href;
     }
-    return \@results, $count;
+    return {
+        rows    => \@results, 
+        count   => $count
+    };
 }
 
-sub process_list_results ($self, $results,$totalrecs) {
-    my $render_result   = {
-        records             => $results,
-        queryRecordCount    => scalar(@$results),
-        totalRecordCount    => $totalrecs,
+sub process_list_results ($self, $result, $request) {
+    my $return   = {
+        code    => 200,
+        json    => {
+            records             => $result->{rows},
+            queryRecordCount    => scalar(@{$result->{rows}}),
+            totalRecordCount    => $result->{count},
+        }
     };
-    return $render_result;
+    return $return;
 }
 
 sub get_one  ($self, $request){
-    my $log     = $self->log;
-    my $mongo   = $self->mongo;
-    my $id      = $request->{id} + 0;
-    my $col     = $mongo->collection('Alertgroup');
-    my $obj     = $col->find_iid($id);
-    my $rendered    = $self->render_get_one($request, $obj);
-    return $rendered;
+    my $id          = $request->{id} + 0;
+    my $col         = $self->collection;
+    my $obj         = $col->find_iid($id);
+    $self->update_views($obj, $request);
+    return $obj;
+
 }
 
-sub render_get_one ($self, $request, $obj) {
+sub update_views ($self, $obj, $request) {
+    $obj->add_view($request->user, $request->ipaddr);
+}
+
+sub process_get_one ($self, $request, $obj) {
     if (! defined $obj) {
-        die "Object not found";
+        return {
+            code    => 404,
+            error   => "object not found",
+        };
     }
     if ( $obj->is_permitted('read', $request->{groups}) ) {
-        return $obj->as_hash;
+        my $href    = $obj->as_hash;
+        return {
+            code    => 200,
+            json    => $href,
+        };
     }
-    die "User does not have permission";
+    return {
+        code    => 403,
+        error   => "User does not have permission",
+    };
 }
 
 sub update  ($self, $request){
-    my $log     = $self->log;
-    my $mongo   = $self->mongo;
     my $id      = $request->{id} + 0;
     my @results = $self->update_alertgroup($request);
-    $self->send_update_notices($id);
     my $render_results  = $self->process_update_results(\@results);
     return $render_results;
 }
@@ -235,8 +197,8 @@ sub send_update_notices ($self, $agid) {
 sub update_alertgroup ($self, $request) {
     my $log     = $self->log;
     my $mongo   = $self->mongo;
-    my $id      = $request->{id} + 0;
-    my $col     = $mongo->collection('Alertgroup');
+    my $id      = $request->id + 0;
+    my $col     = $self->collection;
     my $obj     = $col->find_iid($id);
     my @results = ();
 
@@ -244,8 +206,7 @@ sub update_alertgroup ($self, $request) {
         die "User does not have permission";
     }
 
-    push @results, @{$self->validate_request($request)};
-    my $update    = $request->{data}->{json};
+    my $update    = $request->get_update_href();
     try {
         $obj->update({ '$set' => $update});
         push @results, { updated => $id };
@@ -257,14 +218,22 @@ sub update_alertgroup ($self, $request) {
     return wantarray ? @results : \@results;
 }
 
-sub validate_request ($self, $request) {
-    my @disallowed  = (qw(body body_plain body_flair view_history));
-    my @results     = ();
-    if ( grep { defined $request->{data}->{json}->{$_} } @disallowed ) {
-        push @results, { warn => 'attempted updated to protected field' };
-        delete $request->{data}->{json}->{$_};
+sub get_related ($self, $request) {
+    my $relname  = $request->{subcollection};
+    my $id       = $request->{id};
+    my $reldom   = $self->get_related_domain($relname);
+
+    if ( ! defined $reldom ) {
+        return {error => "unsupported related item type $relname"};
     }
-    return wantarray ? @results : \@results;
+    return $reldom->find_related($request, 'alertgroup', $id);
+}
+
+sub process_get_related ($self, $result) {
+    return {
+        code    => 200,
+        json    => $result,
+    };
 }
 
 sub delete  ($self, $request){
@@ -285,61 +254,6 @@ sub unpromote  ($self, $request){
 
 sub link  ($self, $request){
 
-}
-
-=pod
-
-Sometimes alertgroups have many hundreds of rows.  This function will
-split those mega alertgroups into multiple smaller alertgroups.
-
-=cut
-
-sub validate_alertgroup_request ($self, $request){
-    my $log         = $self->log;
-    my @ag_request  = ();
-
-    $log->trace("validate_alertgroup_request");
-
-    my $json        = $request->{data}->{json};
-    my $alertdata   = delete $json->{data}; # remove row data 
-    my $subject     = $json->{subject};
-    my $rowcount    = scalar(@$alertdata);
-    my $rowlimit    = $self->max_alerts_per_alertgroup;
-    my $items       = int($rowcount/$rowlimit);
-    $items++ if ( $rowcount % $rowlimit != 0 );
-    my $item        = 1;
-
-    $log->trace("  $rowcount rows of alert data in alertgroup");
-    $log->trace("  Generating $items alertgroups");
-
-    while (my @subalerts = splice(@$alertdata, 0, $rowlimit) ) {
-        $subject .= " (part $item of $items)" if ( $items > 1 );
-        my $clone = dclone($json);
-        $clone->{subject} = $subject;
-        $self->validate_permissions($clone);
-        $self->ensure_message_id($clone);
-        $self->build_columns($clone);
-        push @{$clone->{data}}, @subalerts;
-        push @ag_request, $clone;
-        $item++;
-    }
-    return wantarray ? @ag_request : \@ag_request;
-}
-
-sub validate_permissions ($self, $aghref) {
-    my $log     = $self->log;
-    
-    if (! defined $aghref->{groups}->{read} ) {
-        $aghref->{groups}->{read} = $self->default_alergroup_read_groups;
-    }
-    if (! defined $aghref->{groups}->{modify} ) {
-        $aghref->{groups}->{modify} = $self->default_alertgroup_modify_groups;
-    }
-    
-    # ensure submitted groups are all lowercase
-    foreach my $t (qw(read modify)) {
-        $aghref->{groups}->{$t} = [ map { lc($_) } @{$aghref->{groups}->{$t}} ];
-    }
 }
 
 1;

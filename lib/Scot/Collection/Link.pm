@@ -13,12 +13,12 @@ with    qw(
 override api_create => sub {
     my $self    = shift;
     my $href    = shift;    # the $req from the web api
-    my $log     = $self->env->log;
+    my $log     = $self->log;
     my $json    = $href->{request}->{json};
 
     my $vertices    = $json->{vertices};
     my $weight      = $json->{weight}   // 1;
-    my $when        = $json->{when}     // $self->env->now;
+    my $when        = $json->{when}     // $self->now;
     my $memo        = $json->{memo};
     my $context     = $json->{context} // ' ';
 
@@ -69,7 +69,7 @@ sub vertices_input_is_invalid {
 sub thing_is_vertex {
     my $self    = shift;
     my $thing   = shift;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
 
     if ( ref($thing) eq "HASH" ) {
         $log->trace("thing is a HASH");
@@ -104,7 +104,7 @@ sub get_vertex {
 sub get_vertex_object {
     my $self    = shift;
     my $vertex  = shift;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
 
     if ( ref($vertex) ne "HASH" ) {
         die "Must provide get_vertex_object with a vertex Hash Ref";
@@ -119,7 +119,7 @@ sub get_vertex_object {
 sub get_vertex_memo {
     my $self    = shift;
     my $thing   = shift;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
 
     $log->trace("Thing is ",{filter=>\&Dumper, value=>$thing});
     if ( $self->thing_is_vertex($thing) ) {
@@ -146,7 +146,7 @@ sub get_vertex_memo {
         return $thing->name;
     }
 
-    $self->env->log->debug("no memo for type ".ref($thing));
+    $self->log->trace("no memo for type ".ref($thing));
     return " ";
 }
 
@@ -156,9 +156,9 @@ sub link_objects {
     my $v1      = shift; # object(scot::model) or href
     my $options = shift; # href 
     my $weight  = $options->{weight} // 1;
-    my $when    = $options->{when} // $self->env->now;
+    my $when    = $options->{when} // $self->now;
     my $context = $options->{context} // ' ';
-    my $log     = $self->env->log;
+    my $log     = $self->log;
 
     if ( ! defined $v0 ) {
         $log->logdie("v0 is undefined!");
@@ -197,7 +197,7 @@ sub link_objects {
         $log->trace("Link ".$link->id." exists, returning a pointer");
         return $link;
     }
-    $log->debug("Link does not exist already, creating...");
+    $log->trace("Link does not exist already, creating...");
 
     $link =  $self->create({
         vertices    =>  \@vertices,
@@ -206,7 +206,7 @@ sub link_objects {
         memo        => \@memos,
         context     => $context,
     });
-    $log->debug("Link ".$link->id." created");
+    $log->trace("Link ".$link->id." created");
     return $link;
 }
 
@@ -324,10 +324,10 @@ sub get_links_by_target {
         };
     }
 
-    $self->env->log->debug("Finding Links to $type $id");
+    $self->log->debug("Finding Links to $type $id");
     
     my $cursor = $self->find($match);
-    # $self->env->log->debug("found ".$cursor->count." links");
+    # $self->log->debug("found ".$cursor->count." links");
     return $cursor;
 }
 
@@ -365,7 +365,7 @@ sub get_entity_degree {
 sub get_display_count_agg {
     my $self    = shift;
     my $entity  = shift;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
 
     $log->trace("Counting links to entity");
 
@@ -398,9 +398,9 @@ sub get_linked_objects_cursor {
     my $object  = shift;     # href or scot::model
     my $type    = shift;
     my $mongo   = $self->meerkat;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
 
-    $log->debug("get_linked_objects_cursor of object ".
+    $log->trace("get_linked_objects_cursor of object ".
                 ref($object)." and type $type");
 
     my $targetvertex = $self->get_vertex($object);
@@ -419,9 +419,9 @@ sub get_linked_objects_cursor {
         }
     }
     my $match       = { id => { '$in' => \@linked_ids }};
-    $log->debug("matching $type with ",{filter=>\&Dumper, value=>$match});
+    $log->trace("matching $type with ",{filter=>\&Dumper, value=>$match});
     my $lo_cursor   = $mongo->collection(ucfirst($type))->find($match);
-    $log->debug("cursor = ", {filter=>\&Dumper, value => $lo_cursor->info});
+    $log->trace("cursor = ", {filter=>\&Dumper, value => $lo_cursor->info});
     return $lo_cursor;
 }
 

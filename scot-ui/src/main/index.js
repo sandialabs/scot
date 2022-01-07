@@ -114,7 +114,7 @@ export default class App extends React.Component {
 
   componentWillMount = () => {
     let notificationSetting = Cookies.checkCookie("notification");
-    if (notificationSetting == undefined) {
+    if (notificationSetting === undefined) {
       notificationSetting = "on";
     }
     this.setState({ notificationSetting: notificationSetting });

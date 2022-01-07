@@ -152,6 +152,9 @@ function configure_startup {
     SCOTSERVICES='scot flair enricher scend scrfd scepd recfpd '
     SRCDIR="$SCOT_CONFIG_SRC/scot"
 
+    systemctl disable scfd.service
+    systemctl daemon-reload
+
     for service in $SCOTSERVICES; do
         echo "-- SERVICE $service"
         if [[ $OS == "Ubuntu" ]]; then

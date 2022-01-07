@@ -15,7 +15,7 @@ sub preserve {
     my $req     = shift;
     my $href    = $object->as_hash;
     $self->create({
-        when    => $self->env->now,
+        when    => $self->now,
         who     => $req->{user},
         type    => ref($object),
         data    => $href,

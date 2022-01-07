@@ -59,6 +59,11 @@ from Scot::Role::Data
 
 =cut
 
+sub get_memo {
+    my $self    = shift;
+    return '';
+}
+
 __PACKAGE__->meta->make_immutable;
 1;
 

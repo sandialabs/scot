@@ -32,7 +32,7 @@ override api_create => sub {
     my $self    = shift;
     my $request = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $log->trace("Create Event from API");
 
@@ -83,7 +83,7 @@ override api_create => sub {
 sub create_event_from_message {
     my $self    = shift;
     my $data    = shift;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
     my $env     = $self->env;
 
     my $event_data  = $data->{event};
@@ -248,9 +248,9 @@ sub build_from_alerts {
     $build_href->{status}   = "open" unless $build_href->{status};
     $build_href->{owner}    = $handler->session('user') 
         unless $build_href->{owner};
-    $build_href->{readgroups} = $env->default_groups->{read}
+    $build_href->{readgroups} = $self->defaults->{default_groups}->{read}
         unless $build_href->{readgroups};
-    $build_href->{modifygroups} = $env->default_groups->{modify}
+    $build_href->{modifygroups} = $self->defaults->{default_groups}->{modify}
         unless $build_href->{modifygroups};
     $build_href->{alerts} = \@alert_ids;
     delete $build_href->{from_alerts};
@@ -314,7 +314,7 @@ sub api_subthing {
     my $self    = shift;
     my $req     = shift;
     my $mongo   = $self->meerkat;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
 
     my $thing       = $req->{collection};
     my $subthing    = $req->{subthing};
@@ -412,7 +412,7 @@ sub get_promotion_obj {
     my $object  = shift;
     my $req     = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
     my $promotion_id    = $req->{request}->{json}->{promote} 
                           // $req->{request}->{params}->{promote};
 
@@ -456,7 +456,7 @@ sub autocomplete {
 sub get_by_msgid {
     my $self    = shift;
     my $msgid   = shift;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
     my $query   = {
         'data.message_id'   => $msgid
     };

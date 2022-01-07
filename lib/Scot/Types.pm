@@ -59,6 +59,19 @@ via     {
     return 'open';
 };
 
+subtype 'ScotDomain',
+as      'Object',
+where   { 
+    my $name    = ref($_);
+    return $name =~ /^Scot::Domain::/;
+};
+subtype 'ScotCollection',
+as      'Object',
+where   { 
+    my $name    = ref($_);
+    return $name =~ /^Scot::Collection/;
+};
+
 =item B<alert_status>
 
 Valid statuses for Alerts/Alertgroups

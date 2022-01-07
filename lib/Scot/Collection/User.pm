@@ -16,7 +16,7 @@ override api_create => sub {
     my $href    = shift;
     my $env     = $self->env;
     my $mongo   = $self->meerkat;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $log->debug("in users api-create");
     

@@ -32,7 +32,7 @@ override api_create => sub {
     my $self    = shift;
     my $request = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $log->debug("Custom create in Scot::Collection::Feed");
 

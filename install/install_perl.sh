@@ -318,7 +318,7 @@ function install_perl_modules {
         Net::IDN::Encode
         Net::Works::Network
         Net::IP
-        Net::IPv6addr
+        Net::IPv6Addr
         Moose
         Moose::Role
         Moose::Util::TypeConstraints
@@ -343,7 +343,7 @@ function install_perl_modules {
         CGI::Compile
         HTTP::Server::Simple::PSGI
         JSON::Any
-        CPANEL::JSON::XS
+        CpaneL::JSON::XS
         JSON
         JSON::XS
         DBI
@@ -387,6 +387,7 @@ function install_perl_modules {
         MojoX::Log::Log4perl
         Mojolicious::Plugin::WithCSRFProtection
         Mojolicious::Plugin::TagHelpers
+        Mozilla::CA
         XML::Smart
         Config::Auto
         Data::GUID

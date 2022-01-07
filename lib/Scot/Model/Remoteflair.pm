@@ -112,6 +112,10 @@ has results => (
 );
 
 
+sub get_memo {
+    my $self    = shift;
+    return $self->uri;
+}
 
 __PACKAGE__->meta->make_immutable;
 1;
