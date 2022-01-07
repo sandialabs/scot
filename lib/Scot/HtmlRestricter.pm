@@ -12,7 +12,7 @@ has rules   => (
     default     => sub {{
         span        => [ {class => qr{^entity }}, 'data-entity-type', 'data-entity-value' ],
         br          => [],
-        svg         => [qw(height viewBox width xmlns)],
+        svg         => [qw(height viewbox width xmlns)],
         polyline    => [qw(fill points stroke stroke-linecap stroke-width)],
         div         => [],
     }},

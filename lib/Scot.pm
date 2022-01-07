@@ -7,6 +7,7 @@ use Carp qw(cluck longmess shortmess);
 use Mojo::Base 'Mojolicious';
 use Mojo::Cache;
 use Scot::Env;
+use Scot::HtmlRestricter;
 use Scot::Util::CSRFProtection;
 use Data::Dumper;
 
@@ -34,6 +35,10 @@ sub startup {
     $self->attr     ( env => sub { $env } );
     $self->helper   ( env => sub { shift->app->env } );
     $| = 1;
+
+    my $hr  = Scot::HtmlRestricter->new();
+    $self->attr     ( restricter => sub {$hr} );
+    $self->helper   ( restricter => sub { shift->app->restricter });
 
     my $cache   = Mojo::Cache->new(max_keys => 100);
     $self->helper   ('cache'  => sub { $cache } );
