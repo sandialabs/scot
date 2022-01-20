@@ -106,7 +106,7 @@ sub parse_date_match ($self, $key, $value) {
     }
     return {
         '$gte'  => $epochs[0],
-        '$lte'  => $epochs[1],
+        '$lte'  => $epochs[-1],
     };
 }
 

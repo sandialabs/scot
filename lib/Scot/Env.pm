@@ -22,7 +22,7 @@ has debug   => (
     is          => 'ro',
     isa         => 'Int',
     required    => 1,
-    default     => 0, # 1 = print messages, 0 = quiet
+    default     => 1, # 1 = print messages, 0 = quiet
 );
 
 has config_file => (
@@ -205,28 +205,35 @@ sub build_modules {
     }
 }
 
-has log => (
-    is      => 'ro',
-    isa     => 'Log::Log4perl::Logger',
-    required=> 1,
-     lazy    => 1,
-    builder => '_build_logger',
-);
+sub instantiate_logger {
+    my $self    = shift;
+    my $meta    = shift;
+    my $log;
 
-has logcat  => (
-    is      => 'ro',
-    isa     => 'Str',
-    required=> 1,
-    default => 'Scot',
-);
+    print "Building Logger\n" if $self->debug;
 
-sub _build_logger {
-    my $self        = shift;
-    my $cat         = $self->logcat;
-    my $log         =  get_logger($cat);
-    $log->info("logger $cat instance retrieved");
-    return $log;
+    if ( $self->meta->has_attribute('logger_factory') ) {
+        $log    = $self->logger_factory->make;
+    }
+    else {
+        require_module("Scot::Util::LoggerFactory");
+        my $logconf = $self->log_config;
+        my $factory = Scot::Util::LoggerFactory->new(config => $logconf);
+        $log        = $factory->get_logger;
+    }
+    $meta->add_attribute(log => ( is => 'rw', isa => 'Log::Log4perl::Logger'));
+    $self->log($log);
 }
+
+
+sub build_logger {
+    my $self    = shift;
+    my $config  = shift;
+    print "Logger config is ".Dumper($config)."\n" if $self->debug;
+    my $factory = Scot::Util::LoggerFactory->new( config => $config );
+    return $factory->get_logger;
+}
+
         
 sub BUILD {
     my $self    = shift;
@@ -245,6 +252,8 @@ sub BUILD {
 
     # set up factories
     $self->build_factories($meta, $factories);
+
+    $self->instantiate_logger($meta);
 
     # build modules
     $self->build_modules($meta,$modules);
@@ -436,14 +445,6 @@ sub get_env_attr {
         return $self->$name;
     }
     return undef;
-}
-
-sub build_logger {
-    my $self    = shift;
-    my $config  = shift;
-    print "Logger config is ".Dumper($config)."\n" if $self->debug;
-    my $factory = Scot::Util::LoggerFactory->new( config => $config );
-    return $factory->get_logger;
 }
 
 # this helps identify the problem when SCOT wants/needs an $env->foo

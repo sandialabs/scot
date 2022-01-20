@@ -76,6 +76,12 @@ sub _build_engine ($self) {
     return Scot::Flair3::Engine->new(stomp => $stomp);
 }
 
+has log => (
+    is          => 'ro',
+    isa         => 'Log::Log4perl::Logger',
+    required    => 1,
+);
+
 
 sub run ($self, $ovr=undef) {
     my $pm  = $self->procmgr;
