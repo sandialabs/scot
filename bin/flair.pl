@@ -7,39 +7,29 @@ use lib '../../lib';
 use lib '../../Scot-Internal-Modules/lib';
 use lib '/opt/scot/lib';
 # use Scot::Flair::Worker;
-use Scot::Flair3::Worker;
+use Scot::Flair::Worker;
 use Scot::Env;
 use Data::Dumper;
 use utf8::all;
 use Carp qw(cluck longmess shortmess);
 use feature qw(say);
 
-my $loop    = Scot::Flair3::Worker->new();
-my $log     = $loop->engine->log;
-# not used but painted myself into a corner
-# meerkat models and collections reference env
-my $env = Scot::Env->new(config_file => '/opt/scot/etc/flair.cfg.pl');
-$SIG{'__WARN__'} = sub {
-    do {
-        $Log::Log4perl::caller_depth++;
-        no warnings 'uninitialized';
-        print warn(@_)."\n";
-        unless ( grep { /uninitialized/ } @_ ) {
-            $log->warn(longmess());
-        }
-        $Log::Log4perl::caller_depth--;
+my $env     = Scot::Env->new(config_file => '/opt/scot/etc/flair.cfg.pl');
+my $log     = $env->log;
+
+die unless defined $env and ref($env) eq "Scot::Env";
+
+$SIG{__DIE__} = sub { our @reason =@_};
+
+END {
+    our @reason;
+    if (@reason) {
+        say "Flair Diead because: @reason";
+        $env->log->error("Flair died because: ", {filter => \&Dumper, value =>\@reason});
     }
-};
-
-$SIG{'__DIE__'} = sub {
-    if ( $^S ) {
-        return;
-    }
-    $Log::Log4perl::caller_depth++;
-    $log->logdie( @_);
-};
+}
 
 
-
+my $loop    = Scot::Flair::Worker->new(env => $env);
 $loop->run();
 

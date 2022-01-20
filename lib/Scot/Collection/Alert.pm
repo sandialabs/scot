@@ -113,6 +113,16 @@ sub linked_create {
         $log->error("failed to create alert!");
         return 0;
     }
+
+    $self->env->mq->send("/queue/emlat", {
+        action  => "created",
+        data    => {
+            who     => 'scot',
+            type    => 'alert',
+            id      => $alert->id,
+        }
+    });
+
     return 1;
 }
 

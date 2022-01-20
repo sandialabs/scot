@@ -174,11 +174,22 @@ sub pre_create_process {
         # entries should inherit from target
         my $type    = $json->{target_type};
         my $id      = $json->{target_id}+0;
-        my $tobj   = $mongo->collection(ucfirst($type))->find_iid($id);
-        my $target_groups   = $tobj->groups;
-        $log->debug("target_groups= ",{filter=>\&Dumper, value=>$target_groups});
-        if ( ! defined $json->{groups} and defined $target_groups) {
-            $json->{groups} = $target_groups;
+        my $tobj    = $mongo->collection(ucfirst($type))->find_iid($id);
+        if ( $tobj->meta->does_role('Scot::Role::Permission') ) {
+            my $target_groups   = $tobj->groups;
+            $log->debug("target_groups= ",{filter=>\&Dumper, value=>$target_groups});
+            if ( ! defined $json->{groups} and defined $target_groups) {
+                $json->{groups} = $target_groups;
+            }
+        }
+        else {
+            if ( ! defined $json->{groups} ) {
+                my $glist = (defined $usergroups) ? $usergroups : $env->default_groups;
+                $json->{groups} = {
+                    read    => $glist,
+                    modify  => $glist,
+                };
+            }
         }
         return;
     }
@@ -551,7 +562,7 @@ sub get_one {
     try {
         my $req_href        = $self->get_request_params;
         my $collection      = $self->get_collection_req($req_href);
-        my $id              = $req_href->{id}+0;
+        my $id              = $req_href->{id};
 
         # special case
         if ( $id eq "maxid" ) {

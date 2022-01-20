@@ -686,8 +686,8 @@ sub has_splunk_ipv6_pattern {
     my @c       = @_;
     my $log     = $self->env->log;
 
-    $log->trace("c[$i] = ".$c[$i]->tag);
     return undef if ( ! ref($c[$i]) );
+    $log->trace("c[$i] = ".$c[$i]->tag);
     return undef if ( $c[$i]->tag   ne 'span');
     return undef if ( $c[$i+1]      ne ':');
     return undef if ( $c[$i+2]->tag ne 'span');
