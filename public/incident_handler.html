@@ -617,22 +617,19 @@ $(document).ready(function() {
 var buttonsObj = {};
 
 function create_incident_handler(start, end) {
-    $("#start").val(new Date(new Date(start).getTime() + (new Date(start).getTimezoneOffset()*60000)));
-    $("#end").val(new Date(new Date(end).getTime() + (new Date(end).getTimezoneOffset()*60000)));
-    $('#id').text('');
-
-    buttonsObj = {};
-    buttonsObj["Create"] = function() {
+$("#start").val(new Date(new Date(start).getTime() + (new Date(start).getTimezoneOffset()*60000)));
+$("#end").val(new Date(new Date(end).getTime() + (new Date(end).getTimezoneOffset()*60000)));
+$('#id').text('');
+buttonsObj = {};
+buttonsObj["Create"] = function() {
         var startTime= new Date($('#ih_form input[id=start]')[0].value).getTime()/1000;
         var endTime =  new Date($('#ih_form input[id=end]')[0].value).getTime()/1000;
         var user = $('#ih_form select[id=user_select]')[0].value;
         var id = $('#ih_form input[id=id]').text();
-        var ihtype = $('#ih_form select[id=type_select]')[0].value;
         var data = {
             start: startTime,
             end: endTime,
             username: user,
-            type: ihtype
         }
         var type = 'post';
         var url = '/scot/api/v2/handler';
@@ -647,67 +644,48 @@ function create_incident_handler(start, end) {
             error: function() {
                 alert('failed to update calendar')
             }
-        });
-        $(this).dialog('close');
-    }
-    buttonsObj['Cancel'] = function() {
-        $(this).dialog('close');
-    }, $(function() {
-        $("#start").datetimepicker({ showOn: "button", buttonImage: "/images/cal.gif"});
-        $("#end").datetimepicker({ showOn: "button", buttonImage: "/images/cal.gif"});
-        $("#ih_creator").dialog({
-            bgiframe : true,
-            autoOpen : false,
-            height : 400,
-            width : 400,
-            modal : true,
-            buttons : buttonsObj
-        });
-    });
-    $("#ih_creator").dialog('open');
+        })
+    $(this).dialog('close');
+}
+buttonsObj['Cancel'] = function() {
+    $(this).dialog('close');
+},
+$(function() {
+  $("#start").datetimepicker({ showOn: "button", buttonImage: "/images/cal.gif"});
+  $("#end").datetimepicker({ showOn: "button", buttonImage: "/images/cal.gif"});
+  $("#ih_creator").dialog({
+    bgiframe : true,
+    autoOpen : false,
+    height : 400,
+    width : 400,
+    modal : true,
+    buttons : buttonsObj
+  });
+});
+$("#ih_creator").dialog('open');
 } 
 
 function edit_incident_handler(start, end, id) {
-    $("#start").val(new Date(new Date(start).getTime() + (new Date(start).getTimezoneOffset()*60000)));
-    $("#end").val(new Date(new Date(end).getTime() + (new Date(end).getTimezoneOffset()*60000)));
-    $('#id').text(id);
-    buttonsObj = {};
-    buttonsObj["Edit"] = function() {
-            var startTime= new Date($('#ih_form input[id=start]')[0].value).getTime()/1000;
-            var endTime =  new Date($('#ih_form input[id=end]')[0].value).getTime()/1000;
-            var user = $('#ih_form select[id=user_select]')[0].value;
-            var id = $('#ih_form input[id=id]').text();
-            var ihtype = $('#ih_form input[id=type_select]')[0].value;
-            var data = {
-                start: startTime,
-                end: endTime,
-                username: user,
-                type: ihtype,
-            }
-            var type = 'put';
-            var url = '/scot/api/v2/handler/' + id;
-            $.ajax({
-                type: type,
-                url: url,
-                data: JSON.stringify(data),
-                contentType: 'application/json; charset=UTF-8',
-                success: function(data) {
-                    do_refresh();
-                },
-                error: function() {
-                    alert('failed to update calendar')
-                }
-            })
-        $(this).dialog('close');
-    }
-    buttonsObj['Cancel'] = function() {
-        $(this).dialog('close');
-    }
-    buttonsObj['Delete'] = function() {
+$("#start").val(new Date(new Date(start).getTime() + (new Date(start).getTimezoneOffset()*60000)));
+$("#end").val(new Date(new Date(end).getTime() + (new Date(end).getTimezoneOffset()*60000)));
+$('#id').text(id);
+buttonsObj = {};
+buttonsObj["Edit"] = function() {
+        var startTime= new Date($('#ih_form input[id=start]')[0].value).getTime()/1000;
+        var endTime =  new Date($('#ih_form input[id=end]')[0].value).getTime()/1000;
+        var user = $('#ih_form select[id=user_select]')[0].value;
         var id = $('#ih_form input[id=id]').text();
+        var data = {
+            start: startTime,
+            end: endTime,
+            username: user,
+        }
+        var type = 'put';
+        var url = '/scot/api/v2/handler/' + id;
         $.ajax({
-            type: 'DELETE',
-            url: '/scot/api/v2/handler/'+id,
+            type: type,
+            url: url,
+            data: JSON.stringify(data),
             contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 do_refresh();
@@ -716,20 +694,38 @@ function edit_incident_handler(start, end, id) {
                 alert('failed to update calendar')
             }
         })
-    }
-    $(function() {
-    $("#start").datetimepicker({ showOn: "button", buttonImage: "/images/cal.gif"});
-    $("#end").datetimepicker({ showOn: "button", buttonImage: "/images/cal.gif"});
-    $("#ih_creator").dialog({
-        bgiframe : true,
-        autoOpen : false,
-        height : 400,
-        width : 400,
-        modal : true,
-        buttons : buttonsObj
-    });
-    });
-    $("#ih_creator").dialog('open');
+    $(this).dialog('close');
+}
+buttonsObj['Cancel'] = function() {
+    $(this).dialog('close');
+}
+buttonsObj['Delete'] = function() {
+    var id = $('#ih_form input[id=id]').text();
+    $.ajax({
+        type: 'DELETE',
+        url: '/scot/api/v2/handler/'+id,
+        contentType: 'application/json; charset=UTF-8',
+        success: function(data) {
+            do_refresh();
+        },
+        error: function() {
+            alert('failed to update calendar')
+        }
+    })
+}
+$(function() {
+  $("#start").datetimepicker({ showOn: "button", buttonImage: "/images/cal.gif"});
+  $("#end").datetimepicker({ showOn: "button", buttonImage: "/images/cal.gif"});
+  $("#ih_creator").dialog({
+    bgiframe : true,
+    autoOpen : false,
+    height : 400,
+    width : 400,
+    modal : true,
+    buttons : buttonsObj
+  });
+});
+$("#ih_creator").dialog('open');
 }
 
 $('#calendar').fullCalendar({
@@ -767,17 +763,11 @@ $('#calendar').fullCalendar({
                                                 var startTime = moment(new Date(obj.start * 1000)).format('LT');
                                                 var endISO = new Date(obj.end * 1000).toISOString();
                                                 var endTime = moment(new Date(obj.end * 1000)).format('LT');
-                                                var subject = 
-                                                    '[' + obj.type + ']' +
-                                                    startTime + ' ' +
-                                                    obj.username + ' ' +
-                                                    endTime;
                                                 events.push({
-                                                    title: subject,
+                                                    title: startTime + ' ' + obj.username + ' ' +  endTime,
                                                     start: startISO,
                                                     end: endISO,
                                                     id: obj.id,
-                                                    type: obj.type
                                                 })
                                             })
                                             callback(events);
@@ -815,15 +805,6 @@ $('#calendar').fullCalendar({
                 <th>User: </th>
                 <td>
                     <select id="user_select" name="handler" size="1">
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <th>Type: </th>
-                <td>
-                    <select id="type_select" name="type" size="1">
-                        <option selected>handler</option>
-                        <option>hunter</option>
                     </select>
                 </td>
             </tr>
