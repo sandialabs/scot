@@ -369,48 +369,6 @@ export const AddFlair = {
                           flag.addClass("extras");
                           $(entity).append(flag);
                         }
-                      }
-                      // now in blocklist3 
-                      if ( entitydata.blocklist3 !== undefined) {
-                        if ( entitydata.blocklist3.data.firewall !== 0) {
-                            $(entity).append(
-                            $(
-                                '<img class="extras" title="firewall block">'
-                            ).attr("src", "/images/flair/firewalled.png")
-                            );
-                        }
-                        if ( entitydata.blocklist3.data.watch !== 0) {
-                            $(entity).append(
-                            $(
-                                '<img class="extras" title="watch list">'
-                            ).attr("src", "/images/flair/watch.png")
-                            );
-                        }
-                        if ( entitydata.blocklist3.data.whitelist !== 0) {
-                            $(entity).append(
-                            $(
-                                '<img class="extras" title="white list">'
-                            ).attr("src", "/images/flair/white_list.jpg")
-                            );
-                        }
-                        if ( entitydata.blocklist3.data.blackhole !== 0) {
-                            $(entity).append(
-                            $(
-                                '<img class="extras" title="dns black hole">'
-                            ).attr("src", "/images/flair/blackholed.png")
-                            );
-                        }
-                        if ( entitydata.blocklist3.data.proxy_block !== 0) {
-                            console.log("proxy_block detected!");
-                            $(entity).append(
-                            $(
-                                '<img class="extras" title="proxy block">'
-                            ).attr("src", "/images/flair/blocked.png")
-                            );
-                        }
-                        else {
-                            console.log("Why no pblock? "+entitydata.blocklist3.data);
-                        }
                         if (entitydata.geoip.data.is_anonymous) {
                             let anonicon = $(
                                 '<img title="is_anonymous">'
@@ -471,6 +429,49 @@ export const AddFlair = {
                             icon.addClass("extras");
                             $(entity).append(icon);
                         }
+                      }
+                      // now in blocklist3 
+                      if ( entitydata.blocklist3 !== undefined) {
+                        if ( entitydata.blocklist3.data.firewall !== 0) {
+                            $(entity).append(
+                            $(
+                                '<img class="extras" title="firewall block">'
+                            ).attr("src", "/images/flair/firewalled.png")
+                            );
+                        }
+                        if ( entitydata.blocklist3.data.watch !== 0) {
+                            $(entity).append(
+                            $(
+                                '<img class="extras" title="watch list">'
+                            ).attr("src", "/images/flair/watch.png")
+                            );
+                        }
+                        if ( entitydata.blocklist3.data.whitelist !== 0) {
+                            $(entity).append(
+                            $(
+                                '<img class="extras" title="white list">'
+                            ).attr("src", "/images/flair/white_list.jpg")
+                            );
+                        }
+                        if ( entitydata.blocklist3.data.blackhole !== 0) {
+                            $(entity).append(
+                            $(
+                                '<img class="extras" title="dns black hole">'
+                            ).attr("src", "/images/flair/blackholed.png")
+                            );
+                        }
+                        if ( entitydata.blocklist3.data.proxy_block !== 0) {
+                            console.log("proxy_block detected!");
+                            $(entity).append(
+                            $(
+                                '<img class="extras" title="proxy block">'
+                            ).attr("src", "/images/flair/blocked.png")
+                            );
+                        }
+                        else {
+                            console.log("Why no pblock? "+entitydata.blocklist3.data);
+                        }
+                    // XXX
                       }
                     }
 
