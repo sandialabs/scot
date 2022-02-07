@@ -477,12 +477,14 @@ export const AddFlair = {
 
                     if (entityEntryCount !== undefined) {
                       if (entityEntryCount !== 0) {
-                        let entityEntry = entityMatched.entries[0].body_plain;
-                        $(entity).append(
-                          $(
-                            '<img class="extras" title="' + entityEntry + '">'
-                          ).attr("src", "/images/flair/note.png")
-                        );
+                        if (entityMatched.entries !== undefined && entityMatched.entries.length > 0) {
+                            let entityEntry = entityMatched.entries[0].body_plain;
+                            $(entity).append(
+                            $(
+                                '<img class="extras" title="' + entityEntry + '">'
+                            ).attr("src", "/images/flair/note.png")
+                            );
+                        }
                       }
                     }
                   }
