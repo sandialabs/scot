@@ -26,3 +26,7 @@ echo -n "SCOT LRI  Proxy Queue     : "
 syseval_size=`curl -s -u $USER:$PASS http://localhost:8161/api/jolokia/read/org.apache.activemq:type=Broker,brokerName=localhost,destinationType=Queue,destinationName=lriproxy/QueueSize | jq .value`
 echo $syseval_size
 
+echo -n "SCOT Emlat      Queue     : "
+syseval_size=`curl -s -u $USER:$PASS http://localhost:8161/api/jolokia/read/org.apache.activemq:type=Broker,brokerName=localhost,destinationType=Queue,destinationName=emlat/QueueSize | jq .value`
+echo $syseval_size
+
