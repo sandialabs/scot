@@ -2715,4 +2715,68 @@ sub remoteflair {
     };
 }
 
+sub emlat {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $self->log;
+
+    $log->info("EMLAT");
+
+    try {
+        my $req_href    = $self->get_request_params;
+        my $json        = $req_href->{request}->{json};
+        # expect:
+        # { alert_id: int, emlat_score: float }
+        if ( ! defined $json->{alert_id} or ! defined $json->{emlat_score} ) {
+            die "Invalid input";
+        }
+        my $alert_id    = $json->{alert_id};
+        my $score       = $json->{emlat_score};
+
+        # 1. get the alert requested
+        my $collection  = $self->env->mongo->collection('Alert');
+        my $alert       = $collection->find_iid($json->{alert_id});
+
+        if (not defined $alert) {
+            $log->debug("req_href = ",{filter => \&Dumper, value => $req_href});
+            die "Alert $alert_id not found";
+        }
+
+        # 2. update the alert: columns, data, and data_with_flair
+        my $columns = $alert->columns;
+        if (not grep {/emlat_score/} @$columns) {
+            unshift @$columns, 'emlat_score';   # prepend emlat_score column
+        }
+
+        my $update  = {
+            columns             => $columns,
+            'data.emlat_score'  => $score,
+            'data.columns'      => $columns,
+            'data_with_flair.emlat_score'   => $score,
+            'data_with_flair.columns'      => $columns,
+        };
+        $log->debug("updating with ",{filter=>\&Dumper, value => $update});
+        $alert->update({'$set' => $update});
+
+
+        # 3. send activemq notification to browsers
+        $env->mq->send("/topic/scot", {
+            action  => 'updated',
+            data    => {
+                who => 'emlat',
+                type=> 'alert',
+                id  => $alert_id,
+            }
+        });
+        $self->do_render({id => $alert_id, status => 'ok'});
+
+    }
+    catch {
+        $log->error("In API browser, Error: $_");
+        $log->error(longmess);
+        $self->render_error(400, { error_msg => $_ } );
+
+    };
+}
+
 1;
