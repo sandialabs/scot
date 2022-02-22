@@ -102,6 +102,7 @@ $t->post_ok(
         },
     }
 )->status_is(200);
+
 my $alert_id    = $t->tx->res->json->{id};
 $flairer->process_message({
     body => {
@@ -113,14 +114,12 @@ $flairer->process_message({
     }
 });
 
-$t->get_ok("/scot/api/v2/alert/$alert_id");
-# print Dumper($t->tx->res->json), "\n";
+done_testing();
+exit 0;
 
 $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/alert" => {},
     "Get alertgroup by list")
     ->status_is(200);
 print Dumper($t->tx->res->json), "\n";
 
-done_testing();
-exit 0;
 
