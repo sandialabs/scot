@@ -369,6 +369,7 @@ function install_perl_modules {
         HTML::TreeBuilder
         HTML::FromText
         HTML::FormatText
+        HTML::Restrict
         MIME::Base64
         MIME::Parser
         utf8::all
