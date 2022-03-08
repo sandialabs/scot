@@ -26,12 +26,25 @@ has stomp_config => (
     is          => 'ro',
     isa         => 'HashRef',
     required    => 1,
-    default     => sub { {
-        hostname    => 'localhost',
-        port        => 61613,
-        ack         => 'client',
-    }},
+    builder     => '_build_stomp_config',
+    #default     => sub { {
+    #    hostname    => 'localhost',
+    #    port        => 61613,
+    #    ack         => 'client',
+    #}},
 );
+
+sub _build_stomp_config {
+    my $self    = shift;
+    my $file    = '/opt/scot/etc/stomp.cfg.pl';
+    no strict 'refs';
+    my $container   = new Safe 'MCONFIG';
+    my $result      = $container->rdo($file);
+    my $hashname    = 'MCONFIG::environment';
+    my %copy        = %$hashname;
+    my $href        = \%copy;
+    return $href;
+}
 
 has receiver  => (
     is      => 'ro',
