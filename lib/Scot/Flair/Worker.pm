@@ -35,11 +35,12 @@ has stomp   => (
 
 sub _build_stomp {
     my $self    = shift;
-    return Net::Stomp->new({
-        hostname    => 'localhost',
-        port        => 61613,
+    my $cfg     = {
+        hostaname   => $env->modules->[1]->config->{stomp_host},
+        port        => $env->modules->[1]->config->{stomp_port},
         ack         => 'client',
-    });
+    };
+    return Net::Stomp->new($cfg);
 }
 
 has engine  => (
