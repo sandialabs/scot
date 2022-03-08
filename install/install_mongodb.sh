@@ -1,5 +1,29 @@
 #!/bin/bash
 
+function install_mongodb {
+
+    echo "---"
+    echo "--- Installing Mongodb "
+    echo "---"
+
+
+    if [[ $OS == "Ubuntu" ]]; then
+        install_42_mongo
+    else
+        echo "-- INSTALLING MONGODB-ORG"
+        ensure_mongo_repo
+        SELINUXSTATUS=`getenforce`
+        if [[ $SELINUXSTATUS == "Enforcing" ]]; then
+            echo "--- selinux adding ports"
+            # allow mongo to run in selinux
+            semanage port -a -t mongod_port_t -p tcp 27017
+        fi
+        yum install mongodb-org -y
+    fi
+
+    configure_for_scot
+}
+
 function ensure_mongo_repo {
     
     echo "-- ensuring correct mongodb repo"
@@ -278,26 +302,3 @@ function install_42_mongo {
 }
 
 
-function install_mongodb {
-
-    echo "---"
-    echo "--- Installing Mongodb "
-    echo "---"
-
-
-    if [[ $OS == "Ubuntu" ]]; then
-        install_42_mongo
-    else
-        echo "-- INSTALLING MONGODB-ORG"
-        ensure_mongo_repo
-        SELINUXSTATUS=`getenforce`
-        if [[ $SELINUXSTATUS == "Enforcing" ]]; then
-            echo "--- selinux adding ports"
-            # allow mongo to run in selinux
-            semanage port -a -t mongod_port_t -p tcp 27017
-        fi
-        yum install mongodb-org -y
-    fi
-
-    configure_for_scot
-}
