@@ -231,7 +231,7 @@ function install_cent_perl_packages {
     for pkg in $PPKGS; do
         echo ""
         echo "-- using cpanm to install $pkg"
-        cpanm $pkg
+        cpanm -v $pkg
     done 
 
     echo "- PERL VERSION IS NOW -"
@@ -442,7 +442,7 @@ function install_perl_modules {
         echo "-- 1st attempt at installing $module"
         echo "--"
 
-        /usr/local/bin/cpanm $module
+        /usr/local/bin/cpanm -v $module
 
         if [[ $? == 1 ]]; then
             echo "!!!"
