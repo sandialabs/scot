@@ -79,7 +79,7 @@ function create_se_init {
     echo "-- installing init scripts"
 
     if [[ $OS == "Ubuntu" ]]; then
-        if [[ $OSVERSION == "18" ]]; then
+        if [[ $OSVERSION == "18" ]] || [[ $OSVERSION == "20" ]]; then
             if [[ ! -e $ES_SYSD ]]; then
                 echo "-- installing $ES_SYD from $ES_SYSD_SRC"
                 cp $ES_SYSD_SRC $ES_SYSD
@@ -133,7 +133,7 @@ function install_elasticsearch {
 
 
     if [[ $OS == "Ubuntu" ]]; then
-        if [[ $OSVERSION == "18" ]]; then
+        if [[ $OSVERSION == "18" ]] || [[ $OSVERSION == "20" ]]; then
             systemctl daemon-reload
             systemctl enable elasticsearch.service
             systemctl --no-pager restart elasticsearch.service

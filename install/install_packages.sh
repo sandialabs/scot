@@ -80,7 +80,9 @@ function update_apt {
     apt-get install -y software-properties-common
 
     UBUNTUNAME="trusty"
-    if [[ $OSVERSION == "18" ]]; then
+    if [[ $OSVERSION == "20" ]]; then
+        UBUNTUNAME="focal"
+    elif [[ $OSVERSION == "18" ]]; then
         UBUNTUNAME="bionic"
     elif [[ $OSVERSION == "16" ]]; then
         UBUNTUNAME="xenial"
@@ -95,7 +97,9 @@ function update_apt {
         #    echo "- miracles never cease, ppa added."
         #else
             UBUNAME="trusty"
-            if [[ $OSVERSION == "18" ]]; then
+            if [[ $OSVERSION == "20" ]]; then
+                UBUNAME="focal"
+            elif [[ $OSVERSION == "18" ]]; then
                 UBUNAME="bionic"
             elif [[ $OSVERSION == "16" ]]; then
                 UBUNAME="xenial"

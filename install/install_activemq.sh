@@ -119,7 +119,7 @@ function install_activemq {
     chown -R activemq.activemq $AMQDIR
 
     if [[ $OS == "Ubuntu" ]]; then
-        if [[ $OSVERSION == "18" ]]; then
+        if [[ $OSVERSION == "18" ]] || [[ $OSVERSION == "20" ]]; then
             AMQ_SYSTEMD="/etc/systemd/system/activemq.service"
             AMQ_SYSTEMD_SRC="$SCOT_CONFIG_SRC/ActiveMQ/activemq.service"
             if [[ ! -e $AMQ_SYSTEMD ]]; then
@@ -162,7 +162,7 @@ function install_activemq {
 
     echo "-- installation of ActiveMQ complete, starting..."
     if [[ $OS == "Ubuntu" ]]; then
-        if [[ $OSVERSION == "18" ]]; then
+        if [[ $OSVERSION == "18" ]] || [[ $OSVERSION == "20" ]]; then
             systemctl --no-pager start activemq.service
         elif [[ $OSVERSION == "16" ]]; then
             systemctl --no-pager start activemq.service

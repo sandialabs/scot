@@ -56,7 +56,9 @@ function ensure_mongo_repo {
         echo "-- requesting mongodb-org gpg key"
         apt-key adv $MONGO_KEY_OPTS $MONGO_KEYSRVR --recv $MONGO_KEY
 
-        if [[ $OSVERSION == "18" ]]; then
+        if [[ $OSVERSION == "20" ]]; then
+            OS_REPO="focal"
+        elif [[ $OSVERSION == "18" ]]; then
             OS_REPO="bionic"
         elif [[ $OSVERSION == "16" ]]; then
             OS_REPO="xenial"
@@ -96,7 +98,7 @@ function add_failIndexKeyTooLong {
     if [[ $OS == "Ubuntu" ]]; then
 
 
-        if [[ $OSVERSION == "18" ]]; then
+        if [[ $OSVERSION == "18" ]] || [[ $OSVERSION == "20" ]]; then
             echo "-- scot installed config files will include failIndexKeyTooLong paramter set to false"
         elif [[ $OSVERSION == "16" ]]; then
             echo "-- scot installed config files will include failIndexKeyTooLong paramter set to false"
@@ -118,7 +120,7 @@ function add_failIndexKeyTooLong {
 
 function start_stop  {
     if [[ $OS == "Ubuntu" ]]; then
-        if [[ $OSVERSION == "18" ]]; then
+        if [[ $OSVERSION == "18" ]] || [[ $OSVERSION == "20" ]]; then
             systemctl --no-pager $2 ${1}.service
         elif [[ $OSVERSION == "16" ]]; then
             systemctl --no-pager $2 ${1}.service
@@ -208,7 +210,7 @@ function configure_for_scot {
         MONGO_SYSTEMD_SERVICE=/lib/systemd/system/mongod.service
 
         if [[ $OS == "Ubuntu" ]]; then
-            if [[ $OSVERSION == "18" ]]; then
+            if [[ $OSVERSION == "18" ]] || [[ $OSVERSION == "20" ]]; then
                 echo "- installing $MONGO_INIT_SRC"
                 backup_file $MONGO_SYSTEMD_SERVICE
                 cp $MONGO_CONF_SRC/mongod.service $MONGO_SYSTEMD_SERVICE
@@ -276,7 +278,7 @@ function install_36_mongo {
         MONGO_PROXY="--keyserver-options http-proxy=$http_proxy"
     fi
 
-    if [[ $OSVERSION == "18" ]]; then
+    if [[ $OSVERSION == "18" ]] || [[ $OSVERSION == "20" ]]; then
         MONGO_RECV="--recv 9DA31620334BD75D9DCB49F368818C72E52529D4"
         apt-key adv $MONGO_PROXY $MONGO_KEY_SERVER $MONGO_RECV
         echo "deb [ arch=amd64 ] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.0.list

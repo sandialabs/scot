@@ -160,7 +160,7 @@ function start_services {
     fi
 
     if [[ $OS == "Ubuntu" ]]; then
-        if [[ $OSVERSION == "18" ]]; then
+        if [[ $OSVERSION == "18" ]] || [[ $OSVERSION == "20" ]]; then
             systemctl daemon-reload
             systemctl restart mongod.service
             wait_for_mongo

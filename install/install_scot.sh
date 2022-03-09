@@ -158,7 +158,7 @@ function configure_startup {
     for service in $SCOTSERVICES; do
         echo "-- SERVICE $service"
         if [[ $OS == "Ubuntu" ]]; then
-            if [[ $OSVERSION == "18" ]]; then
+            if [[ $OSVERSION == "18" ]] || [[ $OSVERSION  == "20" ]]; then
                 sysfile="${service}.service"
                 target="/etc/systemd/system/$sysfile"
                 if [[ "$REFRESH_INIT" == "yes" ]]; then
@@ -394,7 +394,7 @@ function selinux_to_permissive {
 
 function start_mongo {
     if [[ $OS == "Ubuntu" ]]; then
-        if [[ $OSVERSION == "18" ]]; then
+        if [[ $OSVERSION == "18" ]] || [[ $OSVERSION  == "20" ]]; then
             systemctl --no-pager start mongod.service
         elif [[ $OSVERSION == "16" ]]; then
             systemctl --no-pager start mongod.service
