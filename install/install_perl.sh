@@ -334,8 +334,6 @@ function install_perl_modules {
         MooseX::Types::Common
         MooseX::MethodAttributes
         MongoDB
-        MongoDB::GridFS
-        MongoDB::GridFS::File
         MongoDB::OID
         Meerkat
         MooseX::Role::MongoDB
@@ -353,7 +351,7 @@ function install_perl_modules {
         CGI::Compile
         HTTP::Server::Simple::PSGI
         JSON::Any
-        CpaneL::JSON::XS
+        Cpanel::JSON::XS
         JSON
         JSON::XS
         DBI
@@ -370,7 +368,6 @@ function install_perl_modules {
         File::Slurp
         File::Temp
         File::Type
-        File::Magic
         HTML::Entities
         HTML::Make
         HTML::Scrubber
@@ -391,7 +388,6 @@ function install_perl_modules {
         Mail::IMAPClient::BodyStructure
         Mojo
         MojoX::Log::Log4perl
-        Mojolicious::Plugin::WithCSRFProtection
         Mojolicious::Plugin::TagHelpers
         Mozilla::CA
         XML::Smart
@@ -485,7 +481,15 @@ function install_perl_modules {
             fi
         done
     fi
-    
+
+    manual_package_install
+}
+
+function manual_package_install {
+    # need to manually install this, cpanm can't find it!?
+        # File::Magic
+    tar xzf ./install/src/perl/File-Magic-0.01.tar.gz -C /tmp
+    (cd /tmp/File-Magic-0.01; perl Makefile.PL; make; make test; make install)
 }
 
 function install_perl {
