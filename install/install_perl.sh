@@ -258,6 +258,11 @@ function install_cpanm {
         echo "-- downloading cpanm"
         curl -L http://cpanmin.us | perl - --sudo App::cpanminus
     fi
+
+    if hash cpanm 2>/dev/null; then
+        echo "!!! cpanm failed to install.  Impossible to proceed. !!!"
+        exit 1
+    fi
 }
 
 function perl_version_check {
