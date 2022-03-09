@@ -333,6 +333,11 @@ function install_perl_modules {
         MooseX::Types
         MooseX::Types::Common
         MooseX::MethodAttributes
+        MongoDB
+        MongoDB::GridFS
+        MongoDB::GridFS::File
+        MongoDB::OID
+        Meerkat
         MooseX::Role::MongoDB
         Safe
         Readonly
@@ -384,11 +389,6 @@ function install_perl_modules {
         Log::Log4perl
         Mail::IMAPClient
         Mail::IMAPClient::BodyStructure
-        MongoDB
-        MongoDB::GridFS
-        MongoDB::GridFS::File
-        MongoDB::OID
-        Meerkat
         Mojo
         MojoX::Log::Log4perl
         Mojolicious::Plugin::WithCSRFProtection
