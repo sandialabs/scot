@@ -231,7 +231,7 @@ function install_cent_perl_packages {
     for pkg in $PPKGS; do
         echo ""
         echo "-- using cpanm to install $pkg"
-        cpanm $pkg
+        cpanm -v $pkg
     done 
 
     echo "- PERL VERSION IS NOW -"
@@ -257,6 +257,11 @@ function install_cpanm {
     else
         echo "-- downloading cpanm"
         curl -L http://cpanmin.us | perl - --sudo App::cpanminus
+    fi
+
+    if ! hash cpanm 2>/dev/null; then
+        echo "!!! cpanm failed to install.  Impossible to proceed. !!!"
+        exit 1
     fi
 }
 
@@ -328,6 +333,9 @@ function install_perl_modules {
         MooseX::Types
         MooseX::Types::Common
         MooseX::MethodAttributes
+        MongoDB
+        MongoDB::OID
+        Meerkat
         MooseX::Role::MongoDB
         Safe
         Readonly
@@ -343,7 +351,7 @@ function install_perl_modules {
         CGI::Compile
         HTTP::Server::Simple::PSGI
         JSON::Any
-        CpaneL::JSON::XS
+        Cpanel::JSON::XS
         JSON
         JSON::XS
         DBI
@@ -360,7 +368,6 @@ function install_perl_modules {
         File::Slurp
         File::Temp
         File::Type
-        File::Magic
         HTML::Entities
         HTML::Make
         HTML::Scrubber
@@ -379,14 +386,8 @@ function install_perl_modules {
         Log::Log4perl
         Mail::IMAPClient
         Mail::IMAPClient::BodyStructure
-        MongoDB
-        MongoDB::GridFS
-        MongoDB::GridFS::File
-        MongoDB::OID
-        Meerkat
         Mojo
         MojoX::Log::Log4perl
-        Mojolicious::Plugin::WithCSRFProtection
         Mojolicious::Plugin::TagHelpers
         Mozilla::CA
         XML::Smart
@@ -437,7 +438,7 @@ function install_perl_modules {
         echo "-- 1st attempt at installing $module"
         echo "--"
 
-        /usr/local/bin/cpanm $module
+        /usr/local/bin/cpanm -v $module
 
         if [[ $? == 1 ]]; then
             echo "!!!"
@@ -480,7 +481,15 @@ function install_perl_modules {
             fi
         done
     fi
-    
+
+    manual_package_install
+}
+
+function manual_package_install {
+    # need to manually install this, cpanm can't find it!?
+        # File::Magic
+    tar xzf ./install/src/perl/File-Magic-0.01.tar.gz -C /tmp
+    (cd /tmp/File-Magic-0.01; perl Makefile.PL; make; make test; make install)
 }
 
 function install_perl {
