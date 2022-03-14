@@ -80,9 +80,9 @@ if [[ $INSTMODE != "SCOTONLY" ]]; then
     . ./install/install_packages.sh
     install_packages
 
-    echo "=========== installing PERL modules ============="
-    . ./install/install_perl.sh
-    install_perl
+    echo "=========== installing Mongodb ============="
+    . ./install/install_mongodb.sh
+    install_mongodb
 
     echo "=========== installing JAVA ============="
     . ./install/install_java.sh
@@ -95,16 +95,14 @@ if [[ $INSTMODE != "SCOTONLY" ]]; then
     echo "=========== installing ActiveMQ ============="
     . ./install/install_activemq.sh
     install_activemq
-
-    echo "=========== installing Mongodb ============="
-    . ./install/install_mongodb.sh
-    install_mongodb
     
     echo "=========== installing ElasticSearch ============="
     . ./install/install_elasticsearch.sh
     install_elasticsearch
-    
-    
+
+    echo "=========== installing PERL modules ============="
+    . ./install/install_perl.sh
+    install_perl
 fi
 
 echo "=========== installing SCOT  ============="
