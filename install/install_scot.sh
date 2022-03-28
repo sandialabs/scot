@@ -92,6 +92,8 @@ function get_config_files {
         scot.test
         stretch
         reflair
+	enricher
+	recfuture
     '
     for file in $CFGFILES; do
         CFGDEST="$SCOTDIR/etc/${file}.cfg.pl"
