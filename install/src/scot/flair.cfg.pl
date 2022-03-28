@@ -10,6 +10,13 @@
         logfile     => '/var/log/scot/flair.log',
         log_level   => 'DEBUG',
     },
+    default_groups  => {
+        read    => [ 'wg-scot-ir'],
+        modify  => [ 'wg-scot-ir'],
+    },
+    default_owner   => 'scot-admin',
+    img_dir     => '/opt/scot/public/cached_images',
+    html_root   => '/cahced_images',
     modules => [
         {
             attr    => 'mongo',
