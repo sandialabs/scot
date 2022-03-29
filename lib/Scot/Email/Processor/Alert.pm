@@ -182,7 +182,7 @@ sub scan_for_msv {
         foreach my $item (@$items) {
             if ( $rowcat =~ /\b$item\b/i ) {
                 my $elapsed = &$timer;
-                $log->warn("Found $item of type $ftype in $elapsed secs in row $rowcat");
+                $log->warn("MSV: Found $item of type $ftype in $elapsed secs in row $rowcat");
                 return 1;
             }
         }
