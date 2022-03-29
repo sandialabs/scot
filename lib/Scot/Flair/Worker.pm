@@ -35,6 +35,7 @@ has stomp   => (
 
 sub _build_stomp {
     my $self    = shift;
+    my $env     = $self->env;
     my $cfg     = {
         hostaname   => $env->modules->[1]->config->{stomp_host},
         port        => $env->modules->[1]->config->{stomp_port},
