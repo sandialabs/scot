@@ -164,7 +164,7 @@ has seconds_ago => (
     is      => 'ro',
     isa     => 'Int',
     required    => 1,
-    default => sub { 60 * 60 * 24 * 1 },
+    default => sub { 60 * 60 * 1 * 1 },
 );
 
 sub since {
