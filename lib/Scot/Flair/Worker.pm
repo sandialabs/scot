@@ -37,8 +37,8 @@ sub _build_stomp {
     my $self    = shift;
     my $env     = $self->env;
     my $cfg     = {
-        hostaname   => $env->modules->[1]->config->{stomp_host},
-        port        => $env->modules->[1]->config->{stomp_port},
+        hostname    => 'localhost',
+        port        => 61613,
         ack         => 'client',
     };
     return Net::Stomp->new($cfg);
