@@ -182,7 +182,7 @@ sub scan_for_msv {
         foreach my $item (@$items) {
             if ( $rowcat =~ /\b$item\b/i ) {
                 my $elapsed = &$timer;
-                $log->warn("Found $item of type $ftype in $elapsed secs in row $rowcat");
+                $log->warn("MSV: Found $item of type $ftype in $elapsed secs in row $rowcat");
                 return 1;
             }
         }
@@ -211,10 +211,12 @@ sub concat_row_cells {
 sub write_row {
     my $self    = shift;
     my $row     = shift;
-    my $msvlog  = $self->msvlog;
+    $self->env->log->debug("Attempting to write row");
 
-    open my $fh, ">>", $msvlog;
-    print $fh, encode_json($row)."\n";
+    my $msvlog  = $self->msvlog;
+    open(my $fh, '>>', $msvlog) or $self->env->log->error("MSV: Unable to open $msvlog for writing");;
+    my $text = (ref($row) eq "HASH") ? encode_json($row) : Dumper($row);
+    print $fh $text."\n";
     close $fh;
 }
 

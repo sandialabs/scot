@@ -30,6 +30,4 @@ $options->{dry_run} = 1 if defined $dry;
 my $sched   = Scot::Email::Scheduler->new($options);
 $sched->run();
 
-END {
-    system("rm -f $pidfile");
-}
+system("rm -f $pidfile");
