@@ -37,7 +37,7 @@ has max_processes => (
 sub _build_max_processes {
     my $self    = shift;
     my $attr    = "max_processes";
-    my $default = 0;
+    my $default = 5;
     my $envname = "scot_app_mail_max_processes";
     return $self->get_config_value($attr, $default, $envname);
 }
