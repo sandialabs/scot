@@ -131,6 +131,10 @@ function install_elasticsearch {
         yum -y install elasticsearch
     fi
 
+    # replace devault /etc/elasticsearch/jvm.options with one with log4j mitigation
+    echo "-- copying jvm.options with log4j mitigation"
+    cp $SCOT_CONFIG_SRC/elasticsearch/jvm.options /etc/elasticsearch
+
 
     if [[ $OS == "Ubuntu" ]]; then
         if [[ $OSVERSION == "18" ]] || [[ $OSVERSION == "20" ]]; then
