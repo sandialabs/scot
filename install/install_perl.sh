@@ -313,6 +313,7 @@ function install_perl_modules {
         Data::Dumper::Concise
         Data::Clean@0.48
         Data::Clean::FromJSON
+        Data::Clean::JSON
         Devel::Size
         Devel::OverloadInfo
         Daemon::Control
