@@ -72,7 +72,7 @@
 -Dlog4j2.disable.jmx=true
 -Dlog4j.skipJansi=true
 # Log4j vuln mitigation
--Dlog4j.formatMsgNoLookups=tre
+-Dlog4j.formatMsgNoLookups=true
 
 ## heap dumps
 
