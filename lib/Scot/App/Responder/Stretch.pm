@@ -2,7 +2,7 @@ package Scot::App::Responder::Stretch;
 
 use Try::Tiny;
 use Data::Dumper;
-# use Data::Clean::ForJSON;
+use Data::Clean::FromJSON;
 use Data::Clean::JSON;
 use Moose;
 extends 'Scot::App::Responder';
@@ -46,7 +46,7 @@ sub process_message {
         return 1;
     }
 
-    my $cleanser    = Data::Clean::ForJSON->get_cleanser;
+    my $cleanser    = Data::Clean::FromJSON->get_cleanser;
     my $record      = $self->get_document($type, $id);
     my $cleansed    = $cleanser->clone_and_clean($record);
 
