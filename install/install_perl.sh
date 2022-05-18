@@ -424,6 +424,7 @@ function install_perl_modules {
         XML::RSSLite
         SVG::Sparkline
         Email::Stuffer
+        URI::Escape::XS
     '
 
     install_cpanm
