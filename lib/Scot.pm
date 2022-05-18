@@ -462,6 +462,11 @@ relies on the browser BasicAuth popup.
             ->to    ('controller-api#remoteflair')
             ->name  ('remoteflair');
 
+    # convenience route to so new flair engine can update
+    $scot   ->post  ('/api/v2/flair_update')
+            ->to    ('controller-api#flair_update')
+            ->name  ('flair_update');
+
 
 =pod
 

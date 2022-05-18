@@ -2779,4 +2779,46 @@ sub emlat {
     };
 }
 
+sub flair_update {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $self->log;
+
+    $log->debug("FLAIR UPDATE");
+
+    try {
+        my $req_href    = $self->get_request_params;
+        my $json        = $req_href->{request}->{json};
+        my $id          = $json->{id} + 0;
+        my $type        = lc($json->{type});
+        my $data        = $json->{data};
+        my $collection  = $self->env->mongo->collection(ucfirst($type));
+        my $object      = $collection->find_iid($id);
+
+        $log->debug("Updating $type:$id with ",{filter=>\&Dumper, value=>$data});
+
+        # data href in update format
+        $object->update({'$set' => $data});
+        $env->mq->send("/topic/scot", {
+            action  => 'updated',
+            data    => {
+                who => 'flair',
+                type=> $type,
+                id  => $id,
+            }
+        });
+        $self->do_render({id => $id, status => 'ok'});
+
+    }
+    catch {
+        $log->error("In API browser, Error: $_");
+        $log->error(longmess);
+        $self->render_error(400, { error_msg => $_ } );
+    };
+}
+
+
+
+        
+
 1;
