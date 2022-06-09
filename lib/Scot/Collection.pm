@@ -56,7 +56,7 @@ has log => (
 sub _build_log {
     my $self    = shift;
     my $log     = get_logger('Scot');
-    $log->info("got logger instance for Collection");
+    $log->trace("got logger instance for Collection");
     return $log;
 }
 

@@ -28,7 +28,7 @@ sub create_audit_rec {
         what    => $href->{what},
         data    => $href->{data},
     };
-    $log->debug("audit rec: ",{filter=>\&Dumper, value=>$data});
+    $log->trace("audit rec: ",{filter=>\&Dumper, value=>$data});
     $self->create($data);
 }
 

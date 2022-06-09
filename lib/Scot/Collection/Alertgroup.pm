@@ -44,6 +44,7 @@ sub split_alertgroups {
 
     # strip data field and ensure it is an array
     my $data    = delete $href->{request}->{json}->{data};
+    $log->trace("data is ", {filter=>\&Dumper, value => $data});
     push @$data, $data if ( ref($data) ne "ARRAY" );
         
     my $alert_rows  = scalar(@$data);

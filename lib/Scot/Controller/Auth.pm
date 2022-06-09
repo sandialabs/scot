@@ -414,7 +414,7 @@ sub valid_mojo_session {
     my $self    = shift;
     my $log     = $self->env->log;
 
-    $log->debug("Looking for Mojo session cookie");
+    $log->trace("Looking for Mojo session cookie");
     
     my $user    = $self->session('user');
     if ( defined $user ) {
@@ -422,7 +422,7 @@ sub valid_mojo_session {
         return $user;
     }
 
-    $log->debug("Invalid or undefined Mojo Session");
+    $log->trace("Invalid or undefined Mojo Session");
     return undef;
 }
 
@@ -472,10 +472,10 @@ sub valid_authorization_header {
             }
         }
 
-        $log->error("Invalid Authentication type in Authentication Header");
+        $log->trace("Invalid Authentication type in Authentication Header");
     }
     else {
-        $log->error("no authorization header present");
+        $log->trace("no authorization header present");
     }
     return undef;
 }
@@ -610,7 +610,7 @@ sub get_groups {
     my @groups  = ();
     my $results;
 
-    $log->debug("Getting groups for user $user with mode $mode");
+    $log->trace("Getting groups for user $user with mode $mode");
 
     # testing short circuit
     if ( $user eq "scot-testing" ) {
