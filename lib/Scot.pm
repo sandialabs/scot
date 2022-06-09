@@ -208,6 +208,14 @@ relies on the browser BasicAuth popup.
             ->to    ('controller-api#emlat')
             ->name  ('emlat');
 
+    $scot   ->post  ('/api/v2/history')
+            ->to    ('controller-api#add_history_api')
+            ->name  ('add_history');
+
+    $scot   ->post  ('/api/v2/stat')
+            ->to    ('controller-api#add_stat_api')
+            ->name  ('add_stat_api');
+
     $scot   ->any   ('/api/v2/search')
             ->to    ('controller-search#search')
             ->name  ('search');

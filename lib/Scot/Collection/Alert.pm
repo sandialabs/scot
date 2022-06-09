@@ -203,7 +203,7 @@ sub api_subthing {
     my $id          = $req->{id}+0;
     my $subthing    = $req->{subthing};
 
-    $self->log->debug("api_subthing: /$thing/$id/$subthing");
+    $self->log->trace("api_subthing: /$thing/$id/$subthing");
 
     if ( $subthing eq "entry" ) {
         return $mongo->collection('Entry')->get_entries_by_target({

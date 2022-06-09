@@ -164,6 +164,8 @@ sub upload {
             $newid = $newentry->id;
         }
 
+        $status->{entry_id} = $newid;
+
         push @statuses, $status;
     }
     # TODO: think about harmonizing this with the returns that are expected

@@ -245,12 +245,16 @@ sub post_create_process {
     my $objtype = ref($object);
     my $model   = lc((split(/::/,$objtype))[-1]);
     my $mongo   = $self->env->mongo;
+    my $log     = $self->env->log;
+
     my $json        = {
         id      => $object->id,
         action  => "post",
         thing   => $model,
         status  => 'ok',
     };
+
+    $log->info("POST CREATE");
 
     if ( ref($object) eq "Scot::Model::Entry" ) {
         $self->update_target($object, "create");
@@ -292,10 +296,11 @@ sub post_create_process {
         $object->get_collection_name." created", 1
     );
 
-    if ( ref($object) eq "Alertgroup" ) {
+    if ( ref($object) eq "Scot::Model::Alertgroup" ) {
         $mongo->collection('Stat')->put_stat(
             'alert created', $object->alert_count
         );
+        $self->env->log->debug("post create alertgroup sending flair queue message");
         $self->env->mq->send("/queue/flair", {
             action  => 'created',
             data    => {
@@ -463,7 +468,7 @@ sub post_list_process {
         while ( my $obj = $cursor->next ) {
             my $agid = $obj->id;
             my $href = $obj->as_hash;
-            $log->debug("looking at alertgroup $agid");
+            $log->trace("looking at alertgroup $agid");
             $href->{has_tasks} = 0;
             my $acur = $self->env->mongo->collection('Alert')->find({alertgroup => $agid});
             ALERT:
@@ -1541,15 +1546,15 @@ sub process_entities {
         );
         my @threaded_entries    = $self->thread_entries($entry_cursor);
 
-        $log->debug("    has ".scalar(@threaded_entries)." entries");
+        $log->trace("    has ".scalar(@threaded_entries)." entries");
 
         my $appearance_count    = $self->get_entity_count($entity);
 
-        $log->debug("    has $appearance_count appearances in scot");
+        $log->trace("    has $appearance_count appearances in scot");
 
         my $entry_count     = $self->get_entry_count($entity);
 
-        $log->debug("    has $entry_count entries ");
+        $log->trace("    has $entry_count entries ");
 
         $things{$entity->value} = {
             id      => $entity->id,
@@ -1929,8 +1934,8 @@ sub get_request_params  {
     my $params  = $self->req->params->to_hash;
     my $json    = $self->req->json;
 
-    $log->debug("params => ", { filter => \&Dumper, value => $params });
-    $log->debug("json   => ", { filter => \&Dumper, value => $json });
+    $log->trace("params => ", { filter => \&Dumper, value => $params });
+    $log->trace("json   => ", { filter => \&Dumper, value => $json });
 
     if ( $params ) {
         $log->trace("Checking Params for JSON values");
@@ -2001,7 +2006,7 @@ sub thread_entries {
     my $mygroups    = $self->get_groups;
     my $user        = $self->session('user');
 
-    $log->debug("Threading entries...");
+    $log->trace("Threading entries...");
     $log->trace("users groups are: ", {filter=>\&Dumper, value=>$mygroups});
 
     my @threaded    = ();
@@ -2087,7 +2092,7 @@ sub thread_entries {
 
     unshift @threaded, @summaries;
 
-    $log->debug("ready to return threaded entries");
+    $log->trace("ready to return threaded entries");
 
     return wantarray ? @threaded : \@threaded;
 }
@@ -2779,6 +2784,70 @@ sub emlat {
     };
 }
 
+sub add_history_api {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $self->log;
+
+    $log->info("add_history");
+
+    try {
+        my $req_href    = $self->get_request_params;
+        my $json        = $req_href->{request}->{json};
+        my $user        = $self->session('user') // 'unknown';
+
+        unless ( defined $json->{what} and defined $json->{target_type} 
+                 and defined $json->{target_id} and defined $json->{who}) {
+            die "Invalid Input for add history";
+        }
+
+        my $collection  = $env->mongo->collection('History');
+        my $id          = $collection->add_history_entry({
+            who     => $user,
+            what    => $json->{what},
+            when    => $self->env->now,
+            target  => {
+                type    => $json->{target_type},
+                id      => $json->{target_id},
+            },
+        });
+        $self->do_render({id => $id, type=>'history', status => 'ok'});
+    }
+    catch {
+        $log->error("In API browser, Error: $_");
+        $log->error(longmess);
+        $self->render_error(400, { error_msg => $_ } );
+
+    };
+}
+
+sub add_stat_api {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $self->log;
+    my $mongo   = $env->mongo;
+
+    $log->info("add_stat_api");
+
+    try {
+        my $req_href    = $self->get_request_params;
+        my $json        = $req_href->{request}->{json};
+
+        unless (defined $json->{metric} and defined $json->{value}) {
+            die "Invalid input for add_stat_api";
+        }
+        $mongo->collection('Stat')->put_stat( $json->{metric}, $json->{value} );
+        $self->do_render({status => 'ok'});
+    }
+    catch {
+        $log->error("In API browser, Error: $_");
+        $log->error(longmess);
+        $self->render_error(400, { error_msg => $_ } );
+
+    };
+}
+
+
 sub flair_update {
     my $self    = shift;
     my $env     = $self->env;
@@ -2816,7 +2885,6 @@ sub flair_update {
         $self->render_error(400, { error_msg => $_ } );
     };
 }
-
 
 
         

@@ -126,7 +126,7 @@ sub _build_ldap_connection {
     my $server  = $self->servername;
     my $scheme  = $self->scheme;
 
-    $log->debug("Connecting to LDAP server $server");
+    $log->trace("Connecting to LDAP server $server");
 
     my $ldap;
 
@@ -211,7 +211,7 @@ sub do_bind {
     my $log     = $self->log;
     my $ldap    = $self->ldap;
 
-    $log->debug("attempting bind to $dn");
+    $log->trace("attempting bind to $dn");
 
     my $msg;
     my $success = 0;
@@ -260,8 +260,8 @@ sub get_users_groups {
     # turn debug off unless needed
     $log->level(Log::Log4perl::Level::to_priority('DEBUG')); 
 
-    $log->debug("ldap group filter is ", { filter=>\&Dumper, value=>$filter});
-    $log->debug("ldap binddn is ", { filter=>\&Dumper, value=>$binddn});
+    $log->trace("ldap group filter is ", { filter=>\&Dumper, value=>$filter});
+    $log->trace("ldap binddn is ", { filter=>\&Dumper, value=>$binddn});
 
     unless ( $self->do_bind($binddn, $bindpassword) ) {
         return -1;
@@ -305,7 +305,7 @@ sub get_users_groups {
     }
     $log->level($loglevel); # restore the loglevel from the rest of the app
 
-    $log->debug("User $user is in the following groups: ".join(',',@groups));
+    $log->trace("User $user is in the following groups: ".join(',',@groups));
     return wantarray ? @groups : \@groups;
 }
 

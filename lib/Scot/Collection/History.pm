@@ -37,7 +37,7 @@ sub add_history_entry {
         $log->error("Failed to create History record for $href->{what}");
         return;
     }
-
+    return $obj->id;
 }
 
 
