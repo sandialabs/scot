@@ -76,6 +76,11 @@ $flairer->process_message({
 });
 $env->log->warn("FLAIR PROCESS MESSAGE ENDS");
 
+my $params = 'message_id=112233445566778899aabbccddeeff';
+$t->get_ok("/scot/api/v2/alertgroup?$params" => {}, "Get by message_id")
+    ->status_is(200);
+    
+
 $t->get_ok("/scot/api/v2/alertgroup" => {},
     "Get alertgroup list")
     ->status_is(200)

@@ -549,7 +549,7 @@ sub api_list {
         $match->{class} = "task";
     }
 
-    $self->log->trace("match is ",{filter=>\&Dumper, value=>$match});
+    $self->log->debug("match is ",{filter=>\&Dumper, value=>$match});
 
     my $cursor;
     if ( ref($self) eq "Scot::Collection::Alertgroup" ) {
