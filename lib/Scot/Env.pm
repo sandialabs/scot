@@ -22,7 +22,7 @@ has debug   => (
     is          => 'ro',
     isa         => 'Int',
     required    => 1,
-    default     => 1, # 1 = print messages, 0 = quiet
+    default     => 0, # 1 = print messages, 0 = quiet
 );
 
 has config_file => (

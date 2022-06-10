@@ -405,6 +405,7 @@ sub list {
 
     try {
         my $req_href        = $self->get_request_params;
+        $log->debug("request = ",{filter=>\&Dumper, value=>$req_href});
         my $collection      = $self->get_collection_req($req_href);
         my ($cursor,$count) = $collection->api_list($req_href, $user, $groups);
         $log->debug("list request return $count records");
