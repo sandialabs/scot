@@ -43,6 +43,8 @@ override api_create => sub {
     $self->validate_permissions($json);
     
     my $signature   = $self->create($json);
+    $signature->update({ '$addToSet' => { 'groups.read' => 'wg-scot-signatures' }});
+    $signature->update({ '$addToSet' => { 'groups.modify' => 'wg-scot-signatures' }});
 
     unless ( $signature ) {
         $log->error("Error creating Signature from ",
