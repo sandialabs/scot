@@ -1,0 +1,59 @@
+#!/bin/bash
+
+echo "SCOT Service Control"
+
+RH_SERVICES='
+    httpd.service
+'
+
+UBUNTU_SERVICES='
+    apache2.service
+'
+ESSENTIALS='
+    mongod.service
+    elasticsearch.service
+    activemq.service
+'
+
+SCOT_SERVICES='
+    scot.service
+    flair.service
+    enricher.service
+    remoteflair.service
+    scrfd.service
+    scepd.service
+    recfpd.service
+'    
+
+COM=$1 
+
+if [ "$COM" != "start" ] && [ "$COM" != "stop" ] && [ "$COM" != "restart" ];then
+    echo "INVALID command in first arg.  Must be start, stop, or restart."
+    exit 1
+fi
+
+DISTRO=$(lsb_release -d | cut -s -f 2)
+CENTID='CentOS Linux release 7.9.2009 (Core)'
+RHID=''
+UBUNTU18ID='Ubuntu 18.04.6 LTS'
+SYSTEMD_PAGER=''
+
+if [[ "$DISTRO" == "$UBUNTU18ID" ]];then
+    for service in $UBUNTU_SERVICES; do
+        systemctl --no-pager $COM $service
+    done
+else 
+    for service in $RH_SERVICES; do
+        systemctl --no-pager $COM $service
+    done
+fi
+
+for service in $ESSENTIALS; do
+    systemctl --no-pager $COM $service
+done
+
+for service in $SCOT_SERVICES; do
+    systemctl --no-pager $COM $service
+done
+
+
