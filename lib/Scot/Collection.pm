@@ -772,6 +772,11 @@ sub validate_permissions {
         $read_groups = $self->lc_array($read_groups);
         $modify_groups = $self->lc_array($modify_groups);
 
+        if ($type =~ /signature/i) {
+            push @$read_groups, 'wg-scot-signatues' if (! grep {/wg-scot-signatures/} @$read_groups);
+            push @$modify_groups, 'wg-scot-signatues' if (! grep {/wg-scot-signatures/} @$modify_groups);
+        }
+
         $json->{groups} = {
             read    => $read_groups,
             modify  => $modify_groups,
