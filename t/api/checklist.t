@@ -37,6 +37,8 @@ $t->post_ok(
     }
 )->status_is(200);
 
+# print Dumper($t->tx->res);
+
 my $checklist_id    = $t->tx->res->json->{id};
 my $updated         = $t->tx->res->json->{updated};
 

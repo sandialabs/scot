@@ -8,7 +8,7 @@ use Mojo::JSON qw/decode_json encode_json/;
 use Search::Elasticsearch;
 # use Search::Elasticsearch::Client::1_0::Direct::Snapshot;
 use Scot::Env;
-use Data::Dumper;
+use Data::Dumper::Concise;
 use Try::Tiny;
 use Try::Tiny::Retry;
 use namespace::autoclean;
@@ -70,7 +70,7 @@ sub _build_es {
         $log->error("Error creating Elasticsearch client: $_");
         return undef;
     };
-    $log->debug("ES is ",{filter=>\&Dumper, value=>$es});
+    $log->trace("ES is ",{filter=>\&Dumper, value=>$es});
     return $es;
 }
 
@@ -92,13 +92,14 @@ sub index {
 
     $log->debug("Sending ES INDEX message: ",{filter=>\&Dumper, value=>\%msg});
 
-    # $es->index(%msg);
-    $es->index(
-        index   => $index,
-        type    => $type,
-        id      => $href->{id},
-        body    => $href,
-    );
+    $es->index(%msg);
+    #$es->index(
+    #    index   => $index,
+    #	# type    => $type,
+    #    type    => '_doc',
+    #    id      => $href->{id},
+    # body    => $href,
+	#);
 
 }
 
@@ -182,8 +183,7 @@ sub update {
     my $id      = shift;
     my $body    = shift;
     my $es      = $self->es;
-
-    my $results = $es->update(
+    my %command = (
         index   => $index,
         type    => $type,
         id      => $id,
@@ -191,6 +191,10 @@ sub update {
             doc => $body
         },
     );
+
+    $self->env->log->debug("update es: ",{filter=>\&Dumper, value=>\%command});
+
+    my $results = $es->update(%command);
     return $results;
 }
 

@@ -857,7 +857,7 @@ export default class SelectedHeader extends React.Component {
     let headerData = this.state.headerData;
     let viewedby = this.viewedbyfunc(headerData);
     let type = this.props.type;
-    let subjectType = this.titleCase(this.props.type); //in signatures we're using the key "name"
+    let subjectType = this.titleCase(this.props.type); //in signatures  and feeds we're using the key "name"
     let id = this.props.id;
     let string = "";
 
@@ -961,12 +961,12 @@ export default class SelectedHeader extends React.Component {
                               </span>
                             </td>
                           ) : null}
-                          {(type === "event" || type === "incident") &&
+                          {(type === "event" || type === "incident" || type === "intel" || type === "product") &&
                           this.state.showEventData &&
                           this.state.headerData.promoted_from.length > 0 ? (
                             <th>Promoted From:</th>
                           ) : null}
-                          {(type === "event" || type === "incident") &&
+                          {(type === "event" || type === "incident" || type === "intel" || type === "product") &&
                           this.state.showEventData &&
                           this.state.headerData.promoted_from.length > 0 ? (
                             <PromotedData
@@ -1245,7 +1245,7 @@ class EntryDataSubject extends React.Component {
     super(props);
     let keyName = "subject";
     let value = this.props.data.subject;
-    if (this.props.type === "signature") {
+    if (this.props.type === "signature" || this.props.type === "feed") {
       keyName = "name";
       value = this.props.data.name;
     } else if (this.props.type === "entity") {
@@ -1307,7 +1307,7 @@ class EntryDataSubject extends React.Component {
 
   componentWillReceiveProps = nextProps => {
     let value = nextProps.data.subject;
-    if (nextProps.type === "signature") {
+    if (nextProps.type === "signature" || nextProps.type === "feed") {
       value = nextProps.data.name;
     } else if (nextProps.type === "entity") {
       value = nextProps.data.value;

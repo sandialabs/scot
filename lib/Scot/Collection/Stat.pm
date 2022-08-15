@@ -15,7 +15,7 @@ sub upsert_metric {
     my $self    = shift;
     my $doc     = shift;
     my $match   = { %$doc }; # shallow clone ok bc only one level deep.
-    my $log     = $self->env->log;
+    my $log     = $self->log;
     # $log->debug("doc: ",{filter=>\&Dumper,value=>$doc});
     delete $match->{value};
     my $obj = $self->find_one($match);
@@ -36,7 +36,7 @@ sub put_stat {
     my $metric  = shift;
     my $value   = shift;
     my $env     = $self->env;
-    my $dt      = DateTime->from_epoch( epoch => $env->now );
+    my $dt      = DateTime->from_epoch( epoch => $self->now );
     $self->increment($dt, $metric, $value);
 }
 
@@ -55,7 +55,7 @@ sub increment {
     my $metric  = shift;
     my $value   = shift;   
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $log->debug("Incrementing a Stat record");
 
@@ -82,8 +82,12 @@ sub increment {
         });
     }
     else {
-        $log->debug("Updating existing stat record");
-        $obj->update_inc( value   => $value );
+        $log->debug("Updating existing stat record ".ref($obj));
+        $log->trace("object is ",{filter=>\&Dumper, value=>$obj});
+        my $newvalue = $obj->value + $value;
+        $obj->update({
+            '$set'  => { value => $newvalue },
+        });
     }
     return $obj;
 }
@@ -91,8 +95,8 @@ sub increment {
 sub get_today_count {
     my $self    = shift;
     my $metric  = shift;
-    my $log     = $self->env->log;
-    my $dt      = DateTime->from_epoch( epoch => $self->env->now );
+    my $log     = $self->log;
+    my $dt      = DateTime->from_epoch( epoch => $self->now );
     my $match   = {
         metric  => $metric,
         year    => $dt->year,
@@ -110,10 +114,8 @@ sub get_today_count {
 sub get_dow_statistics {
     my $self    = shift;
     my $metric  = shift;
-    my $log     = $self->env->log;
-    my %command;
-    my $tie = tie(%command, "Tie::IxHash");
-    %command = (
+    my $log     = $self->log;
+    my @command = (
         mapreduce   => "stat",
         out         => { inline => 1 },
         query       => { metric => $metric},
@@ -130,7 +132,7 @@ sub get_dow_statistics {
     my $db      = $mongo->_mongo_database($db_name);
     my $result  = $self->_try_mongo_op(
         get_stats   => sub {
-            my $job     = $db->run_command(\%command);
+            my $job     = $db->run_command(\@command);
             return $job;
         }
     );

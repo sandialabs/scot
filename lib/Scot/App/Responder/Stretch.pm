@@ -3,6 +3,7 @@ package Scot::App::Responder::Stretch;
 use Try::Tiny;
 use Data::Dumper;
 use Data::Clean::FromJSON;
+use Data::Clean::JSON;
 use Moose;
 extends 'Scot::App::Responder';
 
@@ -28,6 +29,11 @@ sub process_message {
 
     $log->debug("[Wkr $$] Processing Message $action $type $id");
 
+    if ( $type eq "event" and $action eq "updated" ) {
+        $log->debug("skipping an event updated event");
+        return 1;
+    }
+
     if ( $type eq "user" or $type eq "group" ) {
         $log->debug("skipping putting user or group into elasticsearch");
         return 1;
@@ -42,17 +48,21 @@ sub process_message {
 
     my $cleanser    = Data::Clean::FromJSON->get_cleanser;
     my $record      = $self->get_document($type, $id);
-    $cleanser->clean_in_place($record);
+    my $cleansed    = $cleanser->clone_and_clean($record);
+
+    $log->trace("cleansed document: ",{ filter => \&Dumper, value => $cleansed });
+
+    $log->warn("TYPE = $type");
 
     if ( $action eq "created" ) {
-        $es->index('scot', $type, $record);
+        $es->index('scot', $type, $cleansed);
         $log->debug("after sending index");
         $self->put_stat("elastic doc inserted", 1);
         return 1;
     }
 
     if ( $action eq "updated" ) {
-        $es->update("scot", $type, $id, $record);
+        $es->update("scot", $type, $id, $cleansed);
         $log->debug("after sending update");
         $self->put_stat("elastic doc updated", 1);
         return 1;

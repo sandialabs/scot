@@ -112,7 +112,7 @@ sub send {
     $href->{hostname}   = hostname;
 
     my $savelevel   = $log->level();
-    $log->level(Log::Log4perl::Level::to_priority('TRACE'));
+    $log->level(Log::Log4perl::Level::to_priority('WARN'));
 
     $log->trace("Sending STOMP message: ",{filter=>\&Dumper, value=>$href});
 

@@ -291,6 +291,7 @@ export default class SelectedHeaderOptions extends React.Component {
       }.bind(this)
     });
   };
+
   reparseFlair = () => {
     $.ajax({
       type: "put",
@@ -356,11 +357,15 @@ export default class SelectedHeaderOptions extends React.Component {
           newType = "Event";
         } else if (type === "event") {
           newType = "Incident";
+        } else if ( type === "dispatch" ) {
+            newType = "Intel";
+        } else if ( type === "intel" ) {
+            newType = "Product";
         } else if (
           type === "incident" ||
           type === "guide" ||
-          type === "intel" ||
           type === "signature" ||
+          type === "feed" ||
           type === "entity"
         ) {
           showPromote = false;
@@ -392,7 +397,8 @@ export default class SelectedHeaderOptions extends React.Component {
           <Button eventkey="3" onClick={this.toggleFlair} bsSize="xsmall">
             <i className="fa fa-eye-slash" aria-hidden="true" /> Toggle Flair
           </Button>
-          {type === "alertgroup" || type === "event" || type === "intel" ? (
+          {type === "alertgroup" || type === "event" || 
+           type === "dispatch" || type === "intel" ? (
             <Button
               eventkey="4"
               onClick={this.props.viewedByHistoryToggle}

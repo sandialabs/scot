@@ -66,6 +66,23 @@ this is the ihandler, from Scot::Role::Handler
 
 =cut
 
+=item B<type>
+
+handler, commander, hunter, 
+
+=cut
+
+has type => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => 'handler',
+);
+
+sub get_memo {
+    my $self    = shift;
+    return $self->username;
+}
 __PACKAGE__->meta->make_immutable;
 1;
 

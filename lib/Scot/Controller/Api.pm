@@ -2,6 +2,7 @@ package Scot::Controller::Api;
 
 use Carp qw(longmess);
 use Data::Dumper;
+use Digest::MD5 qw(md5_hex);
 use Data::Dumper::HTML qw(dumper_html);
 use Data::UUID;
 use Mojo::JSON qw(decode_json encode_json);
@@ -10,6 +11,8 @@ use Net::IP;
 use Crypt::PBKDF2;
 use Mail::Send;
 use Mojo::UserAgent;
+use Encode;
+use utf8;
 use strict;
 use warnings;
 use base 'Mojolicious::Controller';
@@ -80,6 +83,11 @@ sub create {
         my $collection  = $self->get_collection_req($req_href);
         $req_href->{groups} = $self->session('groups');
         $self->pre_create_process($req_href);
+        
+        my $target_entry;
+        if ( ref($collection) eq "Scot::Collection::Entitytype" ) {
+            $target_entry = delete $req_href->{request}->{json}->{entry_id};
+        }
         my @objects     = $collection->api_create($req_href);
         my @returnjson  = ();
 
@@ -91,8 +99,36 @@ sub create {
                 id  => $object->id,
             };
             if ( ref($object) eq "Scot::Model::Entry" ) {
+                $log->debug("Entry creation: submit to flair queue");
                 $data->{target} = $object->target;
+                $self->env->mq->send("/queue/flair", {
+                    action  => 'created',
+                    data    => $data,
+                });
             }
+
+            if ( ref($object) eq "Scot::Model::Entitytype" ) {
+                $log->debug("We have a new Entitytype, need to reparse entry");
+                $log->debug("target entry is ".$target_entry);
+                $self->env->mq->send("/topic/flair", {
+                    data    => {
+                        reload  => ['entity_types'],
+                    }
+                });
+                $self->env->mq->send("/queue/flair", {
+                    action  => 'updated',
+                    data    => {
+                        who => $req_href->{user},
+                        type=> 'entry',
+                        id  => $target_entry,
+                        option  => {
+                            reload  => ['entity_types'],
+                        }
+                    }
+                });
+            }
+
+            $log->debug("Submitting to topic");
             $self->env->mq->send("/topic/scot",{
                 action  => "created",
                 data    => $data,
@@ -130,7 +166,35 @@ sub pre_create_process {
     # hacky way to check for permissions being set explicitly, or if not
     # set them to the permissions of the user and as a last resort
     # env->default_groups
-    my @permissions = (qw(Alert Alertgroup Checklist Entry Event File Guide
+    $log->warn("PERM CHECK $collection");
+
+    if ( $collection eq "entry" ) {
+        my $mongo   = $env->mongo;
+        $log->debug("Entry Perm Check");
+        # entries should inherit from target
+        my $type    = $json->{target_type};
+        my $id      = $json->{target_id}+0;
+        my $tobj    = $mongo->collection(ucfirst($type))->find_iid($id);
+        if ( $tobj->meta->does_role('Scot::Role::Permission') ) {
+            my $target_groups   = $tobj->groups;
+            $log->debug("target_groups= ",{filter=>\&Dumper, value=>$target_groups});
+            if ( ! defined $json->{groups} and defined $target_groups) {
+                $json->{groups} = $target_groups;
+            }
+        }
+        else {
+            if ( ! defined $json->{groups} ) {
+                my $glist = (defined $usergroups) ? $usergroups : $env->default_groups;
+                $json->{groups} = {
+                    read    => $glist,
+                    modify  => $glist,
+                };
+            }
+        }
+        return;
+    }
+
+    my @permissions = (qw(Alert Alertgroup Checklist Event File Guide
                           Incident Intel Signature));
     if ( grep {/$collection/i} @permissions ) {
         $log->debug("We have thing that should have permissions");
@@ -181,12 +245,16 @@ sub post_create_process {
     my $objtype = ref($object);
     my $model   = lc((split(/::/,$objtype))[-1]);
     my $mongo   = $self->env->mongo;
+    my $log     = $self->env->log;
+
     my $json        = {
         id      => $object->id,
         action  => "post",
         thing   => $model,
         status  => 'ok',
     };
+
+    $log->info("POST CREATE");
 
     if ( ref($object) eq "Scot::Model::Entry" ) {
         $self->update_target($object, "create");
@@ -228,10 +296,19 @@ sub post_create_process {
         $object->get_collection_name." created", 1
     );
 
-    if ( ref($object) eq "Alertgroup" ) {
+    if ( ref($object) eq "Scot::Model::Alertgroup" ) {
         $mongo->collection('Stat')->put_stat(
             'alert created', $object->alert_count
         );
+        $self->env->log->debug("post create alertgroup sending flair queue message");
+        $self->env->mq->send("/queue/flair", {
+            action  => 'created',
+            data    => {
+                who => $self->session('user'),
+                type=> 'alertgroup',
+                id  => $object->id,
+            }
+        });
     }
 
     if ( ref($object) eq "Scot::Model::Alert" ) {
@@ -328,6 +405,7 @@ sub list {
 
     try {
         my $req_href        = $self->get_request_params;
+        $log->debug("request = ",{filter=>\&Dumper, value=>$req_href});
         my $collection      = $self->get_collection_req($req_href);
         my ($cursor,$count) = $collection->api_list($req_href, $user, $groups);
         $log->debug("list request return $count records");
@@ -349,7 +427,8 @@ sub post_list_process {
     my $self        = shift;
     my $cursor      = shift;
     my $req_href    = shift;
-    my $log         = $self->env->log;
+    my $env         = $self->env;
+    my $log         = $env->log;
     my @records     = ();
     my $thing       = $req_href->{collection};
     my $entrycol    = $self->env->mongo->collection('Entry');
@@ -390,7 +469,7 @@ sub post_list_process {
         while ( my $obj = $cursor->next ) {
             my $agid = $obj->id;
             my $href = $obj->as_hash;
-            $log->debug("looking at alertgroup $agid");
+            $log->trace("looking at alertgroup $agid");
             $href->{has_tasks} = 0;
             my $acur = $self->env->mongo->collection('Alert')->find({alertgroup => $agid});
             ALERT:
@@ -401,7 +480,7 @@ sub post_list_process {
                     last ALERT;
                 }
             }
-            $log->debug("pushing on records: ",{filter=>\&Dumper, value=>$href});
+            $log->trace("pushing on records: ",{filter=>\&Dumper, value=>$href});
             push @records, $href;
         }
     }
@@ -479,18 +558,17 @@ This function creates a stat record for view count.
 
 =cut
 
-
 sub get_one {
     my $self    = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $log->debug("GET ONE");
 
     try {
         my $req_href        = $self->get_request_params;
         my $collection      = $self->get_collection_req($req_href);
-        my $id              = $req_href->{id}+0;
+        my $id              = $req_href->{id};
 
         # special case
         if ( $id eq "maxid" ) {
@@ -500,7 +578,7 @@ sub get_one {
             });
             return;
         }
-
+        $log->debug("GET ONE request = ",{filter=>\&Dumper, value=>$req_href});
         my $object  = $collection->api_find($req_href);
         if (! defined $object ) {
             die "Object not found for request:".Dumper($req_href);
@@ -566,7 +644,7 @@ sub post_get_one_process {
 
     if ( ref($object) eq "Scot::Model::Entity" ) {
         # do entity enrichment refresh
-        $self->refresh_entity_enrichments($object);
+        # $self->refresh_entity_enrichments($object);
     }
 
     my $href    = $object->as_hash;
@@ -641,13 +719,18 @@ sub refresh_entity_enrichments {
         }
     }
     else {
-        $self->env->log->debug('No entity updates');
+        $self->log->debug('No entity updates');
     }
 }
 
 sub download_file {
     my $self    = shift;
     my $object  = shift;
+    my $log     = $self->log;
+
+    $log->debug("Downloading ".$object->filename);
+    $log->debug("from ".$object->directory);
+
     $self->res->content->headers->header(
         'Content-Type','application/x-download; name="'.$object->filename.'"');
     $self->res->content->headers->header(
@@ -655,6 +738,7 @@ sub download_file {
     my $static = Mojolicious::Static->new(paths => [ $object->directory ]);
     $static->serve($self, $object->filename);
     $self->rendered;
+    $log->debug("download rendered");
     return;
 }
 
@@ -713,7 +797,7 @@ This function does not create any record to the audit collection
 sub get_subthing {
     my $self    = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
     my $mongo   = $env->mongo;
 
     $log->debug("GET SUBTHING");
@@ -757,7 +841,7 @@ sub post_subthing_process {
     my $req_href    = shift;
     my $cursor      = shift;
     my $subthing    = $req_href->{subthing};
-    my $log         = $self->env->log;
+    my $log         = $self->log;
 
     if ( $subthing eq "entry" ) {
         my @records    = $self->thread_entries($cursor);
@@ -775,8 +859,42 @@ sub post_subthing_process {
 
     foreach my $href (@records) {
         $collection->filter_fields($req_href, $href);
+        if ($subthing eq "alert") {
+            # aggressively filter html from cells
+            $self->scrub_alert_html($href);
+        }
     }
     return \@records;
+}
+
+sub scrub_alert_html {
+    my $self        = shift;
+    my $href        = shift;
+    my $restricter  = $self->restricter;
+    my $log         = $self->env->log;
+
+    my $dwf = $href->{data_with_flair};
+
+    $log->debug("Attempting to cleanse ",{filter=>\&Dumper, value=>$dwf});
+
+    foreach my $col (keys %$dwf) {
+        my $data    = $dwf->{$col};
+        if ( ref($data) eq "ARRAY" ) {
+            for ( my $i = 0; $i < scalar(@$data); $i++ ) {
+                my $item  = $data->[$i];
+                $log->debug("cleaning: $item");
+                my $clean = $restricter->clean($item);
+                $data->[$i] = $clean;
+                $log->debug("cleaned as: ".$data->[$i]);
+            }
+        }
+        else {
+            my $clean   = $restricter->clean($data);
+            $dwf->{$col} = $clean;
+        }
+    }
+
+    $log->debug("Cleaned Row = ",{filter=>\&Dumper, value=>$href});
 }
 
 
@@ -820,7 +938,7 @@ This function creates a stat record for "$collection updated"
 sub update {
     my $self    = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $log->debug("UPDATE");
 
@@ -954,9 +1072,19 @@ sub pre_update_process {
     if ( $object->meta->does_role("Scot::Role::Entitiable") ) {
         $log->debug("object is entitiable");
         my $entity_aref = delete $req->{request}->{json}->{entities};
-        $log->debug("entities aref is ",{filter=>\&Dumper, value=>$entity_aref});
+        $log->trace("entities aref is ",{filter=>\&Dumper, value=>$entity_aref});
         my $collection  = $self->env->mongo->collection('Entity');
-        $collection->update_entities($object, $entity_aref);
+        my ($caref, $uaref, $earef) = $collection->update_entities($object, $entity_aref);
+        foreach my $eid (@$earef) {
+            $self->env->mq->send('/queue/enricher', {
+                action  => 'updated',
+                data    => {
+                    who     => 'scot-api',
+                    type    => 'entity',
+                    id      => $eid,
+                }
+            });
+        }
     }
     
     # if the object does tags or source, we need to adjust the appearances collection
@@ -1056,19 +1184,27 @@ sub promote {
     my $log     = $env->log;
     my $user    = $self->session('user');
 
-    $log->debug("processing promotion");
+    my %plookup = (
+        "Scot::Model::Alert"    => "Event",
+        "Scot::Model::Event"    => "Incident",
+        "Scot::Model::Dispatch" => "Intel",
+        "Scot::Model::Intel"    => "Product",
+    );
+
+    my $refname = ref($object);
+
+    $log->debug("processing promotion of $refname");
 
     # find or create the promotion target
-    my $promotion_col;
-    if ( ref($object) eq "Scot::Model::Alert" ) {
-        $promotion_col  = $mongo->collection("Event");
-    }
-    elsif ( ref($object) eq "Scot::Model::Event" ) {
-        $promotion_col  = $mongo->collection("Incident");
-    }
-    else {
+    my $tcol = $plookup{$refname};
+
+    $log->debug("$refname promotes to a $tcol");
+
+    if ( ! defined $tcol ) {
         die "Unable to promote a ".ref($object);
     }
+    
+    my $promotion_col = $mongo->collection(ucfirst($tcol));
 
     my $promotion_obj = $promotion_col->get_promotion_obj($object,$req);
     $promotion_obj->update({
@@ -1087,15 +1223,48 @@ sub promote {
                 id  => $entry->id,
             }
         });
+        $self->env->mq->send("/queue/flair",{
+            action  => "created",
+            data    => {
+                who => $req->{user},
+                type=> "entry",
+                id  => $entry->id,
+            }
+        });
 
-##      use this to memorialize the likaboss object
-    if ( $env->meta->has_attribute('lbwebservice') ) {
-        foreach my $rootuid (@{$object->data->{rootUID}}) {
-            $log->debug("memorializing $rootuid");
-            $self->env->lbwebservice->memorialize($rootuid);
+        ##      use this to memorialize the likaboss object
+        if ( $env->meta->has_attribute('lbwebservice') ) {
+            foreach my $rootuid (@{$object->data->{rootUID}}) {
+                $log->debug("memorializing $rootuid");
+                $self->env->lbwebservice->memorialize($rootuid);
+            }
         }
     }
 
+    if ( ref($object) eq "Scot::Model::Dispatch" ) {
+        my $source = pop @{$object->source};
+        my $feed   = $mongo->collection('Feed')->find_one({name => $source});
+        if ( defined $feed ) {
+            $feed->update_inc('promotions' => 1);
+        }
+        my $entry = $mongo->collection('Entry')
+                          ->create_from_promoted_dispatch($object, $promotion_obj);
+        $self->env->mq->send("/topic/scot", {
+            action  => 'created',
+            data    => {
+                who => $req->{user},
+                type => "entry",
+                id  => $entry->id,
+            }
+        });
+        $self->env->mq->send("/queue/flair", {
+            action  => 'created',
+            data    => {
+                who => $req->{user},
+                type => "entry",
+                id  => $entry->id,
+            }
+        });
     }
 
     # update the promotee
@@ -1197,6 +1366,8 @@ sub update_alerts {
     my $mongo   = $self->env->mongo;
     my $col     = $mongo->collection('Alertgroup');
     my $status  = $col->update_alerts_in_alertgroup($object, $req);
+
+
     if ( scalar(@{$status->{updated}}) > 0 ) {
         foreach my $aid (@{$status->{updated}}) {
             $self->env->mq->send("/topic/scot",{
@@ -1264,6 +1435,7 @@ sub post_update_process {
 
 
     foreach my $uphref (@$updates) {
+        $env->log->trace("--- UPREF --- ",{filter=>\&Dumper, value => $uphref});
         if ( $uphref->{attribute} eq "status" ) {
             my $msg = "$colname status change to ". $uphref->{new_value};
             $env->mongo->collection('Stat')->put_stat($msg,1);
@@ -1308,8 +1480,11 @@ sub post_update_process {
     $env->mq->send("/topic/scot", $mq_msg);
 
     if ( ref($object) eq "Scot::Model::Entry" ) {
+        $env->mq->send("/queue/flair", $mq_msg);
         $mq_msg->{data} = {
             who     => $self->session('user'),
+            type    => $colname,
+            id      => $object->id,
             target  => { type => $object->target->{type},
                          id   => $object->target->{id}, },
             what    => "Entry update",
@@ -1325,6 +1500,10 @@ sub post_update_process {
                 $target->update_set(updated => $env->now);
             }
         }
+    }
+
+    if ( ref($object) eq "Scot::Model::Alertgroup" ) {
+        $env->mq->send("/queue/flair", $mq_msg);
     }
 
     if ( ref($object) eq "Scot::Model::Sigbody" ) {
@@ -1368,15 +1547,15 @@ sub process_entities {
         );
         my @threaded_entries    = $self->thread_entries($entry_cursor);
 
-        $log->debug("    has ".scalar(@threaded_entries)." entries");
+        $log->trace("    has ".scalar(@threaded_entries)." entries");
 
         my $appearance_count    = $self->get_entity_count($entity);
 
-        $log->debug("    has $appearance_count appearances in scot");
+        $log->trace("    has $appearance_count appearances in scot");
 
         my $entry_count     = $self->get_entry_count($entity);
 
-        $log->debug("    has $entry_count entries ");
+        $log->trace("    has $entry_count entries ");
 
         $things{$entity->value} = {
             id      => $entity->id,
@@ -1388,7 +1567,7 @@ sub process_entities {
             status  => $entity->status,
             entries => \@threaded_entries,
         };
-        $log->debug("thing{".$entity->value."} = ",
+        $log->trace("thing{".$entity->value."} = ",
                     {filter=>\&Dumper, value=>$things{$entity->value}});
 
     }
@@ -1472,7 +1651,7 @@ sub update_target {
         ucfirst($object->target->{type})
     )->find_iid($object->target->{id});
 
-    $self->env->log->debug("updating target ",{filter=>\&Dumper, value=>$object->target});
+    $self->env->log->trace("updating target ",{filter=>\&Dumper, value=>$object->target});
 
     my $tmphref = $target->as_hash;
 #    $self->env->log->debug("found target       = ",{filter=>\&Dumper, value=>$tmphref});
@@ -1751,13 +1930,13 @@ sub get_request_params  {
     my $log     = $env->log;
 
     my $mreq    = $self->req;
-    $log->debug("mojolicious request obj: ",{filter=>\&Dumper, value=>$mreq});
+    $log->trace("mojolicious request obj: ",{filter=>\&Dumper, value=>$mreq});
 
     my $params  = $self->req->params->to_hash;
     my $json    = $self->req->json;
 
-    $log->debug("params => ", { filter => \&Dumper, value => $params });
-    $log->debug("json   => ", { filter => \&Dumper, value => $json });
+    $log->trace("params => ", { filter => \&Dumper, value => $params });
+    $log->trace("json   => ", { filter => \&Dumper, value => $json });
 
     if ( $params ) {
         $log->trace("Checking Params for JSON values");
@@ -1790,11 +1969,13 @@ sub get_request_params  {
             json    => $json,
         },
     );
-    if ( $request{collection} eq "task" ) {
+    if ( defined $request{collection} && $request{collection} eq "task" ) {
         $request{collection} = "entry";
         $request{task_search} = 1;
     }
-    $log->debug("Request is ",{ filter => \&Dumper, value => \%request } );
+    # be careful if you re-enable.  form login will cause password to be
+    # written to log!
+    # $log->debug("Request is ",{ filter => \&Dumper, value => \%request } );
     return wantarray ? %request : \%request;
 }
 
@@ -1826,8 +2007,8 @@ sub thread_entries {
     my $mygroups    = $self->get_groups;
     my $user        = $self->session('user');
 
-    $log->debug("Threading entries...");
-    $log->debug("users groups are: ", {filter=>\&Dumper, value=>$mygroups});
+    $log->trace("Threading entries...");
+    $log->trace("users groups are: ", {filter=>\&Dumper, value=>$mygroups});
 
     my @threaded    = ();
     my %where       = ();
@@ -1906,13 +2087,13 @@ sub thread_entries {
         $log->debug("The parent has $child_count children");
         $parent_kids_aref->[$new_child_index]  = $href;
         $log->debug("added entry to parents aref");
-        $log->debug("parents children: ",{filter=>\&Dumper, value => $parent_kids_aref});
+        $log->trace("parents children: ",{filter=>\&Dumper, value => $parent_kids_aref});
         $where{$entry->id} = \$parent_kids_aref->[$new_child_index];
     }
 
     unshift @threaded, @summaries;
 
-    $log->debug("ready to return threaded entries");
+    $log->trace("ready to return threaded entries");
 
     return wantarray ? @threaded : \@threaded;
 }
@@ -2000,13 +2181,15 @@ sub whoami {
     my $mongo   = $env->mongo;
     my $log     = $env->log;
 
+    $log->debug("Who ami request for $user");
+
     my $userobj = $mongo->collection('User')->find_one({username => $user});
 
     if ( defined ( $userobj )  ) {
         $userobj->update_set(lastvisit => $env->now);
         my $user_href   = $userobj->as_hash;
         my $group_aref  = $self->get_groups;
-        $log->debug("groups aref: ",{filter=>\&Dumper,value=>$group_aref});
+        $log->trace("groups aref: ",{filter=>\&Dumper,value=>$group_aref});
         if ( $env->is_admin($user_href->{username}, $group_aref)){
             $user_href->{is_admin} = 1;
         }
@@ -2079,7 +2262,7 @@ sub get_form {
 
     my $form    = $env->forms;
 
-    $log->debug("Forms is ",{filter=>\&Dumper, value=>$form});
+    $log->trace("Forms is ",{filter=>\&Dumper, value=>$form});
 
     $self->do_render($form);
 }
@@ -2097,7 +2280,7 @@ sub undelete {
 
     my $collection  = (split(/::/,$obj->type))[-1];
     my $href    = $obj->data;
-    $log->debug("obj dump ",{filter=>\&Dumper, value=>$href});
+    $log->trace("obj dump ",{filter=>\&Dumper, value=>$href});
     my %request = (
         collection  => lc($collection),
         id          => $href->{id},
@@ -2110,7 +2293,7 @@ sub undelete {
     $log->debug("restore id = ".$restored->id);
     push my @returnjson, $self->post_create_process($restored);
 
-    $log->debug("Returnjson is ", {filter=>\&Dumper, value=>\@returnjson});
+    $log->trace("Returnjson is ", {filter=>\&Dumper, value=>\@returnjson});
 
     my $data = {
         who => $req->{user},
@@ -2159,7 +2342,7 @@ sub export {
         return;
         my $html    = $self->render_to_string();
 
-        $log->debug("HTML is ",{filter=>\&Dumper, value=>$html});
+        $log->trace("HTML is ",{filter=>\&Dumper, value=>$html});
 
         # $self->mail_to_user($user, $html, $collection, $id);
         # $self->do_render({ status => "Email generated and sent to user" } );
@@ -2215,7 +2398,7 @@ sub create_export {
         $href->{tags}   = $self->build_tag_export($object->id, $col);
     }
 
-    $log->debug("export data is ",{filter=>\&Dumper,value=>$href});
+    $log->trace("export data is ",{filter=>\&Dumper,value=>$href});
 
     return $href;
 }
@@ -2417,5 +2600,294 @@ sub lriproxy {
         $self->render_error(400, { error_msg => $_ } );
     };
 }
+
+sub entitytypecount {
+    my $self    = shift;
+    my $mongo   = $self->env->mongo;
+    my @records = ();
+
+    my $query   = [
+        { '$group' => {
+            '_id' => '$type',
+            'count' => { '$sum' => 1 }
+        }},
+        {
+            '$sort' => { count => -1 }
+        }
+    ];
+    my $cursor  = $mongo->collection('Entity')->get_aggregate_cursor($query);
+    while ( my $row = $cursor->next ) {
+        push @records, $row;
+    }
+
+    my $json    = {
+        records => \@records,
+        queryRecordCount    => scalar(@records),
+        totalRecordCount    => scalar(@records),
+    };
+
+    $self->do_render($json);
+}
+
+sub get_chef_uri {
+    my $self    = shift;
+    my $uri     = $self->env->cyber_chef_uri;
+    $self->do_render({ chef_uri => $uri });
+}
+
+# this will allow the scot browser extension to submit html 
+# to be saved or just flaired.
+sub remoteflair {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+    my $user    = $self->session('user');
+
+    $log->debug("Remote Browser Post");
+
+    try {
+        my $req_href    = $self->get_request_params;
+        my $req_data    = $req_href->{request}->{json};
+
+        $log->trace("Request is ",{filter=>\&Dumper, value=>$req_data});
+
+        # get the command
+        my $command = $req_data->{command};
+
+        # pull out the html sent
+        my $html    = $req_data->{html};
+
+        my $encoded = utf8::is_utf8($html) ?
+                        Encode::encode_utf8($html) : $html;
+
+        # hash the content
+        my $md5     = md5_hex($encoded);
+
+        # get the URI of the page being flaired
+        my $uri     = $req_data->{uri};
+
+        my $data    = {
+            command => $command,
+            md5     => $md5,
+            uri     => $uri,
+            html    => $html,
+            status  => 'requested',
+        };
+        
+        if ( $command eq "insert") {
+            $data->{target} = $req_data->{target};
+        }
+
+        $log->trace("Creating with ",{filter=>\&Dumper, value => $data});
+
+        # save RemoteFlair Object
+        my $rfobj = $mongo->collection("Remoteflair")->create($data);
+
+        if (! defined $rfobj ) {
+            $log->error("Failed to create RemoteFlair Object!");
+            $self->render_error(400, { error_msg => "Failed to create RemoteFlair Object"});
+            return;
+        }
+
+        $log->debug("created rfobj");
+
+        # place command (create, add entry, or flair-in-place)
+        # on queue
+        $self->env->mq->send("/queue/flair",{
+            action  => 'created',
+            data    => {
+                type    => 'remoteflair',
+                id      => $rfobj->id,
+            },
+        });
+
+        $log->debug("message on queue");
+
+        # return 
+        $self->render(
+            status  => 202,
+            json    => {
+                rfid    => $rfobj->id,
+            },
+        );
+
+    }
+    catch {
+        $log->error("In API browser, Error: $_");
+        $log->error(longmess);
+        $self->render_error(400, { error_msg => $_ } );
+
+    };
+}
+
+sub emlat {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $self->log;
+
+    $log->info("EMLAT");
+
+    try {
+        my $req_href    = $self->get_request_params;
+        my $json        = $req_href->{request}->{json};
+        # expect:
+        # { alert_id: int, emlat_score: float }
+        if ( ! defined $json->{alert_id} or ! defined $json->{emlat_score} ) {
+            die "Invalid input";
+        }
+        my $alert_id    = $json->{alert_id};
+        my $score       = $json->{emlat_score};
+
+        # 1. get the alert requested
+        my $collection  = $self->env->mongo->collection('Alert');
+        my $alert       = $collection->find_iid($json->{alert_id});
+
+        if (not defined $alert) {
+            $log->debug("req_href = ",{filter => \&Dumper, value => $req_href});
+            die "Alert $alert_id not found";
+        }
+
+        # 2. update the alert: columns, data, and data_with_flair
+        my $columns = $alert->columns;
+        if (not grep {/emlat_score/} @$columns) {
+            unshift @$columns, 'emlat_score';   # prepend emlat_score column
+        }
+
+        my $update  = {
+            columns             => $columns,
+            'data.emlat_score'  => $score,
+            'data.columns'      => $columns,
+            'data_with_flair.emlat_score'   => $score,
+            'data_with_flair.columns'      => $columns,
+        };
+        $log->debug("updating with ",{filter=>\&Dumper, value => $update});
+        $alert->update({'$set' => $update});
+
+
+        # 3. send activemq notification to browsers
+        $env->mq->send("/topic/scot", {
+            action  => 'updated',
+            data    => {
+                who => 'emlat',
+                type=> 'alert',
+                id  => $alert_id,
+            }
+        });
+        $self->do_render({id => $alert_id, status => 'ok'});
+
+    }
+    catch {
+        $log->error("In API browser, Error: $_");
+        $log->error(longmess);
+        $self->render_error(400, { error_msg => $_ } );
+
+    };
+}
+
+sub add_history_api {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $self->log;
+
+    $log->info("add_history");
+
+    try {
+        my $req_href    = $self->get_request_params;
+        my $json        = $req_href->{request}->{json};
+        my $user        = $self->session('user') // 'unknown';
+
+        unless ( defined $json->{what} and defined $json->{target_type} 
+                 and defined $json->{target_id} and defined $json->{who}) {
+            die "Invalid Input for add history";
+        }
+
+        my $collection  = $env->mongo->collection('History');
+        my $id          = $collection->add_history_entry({
+            who     => $user,
+            what    => $json->{what},
+            when    => $self->env->now,
+            target  => {
+                type    => $json->{target_type},
+                id      => $json->{target_id},
+            },
+        });
+        $self->do_render({id => $id, type=>'history', status => 'ok'});
+    }
+    catch {
+        $log->error("In API browser, Error: $_");
+        $log->error(longmess);
+        $self->render_error(400, { error_msg => $_ } );
+
+    };
+}
+
+sub add_stat_api {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $self->log;
+    my $mongo   = $env->mongo;
+
+    $log->info("add_stat_api");
+
+    try {
+        my $req_href    = $self->get_request_params;
+        my $json        = $req_href->{request}->{json};
+
+        unless (defined $json->{metric} and defined $json->{value}) {
+            die "Invalid input for add_stat_api";
+        }
+        $mongo->collection('Stat')->put_stat( $json->{metric}, $json->{value} );
+        $self->do_render({status => 'ok'});
+    }
+    catch {
+        $log->error("In API browser, Error: $_");
+        $log->error(longmess);
+        $self->render_error(400, { error_msg => $_ } );
+
+    };
+}
+
+
+sub flair_update {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $self->log;
+
+    $log->debug("FLAIR UPDATE");
+
+    try {
+        my $req_href    = $self->get_request_params;
+        my $json        = $req_href->{request}->{json};
+        my $id          = $json->{id} + 0;
+        my $type        = lc($json->{type});
+        my $data        = $json->{data};
+        my $collection  = $self->env->mongo->collection(ucfirst($type));
+        my $object      = $collection->find_iid($id);
+
+        $log->debug("Updating $type:$id with ",{filter=>\&Dumper, value=>$data});
+
+        # data href in update format
+        $object->update({'$set' => $data});
+        $env->mq->send("/topic/scot", {
+            action  => 'updated',
+            data    => {
+                who => 'flair',
+                type=> $type,
+                id  => $id,
+            }
+        });
+        $self->do_render({id => $id, status => 'ok'});
+
+    }
+    catch {
+        $log->error("In API browser, Error: $_");
+        $log->error(longmess);
+        $self->render_error(400, { error_msg => $_ } );
+    };
+}
+
+
+        
 
 1;

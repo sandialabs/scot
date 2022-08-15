@@ -4,6 +4,7 @@ use lib '../../../lib';
 use Moose 2;
 use Data::Dumper;
 use HTML::Element;
+use HTML::Entities;
 use JSON::XS;
 
 extends 'Scot::Collection';
@@ -19,18 +20,17 @@ sub create_from_promoted_alert {
     my $alert   = shift;
     my $event   = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;
-    my $mq      = $env->mq;
+    my $log     = $self->log;
+    my $mongo   = $self->meerkat;
     my $json;
 
     $log->debug("Creating/Adding to Alert Entry from promoted Alert");
 
     $json->{groups}->{read}    = $alert->groups->{read} // 
-                                 $env->default_groups->{read};
+                                 $self->defaults->{default_groups}->{read};
     $json->{groups}->{read} = $self->lc_array($json->{groups}->{read});
     $json->{groups}->{modify}  = $alert->groups->{modify} // 
-                                 $env->default_groups->{modify};
+                                 $self->defaults->{default_groups}->{modify};
     $json->{groups}->{modify} = $self->lc_array($json->{groups}->{modify});
     $json->{target}            = {
         type                  => 'event',
@@ -79,13 +79,52 @@ sub create_from_promoted_alert {
     return $entry_obj;
 }
 
+sub create_from_promoted_dispatch {
+    my $self    = shift;
+    my $dispatch = shift;
+    my $intel   = shift;
+    my $log     = $self->log;
+
+    $log->debug("create from promoted dispatch");
+
+    my $dispatch_id = $dispatch->id + 0;
+
+    $log->debug("--- dispatch id = $dispatch_id");
+
+    my $entry   = $self->meerkat->collection('Entry')->find_one({
+        'target.type' => 'dispatch', 
+        'target.id'   => $dispatch_id 
+    });
+
+    if ( ! defined $entry ) {
+        $log->error("FAILED to retrieve Entry for dispatch $dispatch_id");
+    }
+
+    my $newgroups = (defined $entry) ? $entry->groups : $self->defaults->{default_groups};
+    my $newbody   = (defined $entry) ? $entry->body   : 'error retrieving entry from dispatch';
+    my $newowner  = (defined $entry) ? $entry->owner  : 'scot-admin';
+
+    my $new_e_data = {
+        target  => {
+            type    => 'intel',
+            id      => $intel->id,
+        },
+        groups  => $newgroups,
+        summary => 0,
+        body    => $newbody,
+        owner   => $newowner,
+    };  
+    my $newentry = $self->meerkat->collection('Entry')->create($new_e_data);
+    return $newentry;
+}
+
 sub find_existing_alert_entry {
     my $self    = shift;
     my $type    = shift;
     my $id      = shift;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
 
-    my $col     = $self->env->mongo->collection('Entry');
+    my $col     = $self->meerkat->collection('Entry');
     my $obj     = $col->find_one({
         'target.type'   => $type,
         'target.id'     => $id,
@@ -104,8 +143,8 @@ sub find_existing_file_entry {
     my $self    = shift;
     my $type    = shift;
     my $id      = shift;
-    my $log     = $self->env->log;
-    my $col     = $self->env->mongo->collection('Entry');
+    my $log     = $self->log;
+    my $col     = $self->meerkat->collection('Entry');
     my $obj     = $col->find_one({
         'target.type'   => $type,
         'target.id'     => $id,
@@ -124,7 +163,7 @@ sub build_table {
     my $self    = shift;
     my $alert   = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
     my $data    = $alert->data;
     my $html    = qq|<table class="tablesorter alertTableHorizontal">\n|;
 
@@ -176,7 +215,7 @@ sub build_table {
 
     foreach my $key ( @{$columns} ) {
         next if ($key eq "columns");
-        my $value   = $data->{$key};
+        my $value   = encode_entities($data->{$key});
         if ( $key =~ /^message[_-]id$/i ) {
             $value =~ s{<(.*?)>}{&lt;$1&gt;};
         }
@@ -210,8 +249,8 @@ sub create_from_file_upload {
     my $target_id   = shift;
     my $fid         = $fileobj->id;
     my $env         = $self->env;
-    my $mongo       = $env->mongo;
-    my $log         = $env->log;
+    my $mongo       = $self->meerkat;
+    my $log         = $self->log;
     my $htmlsrc     = <<EOF;
 <div class="fileinfo">
     <table>
@@ -254,8 +293,10 @@ EOF
             type   => $target_type,
         },
         groups     => {
-            read   => $fileobj->groups->{read} // $env->default_groups->{read},
-            modify => $fileobj->groups->{modify} // $env->default_groups->{modify},
+            read   => $fileobj->groups->{read} // 
+                        $self->defaults->{default_groups}->{read},
+            modify => $fileobj->groups->{modify} // 
+                        $self->defaults->{default_groups}->{modify},
         },
     };
 
@@ -298,8 +339,8 @@ override api_create => sub {
     my $self    = shift;
     my $req     = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;
+    my $log     = $self->log;
+    my $mongo   = $self->meerkat;
     my $user    = $req->{user};
     my $json    = $req->{request}->{json};
     my $target_type = $json->{target_type};
@@ -326,7 +367,7 @@ override api_create => sub {
     if ( ! defined $json->{tlp} ) {
         $json->{tlp} = $self->get_target_tlp($target_type, $target_id);
     }
-    if ( $json->{class} eq "json" ) {
+    if ( defined $json->{class} && $json->{class} eq "json" ) {
         # we need to create body from json in metadata
         $json->{body}   = $self->create_json_html($json->{metadata});
     }
@@ -337,14 +378,14 @@ sub get_target_tlp {
     my $self    = shift;
     my $type    = shift;
     my $id      = shift;
-    my $mongo   = $self->env->mongo;
+    my $mongo   = $self->meerkat;
 
     my $obj = $mongo->collection(ucfirst($type))->find_one({id => $id});
     if ( defined $obj) {
         if ( $obj->meta->does_role("Scot::Role::TLP") ) {
             # get targets tlp, if not defined set it to unset
             my $tlp = $obj->tlp // 'unset';
-            $self->env->log->debug("Setting tlp to $tlp");
+            $self->log->debug("Setting tlp to $tlp");
             return $tlp;
         }
     }
@@ -471,7 +512,7 @@ sub validate_task {
     # { when => x, who => user, status => y }
 
     unless ( defined $json->{task}->{when} ) {
-        $href->{when} = $self->env->now();
+        $href->{when} = $self->now();
     }
 
     unless ( defined $json->{task}->{who} ) {
@@ -511,7 +552,7 @@ sub create_file_entry {
     my $fileobj = shift;
     my $entryid = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $entryid += 0;
 
@@ -578,7 +619,7 @@ sub get_entries_on_alertgroups_alerts {
     my $self        = shift;
     my $alertgroup  = shift;
     my $env         = $self->env;
-    my $mongo       = $env->mongo;
+    my $mongo       = $self->meerkat;
 
     my $id  = $alertgroup->id;
     my $ac  = $mongo->collection('Alert')->find({alertgroup => $id});
@@ -601,10 +642,10 @@ sub api_subthing {
     my $id          = $req->{id} + 0;
     my $subthing    = $req->{subthing};
     my $env         = $self->env;
-    my $mongo       = $env->mongo;
-    my $log         = $env->log;
+    my $mongo       = $self->meerkat;
+    my $log         = $self->log;
 
-    $log->debug("getting /$thing/$id/$subthing");
+    $log->trace("getting /$thing/$id/$subthing");
 
     if ( $subthing eq "history" ) {
         return $mongo->collection('History')
@@ -650,7 +691,7 @@ sub move_entry {
     my $self    = shift;
     my $object  = shift;
     my $thref   = shift;
-    my $mongo   = $self->env->mongo;
+    my $mongo   = $self->meerkat;
 
     my $current = $mongo->collection(
         ucfirst($object->target->{type})
@@ -661,11 +702,11 @@ sub move_entry {
     )->find_iid($thref->{id});
 
     $current->update({
-        '$set'  => { updated => $self->env->now },
+        '$set'  => { updated => $self->now },
         '$inc'  => { entry_count => -1 },
     });
     $new->update({
-        '$set'  => { updated => $self->env->now },
+        '$set'  => { updated => $self->now },
         '$inc'  => { entry_count => 1 },
     });
 }

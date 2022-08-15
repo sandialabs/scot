@@ -1,0 +1,12 @@
+[Unit]
+Description=SCOT Email Input Daemon
+
+[Service]
+ExecStart=/opt/scot/bin/recemail.pl
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target

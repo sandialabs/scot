@@ -9,7 +9,7 @@ use Data::Dumper;
 use Scot::Collection;
 use Scot::Collection::Alertgroup;
 use Mojo::JSON qw(encode_json decode_json);
-use Scot::App::Responder::Flair;
+use Scot::Flair::Worker;
 
 $ENV{'scot_mode'}           = "testing";
 $ENV{'scot_auth_type'}      = "Testing";
@@ -38,9 +38,8 @@ my $env = Scot::Env->instance;
 # use this to set csrf protection 
 # though not really used due to testing auth 
 
-my $flairer = Scot::App::Responder::Flair->new({
-    config_file => "../../../Scot-Internal-Modules/etc/flair.cfg.pl"
-});
+my $worker = Scot::Flair::Worker->new(env => $env);
+my $flairer = $worker;
 
 $t->ua->on(start => sub {
     my ($ua, $tx) = @_;
@@ -65,13 +64,22 @@ $t->post_ok(
 
 my $alertgroup_id   = $t->tx->res->json->{id};
 my $updated         = $t->tx->res->json->{updated};
-$flairer->process_message(undef, {
-    action  => "created",
-    data    => {
-        type    => "alertgroup",
-        id      => $alertgroup_id
+$env->log->warn("FLAIR PROCESS MESSAGE");
+$flairer->process_message({ 
+    body => {
+        action  => "created",
+        data    => {
+            type    => "alertgroup",
+            id      => $alertgroup_id
+        },
     }
 });
+$env->log->warn("FLAIR PROCESS MESSAGE ENDS");
+
+my $params = 'message_id=112233445566778899aabbccddeeff';
+$t->get_ok("/scot/api/v2/alertgroup?$params" => {}, "Get by message_id")
+    ->status_is(200);
+    
 
 $t->get_ok("/scot/api/v2/alertgroup" => {},
     "Get alertgroup list")
@@ -121,9 +129,9 @@ $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/entity" => {},
     ->json_is('/records/10.10.10.2/type' => "ipaddr")
     ->json_is('/records/10.10.10.1/type' => "ipaddr");
 
-#  print Dumper($t->tx->res->json), "\n";
-#  done_testing();
-#  exit 0;
+  # print Dumper($t->tx->res->json), "\n";
+  # done_testing();
+  # exit 0;
 
 $t->put_ok("/scot/api/v2/alert/$alert1_id" => json => 
     {data => $alert1_data,

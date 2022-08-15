@@ -44,6 +44,7 @@ sub upload {
     my @statuses    = ();
 
     $log->debug("Processing Uploaded File(s)");
+    $ENV{MOJO_MAX_MESSAGE_SIZE} = 67108864; # 64 MB
 
     my @uploads = $self->req->upload('upload');
     my $user    = $self->session('user');
@@ -162,6 +163,8 @@ sub upload {
         else {
             $newid = $newentry->id;
         }
+
+        $status->{entry_id} = $newid;
 
         push @statuses, $status;
     }

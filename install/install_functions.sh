@@ -160,13 +160,15 @@ function start_services {
     fi
 
     if [[ $OS == "Ubuntu" ]]; then
-        if [[ $OSVERSION == "18" ]]; then
+        if [[ $OSVERSION == "18" ]] || [[ $OSVERSION == "20" ]]; then
             systemctl daemon-reload
             systemctl restart mongod.service
             wait_for_mongo
             systemctl --no-pager restart scot.service
             systemctl --no-pager restart apache2.service
-            systemctl --no-pager restart scfd.service
+            systemctl --no-pager restart flair.service
+            systemctl --no-pager restart enricher.service
+            systemctl --no-pager restart remoteflair.service
             systemctl --no-pager restart scrfd.service
             systemctl --no-pager restart scepd.service
             systemctl --no-pager restart recfpd.service
@@ -176,7 +178,9 @@ function start_services {
             wait_for_mongo
             systemctl --no-pager restart scot.service
             systemctl --no-pager restart apache2.service
-            systemctl --no-pager restart scfd.service
+            systemctl --no-pager restart flair.service
+            systemctl --no-pager restart enricher.service
+            systemctl --no-pager restart remoteflair.service
             systemctl --no-pager restart scrfd.service
             systemctl --no-pager restart scepd.service
             systemctl --no-pager restart recfpd.service
@@ -185,7 +189,7 @@ function start_services {
             wait_for_mongo
             service scot restart
             service apache2 restart
-            service scfd restart
+            service scf2d restart
             service scrfd restart
             service scepd restart
             service restart recfpd.service
@@ -197,7 +201,9 @@ function start_services {
         wait_for_mongo
         systemctl --no-pager restart scot.service
         systemctl --no-pager restart httpd.service
-        systemctl --no-pager restart scfd.service
+        systemctl --no-pager restart flair.service
+        systemctl --no-pager restart enricher.service
+        systemctl --no-pager restart remoteflair.service
         systemctl --no-pager restart scrfd.service
         systemctl --no-pager restart scepd.service
         systemctl --no-pager restart recfpd.service

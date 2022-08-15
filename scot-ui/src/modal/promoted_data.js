@@ -38,11 +38,17 @@ class PromotedData extends Component {
     let fullarr = [];
     let shortarr = [];
     let shortforlength = 3;
+
     if (this.props.type === "event") {
       promotedFromType = "alert";
     } else if (this.props.type === "incident") {
       promotedFromType = "event";
+    } else if ( this.props.type === "intel" ) {
+        promotedFromType = "dispatch";
+    } else if ( this.props.type === "product" ) {
+        promotedFromType = "intel";
     }
+
     //makes large array for modal
     for (let i = 0; i < this.props.data.length; i++) {
       if (i > 0) {

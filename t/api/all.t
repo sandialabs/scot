@@ -33,4 +33,6 @@ my $harness = TAP::Harness->new(\%args);
         './signature.t',
         './link.t',
         './apikey.t',
+        './dispatch.t',
+        './product.t',
     );

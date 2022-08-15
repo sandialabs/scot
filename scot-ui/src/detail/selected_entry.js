@@ -19,6 +19,7 @@ import TrafficLightProtocol from "../components/traffic_light_protocol";
 import Marker from "../components/marker";
 import EntityCreateModal from "../modal/entity_create";
 import CustomMetaDataTable from "../components/custom_metadata_table";
+import FeedDataTable from "../components/feed_table";
 import ReactTable from "react-table";
 import { get_data, put_data, post_data } from "../utils/XHR";
 import AlertSubComponent from "./alert_subcomponent";
@@ -327,8 +328,9 @@ export default class SelectedEntry extends React.Component {
     setTimeout(
       function () {
         let scrollHeight;
-        let ListViewTableHeight = document.getElementsByClassName(
-          "ReactTable"
+        let ListViewTableHeight;
+        ListViewTableHeight = document.getElementsByClassName(
+            "ReactTable"
         )[0].clientHeight;
         if (ListViewTableHeight !== undefined) {
           if (ListViewTableHeight !== 0) {
@@ -379,8 +381,17 @@ export default class SelectedEntry extends React.Component {
     }
     return (
       <div id={divid} key={id} className={divClass} style={{ height: height }}>
-        {type !== "entity" && type !== "alert" ? (
+        {type !== "entity" && type !== "alert" && type !== "feed" ? (
           <CustomMetaDataTable
+            type={type}
+            id={id}
+            errorToggle={this.props.errorToggle}
+            form={this.props.form}
+            headerData={this.props.headerData}
+          />
+        ) : null}
+        {type === "feed" ? (
+          <FeedDataTable
             type={type}
             id={id}
             errorToggle={this.props.errorToggle}
@@ -588,6 +599,7 @@ class NewAlertTable extends React.Component {
   }
 
   componentDidMount() {
+    console.log("componentDidMount");
     if (this.props.items.length > 0) {
       const data = this.createData();
       const columns = buildTypeColumns("alert", data, this.props.items, true);
@@ -627,6 +639,7 @@ class NewAlertTable extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log("componentDidUpdate");
     if (prevProps.entityData !== this.props.entityData) {
       this.setState({
         entityData: this.props.entityData,
@@ -654,6 +667,7 @@ class NewAlertTable extends React.Component {
     ) {
       this.setState({ selected: this.props.alertsSelected });
     }
+
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -666,6 +680,7 @@ class NewAlertTable extends React.Component {
   }
 
   createData = () => {
+    console.log("createData");
     const dataarray = [];
     this.props.items.forEach(
       function (element) {
@@ -685,6 +700,8 @@ class NewAlertTable extends React.Component {
         dataitem["id"] = element.id;
         dataitem["status"] = element.status;
         dataitem["entry_count"] = element.entry_count;
+        console.log('adding dataitem');
+        console.log(dataitem);
         dataarray.push(dataitem);
       }.bind(this)
     );
@@ -1077,6 +1094,7 @@ class EntryParent extends React.Component {
       <div>
         {this.state.showEntityCreateModal ? (
           <EntityCreateModal
+            reparseEntryId={this.props.items.id}
             match={this.state.highlightedText}
             modalActive={this.state.showEntityCreateModal}
             ToggleCreateEntity={this.ToggleCreateEntity}

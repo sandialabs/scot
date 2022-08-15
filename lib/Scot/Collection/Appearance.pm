@@ -14,7 +14,7 @@ sub adjust_appearances {
     my $object  = shift;
     my $newset  = shift; # aref
     my $type    = shift; # tag or source # no plural
-    my $log     = $self->env->log;
+    my $log     = $self->log;
 
     my $objid   = $object->id;
     my $objtype = $object->get_collection_name;
@@ -50,7 +50,7 @@ sub adjust_appearances {
                 type    => $type,
                 value   => $value,
                 apid    => $self->lookup_value_id($value,$type),
-                when    => $self->env->now,
+                when    => $self->now,
                 target  => {
                     id      => $objid,
                     type    => $objtype,
@@ -64,8 +64,8 @@ sub lookup_value_id {
     my $self    = shift;
     my $value   = shift;
     my $type    = shift;
-    my $mongo   = $self->env->mongo;
-    my $log     = $self->env->log;
+    my $mongo   = $self->meerkat;
+    my $log     = $self->log;
 
     my $object  = $mongo->collection(ucfirst($type))->find_one({
         value   => $value

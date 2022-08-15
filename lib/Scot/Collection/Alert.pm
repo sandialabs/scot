@@ -47,7 +47,7 @@ override api_create => sub {
     my $self        = shift;
     my $req_href    = shift;
     my $env         = $self->env;
-    my $log         = $env->log;
+    my $log         = $self->log;
 
     $log->debug("creating alert from api");
 
@@ -69,7 +69,7 @@ sub linked_create {
     my $self    = shift;
     my $href    = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $log->debug("in linked_create for alert");
 
@@ -104,7 +104,8 @@ sub linked_create {
         columns     => $columns,
     };
 
-    $log->debug("attempting to create alert: ",{filter=>\&Dumper, value=>$ref});
+    $log->debug("attempting to create alert: ");
+    $log->trace({filter=>\&Dumper, value=>$ref});
 
     my $alert = $self->create($ref);
 
@@ -112,6 +113,16 @@ sub linked_create {
         $log->error("failed to create alert!");
         return 0;
     }
+
+    $self->env->mq->send("/queue/emlat", {
+        action  => "created",
+        data    => {
+            who     => 'scot',
+            type    => 'alert',
+            id      => $alert->id,
+        }
+    });
+
     return 1;
 }
 
@@ -165,7 +176,7 @@ override 'update'   => sub {
 sub update_alertgroup_data {
     my $self    = shift;
     my $obj     = shift;
-    my $mongo   = $self->env->mongo;
+    my $mongo   = $self->meerkat;
 
     my $alertgroup_id   = $obj->alertgroup;
 
@@ -186,13 +197,13 @@ sub get_alerts_in_alertgroup {
 sub api_subthing {
     my $self    = shift;
     my $req     = shift;
-    my $mongo   = $self->env->mongo;
+    my $mongo   = $self->meerkat;
 
     my $thing       = $req->{collection};
     my $id          = $req->{id}+0;
     my $subthing    = $req->{subthing};
 
-    $self->env->log->debug("api_subthing: /$thing/$id/$subthing");
+    $self->log->trace("api_subthing: /$thing/$id/$subthing");
 
     if ( $subthing eq "entry" ) {
         return $mongo->collection('Entry')->get_entries_by_target({
@@ -247,6 +258,13 @@ sub api_subthing {
         });
     }
 
+    if ( $subthing eq "history" ) {
+        return $mongo->collection('History')->find({
+            'target.type'   => 'alert',
+            'target.id'     => $id,
+        });
+    }
+
     die "Unsupported alert subthing: $subthing";
 
 }
@@ -257,7 +275,7 @@ sub update_alert_status {
     my $status  = shift;
     my $targets = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
     my @ids     = ();
 
     $log->debug("attempting updating alert status");
@@ -300,7 +318,7 @@ sub update_alert_parsed {
     my $status  = shift;
     my $targets = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
     $status     += 0;
     my @ids     = ();
 
@@ -346,8 +364,8 @@ sub update_alert_parsed {
 #     my $id      = shift;
 #     my $subthing    = shift;
 #     my $env     = $self->env;
-#     my $mongo   = $env->mongo;
-#     my $log     = $env->log;
+#     my $mongo   = $self->meerkat;
+#     my $log     = $self->log;
 # 
 #     $id += 0;
 # 

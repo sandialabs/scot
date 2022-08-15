@@ -234,7 +234,7 @@ function install_cent_perl_packages {
     for pkg in $PPKGS; do
         echo ""
         echo "-- using cpanm to install $pkg"
-        cpanm $pkg
+        cpanm -v $pkg
     done 
 
     echo "- PERL VERSION IS NOW -"
@@ -260,6 +260,11 @@ function install_cpanm {
     else
         echo "-- downloading cpanm"
         curl -L http://cpanmin.us | perl - --sudo App::cpanminus
+    fi
+
+    if ! hash cpanm 2>/dev/null; then
+        echo "!!! cpanm failed to install.  Impossible to proceed. !!!"
+        exit 1
     fi
 }
 
@@ -304,11 +309,17 @@ function install_perl_modules {
     PERLMODULES='
         Crypt::Curve25519@0.05
         Array::Split
+        Any::URI::Escape
+        BSON
+        Convert::ASN1
         Data::Dumper
         Data::Dumper::HTML
         Data::Dumper::Concise
         Data::Clean@0.48
         Data::Clean::FromJSON
+        Data::Clean::JSON
+        Devel::Size
+        Devel::OverloadInfo
         Daemon::Control
         Net::LDAP
         Net::SMTP::TLS
@@ -317,6 +328,7 @@ function install_perl_modules {
         Net::IDN::Encode
         Net::Works::Network
         Net::IP
+        Net::IPv6Addr
         Moose
         Moose::Role
         Moose::Util::TypeConstraints
@@ -326,7 +338,10 @@ function install_perl_modules {
         MooseX::Types
         MooseX::Types::Common
         MooseX::MethodAttributes
-        MooseX::Role::MongoDB@0.010
+        MongoDB
+        MongoDB::OID
+        Meerkat
+        MooseX::Role::MongoDB
         Safe
         Readonly
         DateTime
@@ -334,15 +349,19 @@ function install_perl_modules {
         DateTime::Format::Strptime
         DateTime::Format::Natural
         Time::HiRes
+        Time::Duration
         Server::Starter
         PSGI
         CGI::PSGI
         CGI::Compile
         HTTP::Server::Simple::PSGI
+        JSON::Any
+        Cpanel::JSON::XS
         JSON
         JSON::XS
         DBI
         Parallel::ForkManager
+        Parallel::Prefork
         AnyEvent
         AnyEvent::STOMP::Client
         AnyEvent::ForkManager
@@ -362,20 +381,20 @@ function install_perl_modules {
         HTML::TreeBuilder
         HTML::FromText
         HTML::FormatText
+        HTML::Restrict
         MIME::Base64
+        MIME::Parser
+        utf8::all
         IPC::Run
         IO::Prompt
+        Log::Any::IfLOG
         Log::Log4perl
         Mail::IMAPClient
         Mail::IMAPClient::BodyStructure
-        MongoDB@1.8.3
-        MongoDB::GridFS@1.8.3
-        MongoDB::GridFS::File@1.8.3
-        MongoDB::OID@1.8.3
-        Meerkat@0.015
         Mojo
         MojoX::Log::Log4perl
         Mojolicious::Plugin::TagHelpers
+        Mozilla::CA
         XML::Smart
         Config::Auto
         Data::GUID
@@ -400,10 +419,15 @@ function install_perl_modules {
         Math::HashSum
         Math::Vector::SortIndexes
         Lingua::EN::StopWords
+        local::lib
         XML::Twig
         XML::Simple
+        XML::RSS
+        XML::RSS::Parser::Lite
+        XML::RSSLite
         SVG::Sparkline
         Email::Stuffer
+        URI::Escape::XS
     '
 
     install_cpanm
@@ -419,7 +443,7 @@ function install_perl_modules {
         echo "-- 1st attempt at installing $module"
         echo "--"
 
-        /usr/local/bin/cpanm $module
+        /usr/local/bin/cpanm -v $module
 
         if [[ $? == 1 ]]; then
             echo "!!!"
@@ -462,7 +486,15 @@ function install_perl_modules {
             fi
         done
     fi
-    
+
+    manual_package_install
+}
+
+function manual_package_install {
+    # need to manually install this, cpanm can't find it!?
+        # File::Magic
+    tar xzf ./install/src/perl/File-Magic-0.01.tar.gz -C /tmp
+    (cd /tmp/File-Magic-0.01; perl Makefile.PL; make; make test; make install)
 }
 
 function install_perl {

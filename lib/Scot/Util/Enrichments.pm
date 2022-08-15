@@ -96,12 +96,12 @@ sub BUILD {
                     isa         => 'HashRef',
                 )
             );
-            $log->debug("creating attribute $name with value ",
+            $log->trace("creating attribute $name with value ",
                         { filter => \&Dumper, value => $href} );
             $self->$name($href);
         }
         else {
-            die "Unsupported Enrichment Type!";
+            warn "Unsupported Enrichment Type!";
         }
     }
     $meta->make_immutable;
@@ -137,7 +137,7 @@ sub enrich {
     NAME:
     foreach my $enricher_name (@{$eset}) {
 
-        $log->debug("Looking for enrichment: $enricher_name.");
+        $log->trace("Looking for enrichment: $enricher_name.");
 
         my $enricher = try { 
             $self->$enricher_name;
@@ -156,7 +156,7 @@ sub enrich {
             next NAME;
         }
 
-        $log->debug("Enricher Hash is ",{filter=>\&Dumper, value=>$enricher});
+        $log->trace("Enricher Hash is ",{filter=>\&Dumper, value=>$enricher});
 
         if ( ref($enricher) eq "HASH" ) {
 

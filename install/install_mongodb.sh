@@ -1,5 +1,29 @@
 #!/bin/bash
 
+function install_mongodb {
+
+    echo "---"
+    echo "--- Installing Mongodb "
+    echo "---"
+
+
+    if [[ $OS == "Ubuntu" ]]; then
+        install_42_mongo
+    else
+        echo "-- INSTALLING MONGODB-ORG"
+        ensure_mongo_repo
+        SELINUXSTATUS=`getenforce`
+        if [[ $SELINUXSTATUS == "Enforcing" ]]; then
+            echo "--- selinux adding ports"
+            # allow mongo to run in selinux
+            semanage port -a -t mongod_port_t -p tcp 27017
+        fi
+        yum install mongodb-org -y
+    fi
+
+    configure_for_scot
+}
+
 function ensure_mongo_repo {
     
     echo "-- ensuring correct mongodb repo"
@@ -32,7 +56,9 @@ function ensure_mongo_repo {
         echo "-- requesting mongodb-org gpg key"
         apt-key adv $MONGO_KEY_OPTS $MONGO_KEYSRVR --recv $MONGO_KEY
 
-        if [[ $OSVERSION == "18" ]]; then
+        if [[ $OSVERSION == "20" ]]; then
+            OS_REPO="focal"
+        elif [[ $OSVERSION == "18" ]]; then
             OS_REPO="bionic"
         elif [[ $OSVERSION == "16" ]]; then
             OS_REPO="xenial"
@@ -72,7 +98,7 @@ function add_failIndexKeyTooLong {
     if [[ $OS == "Ubuntu" ]]; then
 
 
-        if [[ $OSVERSION == "18" ]]; then
+        if [[ $OSVERSION == "18" ]] || [[ $OSVERSION == "20" ]]; then
             echo "-- scot installed config files will include failIndexKeyTooLong paramter set to false"
         elif [[ $OSVERSION == "16" ]]; then
             echo "-- scot installed config files will include failIndexKeyTooLong paramter set to false"
@@ -94,7 +120,7 @@ function add_failIndexKeyTooLong {
 
 function start_stop  {
     if [[ $OS == "Ubuntu" ]]; then
-        if [[ $OSVERSION == "18" ]]; then
+        if [[ $OSVERSION == "18" ]] || [[ $OSVERSION == "20" ]]; then
             systemctl --no-pager $2 ${1}.service
         elif [[ $OSVERSION == "16" ]]; then
             systemctl --no-pager $2 ${1}.service
@@ -184,7 +210,7 @@ function configure_for_scot {
         MONGO_SYSTEMD_SERVICE=/lib/systemd/system/mongod.service
 
         if [[ $OS == "Ubuntu" ]]; then
-            if [[ $OSVERSION == "18" ]]; then
+            if [[ $OSVERSION == "18" ]] || [[ $OSVERSION == "20" ]]; then
                 echo "- installing $MONGO_INIT_SRC"
                 backup_file $MONGO_SYSTEMD_SERVICE
                 cp $MONGO_CONF_SRC/mongod.service $MONGO_SYSTEMD_SERVICE
@@ -252,7 +278,7 @@ function install_36_mongo {
         MONGO_PROXY="--keyserver-options http-proxy=$http_proxy"
     fi
 
-    if [[ $OSVERSION == "18" ]]; then
+    if [[ $OSVERSION == "18" ]] || [[ $OSVERSION == "20" ]]; then
         MONGO_RECV="--recv 9DA31620334BD75D9DCB49F368818C72E52529D4"
         apt-key adv $MONGO_PROXY $MONGO_KEY_SERVER $MONGO_RECV
         echo "deb [ arch=amd64 ] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.0.list
@@ -270,27 +296,11 @@ function install_36_mongo {
     apt-get install -y mongodb-org
 }
 
-
-function install_mongodb {
-
-    echo "---"
-    echo "--- Installing Mongodb "
-    echo "---"
-
-
-    if [[ $OS == "Ubuntu" ]]; then
-        install_36_mongo
-    else
-        echo "-- INSTALLING MONGODB-ORG"
-        ensure_mongo_repo
-        SELINUXSTATUS=`getenforce`
-        if [[ $SELINUXSTATUS == "Enforcing" ]]; then
-            echo "--- selinux adding ports"
-            # allow mongo to run in selinux
-            semanage port -a -t mongod_port_t -p tcp 27017
-        fi
-        yum install mongodb-org -y
-    fi
-
-    configure_for_scot
+function install_42_mongo {
+    wget -qO - https://www.mongodb.org/static/pgp/server-4.2.asc | sudo apt-key add -
+    echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.2.list
+    apt-get update
+    apt-get install -y mongodb-org
 }
+
+

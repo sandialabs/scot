@@ -3,8 +3,10 @@ package Scot::Extractor::Processor;
 use strict;
 use warnings;
 use lib '../../../lib';
+use utf8;
 
 use List::Uniq ':all';
+use Encode;
 use HTML::TreeBuilder 5 -weak;
 use HTML::FormatText;
 use HTML::Element;
@@ -70,6 +72,10 @@ sub process_html {
     my $html    = shift;
     my $log     = $self->env->log;
     my %entities;
+
+    $html = (utf8::is_utf8($html)) ?
+        Encode::encode_utf8($html) :
+        $html;
 
     # ee2 should set its loglevel in config
     $log->debug("=== Processing HTML ===");
@@ -235,7 +241,8 @@ sub do_multiword_matches {
     $log->debug("looking for multi word matches");
 
     REGEX:
-    foreach my $href ($reutil->list_multiword_regexes) {
+    # foreach my $href ($reutil->list_multiword_regexes) {
+    foreach my $href (@{$reutil->multi_word_regexes}) {
 
         my $regex   = $href->{regex};
         my $type    = $href->{type};
@@ -244,21 +251,42 @@ sub do_multiword_matches {
 
         if ( $text =~ m/$regex/ ) {
 
-            $log->debug(" $type matches!");
+            $log->debug(" $type matches!!");
 
             my $pre     = substr($text, 0, $-[0]);
             my $match   = substr($text, $-[0], $+[0] - $-[0]);
             my $post    = substr($text, $+[0]);
+                
+            my $span;
+            if ( $type eq "cidr" ) {
+                $log->debug("LOOKING 4 Weird CIDR");
+                $span   = $self->cidr_action($match, $dbhref);
+                if ( ! defined $span ) {
+                    $log->warn("problem with cidr match!");
+                    next REGEX;
+                }
+            }
+            if ( $type eq "ipv6" ) {
+                $log->debug("Looking for weird ipv6");
+                $span = $self->ipv6_action($match, $dbhref);
+                if ( ! defined $span ) {
+                    $log->warn("false match in ipv6, skipping");
+                    next REGEX;
+                }
+            }
+            else {
+                $span = $self->span($match, $type);
+                # add found match to the entity list
+                push @{$dbhref->{entities}}, {
+                    type    => $type,
+                    value   => lc($match),
+                };
+            }
 
             push @new, $self->parse($pre, $dbhref); #look for matches in pre
-            push @new, $self->span ($match, $type); # span what we found
+            push @new, $span;
             push @new, $self->parse($post, $dbhref); #look in post
 
-            # add found match to the entity list
-            push @{$dbhref->{entities}}, {
-                type    => $type,
-                value   => lc($match),
-            };
             last REGEX;
         }
     }
@@ -285,12 +313,14 @@ sub do_singleword_matches {
         my $foundmatch = 0;
 
         REGEX:
-        foreach my $href ($reutil->list_singleword_regexes) {
+        # foreach my $href ($reutil->list_singleword_regexes) {
+        foreach my $href (@{$reutil->single_word_regexes}) {
 
             my $regex   = $href->{regex};
             my $type    = $href->{type};
+            my $order   = $href->{order};
 
-            $log->trace("Looking for $type match");
+            $log->trace("Looking for $type match (order = $order)");
 
             if ( $word =~ m/$regex/ ) {
 
@@ -399,10 +429,25 @@ sub ipaddr_action {
 
 }
 
+sub ipv6_action {
+    my $self    = shift;
+    my $match   = shift;
+    my $dbhref  = shift;
+
+    push @{$dbhref->{entities}}, {
+        value   => $match,
+        type    => 'ipv6',
+    };
+    return $self->span($match, 'ipv6');
+}
+
 sub cidr_action {
     my $self    = shift;
     my $match   = shift;
     my $dbhref  = shift;
+    my $log     = $self->env->log;
+
+    $log->debug("CIDR ACTION! $match");
 
     $match      = $self->deobsfucate_ipdomain($match);
 
@@ -427,9 +472,15 @@ and analysts complain about the "visual noise".  Also, we don't want
 sub deobsfucate_ipdomain {
     my $self    = shift;
     my $text    = shift;
+    my $log     = $self->env->log;
+
+    $log->debug("deobsfucating ip/cidr");
+
     my @parts   = split(/[\[\(\{]*\.[\]\)\}]*/, $text);
-    # $self->env->log->debug("$text parts = ",{filter=>\&Dumper,value=>\@parts});
-    return join('.',@parts);
+    # $log->debug("$text parts = ",{filter=>\&Dumper,value=>\@parts});
+    my $deobs = join('.', @parts);
+    $log->debug("deobsfucated = $deobs");
+    return $deobs;
 }
 
 =item B<domain_action>
@@ -628,6 +679,54 @@ sub has_splunk_ip_pattern {
             $c[$i+4]->tag   eq "em" and
             $c[$i+5]        eq '.'  and
             $c[$i+6]->tag   eq "em" 
+        ) {
+            return 1;
+        }
+    }
+    return undef;
+}
+
+sub fix_splunk_ipv6 {
+    my $self    = shift;
+    my $child   = shift;
+    my $level   = shift;
+    my $log     = $self->env->log;
+
+    $log->debug(" "x$level."looking for crappy splunk ipv6 addresses");
+
+    my @content = $child->content_list;
+    my $count   = scalar(@content);
+
+    for (my $i = 0; $i < $count - 8; $i++) {
+        if ( $self->has_splunk_ipv6_pattern($i,@content) ) {
+            my $new_ipv6 = join(':', $content[$i]->as_text,
+                                     $content[$i+2]->as_text,
+                                     $content[$i+4]->as_text,
+                                     $content[$i+6]->as_text,
+                                     $content[$i+7]->as_text,
+                                     $content[$i+8]->as_text);
+            $child->splice_content($i, 7, $new_ipv6);
+            $log->debug("Found Weird SPlunk IPv6 addr: spliced to: ".$child->as_HTML);
+        }
+    }
+}
+
+sub has_splunk_ipv6_pattern {
+    my $self    = shift;
+    my $i       = shift;
+    my @c       = @_;
+
+    if ( ref($c[$i]) ) {
+        if (
+            $c[$i]->tag     eq "span" and
+            $c[$i+1]        eq ':' and
+            $c[$i+2]->tag   eq 'span' and
+            $c[$i+3]        eq ':' and
+            $c[$i+4]->tag   eq 'span' and
+            $c[$i+5]        eq ':' and
+            $c[$i+6]->tag   eq 'span' and
+            ($c[$i+7] eq '0:0:0' or $c[$i+7] =~ /([0-9a-f]{1,4}:){3}/i) and
+            $c[$i+8]->tag   eq 'span' 
         ) {
             return 1;
         }

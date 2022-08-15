@@ -23,3 +23,6 @@ scot-ui/build/static/js/
 scot-ui/build/
 .vscode/
 emailapi.cfg.pl
+local/
+**/*.log
+**/foo

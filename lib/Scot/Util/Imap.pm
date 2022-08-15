@@ -452,10 +452,11 @@ sub get_message {
 
     my $envelope;
     retry {
-        $envelope    = $client->get_envelope($uid);
+        $envelope    = $client->get_envelope($uid) or die "Failed to get envelope: $@";
         $log->trace("Envelope is ",{filter=>\&Dumper,value=>$envelope});
     }
     on_retry {
+        $log->warn("clearing connection and retrying");
         $self->clear_client_connection;
     }
     catch {
@@ -517,7 +518,7 @@ sub get_subject {
     my $subject = retry {
         $client->subject($uid);
     }
-    on_retry{
+    on_retry {
         $self->clear_client_connection;
     }
     delay_exp {

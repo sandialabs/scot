@@ -13,11 +13,11 @@ sub will_parse {
     my $from    = $href->{from};
     my $subject = $href->{subject};
 
-    if ( $subject =~ /splunk alert/i ) {
+    if ( $subject =~ /splunk alert/i or $subject =~ /splunk report/i ) {
         return 1;
     }
     # TODO remove email address to config
-    if ( $from =~ /splunk\@sandia.gov/i ) {
+    if ( $from =~ /splunk\@sandia.gov/i  or $from =~ /Splunk-Alerts\@sandia.gov/i ) {
         return 1;
     }
     return undef;
@@ -121,14 +121,28 @@ sub parse_message {
 
             my $cell = $values[$i];
             # $rowresult{$colname} = $cell;
-            my @children   = map {
-              if ( ref($_) eq "HTML::Element" ) {
-                $_->as_text;
-              } 
-              else {
-                $_;
-              }
-            } $cell->content_list;
+            #my @children   = map {
+            #  if ( ref($_) eq "HTML::Element" ) {
+            #    $_->as_text;
+            #  } 
+            #  else {
+            #    $_;
+            #  }
+            #} $cell->content_list;
+
+            my @children    = ();
+            foreach my $item (@{$cell->content_list}) {
+                my $cv;
+                if ( ref($item) eq "HTML::Element" ) {
+                    $cv = $item->as_text;
+                }
+                else {
+                    $cv = $item;
+                }
+                if ( defined $cv and $cv ne '' and $cv ne ' ' ) {
+                    push @children, $cv;
+                }
+            }
             $rowresult{$colname} = \@children
         }
         push @results, \%rowresult;

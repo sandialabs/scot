@@ -430,6 +430,9 @@ export default class ListView extends React.Component {
                     this.props.type === "incident" ||
                     this.props.type === "signature" ||
                     this.props.type === "guide" ||
+                    this.props.type === "dispatch" ||
+                    this.props.type === "feed" ||
+                    this.props.type === "product" ||
                     this.props.type === "entity" ? (
                       <Button
                         onClick={this.createNewThing}

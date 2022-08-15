@@ -11,11 +11,11 @@ function install_activemq {
     fi
 
     if [[ "$AMQTAR" == "" ]]; then
-        AMQTAR="apache-activemq-5.13.2-bin.tar.gz"
+        AMQTAR="apache-activemq-5.16.3-bin.tar.gz"
     fi
 
     if [[ "$AMQURL" == "" ]]; then
-        AMQURL="https://repository.apache.org/content/repositories/releases/org/apache/activemq/apache-activemq/5.13.2/$AMQTAR"
+        AMQURL="https://repository.apache.org/content/repositories/releases/org/apache/activemq/apache-activemq/5.16.3/$AMQTAR"
     fi
 
     if [[ "$AMQ_CONFIGS" == "" ]]; then
@@ -55,7 +55,7 @@ function install_activemq {
 
             if [[ ! -e /tmp/$AMQTAR ]]; then
                 echo "-- download may have failed! trying packaged tar"
-                cp $DEVDIR/install/src/ActiveMQ/apache-activemq-5.14-20151229.032504-18-bin.tar.gz /tmp
+                cp $DEVDIR/install/src/ActiveMQ/apache-activemq-5.16-3-bin.tar.gz /tmp
             fi
 
             if [[ ! -d $AMQDIR ]]; then
@@ -119,7 +119,7 @@ function install_activemq {
     chown -R activemq.activemq $AMQDIR
 
     if [[ $OS == "Ubuntu" ]]; then
-        if [[ $OSVERSION == "18" ]]; then
+        if [[ $OSVERSION == "18" ]] || [[ $OSVERSION == "20" ]]; then
             AMQ_SYSTEMD="/etc/systemd/system/activemq.service"
             AMQ_SYSTEMD_SRC="$SCOT_CONFIG_SRC/ActiveMQ/activemq.service"
             if [[ ! -e $AMQ_SYSTEMD ]]; then
@@ -162,7 +162,7 @@ function install_activemq {
 
     echo "-- installation of ActiveMQ complete, starting..."
     if [[ $OS == "Ubuntu" ]]; then
-        if [[ $OSVERSION == "18" ]]; then
+        if [[ $OSVERSION == "18" ]] || [[ $OSVERSION == "20" ]]; then
             systemctl --no-pager start activemq.service
         elif [[ $OSVERSION == "16" ]]; then
             systemctl --no-pager start activemq.service

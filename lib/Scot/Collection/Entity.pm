@@ -22,6 +22,36 @@ sub entity_exists {
     return undef;
 }
 
+sub update_entity {
+    my $self    = shift;
+    my $target  = shift;
+    my $href    = shift;
+    my $env     = $self->env;
+    my $log     = $self->log;
+    my $mongo   = $self->meerkat;
+
+    $log->trace("updatiing entity",{filter=>\&Dumper, value=>$href});
+    $log->trace("Target is ".ref($target)." ".$target->id);
+
+    my $value   = $href->{value};
+    my $type    = $href->{type};
+
+    my $entity = $self->find_one({
+        value   => $value,
+        type    => $type,
+    });
+
+    if ( ! defined $entity or ref($entity) ne "Scot::Model::Entity") {
+        # create link
+        $log->debug("Creating new $type entity $value");
+        $entity = $self->create({
+            value   => $value,
+            type    => $type,
+        });
+    }
+    $self->create_entity_links($entity, $target);
+    return 1;
+}
 
 sub update_entities {
     my $self    = shift;
@@ -29,12 +59,13 @@ sub update_entities {
     my $earef   = shift;    # array of hrefs that hold entityinfo
 
     my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;
-    my $enrichments = $env->enrichments;
+    my $log     = $self->log;
+    my $mongo   = $self->meerkat;   
+    # no done async
+    # my $enrichments = $env->enrichments;
 
     my $thash = $target->as_hash;
-    $self->env->log->debug("updating entities on target ",
+    $self->log->debug("updating entities on target ",
                             { filter =>\&Dumper, value => $thash});
 
     $log->debug("earef is ",{filter=>\&Dumper, value=>$earef});
@@ -49,7 +80,7 @@ sub update_entities {
     my @created_ids = ();
     my @updated_ids = ();
     my %seen        = ();
-
+    my @entity_ids  = ();
     ENTITY:
     foreach my $entity (@$earef) {
 
@@ -84,13 +115,9 @@ sub update_entities {
             push @created_ids, $entity->id;
         }
         $self->create_entity_links($entity, $target);
-        my ($updated,$data) = $enrichments->enrich($entity);
-        if ( $updated > 0 ) {
-            my $merged = $self->merge_entity_data($entity->data, $data);
-            $entity->update_set(data => $merged);
-        }
+        push @entity_ids, $entity->id; 
     }
-    return \@created_ids, \@updated_ids;
+    return \@created_ids, \@updated_ids, \@entity_ids;
 }
 
 sub merge_entity_data {
@@ -119,18 +146,21 @@ sub upsert_link {
     my $entity  = shift; # object
     my $target  = shift; # href
 
-    my $linkcol = $self->env->mongo->collection('Link');
+    $self->log->trace("upsert link: Entity ".$entity->id." to ".
+        $target->{type}." ".$target->{id});
+
+    my $linkcol = $self->meerkat->collection('Link');
     my $v1 = {
         id     => $target->{id},
         type   => $target->{type},
     };
 
     if ( $linkcol->link_exists($entity,$v1) ) {
-        $self->env->log->debug("Entity already linked to target");
+        $self->log->debug("Entity already linked to target");
         return;
     }
 
-    $self->env->log->debug("Link does not exist, creating...");
+    $self->log->trace("Link does not exist, creating...");
 
     my $linkobj    = $linkcol->link_objects(
         $entity, { 
@@ -145,6 +175,10 @@ sub create_entity_links {
     my $self    = shift;
     my $entity  = shift; # object
     my $target  = shift; # object
+    my $log = $self->log;
+
+    $log->trace("collection: create_entity_links");
+    $log->trace("Entity ".$entity->id." to Target ".$target->id);
 
     $self->upsert_link($entity, {
         id      => $target->id,
@@ -152,6 +186,7 @@ sub create_entity_links {
     });
 
     if ( $target->get_collection_name eq "entry" ) {
+        $log->debug("upserting entries target");
         my $additional_link = $self->upsert_link(
             $entity, {
                 type    => $target->target->{type},
@@ -168,7 +203,6 @@ sub create_entity_links {
         );
     }
 
-    my $log = $self->env->log;
 
     if ( $entity->type  eq "cidr" ) {
         # find and create links to ipaddresses in that range
@@ -177,6 +211,10 @@ sub create_entity_links {
         if ( $cidrmask > 0 ) {
             $log->debug("Finding IPaddrs that are in $cidrbase/$cidrmask");
             my $ipobj   = Net::IP->new($value);
+            if ( ! defined $ipobj ) {
+                $log->error("Failed to create Net::IP object from $value!");
+                return;
+            }
             my $mask    = substr($ipobj->binip, 0, $cidrmask);
             my @records = $self->get_cidr_ipaddrs($mask);
             $log->debug("Found ".scalar(@records)." ipaddresses");
@@ -201,12 +239,14 @@ sub api_subthing {
     my $id      = $req->{id} + 0;
     my $subthing= $req->{subthing};
     my $env     = $self->env;
-    my $mongo   = $env->mongo;
-    my $log     = $env->log;
+    my $mongo   = $self->meerkat;
+    my $log     = $self->log;
 
     if ( $subthing  eq "alert" or
          $subthing  eq "event" or
+         $subthing  eq "dispatch" or
          $subthing  eq "intel" or
+         $subthing  eq "product" or
          $subthing  eq "guide" or 
          $subthing  eq "signature" or
          $subthing  eq "incident" ) {
@@ -282,7 +322,7 @@ sub autocomplete {
 sub get_cidr_ipaddrs {
     my $self    = shift;
     my $mask    = shift;
-    my $mongo   = $self->env->mongo;
+    my $mongo   = $self->meerkat;
     my @records = ();
 
     my $cursor = $self->find({
@@ -309,8 +349,8 @@ sub api_create {
     my $self    = shift;
     my $req     = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;
+    my $log     = $self->log;
+    my $mongo   = $self->meerkat;
     my $user    = $req->{user};
     my $json    = $req->{request}->{json};
     

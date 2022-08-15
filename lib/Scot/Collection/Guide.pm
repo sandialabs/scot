@@ -28,7 +28,7 @@ override api_create => sub  {
     my $self    = shift;
     my $request = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $log->trace("Custom create in Scot::Collection::Guide");
 
@@ -50,7 +50,7 @@ override api_create => sub  {
     my $guide   = $self->create($json);
 
     if ( scalar(@entries) > 0 ) {
-        my $mongo   = $env->mongo;
+        my $mongo   = $self->meerkat;
         my $ecoll   = $mongo->collection('Entry');
         foreach my $entry ( @entries ) {
             $entry->{owner} = $entry->{owner} // $request->{user};
@@ -71,7 +71,7 @@ sub api_subthing {
     my $thing       = $req->{collection};
     my $id          = $req->{id}+0;
     my $subthing    = $req->{subthing};
-    my $mongo       = $self->env->mongo;
+    my $mongo       = $self->meerkat;
 
     if ( $subthing eq "entry" ) {
         return $mongo->collection('Entry')->get_entries_by_target({

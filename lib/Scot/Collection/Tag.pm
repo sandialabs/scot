@@ -17,7 +17,7 @@ override api_create => sub {
     my $self    = shift;
     my $request = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $log->trace("Create Tag from API");
     $log->debug("request is ",{ filter=>\&Dumper, value=>$request });
@@ -40,11 +40,11 @@ override api_create => sub {
         my $href    = { value => $value };
         $href->{note} = $note if $note;
         $tag_obj    = $self->create($href);
-        $env->mongo->collection("History")->add_history_entry({
+        $self->meerkat->collection("History")->add_history_entry({
             who     => $request->{user},
             what    => "tag created",
-            when    => $env->now(),
-            targets => { id => $tag_obj->id, type => "tag" },
+            when    => $self->now(),
+            target  => { id => $tag_obj->id, type => "tag" },
         });
     }
 
@@ -56,7 +56,7 @@ sub autocomplete {
     my $self    = shift;
     my $string  = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $log->debug("Tag autocomplete! $string");
     my @results = ();
@@ -78,7 +78,7 @@ sub add_tag_to {
     $id += 0;
     my $tags    = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     if ( ref($tags) ne "ARRAY" ) {
         $tags   = [ $tags ];
@@ -97,21 +97,21 @@ sub add_tag_to {
             });
         }
 
-        $env->mongo->collection("Appearance")->create({
+        $self->meerkat->collection("Appearance")->create({
             type    => "tag",
             value   => $tag,
             apid    => $tag_obj->id,
-            when    => $env->now,
+            when    => $self->now,
             target   => {
                 type    => $thing,
                 id      => $id,
             }
         });
-        $env->mongo->collection("History")->add_history_entry({
+        $self->meerkat->collection("History")->add_history_entry({
             who     => $user,
             what    => "tag created",
-            when    => $env->now(),
-            targets => { id => $id, type => $thing },
+            when    => $self->now(),
+            target  => { id => $id, type => $thing },
         });
     }
     return 1;
@@ -124,11 +124,11 @@ sub syncro_tags {
     my $id          = shift;
     my $tag_aref    = shift;
     my $env         = $self->env;
-    my $log         = $env->log;
+    my $log         = $self->log;
 
     $log->debug("syncronizing tags");
 
-    my $current_cur = $env->mongo->collection("Appearance")->find({
+    my $current_cur = $self->meerkat->collection("Appearance")->find({
         target  => {
             type    => $target_type,
             id      => $id+0,

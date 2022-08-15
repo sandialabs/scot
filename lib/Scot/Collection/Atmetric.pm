@@ -15,7 +15,7 @@ sub upsert_metric {
     my $self    = shift;
     my $doc     = shift;
     my $match   = { %$doc }; # shallow clone ok bc only one level deep.
-    my $log     = $self->env->log;
+    my $log     = $self->log;
     $log->debug("doc: ",{filter=>\&Dumper,value=>$doc});
     delete $match->{value};
     my $obj = $self->find_one($match);
@@ -34,8 +34,8 @@ sub upsert_metric {
 sub get_today_count {
     my $self    = shift;
     my $metric  = shift;
-    my $log     = $self->env->log;
-    my $dt      = DateTime->from_epoch( epoch => $self->env->now );
+    my $log     = $self->log;
+    my $dt      = DateTime->from_epoch( epoch => $self->now );
     my $match   = {
         metric  => $metric,
         year    => $dt->year,
@@ -53,10 +53,8 @@ sub get_today_count {
 sub get_dow_statistics {
     my $self    = shift;
     my $atype   = shift;
-    my $log     = $self->env->log;
-    my %command;
-    my $tie = tie(%command, "Tie::IxHash");
-    %command = (
+    my $log     = $self->log;
+    my @command = (
         mapreduce   => "atmetric",
         out         => { inline => 1 },
         query       => { alerttype => $atype },
@@ -73,7 +71,7 @@ sub get_dow_statistics {
     my $db      = $mongo->_mongo_database($db_name);
     my $result  = $self->_try_mongo_op(
         get_stats   => sub {
-            my $job     = $db->run_command(\%command);
+            my $job     = $db->run_command(\@command);
             return $job;
         }
     );

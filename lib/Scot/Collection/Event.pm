@@ -32,14 +32,16 @@ override api_create => sub {
     my $self    = shift;
     my $request = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $log->trace("Create Event from API");
 
     my $user    = $request->{user};
     my $json    = $request->{request}->{json};
 
-    $json->{owner} = $user;
+    if ( defined $user ) {
+        $json->{owner} = $user;
+    }
 
     my @tags    = $env->get_req_array($json, "tags");
     my @sources = $env->get_req_array($json, "sources");
@@ -62,21 +64,56 @@ override api_create => sub {
     }
 
     if ($entry_body) {
-        $self->create_alert_entry($event, $entry_body);
+        $self->create_event_entry($event, $entry_body);
     }
 
     my $id      = $event->id;
     if ( scalar(@sources) > 0 ) {
-        my $col = $env->mongo->collection('Source');
+        my $col = $self->meerkat->collection('Source');
         $col->add_source_to("event", $event->id, \@sources);
     }
     if ( scalar(@tags) > 0 ) {
-        my $col = $env->mongo->collection('Tag');
+        my $col = $self->meerkat->collection('Tag');
         $col->add_source_to("event", $event->id, \@tags);
     }
 
     return $event;
 };
+
+sub create_event_from_message {
+    my $self    = shift;
+    my $data    = shift;
+    my $log     = $self->log;
+    my $env     = $self->env;
+
+    my $event_data  = $data->{event};
+    my $entry_data  = $data->{entry};
+
+    my $event   = $self->create($event_data);
+
+    if ( ! defined $event ) {
+        $log->error("Failed to create Event from ",
+                    {filter=>\&Dumper, value=>$event_data});
+        return 0;
+    }
+    my @tags    = @{$event_data->{tags}};
+    my @sources = @{$event_data->{source}};
+
+    if ( $entry_data ) {
+        $self->create_event_entry($event, $entry_data->{body});
+    }
+    my $id      = $event->id;
+    if ( scalar(@sources) > 0 ) {
+        my $col = $self->meerkat->collection('Source');
+        $col->add_source_to("event", $event->id, \@sources);
+    }
+    if ( scalar(@tags) > 0 ) {
+        my $col = $self->meerkat->collection('Tag');
+        $col->add_source_to("event", $event->id, \@tags);
+    }
+
+    return $event;
+}
 
 
 sub process_alerts {
@@ -105,7 +142,7 @@ sub process_alerts {
     $bhref->{alerts}   = \@alertids;
 }
 
-sub create_alert_entry {
+sub create_event_entry {
     my $self    = shift;
     my $event   = shift;
     my $body    = shift;
@@ -116,8 +153,7 @@ sub create_alert_entry {
             type => "event",
             id   => $event->id,
         },
-        readgroups  => $self->lc_array($event->readgroups),
-        modifygroups=> $self->lc_array($event->modifygroups),
+        groups  => $event->groups,
         summary     => 0,
         body        => $body,
     };
@@ -168,7 +204,7 @@ sub build_from_alerts {
     my $handler     = shift;
     my $build_href  = shift;
     my $env         = $handler->env;
-    my $mongo       = $env->mongo;
+    my $mongo       = $self->meerkat;
     my $alerts_aref = $build_href->{from_alerts};
 
     my $alert_col   = $mongo->collection("Alert");
@@ -212,9 +248,9 @@ sub build_from_alerts {
     $build_href->{status}   = "open" unless $build_href->{status};
     $build_href->{owner}    = $handler->session('user') 
         unless $build_href->{owner};
-    $build_href->{readgroups} = $env->default_groups->{read}
+    $build_href->{readgroups} = $self->defaults->{default_groups}->{read}
         unless $build_href->{readgroups};
-    $build_href->{modifygroups} = $env->default_groups->{modify}
+    $build_href->{modifygroups} = $self->defaults->{default_groups}->{modify}
         unless $build_href->{modifygroups};
     $build_href->{alerts} = \@alert_ids;
     delete $build_href->{from_alerts};
@@ -260,7 +296,7 @@ sub get_subject {
     
     if ( ref($object) eq "Scot::Model::Alert" ) {
         my $agid    = $object->alertgroup;
-        my $agcol   = $self->env->mongo->collection('Alertgroup');
+        my $agcol   = $self->meerkat->collection('Alertgroup');
         my $agobj   = $agcol->find_iid($agid);
         return $agobj->subject;
     }
@@ -277,8 +313,8 @@ override 'has_computed_attributes' => sub {
 sub api_subthing {
     my $self    = shift;
     my $req     = shift;
-    my $mongo   = $self->env->mongo;
-    my $log     = $self->env->log;
+    my $mongo   = $self->meerkat;
+    my $log     = $self->log;
 
     my $thing       = $req->{collection};
     my $subthing    = $req->{subthing};
@@ -376,7 +412,7 @@ sub get_promotion_obj {
     my $object  = shift;
     my $req     = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
     my $promotion_id    = $req->{request}->{json}->{promote} 
                           // $req->{request}->{params}->{promote};
 
@@ -415,6 +451,19 @@ sub autocomplete {
         id  => $_->{id}, key => $_->{subject}
     } } $cursor->all;
     return wantarray ? @records : \@records;
+}
+
+sub get_by_msgid {
+    my $self    = shift;
+    my $msgid   = shift;
+    my $log     = $self->log;
+    my $query   = {
+        'data.message_id'   => $msgid
+    };
+    $log->debug("get_by_msgid query = ",{filter=>\&Dumper, value=>$query});
+
+    my $event = $self->find_one($query);
+    return $event;
 }
 
 

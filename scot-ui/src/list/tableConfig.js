@@ -167,7 +167,8 @@ export const customCellRenderers = {
     if (
       row.value === "open" ||
       row.value === "disabled" ||
-      row.value === "assigned"
+      row.value === "assigned" ||
+      row.value === "paused"
     ) {
       color = "red";
     } else if (row.value === "promoted") {
@@ -237,6 +238,38 @@ const columnDefinitions = {
   },
 
   EventStatus: {
+    Header: "Status",
+    accessor: "status",
+    maxWidth: 100,
+    Cell: customCellRenderers.textStatus,
+    Filter: customFilters.dropdownFilter()
+  },
+
+  FeedStatus: {
+    Header: "Status",
+    accessor: "status",
+    maxWidth: 100,
+    Cell: customCellRenderers.textStatus,
+    Filter: customFilters.dropdownFilter()
+  },
+  
+  DispatchStatus: {
+    Header: "Status",
+    accessor: "status",
+    maxWidth: 100,
+    Cell: customCellRenderers.textStatus,
+    Filter: customFilters.dropdownFilter()
+  },
+
+  IntelStatus: {
+    Header: "Status",
+    accessor: "status",
+    maxWidth: 100,
+    Cell: customCellRenderers.textStatus,
+    Filter: customFilters.dropdownFilter()
+  },
+
+  ProductStatus: {
     Header: "Status",
     accessor: "status",
     maxWidth: 100,
@@ -323,6 +356,22 @@ const columnDefinitions = {
     Filter: customFilters.dateRange,
     Cell: customCellRenderers.dateFormater
   },
+  LastAttempt: {
+    Header: "Last Attempt",
+    accessor: "last_attempt",
+    minWidth: 100,
+    maxWidth: 180,
+    Filter: customFilters.dateRange,
+    Cell: customCellRenderers.dateFormater
+  },
+  LastArticle: {
+    Header: "Last Article",
+    accessor: "last_article",
+    minWidth: 100,
+    maxWidth: 180,
+    Filter: customFilters.dateRange,
+    Cell: customCellRenderers.dateFormater
+  },
 
   Sources: {
     Header: "Sources",
@@ -361,6 +410,20 @@ const columnDefinitions = {
   Entries: {
     Header: "Entries",
     accessor: "entry_count",
+    maxWidth: 70,
+    Filter: customFilters.numberFilter
+  },
+
+  Articles: {
+    Header: "Articles",
+    accessor: "article_count",
+    maxWidth: 70,
+    Filter: customFilters.numberFilter
+  },
+
+  Promotions: {
+    Header: "Promotions",
+    accessor: "promotions",
     maxWidth: 70,
     Filter: customFilters.numberFilter
   },
@@ -440,6 +503,14 @@ const columnDefinitions = {
     maxWidth: 150
   },
 
+  FeedType: {
+    Header: "Type",
+    accessor: "type",
+    Filter: customFilters.stringFilter,
+    minWidth: 100,
+    maxWidth: 150
+  },
+
   Description: {
     Header: "Description",
     // accessor: 'description',
@@ -447,6 +518,16 @@ const columnDefinitions = {
     Filter: customFilters.stringFilter,
     minWidth: 400,
     id: "data.description",
+    maxWidth: 5000
+  },
+
+  Uri: {
+    Header: "URI",
+    // accessor: 'description',
+    accessor: d => d.uri,
+    Filter: customFilters.stringFilter,
+    minWidth: 400,
+    id: "uri",
     maxWidth: 5000
   },
 
@@ -602,9 +683,12 @@ const typeColumns = {
       options: { minWidth: 100, maxWidth: 150 }
     }
   ],
-  intel: [
+
+
+  dispatch: [
     "Id",
     "Location",
+    "DispatchStatus",
     "Subject",
     "Created",
     "Updated",
@@ -617,6 +701,55 @@ const typeColumns = {
     "Entries",
     "Views"
   ],
+
+  intel: [
+    "Id",
+    "Location",
+    "IntelStatus",
+    "Subject",
+    "Created",
+    "Updated",
+    "Sources",
+    {
+      title: "Tags",
+      options: { minWidth: 200, maxWidth: 250 }
+    },
+    "Owner",
+    "Entries",
+    "Views",
+    "OpenTasks"
+  ],
+
+  product: [
+    "Id",
+    "Location",
+    "ProductStatus",
+    "Subject",
+    "Created",
+    "Updated",
+    "Sources",
+    {
+      title: "Tags",
+      options: { minWidth: 200, maxWidth: 250 }
+    },
+    "Owner",
+    "Entries",
+    "Views",
+    "OpenTasks"
+  ],
+
+  feed: [
+    "Id",
+    "Name",
+    "FeedStatus",
+    "FeedType",
+    "Uri",
+    "LastAttempt",
+    "LastArticle",
+    "Articles",
+    "Promotions"
+  ],
+
   task: [
     "Id",
     "Location",
@@ -829,6 +962,9 @@ export const getColumnWidth = (data, accessor, headerText) => {
   const cellLength = Math.max(
     ...data.map(function(row) {
       let newtext = row[headerText];
+      if (newtext === null ) {
+        return 0;
+      }
       if (newtext !== undefined) {
         return calc_width(newtext);
       } else {
@@ -922,6 +1058,10 @@ export const getEntityPopupColumns = params => {
               promotedHref = `/#/event/${row.original.promotion_id}`;
             } else if (row.original.type === "event") {
               promotedHref = `/#/incident/${row.original.promotion_id}`;
+            } else if ( row.original.type === "dispatch" ) {
+                promotedHref = `/#/intel/${row.original.promotion_id}`;
+            } else if ( row.original.type === "intel" ) {
+                promotedHref = `/#/product/${row.original.promotion_id}`;
             }
             return (
               <div style={{ display: "flex", alignItems: "center" }}>

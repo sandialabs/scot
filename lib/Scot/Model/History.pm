@@ -22,12 +22,14 @@ extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
     Scot::Role::Target
+    Scot::Role::Hashable
 );
 
 =head1 Consumed Roles
 
     Meerkat::Role::Document
     Scot::Role::Target
+    Scot::Role::Hashable
 
 =head1 Attributes
 
@@ -72,6 +74,10 @@ has what    => (
     default     => '',
 );
 
+sub get_memo {
+    my $self    = shift;
+    return '';
+}
 
 __PACKAGE__->meta->make_immutable;
 1;

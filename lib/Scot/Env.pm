@@ -9,9 +9,11 @@ use lib '../../../Scot-Internal-Modules/lib';
 use Safe;
 use Time::HiRes qw(gettimeofday tv_interval);
 use Module::Runtime qw(require_module compose_module_name);
+use DateTime;
 use Data::Dumper;
 use namespace::autoclean;
 use Scot::Util::Date;
+use Log::Log4perl qw(get_logger);
 
 use Moose;
 use MooseX::Singleton;
@@ -202,7 +204,7 @@ sub build_modules {
         $self->$name($instance);
     }
 }
-        
+
 sub instantiate_logger {
     my $self    = shift;
     my $meta    = shift;
@@ -211,20 +213,28 @@ sub instantiate_logger {
     print "Building Logger\n" if $self->debug;
 
     if ( $self->meta->has_attribute('logger_factory') ) {
-        $log = $self->logger_factory->make;
+        $log    = $self->logger_factory->make;
     }
     else {
-        print "Old style config...Instantiating Logger...\n" if $self->debug;
         require_module("Scot::Util::LoggerFactory");
         my $logconf = $self->log_config;
         my $factory = Scot::Util::LoggerFactory->new(config => $logconf);
-        $log     = $factory->get_logger;
+        $log        = $factory->get_logger;
     }
-    $meta->add_attribute( log => ( is => 'rw', isa => 'Log::Log4perl::Logger'));
+    $meta->add_attribute(log => ( is => 'rw', isa => 'Log::Log4perl::Logger'));
     $self->log($log);
-    # $log->debug("\@INC = ",{filter=>\&Dumper, value => \@INC});
 }
 
+
+sub build_logger {
+    my $self    = shift;
+    my $config  = shift;
+    print "Logger config is ".Dumper($config)."\n" if $self->debug;
+    my $factory = Scot::Util::LoggerFactory->new( config => $config );
+    return $factory->get_logger;
+}
+
+        
 sub BUILD {
     my $self    = shift;
     my $meta    = $self->meta;
@@ -243,7 +253,6 @@ sub BUILD {
     # set up factories
     $self->build_factories($meta, $factories);
 
-    # now a log factory attribute should be loaded, so let's build 
     $self->instantiate_logger($meta);
 
     # build modules
@@ -438,14 +447,6 @@ sub get_env_attr {
     return undef;
 }
 
-sub build_logger {
-    my $self    = shift;
-    my $config  = shift;
-    print "Logger config is ".Dumper($config)."\n" if $self->debug;
-    my $factory = Scot::Util::LoggerFactory->new( config => $config );
-    return $factory->get_logger;
-}
-
 # this helps identify the problem when SCOT wants/needs an $env->foo
 # value, but the config file doesn't have the foo attribute.  Without this
 # the program will blow up with a "method "foo" not found in object $env"
@@ -486,12 +487,27 @@ sub is_admin {
     my $admin_group = $self->admin_group;
     my $log         = $self->log;
 
-    $log->debug("Checking Admin status of $user");
-    $log->debug("admin_group = $admin_group");
-    $log->debug("users groups are ",{filter=>\&Dumper, value=>$groups});
+    $log->trace("Checking Admin status of $user");
+    $log->trace("admin_group = $admin_group");
+    $log->trace("users groups are ",{filter=>\&Dumper, value=>$groups});
 
-    return undef if (! defined $admin_group);
-    return grep { /$admin_group/ } @$groups;
+    if ( ! defined $admin_group ) {
+        $log->error("Admin group not defined! Fix in config");
+        return undef;
+    }
+    if (grep { /$admin_group/ } @$groups )  {
+        $log->debug("$user is an admin");
+        return 1;
+    }
+    $log->error("$user is NOT an admin");
+    return undef;
+}
+
+sub get_human_time {
+    my $self    = shift;
+    my $epoch   = shift;
+    my $dt      = DateTime->from_epoch(epoch=>$epoch);
+    return join(" ", $dt->ymd, $dt->hms);
 }
 
 

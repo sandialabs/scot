@@ -13,7 +13,7 @@ override api_create => sub {
     my $self    = shift;
     my $request = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $log->trace("Create Source from API");
 
@@ -35,11 +35,11 @@ override api_create => sub {
         # note that targets below is handled in the History
         # collection correctly, ie. converted to Links not 
         # an embedded array
-        $env->mongo->collection("History")->add_history_entry({
+        $self->meerkat->collection("History")->add_history_entry({
             who     => "api",
             what    => "source $value created",
-            when    => $env->now,
-            targets => { id => $source_obj->id, type => "source" } ,
+            when    => $self->now,
+            target => { id => $source_obj->id, type => "source" } ,
         });
     }
     return $source_obj;
@@ -76,8 +76,8 @@ sub add_source_to {
     my $sources = shift;
 
     my $env = $self->env;
-    my $log = $env->log;
-    my $mongo   = $env->mongo;
+    my $log = $self->log;
+    my $mongo   = $self->meerkat;
 
     if ( ref($sources) ne "ARRAY" ) {
         $sources = [ $sources];
@@ -99,7 +99,7 @@ sub add_source_to {
             type    => "source",
             value   => $source,
             apid    => $source_obj->id,
-            when    => $env->now,
+            when    => $self->now,
             target  => {
                 type    => $thing,
                 id      => $id,

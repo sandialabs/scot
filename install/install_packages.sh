@@ -24,6 +24,19 @@ function install_ubuntu_packages {
         apache2-utils
         bc
         libgmp3-dev
+        libmagickcore-6-headers 
+        libmagick++-6-headers 
+        libmagickwand-6-headers
+        libmagic-dev 
+        libmagick++-6.q16-dev 
+        libmagickcore-6.q16-dev 
+        libmagickcore-dev 
+        libmagick++-dev 
+        libmagickwand-6.q16-dev 
+        libmagickwand-dev 
+        libmagic-ocaml-dev 
+        libmagics++-dev 
+        libmagics++-metview-dev
     '
     # for some reason, maxmind ppa is foobar'ed and these packages
     # won't install unless we force them to with allow unauth
@@ -67,7 +80,9 @@ function update_apt {
     apt-get install -y software-properties-common
 
     UBUNTUNAME="trusty"
-    if [[ $OSVERSION == "18" ]]; then
+    if [[ $OSVERSION == "20" ]]; then
+        UBUNTUNAME="focal"
+    elif [[ $OSVERSION == "18" ]]; then
         UBUNTUNAME="bionic"
     elif [[ $OSVERSION == "16" ]]; then
         UBUNTUNAME="xenial"
@@ -82,7 +97,9 @@ function update_apt {
         #    echo "- miracles never cease, ppa added."
         #else
             UBUNAME="trusty"
-            if [[ $OSVERSION == "18" ]]; then
+            if [[ $OSVERSION == "20" ]]; then
+                UBUNAME="focal"
+            elif [[ $OSVERSION == "18" ]]; then
                 UBUNAME="bionic"
             elif [[ $OSVERSION == "16" ]]; then
                 UBUNAME="xenial"
@@ -153,6 +170,13 @@ function install_cent_packages {
         openssl-devel
         openssl
         net-tools
+        uuid-devel
+        ncurses-devel
+        libidn-devel
+        cairo-gobject-devel
+        libxslt-devel
+        libxml2-devel
+        expat-devel
         wget
         git
         file-devel

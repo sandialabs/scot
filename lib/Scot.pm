@@ -2,11 +2,14 @@ package Scot;
 
 use strict;
 use warnings;
-
+use lib '../lib';
 use Carp qw(cluck longmess shortmess);
 use Mojo::Base 'Mojolicious';
 use Mojo::Cache;
 use Scot::Env;
+use Scot::HtmlRestricter;
+use MojoX::Log::Log4perl;
+use Scot::Util::CSRFProtection;
 use Data::Dumper;
 
 
@@ -19,13 +22,20 @@ It is a child of Mojo::Base and therefore is a Mojolicious based app.
 
 =cut
 
-
 sub startup {
     my $self    = shift;
+    $ENV{MOJO_MAX_MESSAGE_SIZE} = 67108864; # 64 MB
     $self->mode('development'); # remove when in prod
 
-    my $config_file  = $ENV{'scot_config_file'} // "/opt/scot/etc/scot.cfg.pl";
+    # mojo 8 changed the logging.  trying to go around it.
+    my $logconfig   = $ENV{'scot_log_conf_file'} // '/opt/scot/etc/log.conf';
+    #Log::Log4perl::init($logconfig);
+    #my $slog = Log::Log4perl->get_logger('Scot');
+    #$self->attr     ( slog => sub {$slog} );
+    #$self->helper   ( slog => sub { shift->app->env } );
+    $self->log( MojoX::Log::Log4perl->new($logconfig));
 
+    my $config_file  = $ENV{'scot_config_file'} // "/opt/scot/etc/scot.cfg.pl";
     my $env     = Scot::Env->new(
         config_file => $config_file,
     );
@@ -33,15 +43,13 @@ sub startup {
     $self->helper   ( env => sub { shift->app->env } );
     $| = 1;
 
+    my $hr  = Scot::HtmlRestricter->new();
+    $self->attr     ( restricter => sub {$hr} );
+    $self->helper   ( restricter => sub { shift->app->restricter });
+
     my $cache   = Mojo::Cache->new(max_keys => 100);
     $self->helper   ('cache'  => sub { $cache } );
 
-    # mojo 8 changed the logging.  trying to go around it.
-    my $slog = $env->log;
-    $self->attr     ( slog => sub {$slog} );
-    $self->helper   ( slog => sub { shift->app->env } );
-
-    $slog->debug("MOJO = ".$Mojolicious::VERSION);
 
     $self->secrets( $env->mojo_defaults->{secrets} );
     $self->sessions->default_expiration( 
@@ -82,9 +90,9 @@ sub startup {
         do {
             $Log::Log4perl::caller_depth++;
             no warnings 'uninitialized';
-            $slog->warn(@_);
+            $self->app->log->warn(@_);
             unless ( grep { /uninitialized/ } @_ ) {
-                $slog->warn(longmess());
+                $self->app->log->warn(longmess());
             }
             $Log::Log4perl::caller_depth--;
         }
@@ -95,7 +103,7 @@ sub startup {
             return;
         }
         $Log::Log4perl::caller_depth++;
-        $slog->fatal(@_);
+        $self->app->log->fatal(@_);
         die @_;
     };
 
@@ -117,6 +125,10 @@ get JSON that was submitted with the web request
         my $req     = $self->req;
         return $req->json;
     });
+
+    # my $domain_map  = $self->build_domain_map;
+    # $self->attr     ( domain_map => sub { $domain_map } );
+    # $self->helper   ( domain_map => sub { shift->app->domain_map } );
 
 =pod
 
@@ -184,12 +196,21 @@ relies on the browser BasicAuth popup.
     $r   ->get('/')
             ->to( cb => sub {
                 my $c = shift;
-                $slog->debug("Hitting Static /");
+                $self->app->log->trace("Hitting Static /");
                 $c->reply->static('index.html');
             });
 
     # prepends /scot to the routes below
     my $scot    = $auth->any('/scot');
+
+
+    $scot   ->post  ('/api/v2/history')
+            ->to    ('controller-api#add_history_api')
+            ->name  ('add_history');
+
+    $scot   ->post  ('/api/v2/stat')
+            ->to    ('controller-api#add_stat_api')
+            ->name  ('add_stat_api');
 
     $scot   ->any   ('/api/v2/search')
             ->to    ('controller-search#search')
@@ -200,6 +221,10 @@ relies on the browser BasicAuth popup.
     $scot   ->any   ('/api/v2/hitsearch')
             ->to    ('controller-search#hitsearch')
             ->name  ('hitsearch');
+
+    $scot   ->any   ('/api/v2/entitytypecount')
+            ->to    ('controller-api#entitytypecount')
+            ->name  ('entitytypecount');
 
 =pod
 
@@ -215,6 +240,10 @@ relies on the browser BasicAuth popup.
     $scot   ->any   ('/api/v2/game')
             ->to    ('controller-metric#get_game_data')
             ->name  ('game');
+
+    $scot   ->any   ('/api/v2/chef')
+            ->to    ('controller-api#get_chef_uri')
+            ->name  ('chef');
 
 =pod
 
@@ -242,7 +271,7 @@ relies on the browser BasicAuth popup.
 
 =cut
 
-    $scot   ->any ('/api/v2/metric/:thing')
+    $scot   ->any   ('/api/v2/metric/:thing')
             ->to    ('controller-metric#get')
             ->name  ('get');
 
@@ -257,7 +286,7 @@ relies on the browser BasicAuth popup.
 
 =cut
 
-    $scot   ->any ('/api/v2/graph/:thing')
+    $scot   ->any   ('/api/v2/graph/:thing')
             ->to    ('controller-stat#get')
             ->name  ('get_report_json');
 
@@ -272,8 +301,8 @@ relies on the browser BasicAuth popup.
 
 =cut
 
-    $scot   ->any ('/api/v2/graph/:thing/:id/:depth')
-            ->to    ('controller-graph#get_graph')
+    $scot   ->any   ('/api/v2/graph/:thing/:id/:depth')
+            ->to    ('controller-graph2#get_graph')
             ->name  ('get_graph');
 =pod
 
@@ -287,7 +316,7 @@ relies on the browser BasicAuth popup.
 =cut
 
 
-    $scot   ->any ('/api/v2/status')
+    $scot   ->any   ('/api/v2/status')
             ->to    ('controller-metric#get_status')
             ->name  ('get_status');
 
@@ -302,7 +331,7 @@ relies on the browser BasicAuth popup.
 
 =cut
 
-    $scot   ->any ('/api/v2/who')
+    $scot   ->any   ('/api/v2/who')
             ->to    ('controller-metric#get_who_online')
             ->name  ('get_who_online');
 
@@ -321,7 +350,7 @@ relies on the browser BasicAuth popup.
 
 =cut
 
-    $scot   ->any ('/api/v2/esearch')
+    $scot   ->any   ('/api/v2/esearch')
             ->to    ('controller-search#newsearch')
             ->name  ('esearch');
 
@@ -350,7 +379,7 @@ relies on the browser BasicAuth popup.
 =cut
 
 
-    $scot   ->post ('/api/v2/wall')
+    $scot   ->post  ('/api/v2/wall')
             ->to    ('controller-api#wall')
             ->name  ('wall');
 =pod
@@ -433,6 +462,15 @@ relies on the browser BasicAuth popup.
             ->to    ('controller-api#lriproxy')
             ->name  ('get_lri_data');
 
+    $scot   ->post  ('/api/v2/remoteflair')
+            ->to    ('controller-api#remoteflair')
+            ->name  ('remoteflair');
+
+    # convenience route to so new flair engine can update
+    $scot   ->post  ('/api/v2/flair_update')
+            ->to    ('controller-api#flair_update')
+            ->name  ('flair_update');
+
 
 =pod
 
@@ -485,6 +523,9 @@ relies on the browser BasicAuth popup.
     $scot   ->get   ('/api/v2/:thing/#id')
             ->to    ('controller-api#get_one')
             ->name  ('get_one');
+    $scot   ->get   ('/api/v3/:thing/#id')
+            ->to    ('controller-api2#get_one')
+            ->name  ('get_one3');
 
 =pod
 
@@ -542,6 +583,9 @@ The params passed to this route allow you to filter the list returned to you.
     $scot   ->get   ('/api/v2/:thing')
             ->to    ('controller-api#list')
             ->name  ('list');
+    $scot   ->get   ('/api/v3/:thing')
+            ->to    ('controller-api2#list')
+            ->name  ('list3');
 
 =pod
 
@@ -606,6 +650,9 @@ Incident subthings
     $scot   ->get   ('/api/v2/:thing/:id/:subthing')
             ->to    ('controller-api#get_subthing')
             ->name  ('get_subthing');
+    $scot   ->get   ('/api/v3/:thing/:id/:subthing')
+            ->to    ('controller-api2#get_related')
+            ->name  ('get_subthing3');
 
 =pod
 
@@ -631,6 +678,9 @@ Incident subthings
     $scot   ->put   ('/api/v2/:thing/:id')
             ->to    ('controller-api#update')
             ->name  ('update');
+    $scot   ->put   ('/api/v3/:thing/:id')
+            ->to    ('controller-api2#update')
+            ->name  ('update3');
 
 =pod
 
@@ -696,21 +746,31 @@ other events.
     $scot   ->delete ('/api/v2/:thing/:id')
             ->to    ('controller-api#delete')
             ->name  ('delete');
+    $scot   ->delete ('/api/v3/:thing/:id')
+            ->to    ('controller-api2#delete')
+            ->name  ('delete3');
+
+
+    $self->log_startup($self->app->log);
 
 }
 
 sub log_startup {
     my $self    = shift;
-    my $slog     = shift;
+    my $slog    = shift;
+    my $db      = $self->env->mongo->database_name;
 
     $slog->info(
                 "============================================================\n".
+        " "x55 ."| MOJO  ". $Mojolicious::VERSION."\n".
         " "x55 ."| SCOT  ". $self->env->version . "\n".
-        " "x55 ."| mode: ". $self->env->mode. "\n".
+        #" "x55 ."| mode: ". $self->env->mode. "\n".
+        " "x55 ."| db:   ". $db."\n".
         " "x55 ."============================================================\n"
     );
     # $self->env->dump_env;
 }
+
 
 1;   
 

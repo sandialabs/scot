@@ -16,6 +16,11 @@ db.audit.ensureIndex(       { "when":       1}  );
 
 db.checklist.ensureIndex(   { "id":         1}, {unique: true, dropDups:true}  );
 
+db.dispatch.ensureIndex (   { "id":         1}, {unique: true, dropDups:true}  );
+db.dispatch.ensureIndex(    { "when":       1}  );
+db.dispatch.ensureIndex(    { "subject":    1}  );
+db.dispatch.ensureIndex(    { "source_uri": 1}  );
+
 db.event.ensureIndex(       { "id":         1}, {unique: true, dropDups:true}  );
 db.event.ensureIndex(       { "when":       1}  );
 db.event.ensureIndex(       { "subject":    1}  );
@@ -52,6 +57,10 @@ db.intel.ensureIndex(       { "id":         1}, {unique: true, dropDups:true}  )
 db.intel.ensureIndex(       { "when":       1}  );
 db.intel.ensureIndex(       { "subject":    1}  );
 
+db.product.ensureIndex (   { "id":         1}, {unique: true, dropDups:true}  );
+db.product.ensureIndex(    { "when":       1}  );
+db.product.ensureIndex(    { "subject":    1}  );
+
 db.source.ensureIndex(      { "id":         1}, {unique: true, dropDups:true}  );
 db.source.ensureIndex(      { "value":      1}  );
 
@@ -79,3 +88,8 @@ db.user.ensureIndex ( {"username": 1} );
 
 db.getCollection('group').ensureIndex({"name": 1},{unique: true, dropDups:true});
 
+db.remoteflair.ensureIndex({"id": 1}, {unique: true, dropDups:true});
+db.domainstat.ensureIndex({"id": 1}, {unique: true, dropDups:true});
+db.domainstat.ensureIndex({"count": 1});
+
+db.msv.ensureIndex({message_id: 1}, {unique: true, dropDups:true});

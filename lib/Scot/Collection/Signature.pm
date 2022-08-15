@@ -27,7 +27,7 @@ override api_create => sub {
     my $self    = shift;
     my $request = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $log->debug("Creating Signature from POST to API");
     $log->debug(Dumper($request));
@@ -43,6 +43,8 @@ override api_create => sub {
     $self->validate_permissions($json);
     
     my $signature   = $self->create($json);
+    $signature->update({ '$addToSet' => { 'groups.read' => 'wg-scot-signatures' }});
+    $signature->update({ '$addToSet' => { 'groups.modify' => 'wg-scot-signatures' }});
 
     unless ( $signature ) {
         $log->error("Error creating Signature from ",
@@ -53,11 +55,11 @@ override api_create => sub {
     my $id  = $signature->id;
 
     if ( scalar(@sources) > 0 ) {
-        my $col = $env->mongo->collection('Source');
+        my $col = $self->meerkat->collection('Source');
         $col->add_source_to("signature", $id, \@sources);
     }
     if ( scalar(@tags) > 0 ) {
-        my $col = $env->mongo->collection('Tag');
+        my $col = $self->meerkat->collection('Tag');
         $col->add_source_to("signature", $id, \@tags);
     }
 
@@ -101,9 +103,9 @@ sub api_subthing {
     my $thing   = $req->{collection};
     my $id      = $req->{id} + 0;
     my $subthing= $req->{subthing};
-    my $mongo   = $self->env->mongo;
+    my $mongo   = $self->meerkat;
 
-    $self->env->log->debug("api_subthing /$thing/$id/$subthing");
+    $self->log->debug("api_subthing /$thing/$id/$subthing");
 
     if ($subthing eq "entry") {
         return $mongo->collection('Entry')->get_entries_by_target({

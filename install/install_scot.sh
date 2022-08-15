@@ -11,7 +11,22 @@ function upgrade_database {
         echo "-- dropping the game collection.  will be recreated upon first run of game.pl"
         mongo scot-prod --quiet --eval 'db.game.remove({});'
     fi
+
+    set='$set'
+    exists='$exists'
+
+    echo "checking intel collections..."
+    mongo scot-prod --eval "db.intel.update({status:{$exists:0}},{$set:{status:'open'}},{multi:1})"
+    mongo scot-prod --eval "db.intel.update({promoted_from:{$exists:0}},{$set:{promoted_from:[]}},{multi:1})"
+    mongo scot-prod --eval "db.intel.update({promotion_id:{$exists:0}},{$set:{promotion_id:0}},{multi:1})"
+    echo "checking product collection..."
+    mongo scot-prod --eval "db.product.update({status:{$exists:0}},{$set:{status:'open'}},{multi:1})"
+    echo "checking dispatch collection..."
+    mongo scot-prod --eval "db.dispatch.update({status:{$exists:0}},{$set:{status:'open'}},{multi:1})"
+    echo "checking handler collection..."
+    mongo scot-prod --eval "db.handler.update({type:{$exists:0}}, {$set:{type:'handler'}},{multi:1})"
 }
+
 
 
 function add_scot_user {
@@ -77,6 +92,8 @@ function get_config_files {
         scot.test
         stretch
         reflair
+	enricher
+	recfuture
     '
     for file in $CFGFILES; do
         CFGDEST="$SCOTDIR/etc/${file}.cfg.pl"
@@ -134,13 +151,16 @@ function configure_startup {
     echo "--"
     echo "-- configuring SCOT startup"
     echo "--"
-    SCOTSERVICES='scot scfd scrfd scepd recfpd'
+    SCOTSERVICES='scot flair enricher scend scrfd scepd recfpd '
     SRCDIR="$SCOT_CONFIG_SRC/scot"
+
+    systemctl disable scfd.service
+    systemctl daemon-reload
 
     for service in $SCOTSERVICES; do
         echo "-- SERVICE $service"
         if [[ $OS == "Ubuntu" ]]; then
-            if [[ $OSVERSION == "18" ]]; then
+            if [[ $OSVERSION == "18" ]] || [[ $OSVERSION  == "20" ]]; then
                 sysfile="${service}.service"
                 target="/etc/systemd/system/$sysfile"
                 if [[ "$REFRESH_INIT" == "yes" ]]; then
@@ -354,7 +374,7 @@ function setup_scot_admin {
 
 function restart_daemons {
 
-    SCOTSERVICES='scot scfd scrfd scepd recfpd'
+    SCOTSERVICES='scot flair enricher scrfd scepd recfpd '
     if [[ "$SCOT_RESTART_DAEMONS" == "yes" ]] || [[ "$INSTMODE" != "SCOTONLY" ]]; then
         for service in $SCOTSERVICES; do
             if [[ $OS == "Ubuntu" ]]; then
@@ -376,7 +396,7 @@ function selinux_to_permissive {
 
 function start_mongo {
     if [[ $OS == "Ubuntu" ]]; then
-        if [[ $OSVERSION == "18" ]]; then
+        if [[ $OSVERSION == "18" ]] || [[ $OSVERSION  == "20" ]]; then
             systemctl --no-pager start mongod.service
         elif [[ $OSVERSION == "16" ]]; then
             systemctl --no-pager start mongod.service

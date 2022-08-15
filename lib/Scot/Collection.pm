@@ -14,8 +14,30 @@ use Meerkat::Cursor;
 use Carp qw/croak/;
 use Module::Runtime qw(require_module);
 use Scot::Env;
+use Log::Log4perl qw(get_logger);
+use BSON;
 
 extends 'Meerkat::Collection';
+
+has defaults    => (
+    is          => 'rw',
+    isa         => 'HashRef',
+    required    => 1,
+    builder     => '_build_defaults',
+);
+
+sub _build_defaults {
+    return {
+        row_limit       => 100,
+        default_groups  => {
+            read        => [ 'wg-scot-ir' ],
+            modify      => [ 'wg-scot-ir' ],
+        },
+        location        => 'snl',
+    };
+}
+
+sub now { return time(); }
 
 has env => (
     is      => 'ro',
@@ -24,7 +46,44 @@ has env => (
     default     => sub { Scot::Env->instance; },
 );
 
+has log => (
+    is      => 'ro',
+    isa     => 'Log::Log4perl::Logger',
+    required=> 1,
+    builder => '_build_log',
+);
 
+sub _build_log {
+    my $self    = shift;
+    my $log     = get_logger('Scot');
+    $log->trace("got logger instance for Collection");
+    return $log;
+}
+
+has mongoquerymaker => (
+    is          => 'ro',
+    isa         => 'Scot::Util::MongoQueryMaker',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_mqm',
+);
+
+sub _build_mqm {
+    my $self    = shift;
+    my $mqm     = Scot::Util::MongoQueryMaker->new(config => {}, env => $self->env);
+    return $mqm;
+}
+
+sub get_req_array {
+    my $self    = shift;
+    my $json    = shift;
+    my $type    = shift;
+    my @tags    = ();
+    if ( defined $json->{$type} ) {
+        push @tags, @{$json->{$type}};
+    }
+    return @tags;
+}
 
 =item B<create(%args)>
 
@@ -35,9 +94,8 @@ replacing Meerkat's create with one that will generate a integer id.
 override 'create' => sub {
     state $check        = compile( Object, slurpy ArrayRef );
     my ($self, $args)   = $check->(@_);
-    my $env = $self->env;
-    my $log = $self->env->log;
-    my $location    = $self->env->location;
+    my $log = $self->log;
+    my $location    = $self->defaults->{location};
 
     $log->debug("In overriden create ".ref($self));
 
@@ -53,14 +111,14 @@ override 'create' => sub {
     my $obj = $self->class->new( @args, _collection => $self );
     $self->_save($obj);
 
+    $log->trace("made a ",{filter=>\&Dumper, value=>$obj});
     return $obj;
 };
 
 sub exact_create {
     state $check        = compile( Object, slurpy ArrayRef );
     my ($self, $args)   = $check->(@_);
-    my $env = $self->env;
-    my $log = $self->env->log;
+    my $log = $self->log;
 
 #    $log->trace("In exact create");
 
@@ -82,7 +140,6 @@ sub exact_create {
 override '_build_collection_name'    => sub {
     my ($self)  = @_;
     my $name    = lcfirst((split(/::/, $self->class))[-1]);
-    # $self->env->log->debug("collection name will be: $name");
     return $name;
 };
 
@@ -108,9 +165,7 @@ sub set_next_id {
     my $self    = shift;
     my $id      = shift;
     my $collection  = $self->collection_name;
-    my %command;
-    my $tie     = tie(%command, "Tie::IxHash");
-    %command        = (
+    my @command        = (
         findAndModify   => "nextid",
         query           => { for_collection => $collection },
         update          => { '$set' => { last_id => $id } },
@@ -122,7 +177,7 @@ sub set_next_id {
         get_next_id => sub {
             my $db_name = $mongo->database_name;
             my $db      = $mongo->_mongo_database($db_name);
-            my $job     = $db->run_command(\%command);
+            my $job     = $db->run_command(\@command);
             return $job->{value}->{last_id};
         }
     );
@@ -138,9 +193,7 @@ users hate typing in oid's on the URL, so give them a friendly integer
 sub get_next_id {
     my $self        = shift;
     my $collection  = $self->collection_name;
-    my %command;
-    my $tie         = tie(%command, "Tie::IxHash");
-    %command        = (
+    my @command        = (
         findAndModify   => "nextid",
         query           => { for_collection => $collection },
         update          => { '$inc' => { last_id => 1 } },
@@ -154,7 +207,7 @@ sub get_next_id {
         get_next_id => sub {
             my $db_name = $mongo->database_name;
             my $db      = $mongo->_mongo_database($db_name);
-            my $job     = $db->run_command(\%command);
+            my $job     = $db->run_command(\@command);
             return $job->{value}->{last_id};
         }
     );
@@ -169,9 +222,8 @@ sub get_subthing {
     my $id          = shift;
     $id += 0;
     my $subthing    = shift;
-    my $env         = $self->env;
-    my $log         = $env->log;
-    my $mongo       = $env->mongo;
+    my $log         = $self->log;
+    my $mongo       = $self->meerkat;
 
     ## MOSTLY replaced with override's in the each collection module.
 
@@ -320,10 +372,10 @@ sub get_targets {
     my $id      = $params{target_id};
     my $thing   = $params{target_type};
     my $search  = {
-        'targets.type' => $thing,
-        'targets.id'   => $id,
+        'target.type' => $thing,
+        'target.id'   => $id,
     };
-    $self->env->log->debug("get targets: ",{ filter =>\&Dumper, value => $search});
+    $self->log->debug("get targets: ",{ filter =>\&Dumper, value => $search});
     my $cursor  = $self->find($search);
     return $cursor;
 }
@@ -348,7 +400,7 @@ sub has_computed_attributes {
 sub get_aggregate_count {
     my $self    = shift;
     my $aref    = shift;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
     my $rawcol  = $self->_mongo_collection;
     my $result  = $rawcol->aggregate($aref);
 
@@ -381,10 +433,11 @@ sub get_default_permissions {
     my $self    = shift;
     my $type    = shift;
     my $id      = shift;
-    my $env     = $self->env;
 
     unless (defined $type and defined $id) {
-        return $env->default_groups;
+        my $dg  = $self->defaults->{default_groups};
+        $self->logdie("returning ",{filter=>\&Dumper, value => $dg});
+        return $dg;
     }
 
     my $mongo   = $self->meerkat;
@@ -392,28 +445,28 @@ sub get_default_permissions {
     my $obj     = $col->find_one({id => $id});
 
     unless ( $obj ) {
-        return $env->default_groups;
+        return $self->defaults->{default_groups};
     }
 
     if ( $obj->meta->does_role('Scot::Role::Permission') ) {
         return $obj->groups;
     }
     
-    return $env->default_groups;
+    return $self->defaults->{default_groups};
 }
 
 sub build_match_ref {
     my $self    = shift;
     my $request = shift;
     my $params  = $request->{params};
-    return $self->env->mongoquerymaker->build_match_ref($params);
+    return $self->mongoquerymaker->build_match_ref($params);
 }
 
 sub limit_fields {
     my $self    = shift;
     my $href    = shift;
     my $req     = shift;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
     my $params  = $req->{request}->{params};
     my $aref    = $params->{columns};
     my %fields  = ();
@@ -450,7 +503,7 @@ sub filter_fields {
         }
     }
     else {
-        $self->env->log->trace("leaving fields intact");
+        $self->log->trace("leaving fields intact");
     }
 }
 
@@ -481,6 +534,7 @@ sub api_list {
        && ref($self) ne "Scot::Collection::Entitytype" 
        && ref($self) ne "Scot::Collection::Entity" 
        && ref($self) ne "Scot::Collection::Deleted" 
+       && ref($self) ne "Scot::Collection::Domainstat" 
        && ref($self) ne "Scot::Collection::Link" ) {
         $match->{'groups.read'} = { '$in' => $groups };
     }
@@ -495,7 +549,7 @@ sub api_list {
         $match->{class} = "task";
     }
 
-    $self->env->log->debug("match is ",{filter=>\&Dumper, value=>$match});
+    $self->log->debug("match is ",{filter=>\&Dumper, value=>$match});
 
     my $cursor;
     if ( ref($self) eq "Scot::Collection::Alertgroup" ) {
@@ -586,7 +640,7 @@ sub get_collection_name {
 sub api_find {
     my $self    = shift;
     my $href    = shift;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
 
     if ( $href->{collection} eq "entity" ) {
         $log->debug("finding an entity");
@@ -621,7 +675,7 @@ sub api_create {
     my $params  = $req->{params};
     my @objects;
 
-    $self->env->log->debug("api_create");
+    $self->log->debug("api_create");
 
     my $object  = $self->create($req);
 
@@ -638,7 +692,7 @@ sub api_restore {
     my $params  = $req->{params};
     my @objects;
 
-    $self->env->log->debug("api_restore");
+    $self->log->debug("api_restore");
 
     my $object  = $self->exact_create($req);
 
@@ -654,10 +708,10 @@ sub api_update {
     my $object  = shift;
     my $req     = shift;
     my @uprecs  = ();
-    $req->{request}->{json}->{updated} = $self->env->now;
-    my %update  = $self->env->mongoquerymaker->build_update_command($req);
+    $req->{request}->{json}->{updated} = $self->now;
+    my %update  = $self->mongoquerymaker->build_update_command($req);
     
-    $self->env->log->debug("api_update attempting: ",{filter => \&Dumper, value => \%update});
+    $self->log->debug("api_update attempting: ",{filter => \&Dumper, value => \%update});
 
     my $objtype = $object->get_collection_name;
     # disallow the changing of alertgroup subjects
@@ -698,7 +752,6 @@ sub validate_permissions {
     my $self    = shift;
     my $json    = shift;
     my $target  = shift;
-    my $env     = $self->env;
     my $type    = lc((split(/::/,ref($self)))[-1]);
     my @permittables = (qw(alertgroup alert checklist entry event 
                           file guide incident intel signature));
@@ -710,7 +763,7 @@ sub validate_permissions {
             $defgroups = $self->get_default_permissions($target->{target_type}, $target->{target_id});
         }
         else {
-            $defgroups = $env->default_groups;
+            $defgroups = $self->defaults->{default_groups};
         }
 
         my $read_groups = $json->{groups}->{read} // $defgroups->{read};
@@ -718,6 +771,11 @@ sub validate_permissions {
 
         $read_groups = $self->lc_array($read_groups);
         $modify_groups = $self->lc_array($modify_groups);
+
+        if ($type =~ /signature/i) {
+            push @$read_groups, 'wg-scot-signatues' if (! grep {/wg-scot-signatures/} @$read_groups);
+            push @$modify_groups, 'wg-scot-signatues' if (! grep {/wg-scot-signatures/} @$modify_groups);
+        }
 
         $json->{groups} = {
             read    => $read_groups,

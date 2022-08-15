@@ -29,9 +29,11 @@ function install_geoip {
         U_DEB_REPO="deb $MAXMINDURL"
         U_DEB_SRC_REPO="deb-src $MAXMINDURL"
 
-        if [[ $OSVERSION == "18" ]];then
+        if [[ $OSVERSION == "20" ]];then
+            code_name="focal"
+        elif [[ $OSVERSION == "18" ]];then
             code_name="bionic"
-        if [[ $OSVERSION == "16" ]];then
+        elif [[ $OSVERSION == "16" ]];then
             code_name="xenial"
         else
             code_name="trusty"

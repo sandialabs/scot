@@ -32,7 +32,8 @@ override api_create => sub {
     my $self    = shift;
     my $request = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
+    my $mongo   = $self->meerkat;
 
     $log->trace("Custom create in Scot::Collection::Intel");
 
@@ -51,11 +52,11 @@ override api_create => sub {
     my $id  = $intel->id;
 
     if ( scalar(@sources) > 0 ) {
-        my $col = $env->mongo->collection('Source');
+        my $col = $mongo->collection('Source');
         $col->add_source_to("intel", $intel->id, \@sources);
     }
     if ( scalar(@tags) > 0 ) {
-        my $col = $env->mongo->collection('Tag');
+        my $col = $self->meerkat->collection('Tag');
         $col->add_source_to("intel", $intel->id, \@tags);
     }
 
@@ -68,7 +69,7 @@ sub api_subthing {
     my $thing   = $req->{collection};
     my $id      = $req->{id} + 0;
     my $subthing= $req->{subthing};
-    my $mongo   = $self->env->mongo;
+    my $mongo   = $self->meerkat;
 
     if ( $subthing eq "entry" ) {
         return $mongo->collection('Entry')->get_entries_by_target({
@@ -142,6 +143,62 @@ sub autocomplete {
         id  => $_->{id}, key => $_->{subject}
     } } $cursor->all;
     return wantarray ? @records : \@records;
+}
+
+sub get_promotion_obj {
+    my $self    = shift;
+    my $object  = shift; # a dispatch
+    my $req     = shift;
+    my $env     = $self->env;
+    my $log     = $self->log;
+    my $request = $req->{request};
+
+    # if given a promo_id, promote into an existing
+    my $promo_id    =  $request->{json}->{promote} // 
+                        $request->{params}->{promote};
+
+    $log->debug("Getting promotion object $promo_id for ".ref($object));
+
+    my $intel;
+
+    if ( $promo_id =~ /\d+/ ) {
+        $intel = $self->find_iid($promo_id);
+        if ( defined $intel and ref($intel) eq "Scot::Model::Intel" ) {
+            return $intel;
+        }
+        die "Intel $promo_id does not exist.  Can not promote to missing Intel.";
+    }
+    if ( $promo_id eq "new" or ! defined $promo_id ) {
+        $intel = $self->create_promotion($object, $req);
+        return $intel;
+    }
+    die "Invalid Promotion";
+}
+
+sub create_promotion {
+    my $self    = shift;
+    my $object  = shift;
+    my $req     = shift;
+    my $user    = $req->{user};
+    my $subject = $self->get_subject($object) // $self->get_value_from_request($req, "subject");
+
+    return $self->create({
+        subject => $subject,
+        status  => 'open',
+        owner   => $user,
+        promoted_from => [ $object->id ],
+    });
+}
+
+sub get_subject {
+    my $self    = shift;
+    my $object  = shift;
+
+    my $subject = $object->subject;
+    if (!defined $subject){
+        $subject = "Promoted Dispatch ".$object->id;
+    }
+    return $subject;
 }
 
 1;

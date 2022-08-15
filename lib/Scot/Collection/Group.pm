@@ -10,7 +10,7 @@ override api_create => sub {
     my $request = shift;
     my $env     = $self->env;
     my $json    = $request->{request}->{json};
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     my $gname   = $json->{groupname};
     $json->{groupname} = encode_entities($gname);
@@ -32,8 +32,8 @@ override get_subthing => sub {
     my $id          = shift;
     my $subthing    = shift;
     my $env         = $self->env;
-    my $mongo       = $env->mongo;
-    my $log         = $env->log;
+    my $mongo       = $self->meerkat;
+    my $log         = $self->log;
     $id += 0;
 
     if ( $subthing eq "user" ) {
@@ -63,8 +63,8 @@ sub api_subthing {
     my $thing       = $req->{collection};
     my $id          = $req->{id} + 0;
     my $subthing    = $req->{subthing};
-    my $mongo       = $self->env->mongo;
-    my $log         = $self->env->log;
+    my $mongo       = $self->meerkat;
+    my $log         = $self->log;
 
     $log->debug("api_subthing /$thing/$id/$subthing");
 

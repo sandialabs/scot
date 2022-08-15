@@ -9,7 +9,7 @@ override api_create => sub {
     my $self    = shift;
     my $req     = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     my $json    = $req->{request}->{json};
 
@@ -27,8 +27,8 @@ sub get_users_apikeys {
     my $self    = shift;
     my $user    = shift;
     my $env     = $self->env;
-    my $mongo   = $env->mongo;
-    my $log     = $env->log;
+    my $mongo   = $self->meerkat;
+    my $log     = $self->log;
 
     my $cursor  = $self->find({ username => $user });
     return $cursor;

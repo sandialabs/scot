@@ -160,7 +160,8 @@ sub get_regex {
     my $self    = shift;
     my $rename  = shift;
     my $meta    = $self->meta;
-    my $log     = $self->env->log;
+    my $env     = $self->env;
+    my $log     = $env->log;
     my $method  = $meta->get_attribute($rename);
 
     if ( defined $method ) {
@@ -170,6 +171,14 @@ sub get_regex {
     $log->error("No regex $rename exists!");
     die "Regex $rename not found in ".__PACKAGE__;
 }
+
+has all_regexes => (
+    is          => 'ro',
+    isa         => 'ArrayRef',
+    required    => 1,
+    lazy        => 1,
+    builder     => 'list_regexes',
+);
 
 sub list_regexes {
     my $self    = shift;
@@ -188,17 +197,37 @@ sub list_regexes {
     return wantarray ? @regexes : \@regexes;
 }
 
+has multi_word_regexes => (
+    is      => 'ro',
+    isa     => 'ArrayRef',
+    required=> 1,
+    lazy    => 1,
+    builder => 'list_multiword_regexes',
+);
+
 sub list_multiword_regexes {
     my $self    = shift;
+    my $log     = $self->env->log;
     my @regexes = sort { $a->{order} <=> $b->{order} } grep { 
         defined( $_->{options}->{multiword} ) and
         $_->{options}->{multiword} eq "yes" 
-    } $self->list_regexes;
+    } @{$self->all_regexes};
+    $log->debug("Found ".scalar(@regexes)." regexes");
     return wantarray ? @regexes : \@regexes;
 }
 
+has single_word_regexes => (
+    is      => 'ro',
+    isa     => 'ArrayRef',
+    required=> 1,
+    lazy    => 1,
+    builder => 'list_singleword_regexes',
+);
+
 sub list_singleword_regexes {
     my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
     my @regexes = sort { $a->{order} <=> $b->{order} } grep { 
         (
             defined( $_->{options}->{multiword} ) 
@@ -209,7 +238,8 @@ sub list_singleword_regexes {
         (
             ! defined $_->{options}->{multiword} 
         )
-    } $self->list_regexes;
+    } @{$self->all_regexes};
+    $log->debug("Found ".scalar(@regexes)." regexes");
     return wantarray ? @regexes : \@regexes;
 }
 
@@ -422,42 +452,78 @@ sub _build_IPV6 {
     my $self    = shift;
     my $re      = qr{
     \b
-	(?:
-    # Mixed
-	(?:
-	# Non-compressed
-	(?:[A-F0-9]{1,4}:){6}
-	# Compressed with at most 6 colons
-	|(?=(?:[A-F0-9]{0,4}:){0,6}
-		(?:[0-9]{1,3}\.){3}[0-9]{1,3}  # and 4 bytes
-        (?![:.\w])
+    # first look for a suricata/snort format (ip:port)
+    (?:
+        # look for aaaa:bbbb:cccc:dddd:eeee:ffff:gggg:hhhh
+        (?:
+            (?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}
+        )
+        # look for but dont capture a trailing :\d+
+        (?=:[0-9]+)
     )
-	# and at most 1 double colon
-	(([0-9A-F]{1,4}:){0,5}|:)((:[0-9A-F]{1,4}){1,5}:|:)
-	# Compressed with 7 colons and 5 numbers
-	|::(?:[A-F0-9]{1,4}:){5}
-	)
-	# 255.255.255.
-	(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}
-	# 255
-	(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])
-	|# Standard
-	(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}
-	|# Compressed with at most 7 colons
-	(?=(?:[A-F0-9]{0,4}:){0,7}[A-F0-9]{0,4}
-        (?![:.\w])
+    # next try the rest of the crazy that is ipv6
+    # thanks to autors of
+    # https://learning.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch08s17.html
+	|(?:
+        # Mixed
+        (?:
+            # Non-compressed
+            (?:[A-F0-9]{1,4}:){6}
+            # Compressed with at most 6 colons
+            |(?=(?:[A-F0-9]{0,4}:){0,6}
+                (?:[0-9]{1,3}\.){3}[0-9]{1,3}  # and 4 bytes
+                (?![:.\w])
+            )
+            # and at most 1 double colon
+            (([0-9A-F]{1,4}:){0,5}|:)((:[0-9A-F]{1,4}){1,5}:|:)
+            # Compressed with 7 colons and 5 numbers
+            |::(?:[A-F0-9]{1,4}:){5}
+	    )
+        # 255.255.255.
+        (?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}
+        # 255
+        (?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])
+
+        |# Standard
+        (?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}
+        |# Compressed with at most 7 colons
+        (?=(?:[A-F0-9]{0,4}:){0,7}[A-F0-9]{0,4}
+            (?![:.\w])
         )  # and anchored
-	# and at most 1 double colon
-	(([0-9A-F]{1,4}:){1,7}|:)((:[0-9A-F]{1,4}){1,7}|:)
-	# Compressed with 8 colons
-	|(?:[A-F0-9]{1,4}:){7}:|:(:[A-F0-9]{1,4}){7}
-	)
-    (?![:.\w]) # neg lookahead to "anchor"
+        # and at most 1 double colon
+        (([0-9A-F]{1,4}:){1,7}|:)((:[0-9A-F]{1,4}){1,7}|:)
+        # Compressed with 8 colons
+        |(?:[A-F0-9]{1,4}:){7}:|:(:[A-F0-9]{1,4}){7}
+	) (?![:.\w]) # neg lookahead to "anchor"
     }xmis;
     return {
         regex => $re,
         type    => "ipv6",
         order   => 11,
+        options => { multiword => "yes" },
+    };
+}
+
+has regex_IPV6_suricata => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_IPV6_suricata',
+);
+sub _build_IPV6_suricata {
+    my $self    = shift;
+    my $re      = qr{
+    \b
+	(?:
+	(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}
+    )(?=:[0-9]+)
+    \b
+    };
+    return {
+        regex => $re,
+        type    => "ipv6",
+        order   => 9,
         options => { multiword => "yes" },
     };
 }
@@ -781,25 +847,48 @@ sub _build_angle_bracket_message_id {
     };
 }
 
+has regex_jarm_hash => (
+    is          => 'ro',
+    isa      => 'HashRef',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_jarm_hash',
+);
+
+sub _build_jarm_hash {
+    my $self    = shift;
+    my $regex   = qr{
+        \b                      # word boundary
+        (?!.*\@\b)([0-9a-fA-F]{62})
+        \b                      # word boundary
+    }xims;
+    return {
+        regex   => $regex,
+        type    => "jarm_hash",
+        order   => 200,
+        options => { multiword => "no" },
+    };
+}
+
 sub find_all_matches {
     my $self    = shift;
     my $word    = shift;
-    my @regexes = $self->list_regexes;
-    return $self->find_matches($word, \@regexes);
+    my $regexes = $self->all_regexes;
+    return $self->find_matches($word, $regexes);
 }
 
 sub find_singleword_matches {
     my $self    = shift;
     my $word    = shift;
-    my @regexes = $self->list_singleword_regexes;
-    return $self->find_matches($word, \@regexes);
+    my $regexes = $self->single_word_regexes;
+    return $self->find_matches($word, $regexes);
 }
 
 sub find_multiword_matches {
     my $self    = shift;
     my $word    = shift;
-    my @regexes = $self->list_multiword_regexes;
-    return $self->find_matches($word, \@regexes);
+    my $regexes = $self->multi_word_regexes;
+    return $self->find_matches($word, $regexes);
 }
 
 # this sub will iterate throught the regular expressions

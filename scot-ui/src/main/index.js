@@ -21,6 +21,7 @@ import Notification from "react-notification-system";
 import LinkContainer from "react-router-bootstrap/lib/LinkContainer.js";
 import Admin from "../components/admin/";
 import { Amq } from "../utils/activemq";
+import SFGraph from "../components/forcegraph";
 
 export default class App extends React.Component {
   constructor(props) {
@@ -113,7 +114,7 @@ export default class App extends React.Component {
 
   componentWillMount = () => {
     let notificationSetting = Cookies.checkCookie("notification");
-    if (notificationSetting == undefined) {
+    if (notificationSetting === undefined) {
       notificationSetting = "on";
     }
     this.setState({ notificationSetting: notificationSetting });
@@ -332,9 +333,17 @@ export default class App extends React.Component {
               <LinkContainer to="/incident" activeClassName="active">
                 <NavItem>Incident</NavItem>
               </LinkContainer>
-              <LinkContainer to="/intel" activeClassName="active">
-                <NavItem>Intel</NavItem>
-              </LinkContainer>
+              <NavDropdown id="nav-dropdown" title={"ThreatIntel"}>
+                <LinkContainer to="/dispatch" activeClassName="active">
+                    <MenuItem>Dispatch</MenuItem>
+                </LinkContainer>
+                <LinkContainer to="/intel" activeClassName="active">
+                    <MenuItem>Intel</MenuItem>
+                </LinkContainer>
+                <LinkContainer to="/product" activeClassName="active">
+                    <MenuItem>Product</MenuItem>
+                </LinkContainer>
+              </NavDropdown>
               <NavDropdown id="nav-dropdown" title={"More"}>
                 <LinkContainer to="/task" activeClassName="active">
                   <MenuItem>Task</MenuItem>
@@ -351,13 +360,19 @@ export default class App extends React.Component {
                 <LinkContainer to="/reports" activeClassName="active">
                   <MenuItem>Reports</MenuItem>
                 </LinkContainer>
+                <LinkContainer to="/feed" activeClassName="active">
+                    <MenuItem>Feeds</MenuItem>
+                </LinkContainer>
+                <LinkContainer to="/sfgraph" activeClassName="active">
+                  <MenuItem>ScotForceGraph</MenuItem>
+                </LinkContainer>
                 <MenuItem divider />
                 <LinkContainer to="/admin" activeClassName="active">
                   <MenuItem>Administration</MenuItem>
                 </LinkContainer>
                 <MenuItem href="/docs/index.html">Documentation</MenuItem>
                 <MenuItem divider />
-                <MenuItem href="/cyberchef/index.html">Cyber Chef</MenuItem>
+                <MenuItem href="https://cybertools-cc.sandia.gov/">Cyber Chef</MenuItem>
                 <MenuItem divider />
                 <MenuItem href="/#/" onClick={this.LogOut}>
                   Log Out
@@ -379,7 +394,7 @@ export default class App extends React.Component {
               }}
               className="scot_version"
             >
-              V3.7
+              V3.20
             </span>
             <Search errorToggle={this.errorToggle} />
           </Navbar.Collapse>
@@ -413,6 +428,11 @@ export default class App extends React.Component {
           {type === "admin" ? (
             <Route exact path="/admin">
               <Admin></Admin>
+            </Route>
+          ) : null}
+          {type === "sfgraph" ? (
+            <Route exact path="/sfgraph">
+                <SFGraph></SFGraph>
             </Route>
           ) : null}
           {type === "alert" ? (
@@ -536,7 +556,58 @@ export default class App extends React.Component {
               removeCallback={this.AMQ.remove_callback_object}
             />
           ) : null}
+          {type === "dispatch" ? (
+            <ListView
+              id={this.props.match.params.id}
+              id2={this.props.match.params.id2}
+              viewMode={this.state.viewMode}
+              type={type}
+              notificationToggle={this.notificationToggle}
+              notificationSetting={this.state.notificationSetting}
+              listViewFilter={this.state.listViewFilter}
+              listViewSort={this.state.listViewSort}
+              listViewPage={this.state.listViewPage}
+              errorToggle={this.errorToggle}
+              history={this.props.history}
+              createCallback={this.AMQ.create_callback_object}
+              removeCallback={this.AMQ.remove_callback_object}
+            />
+          ) : null}
           {type === "intel" ? (
+            <ListView
+              id={this.props.match.params.id}
+              id2={this.props.match.params.id2}
+              viewMode={this.state.viewMode}
+              type={type}
+              notificationToggle={this.notificationToggle}
+              notificationSetting={this.state.notificationSetting}
+              listViewFilter={this.state.listViewFilter}
+              listViewSort={this.state.listViewSort}
+              listViewPage={this.state.listViewPage}
+              errorToggle={this.errorToggle}
+              history={this.props.history}
+              createCallback={this.AMQ.create_callback_object}
+              removeCallback={this.AMQ.remove_callback_object}
+            />
+          ) : null}
+          {type === "product" ? (
+            <ListView
+              id={this.props.match.params.id}
+              id2={this.props.match.params.id2}
+              viewMode={this.state.viewMode}
+              type={type}
+              notificationToggle={this.notificationToggle}
+              notificationSetting={this.state.notificationSetting}
+              listViewFilter={this.state.listViewFilter}
+              listViewSort={this.state.listViewSort}
+              listViewPage={this.state.listViewPage}
+              errorToggle={this.errorToggle}
+              history={this.props.history}
+              createCallback={this.AMQ.create_callback_object}
+              removeCallback={this.AMQ.remove_callback_object}
+            />
+          ) : null}
+          {type === "feed" ? (
             <ListView
               id={this.props.match.params.id}
               id2={this.props.match.params.id2}

@@ -38,16 +38,18 @@ sub split_alertgroups {
     my $self    = shift;
     my $href    = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $log->debug("splitting alertgroup");
 
     # strip data field and ensure it is an array
     my $data    = delete $href->{request}->{json}->{data};
+    $log->trace("data is ", {filter=>\&Dumper, value => $data});
     push @$data, $data if ( ref($data) ne "ARRAY" );
         
     my $alert_rows  = scalar(@$data);
-    my $row_limit   = $env->get_config_item("row_limit") // 100;
+    #my $row_limit   = $env->get_config_item("row_limit") // 100;
+    my $row_limit   = $self->defaults->{row_limit};
     $log->debug("row limit is $row_limit");
     my @ag_requests = ();
     my $parts       = int($alert_rows/$row_limit);
@@ -93,8 +95,8 @@ override api_create => sub {
     my $self    = shift;
     my $href    = shift;
     my $env     = $self->env;
-    my $mongo   = $env->mongo;
-    my $log     = $env->log;
+    my $mongo   = $self->meerkat;
+    my $log     = $self->log;
 
     my @mq_msgs     = ();
     my @audit_msgs  = ();
@@ -106,7 +108,7 @@ override api_create => sub {
     my @requests        = $self->split_alertgroups($href);
     my @alertgroups     = ();
 
-    $log->debug("REQUEST BE LIKE: ",{filter=>\&Dumper, value =>\@requests});
+    $log->trace("REQUEST BE LIKE: ",{filter=>\&Dumper, value =>\@requests});
 
     REQUEST:
     foreach my $request (@requests) {
@@ -173,8 +175,8 @@ sub refresh_data {
     my $id      = shift;
     my $user    = shift // "api";
     my $env     = $self->env;
-    my $mq      = $env->mq;
-    my $log     = $env->log;
+    # my $mq      = $env->mq;
+    my $log     = $self->log;
 
     ## TODO: see if we can move the mq stuff 
     ## recent bug:  flairer didn't have an mq stanza on a demo box
@@ -223,7 +225,7 @@ sub refresh_data {
             promoted_count  => $count{promoted} // 0,
             alert_count     => $count{total},
             status          => $status,
-            updated         => $env->now,
+            updated         => $self->now,
         }
     });
 
@@ -251,9 +253,9 @@ sub api_subthing {
     my $thing       = $req->{collection};
     my $id          = $req->{id} + 0;
     my $subthing    = $req->{subthing};
-    my $mongo       = $self->env->mongo;
+    my $mongo       = $self->meerkat;
 
-    $self->env->log->debug("api_subthing /$thing/$id/$subthing");
+    $self->log->trace("api_subthing /$thing/$id/$subthing");
 
     if ( $subthing eq "alert") {
         return $mongo->collection('Alert')->find({
@@ -333,9 +335,9 @@ sub update_alerts_in_alertgroup {
     my $agobj    = shift;
     my $href     = shift;
     my $env      = $self->env;
-    my $mongo    = $env->mongo;
-    my $log      = $env->log;
-    my $mq       = $env->mq;
+    my $mongo    = $self->meerkat;
+    my $log      = $self->log;
+    # my $mq       = $env->mq;
     my $status   = { updated => [] };
     my $alertcol = $mongo->collection('Alert');
         
@@ -400,6 +402,14 @@ sub update_alerts_in_alertgroup {
         }
         else {
             push @{$status->{updated}}, $alertobj->id;
+            $log->debug("Attemtping to write history for ".$alertobj->id);
+            my $hist = {
+                who     => $href->{user},
+                what    => "Alert status changed to ".$alert_href->{status},
+                when    => $self->now(),
+                target  => { id => $alertobj->id, type => "alert" },
+            };
+            $mongo->collection("History")->add_history_entry($hist);
         }
     }
     return $status;
@@ -409,11 +419,12 @@ sub update_alerts_in_alertgroup {
 sub get_bundled_alertgroup {
     my $self    = shift;
     my $id      = shift;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
+    my $mongo   = $self->meerkat;
     my $agobj   = $self->find_iid($id);
     my $href    = $agobj->as_hash;
        $href->{alerts} = [];
-    my $col     = $self->env->mongo->collection('Alert');
+    my $col     = $mongo->collection('Alert');
     $id         += 0;
     my $match   = { alertgroup => $id };
     $log->debug("Looking for alerts in alertgroup $id");
@@ -439,13 +450,19 @@ return array of alerts for a given alertgroup
 sub get_alerts_in_alertgroup {
     my $self    = shift;
     my $object  = shift;
+    my $mongo   = $self->meerkat;
     my $id      = $object->id + 0;
-    my $col     = $self->env->mongo->collection('Alert');
+    my $col     = $mongo->collection('Alert');
     my $cursor  = $col->find({alertgroup => $id});
     my @alerts  = ();
+    my $env     = $self->env;
+    my $log     = $self->log;
+
+    $log->debug("GET ALERTS in ALERTGROUP $id");
 
     while ( my $alert = $cursor->next ) {
         my $alert_href  = $alert->as_hash;
+        $log->trace({filter=>\&Dumper, value=>$alert_href});
         push @alerts, $alert_href;
     }
     return wantarray ? @alerts : \@alerts;
@@ -459,13 +476,13 @@ sub update_alertgroup_with_bundled_alert {
     my $self    = shift;
     my $putdata = shift;
     my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;
+    my $log     = $self->log;
+    my $mongo   = $self->meerkat;
     my $alertcol    = $mongo->collection('Alert');
     my $entitycol   = $mongo->collection('Entity');
 
     $log->debug("updating alertgroup with bundled alerts");
-    $log->debug("putdata = ",{filter=>\&Dumper, value=>$putdata});
+    $log->trace("putdata = ",{filter=>\&Dumper, value=>$putdata});
 
     my $alertgroup_id   = delete $putdata->{id};
     my $alerts_aref     = delete $putdata->{alerts};
@@ -482,7 +499,7 @@ sub update_alertgroup_with_bundled_alert {
 
         my $entity_aref = delete $alert->{entities};
 
-        $log->debug("Entities in alert: ",
+        $log->trace("Entities in alert: ",
                     {filter=>\&Dumper, value=>$entity_aref});
 
         my $alert_obj   = $alertcol->find_iid($alert_id);
@@ -508,7 +525,7 @@ sub update_alertgroup_with_bundled_alert {
     }
 
     my $cmd = { '$set'  => $putdata };
-    $log->debug("updating alertgroup with :",
+    $log->trace("updating alertgroup with :",
                 {filter=>\&Dumper,value=>$putdata});
     my $alertgroup  = $self->find_iid($alertgroup_id);
 
@@ -524,8 +541,8 @@ sub update_alertgroup_with_bundled_alert_old {
     my $self    = shift;
     my $putdata = shift;
     my $env      = $self->env;
-    my $mongo    = $env->mongo;
-    my $log      = $env->log;
+    my $mongo    = $self->meerkat;
+    my $log      = $self->log;
 
     my $alertgroup_id = delete $putdata->{id};
     my $alertgroup    = $self->find_iid($alertgroup_id);
@@ -567,7 +584,7 @@ sub update_alertgroup_with_bundled_alert_old {
     }
 
     my $cmd = { '$set' => $putdata };
-    $log->debug("updating alertgroup with : ",{filter=>\&Dumper, value=>$cmd});
+    $log->trace("updating alertgroup with : ",{filter=>\&Dumper, value=>$cmd});
     if ( $alertgroup->update($cmd) ) {
         $log->debug("updated alertgroup");
     }
@@ -591,6 +608,13 @@ sub get_subject {
         return $agobj->subject;
     }
     die "Can't find Alertgroup $agid";
+}
+
+sub get_by_msgid {
+    my $self    = shift;
+    my $msgid   = shift;
+    my $ag      = $self->find_one({message_id => $msgid});
+    return $ag;
 }
 
 =back

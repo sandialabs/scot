@@ -1028,6 +1028,30 @@ class EntityValue extends React.Component {
   };
 }
 
+//class EntityActionButtonSet extends React.Component {
+//    constructor(props) {
+//        super(props);
+//        this.state  = {
+//            type: this.props.entity_type,
+//            value: this.props.entity_value,
+//            isMounted: false,
+//        };
+//    }
+//    componentDidMount() {
+//        this.setState({ isMounted: true });
+//    }
+//
+//    componentWillUnmount() {
+//        this.setState({ isMounted: false });
+//    }
+//
+//    render = () => {
+//        return (
+//
+//        );
+//    };
+//}
+
 class EntityBody extends React.Component {
   constructor(props) {
     super(props);
@@ -1124,7 +1148,12 @@ class EntityBody extends React.Component {
             );
             enrichmentEventKey++;
           } else if (entityData[prop].type === "link") {
+            // look here to replace button creation from entity.data
+            // maybe create a set of buttons in database that match 
+            // this.props.data['type'] and take this.props.data['value']
+            // and sprintf it  to the url and put it a title. --tb
             //added this because we dont need two buttons -2019 bryce
+            console.log(this.props);
             if (entityData[prop].data.title !== "Lookup in Likaboss") {
               const nopop  = ( entityData[prop].data.nopopup ) ? true : false;
               console.log(entityData[prop].data);
@@ -1142,6 +1171,11 @@ class EntityBody extends React.Component {
               enrichmentEventKey++;
             }
           }
+          // here place the button create
+          //<EntityActionButtonSet
+          // entity_type={this.props.data.type}
+          // entity_value={this.props.data.value}
+          // />
         }
       }
     }
@@ -1345,8 +1379,10 @@ class EntityReferences extends React.Component {
       loadingType: {
         alert: true,
         event: true,
-        intel: true,
         incident: true,
+        dispatch: true,
+        intel: true,
+        product: true,
         signature: true,
         guide: true
       },
@@ -1359,7 +1395,7 @@ class EntityReferences extends React.Component {
 
   componentDidMount = () => {
     this.setState({ isMounted: true });
-    const types = ["incident", "event", "intel", "guide", "signature", "alert"];
+    const types = ["incident", "event", "intel", "guide", "signature", "alert", "dispatch", "product"];
     types.forEach(
       function(type) {
         let open = [];

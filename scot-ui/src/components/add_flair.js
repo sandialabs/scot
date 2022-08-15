@@ -1,4 +1,7 @@
 import $ from "jquery";
+// import ResizeAlertTable from '../detail/resize.js';
+//import { getTextWidth, getCssStyle, getMaxColumnWidths, resizeColumns } from '../detail/resize3';
+
 export const AddFlair = {
   entityUpdate: function (
     entityData,
@@ -11,6 +14,8 @@ export const AddFlair = {
     setTimeout(
       function () {
         let entityResult = {};
+        console.log("Received Entity Data!");
+        console.log(entityData);
         for (let key in entityData) {
           entityResult[$("<span />", { html: key }).html()] = entityData[key];
         }
@@ -84,30 +89,94 @@ export const AddFlair = {
                             }
 
                             if (entitydata.geoip !== undefined) {
-                              if (entitydata.geoip.data.isocode !== undefined) {
-                                let country_code;
-                                if (
-                                  entitydata.geoip.data.isp ===
-                                  "Sandia National Laboratories"
-                                ) {
-                                  country_code = "sandia";
-                                } else {
-                                  country_code = entitydata.geoip.data.isocode;
+                              if (entitydata.geoip.data !== undefined) {
+                                if (entitydata.geoip.data.isocode) {
+                                    let country_code;
+                                    if (
+                                    entitydata.geoip.data.isp ===
+                                    "Sandia National Laboratories"
+                                    ) {
+                                    country_code = "sandia";
+                                    } else {
+                                    country_code = entitydata.geoip.data.isocode;
+                                    }
+                                    if (country_code !== null) {
+                                    let flag = $(
+                                        '<img title="' +
+                                        country_code.toLowerCase() +
+                                        '">'
+                                    ).attr(
+                                        "src",
+                                        "/images/flags/" +
+                                        country_code.toLowerCase() +
+                                        ".png"
+                                    );
+                                    flag.addClass("extras");
+                                    $(entity).append(flag);
+                                    }
                                 }
-                                if (country_code !== null) {
-                                  let flag = $(
-                                    '<img title="' +
-                                      country_code.toLowerCase() +
-                                      '">'
-                                  ).attr(
-                                    "src",
-                                    "/images/flags/" +
-                                      country_code.toLowerCase() +
-                                      ".png"
-                                  );
-                                  flag.addClass("extras");
-                                  $(entity).append(flag);
+                                if (entitydata.geoip.data.is_anonymous) {
+                                    let anonicon = $(
+                                        '<img title="is_anonymous">'
+                                    ).attr(
+                                        'src',
+                                        '/images/flair/anon.png'
+                                    );
+                                    anonicon.addClass("extras");
+                                    $(entity).append(anonicon);
                                 }
+                                if (entitydata.geoip.data.is_anonymous_vpn) {
+                                    let icon = $(
+                                        '<img title="is_anonymous_vpn">'
+                                    ).attr(
+                                        'src',
+                                        '/images/flair/anonvpn.png'
+                                    );
+                                    icon.addClass("extras");
+                                    $(entity).append(icon);
+                                }
+                                if (entitydata.geoip.data.is_hosting_provider) {
+                                    let icon = $(
+                                        '<img title="is_hosting_provider">'
+                                    ).attr(
+                                        'src',
+                                        '/images/flair/hosting.png'
+                                    );
+                                    icon.addClass("extras");
+                                    $(entity).append(icon);
+                                }
+                                if (entitydata.geoip.data.is_public_proxy) {
+                                    let icon = $(
+                                        '<img title="is_public_proxy">'
+                                    ).attr(
+                                        'src',
+                                        '/images/flair/proxy.png'
+                                    );
+                                    icon.addClass("extras");
+                                    $(entity).append(icon);
+                                }
+                                if (entitydata.geoip.data.is_tor_exit_node) {
+                                    let icon = $(
+                                        '<img title="is_tor_exit_node">'
+                                    ).attr(
+                                        'src',
+                                        '/images/flair/tor.png'
+                                    );
+                                    icon.addClass("extras");
+                                    $(entity).append(icon);
+                                }
+                                if (entitydata.geoip.data.is_residential_proxy) {
+                                    let icon = $(
+                                        '<img title="is_residential_proxy">'
+                                    ).attr(
+                                        'src',
+                                        '/images/flair/residence.png'
+                                    );
+                                    icon.addClass("extras");
+                                    $(entity).append(icon);
+                                }
+
+
                               }
                             }
 
@@ -203,6 +272,7 @@ export const AddFlair = {
             }.bind(this)
           );
         } else if (type === "alertgroup") {
+          //console.log("FOOBAR!!!!!");
           $(document.body)
             .find(".alertTableHorizontal")
             .find(".entity")
@@ -253,8 +323,32 @@ export const AddFlair = {
                     $(entity).attr("data-entity-id", entityid);
                     $(entity).unbind("click");
                     if (entitydata !== undefined) {
+                      if (entitydata.scanner !== undefined) {
+                        if (entitydata.scanner.active === "true") {
+                           $(entity).append(
+                             $(
+                               '<img class="extras" title="scanner">'
+                             ).attr("src", "/images/flair/scanner.png")
+                           );
+                        }
+                      }
+
+                      if (entitydata.sidd !== undefined) {
+                         if (
+                            Object.keys(entitydata.sidd.data).length !==
+                              0 &&
+                            entitydata.sidd.data.constructor === Object
+                          ) {
+                            $(entity).append(
+                              $('<img class="extras" title="sidd">').attr(
+                                "src",
+                                "/images/flair/sidd.png"
+                              )
+                            );
+                         }
+                      }
                       if (entitydata.geoip !== undefined) {
-                        if (entitydata.geoip.data.isocode !== undefined) {
+                        if (entitydata.geoip.data.isocode) {
                           let country_code;
                           if (
                             entitydata.geoip.data.isp ===
@@ -274,6 +368,66 @@ export const AddFlair = {
                           );
                           flag.addClass("extras");
                           $(entity).append(flag);
+                        }
+                        if (entitydata.geoip.data.is_anonymous) {
+                            let anonicon = $(
+                                '<img title="is_anonymous">'
+                            ).attr(
+                                'src',
+                                '/images/flair/anon.png'
+                            );
+                            anonicon.addClass("extras");
+                            $(entity).append(anonicon);
+                        }
+                        if (entitydata.geoip.data.is_anonymous_vpn) {
+                            let icon = $(
+                                '<img title="is_anonymous_vpn">'
+                            ).attr(
+                                'src',
+                                '/images/flair/anonvpn.png'
+                            );
+                            icon.addClass("extras");
+                            $(entity).append(icon);
+                        }
+                        if (entitydata.geoip.data.is_hosting_provider) {
+                            let icon = $(
+                                '<img title="is_hosting_provider">'
+                            ).attr(
+                                'src',
+                                '/images/flair/hosting.png'
+                            );
+                            icon.addClass("extras");
+                            $(entity).append(icon);
+                        }
+                        if (entitydata.geoip.data.is_public_proxy) {
+                            let icon = $(
+                                '<img title="is_public_proxy">'
+                            ).attr(
+                                'src',
+                                '/images/flair/proxy.png'
+                            );
+                            icon.addClass("extras");
+                            $(entity).append(icon);
+                        }
+                        if (entitydata.geoip.data.is_tor_exit_node) {
+                            let icon = $(
+                                '<img title="is_tor_exit_node">'
+                            ).attr(
+                                'src',
+                                '/images/flair/tor.png'
+                            );
+                            icon.addClass("extras");
+                            $(entity).append(icon);
+                        }
+                        if (entitydata.geoip.data.is_residential_proxy) {
+                            let icon = $(
+                                '<img title="is_residential_proxy">'
+                            ).attr(
+                                'src',
+                                '/images/flair/residence.png'
+                            );
+                            icon.addClass("extras");
+                            $(entity).append(icon);
                         }
                       }
                       // now in blocklist3 
@@ -317,17 +471,20 @@ export const AddFlair = {
                         else {
                             console.log("Why no pblock? "+entitydata.blocklist3.data);
                         }
+                    // XXX
                       }
                     }
 
                     if (entityEntryCount !== undefined) {
                       if (entityEntryCount !== 0) {
-                        let entityEntry = entityMatched.entries[0].body_plain;
-                        $(entity).append(
-                          $(
-                            '<img class="extras" title="' + entityEntry + '">'
-                          ).attr("src", "/images/flair/note.png")
-                        );
+                        if (entityMatched.entries !== undefined && entityMatched.entries.length > 0) {
+                            let entityEntry = entityMatched.entries[0].body_plain;
+                            $(entity).append(
+                            $(
+                                '<img class="extras" title="' + entityEntry + '">'
+                            ).attr("src", "/images/flair/note.png")
+                            );
+                        }
                       }
                     }
                   }
@@ -338,6 +495,8 @@ export const AddFlair = {
         if (scrollTo !== undefined && scrollTo !== null) {
           scrollTo();
         }
+        console.log("BOOMBAZ");
+        // resizeColumns();
       }.bind(this),
       1000
     );

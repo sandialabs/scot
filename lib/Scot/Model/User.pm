@@ -188,6 +188,11 @@ has local_acct  => (
     default     => 0,
 );
 
+sub get_memo {
+    my $self    = shift;
+    return $self->username;
+}
+
 __PACKAGE__->meta->make_immutable;
 1;
 
