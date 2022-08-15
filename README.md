@@ -33,6 +33,28 @@ IMPORTANT: Read [Issue #55](https://github.com/sandialabs/scot/issues/55) before
 Install It!
 -----------
 
+** RPM Based Installer (CENTOS 7) **
+
+* clone scot repo or download the files
+
+    * scot.perl.rpm.install.tar.gz
+    * scot.rpm.install.tar.gz
+
+* extract both files:
+
+    * tar xzvf scot*tar.gz
+
+* install scot perl first
+
+    * cd scot-perl-install
+    * ./install.sh
+    * follow instructions presented at end of install
+
+* install scot second
+
+    * cd scot-install
+    * ./install.sh
+
 **Docker Method**
 
 The suggested method for installation of SCOT is using docker. For a walkthrough of installing SCOT via docker, please read: https://github.com/sandialabs/scot/blob/scot-docker/docs/source/scotdocker.rst
