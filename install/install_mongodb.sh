@@ -297,8 +297,23 @@ function install_36_mongo {
 }
 
 function install_42_mongo {
+    MONGO_PROXY=""
+    
+    if [[ -v $http_proxy ]]; then
+        echo "!!!   ADDING HTTP_PROXY to apt-key"
+        MONGO_PROXY="--keyserver-options http-proxy=$http_proxy"
+    fi
+
     wget -qO - https://www.mongodb.org/static/pgp/server-4.2.asc | sudo apt-key add -
-    echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.2.list
+    
+    if [[ $OSVERSION == "18" ]] || [[ $OSVERSION == "20" ]]; then
+        echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.2.list
+    elif [[ $OSVERSION == "16" ]]; then
+        echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/4.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.2.list
+    else
+        echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/4.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.2.list
+    fi
+    
     apt-get update
     apt-get install -y mongodb-org
 }
