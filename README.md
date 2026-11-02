@@ -1,10 +1,12 @@
+
+# SCOT ver 3 is End of Life
+# Please See [SCOT 4](https://github.com/sandialabs/scot4) for the newest SCOT.
+
 ![ScotLogo](https://raw.githubusercontent.com/sandialabs/scot/master/public/images/scot_logo_highrez_64x64.png)
             
 Sandia Cyber Omni Tracker
 =========================
 
-# SCOT ver 3 is End of Life
-# Please See [SCOT 4](https://github.com/sandialabs/scot4) for the newest SCOT.
 
 
 ![version](http://img.shields.io/badge/version-3.5.2-orange.svg)
